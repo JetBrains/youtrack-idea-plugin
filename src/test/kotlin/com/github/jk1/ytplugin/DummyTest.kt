@@ -15,7 +15,7 @@ class DummyTest {
 
     @Test
     fun sampleTest() {
-        assertEquals(1, 2)
+        assertEquals(1, 1)
     }
 
     @AfterMethod

@@ -24,7 +24,11 @@
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <action id="com.github.jk1.ytplugin.actions.OpenCommandWindowAction"
+                class="com.github.jk1.ytplugin.actions.OpenCommandWindowAction">
+            <keyboard-shortcut first-keystroke="control alt J" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 
     <application-components>
