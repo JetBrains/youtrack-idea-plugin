@@ -1,0 +1,11 @@
+# Idea project/module/workspace files
+*.iml
+*.ipr
+*.iws
+.idea_modules
+.idea
+
+# Compiled binaries
+/classes
+/build
+/out

@@ -1,0 +1,34 @@
+<idea-plugin version="2">
+    <id>com.github.jk1.ytplugin</id>
+    <name>YouTrack Integration Plugin</name>
+    <version>0.1</version>
+    <vendor url="http://www.yourcompany.com">YourCompany</vendor>
+
+    <description><![CDATA[
+      Enter short description for your plugin here.<br>
+      <em>most HTML tags may be used</em>
+    ]]></description>
+
+    <change-notes><![CDATA[ Initial version ]]></change-notes>
+
+    <!-- IntelliJ IDEA 15, WebStorm 11, PyCharm 5, PhpStorm 10, RubyMine 8, AppCode 3.3, CLion 1.2, DataGrip 1.0 -->
+    <idea-version since-build="143.0"/>
+
+    <!-- Enable plugin in all products -->
+    <depends>com.intellij.modules.lang</depends>
+    <!-- Bundled task management plugin integration -->
+    <depends optional="true">com.intellij.tasks</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+
+    <application-components>
+
+    </application-components>
+
+</idea-plugin>
