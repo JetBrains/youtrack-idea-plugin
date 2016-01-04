@@ -1,12 +1,15 @@
 package com.github.jk1.ytplugin.view
 
+import com.github.jk1.ytplugin.components.CommandProjectComponent
+import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
+import java.util.*
 import javax.swing.*
 
-public class CommandDialog(project: Project) : DialogWrapper(project) {
+public class CommandDialog(val project: Project) : DialogWrapper(project) {
 
     private val commandField = JTextField(40)
     private val commentArea = JTextArea(6, 40)
@@ -21,7 +24,7 @@ public class CommandDialog(project: Project) : DialogWrapper(project) {
     }
 
     override fun createActions(): Array<out Action> {
-        return arrayOf(ApplyAction(),SilentApplyAction(), this.cancelAction)
+        return arrayOf(getApplyAction("Apply"), getApplyAction("Silent Apply", true), this.cancelAction)
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -73,15 +76,14 @@ public class CommandDialog(project: Project) : DialogWrapper(project) {
         return panel;
     }
 
-    private class ApplyAction : AbstractAction("Apply"){
-        override fun actionPerformed(e: ActionEvent?) {
-            throw UnsupportedOperationException()
-        }
-    }
-
-    private class SilentApplyAction : AbstractAction("Silent Apply"){
-        override fun actionPerformed(e: ActionEvent?) {
-            throw UnsupportedOperationException()
+    private fun getApplyAction(name: String, silent : Boolean = false) : Action{
+        return object : AbstractAction(name){
+            override fun actionPerformed(e: ActionEvent) {
+                project.getComponent(CommandProjectComponent::class.java)?.execute(
+                        YouTrackCommand(commandField.text, commandField.caretPosition, silent, Collections.emptyList())
+                )
+                this@CommandDialog.close(0)
+            }
         }
     }
 }

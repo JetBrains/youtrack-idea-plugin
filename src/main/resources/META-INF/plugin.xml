@@ -16,12 +16,8 @@
 
     <!-- Enable plugin in all products -->
     <depends>com.intellij.modules.lang</depends>
-    <!-- Bundled task management plugin integration -->
-    <depends optional="true">com.intellij.tasks</depends>
-
-    <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
-    </extensions>
+    <!-- We depend on bundled task management plugin -->
+    <depends>com.intellij.tasks</depends>
 
     <actions>
         <action id="com.github.jk1.ytplugin.actions.OpenCommandWindowAction"
@@ -31,8 +27,11 @@
         </action>
     </actions>
 
-    <application-components>
-
-    </application-components>
+    <project-components>
+        <component>
+            <interface-class>com.github.jk1.ytplugin.components.CommandProjectComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.components.CommandRestProjectComponent</implementation-class>
+        </component>
+    </project-components>
 
 </idea-plugin>

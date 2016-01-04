@@ -37,7 +37,7 @@ intellij {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    // compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    compile fileTree(dir: "$projectDir/lib", include: '*.jar')
 
     testCompile 'org.testng:testng:6.9.10'
 }
