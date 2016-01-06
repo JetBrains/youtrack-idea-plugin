@@ -2,11 +2,10 @@
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration Plugin</name>
     <version>0.1</version>
-    <vendor url="http://www.yourcompany.com">YourCompany</vendor>
+    <vendor url="https://github.com/jk1/youtrack-idea-plugin">https://github.com/jk1/youtrack-idea-plugin</vendor>
 
     <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+        This plugin enhances bundled task management plugin to provide deeper integration with YouTrack bug tracker.
     ]]></description>
 
     <change-notes><![CDATA[ Initial version ]]></change-notes>
@@ -29,8 +28,16 @@
 
     <project-components>
         <component>
-            <interface-class>com.github.jk1.ytplugin.components.CommandProjectComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.components.CommandRestProjectComponent</implementation-class>
+            <interface-class>com.github.jk1.ytplugin.components.CommandComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.components.CommandComponentImpl</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponentImpl</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.github.jk1.ytplugin.components.RestComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.components.RestComponentImpl</implementation-class>
         </component>
     </project-components>
 

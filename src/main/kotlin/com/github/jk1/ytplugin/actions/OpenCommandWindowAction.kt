@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.actions
 
+import com.github.jk1.ytplugin.components.YouTrackPluginException
 import com.github.jk1.ytplugin.view.CommandDialog
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
@@ -14,11 +15,15 @@ class OpenCommandWindowAction : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null) {
-            CommandDialog(project).show()
+            try {
+                CommandDialog(project).show()
+            } catch(e: YouTrackPluginException) {
+
+            }
         }
     }
 
     override fun update(event: AnActionEvent) {
-       // enable/disable action
+        // enable/disable action, if necessary
     }
 }

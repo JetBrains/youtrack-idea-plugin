@@ -11,7 +11,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.0.35"
+    id "org.jetbrains.intellij" version "0.0.37"
 }
 
 apply plugin: 'java'
@@ -29,6 +29,14 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    provided
+}
+
+sourceSets {
+    main { compileClasspath += configurations.provided }
+}
+
 intellij {
     version '15.0.2'              //IntelliJ IDEA 15 dependency
     plugins 'coverage'            //Bundled plugin dependencies
@@ -37,7 +45,7 @@ intellij {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    compile fileTree(dir: "$projectDir/lib", include: '*.jar')
+    provided fileTree(dir: "$projectDir/lib", include: '*.jar')
 
     testCompile 'org.testng:testng:6.9.10'
 }

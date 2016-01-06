@@ -1,15 +1,14 @@
 package com.github.jk1.ytplugin.view
 
-import com.github.jk1.ytplugin.components.CommandProjectComponent
+import com.github.jk1.ytplugin.components.ComponentAware
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
-import java.util.*
 import javax.swing.*
 
-public class CommandDialog(val project: Project) : DialogWrapper(project) {
+public class CommandDialog(override val project: Project) : DialogWrapper(project), ComponentAware {
 
     private val commandField = JTextField(40)
     private val commentArea = JTextArea(6, 40)
@@ -79,9 +78,8 @@ public class CommandDialog(val project: Project) : DialogWrapper(project) {
     private fun getApplyAction(name: String, silent : Boolean = false) : Action{
         return object : AbstractAction(name){
             override fun actionPerformed(e: ActionEvent) {
-                project.getComponent(CommandProjectComponent::class.java)?.execute(
-                        YouTrackCommand(commandField.text, commandField.caretPosition, silent, Collections.emptyList())
-                )
+                val command = YouTrackCommand(commandField.text, commandField.caretPosition, silent)
+                commandComponent.execute(command)
                 this@CommandDialog.close(0)
             }
         }
