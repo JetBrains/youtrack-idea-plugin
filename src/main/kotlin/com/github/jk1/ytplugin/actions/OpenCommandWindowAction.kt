@@ -18,7 +18,7 @@ class OpenCommandWindowAction : AnAction(
             try {
                 CommandDialog(project).show()
             } catch(e: YouTrackPluginException) {
-
+                e.printStackTrace()
             }
         }
     }

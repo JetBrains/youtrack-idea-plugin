@@ -5,7 +5,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.impl.BaseRepository
+import com.intellij.tasks.impl.BaseRepositoryImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
+import org.apache.commons.httpclient.HttpClient
 
 
 class TaskManagerProxyComponentImpl(val project: Project) :
@@ -30,5 +32,11 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         } else {
             throw YouTrackRepositoryNotConfiguredException("YouTrack server integration is not configured yet")
         }
+    }
+
+    override fun getRestClient(): HttpClient {
+        val method = BaseRepositoryImpl::class.java.getDeclaredMethod("getHttpClient")
+        //method.isAccessible = true
+        return method.invoke(getYouTrackRepository()) as HttpClient
     }
 }

@@ -18,7 +18,9 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
     init {
         title = "Apply Command"
         previewLabel.text = "<html><font color='red'>1. Unknown command</font></html>"
-        visibilityGroupDropdown.addItem("All Users")
+        restComponent.getUserGroups(taskManagerComponent.getYouTrackRepository().username).forEach {
+            visibilityGroupDropdown.addItem(it)
+        }
         init()
     }
 
