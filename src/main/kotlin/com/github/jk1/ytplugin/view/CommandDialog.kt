@@ -5,7 +5,10 @@ import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
+import java.awt.KeyboardFocusManager
 import java.awt.event.ActionEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.*
 
 public class CommandDialog(override val project: Project) : DialogWrapper(project), ComponentAware {
@@ -21,11 +24,16 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         restComponent.getUserGroups(taskManagerComponent.getYouTrackRepository().username).forEach {
             visibilityGroupDropdown.addItem(it)
         }
+        peer.window.addWindowFocusListener(object :WindowAdapter() {
+            override fun windowGainedFocus(e : WindowEvent) {
+                commandField.requestFocusInWindow();
+            }
+        });
         init()
     }
 
     override fun createActions(): Array<out Action> {
-        return arrayOf(getApplyAction("Apply"), getApplyAction("Silent Apply", true), this.cancelAction)
+        return arrayOf(getApplyAction(), getSilentApplyAction(), this.cancelAction)
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -46,12 +54,18 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
 
     private fun createCommandStringPanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        panel.add(JLabel("Command for: "), BorderLayout.NORTH)
+        with(taskManagerComponent.getActiveTask()){
+            val adaptedSummary = if (summary.length > 40) "${summary.substring(0, 40)}..." else summary
+            panel.add(JLabel("Command for: $id $adaptedSummary"), BorderLayout.NORTH)
+        }
         panel.add(commandField, BorderLayout.CENTER)
         return panel;
     }
 
     private fun createCommentPanel(): JPanel {
+        // reset Tab key behavior to transfer focus from text area instead of adding tab symbols
+        commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
         val panel = JPanel(BorderLayout())
         val scrollPane = JScrollPane(commentArea)
         panel.add(JLabel("Comment: "), BorderLayout.NORTH)
@@ -77,10 +91,20 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         return panel;
     }
 
-    private fun getApplyAction(name: String, silent : Boolean = false) : Action{
-        return object : AbstractAction(name){
+    private fun getApplyAction() : Action{
+        return object : AbstractAction("Apply"){
             override fun actionPerformed(e: ActionEvent) {
-                val command = YouTrackCommand(commandField.text, commandField.caretPosition, silent)
+                val command = YouTrackCommand(commandField.text, commandField.caretPosition, false)
+                commandComponent.execute(command)
+                this@CommandDialog.close(0)
+            }
+        }
+    }
+
+    private fun getSilentApplyAction() : Action{
+        return object : AbstractAction("Silent Apply"){
+            override fun actionPerformed(e: ActionEvent) {
+                val command = YouTrackCommand(commandField.text, commandField.caretPosition, true)
                 commandComponent.execute(command)
                 this@CommandDialog.close(0)
             }

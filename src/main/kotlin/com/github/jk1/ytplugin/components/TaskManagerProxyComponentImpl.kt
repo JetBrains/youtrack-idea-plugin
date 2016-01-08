@@ -26,7 +26,7 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         val repository = getTaskManager().allRepositories
                 ?.filter { it is YouTrackRepository }
                 ?.firstOrNull() as BaseRepository?
-                ?: throw TaskManagementDisabledException("No YouTrack server found")
+                ?: throw NoYouTrackRepositoryException("No YouTrack server found")
         if (repository.isConfigured){
             return repository
         } else {
@@ -36,7 +36,7 @@ class TaskManagerProxyComponentImpl(val project: Project) :
 
     override fun getRestClient(): HttpClient {
         val method = BaseRepositoryImpl::class.java.getDeclaredMethod("getHttpClient")
-        //method.isAccessible = true
+        method.isAccessible = true
         return method.invoke(getYouTrackRepository()) as HttpClient
     }
 }
