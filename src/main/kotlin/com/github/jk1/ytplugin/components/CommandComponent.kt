@@ -8,5 +8,6 @@ import com.intellij.openapi.components.ProjectComponent
 interface CommandComponent : ProjectComponent {
 
     fun execute(command: YouTrackCommand)
+
     fun parse(command: YouTrackCommand): CommandParseResult
 }

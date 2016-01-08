@@ -45,7 +45,7 @@ intellij {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    provided fileTree(dir: "$projectDir/lib", include: '*.jar')
+    provided fileTree(dir: "$projectDir/lib", include: 'tasks-api.jar')
 
     testCompile 'org.testng:testng:6.9.10'
 }

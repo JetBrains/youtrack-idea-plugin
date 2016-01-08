@@ -1,35 +1,17 @@
-package com.github.jk1.ytplugin.components
+package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.model.CommandExecutionResult
-import com.github.jk1.ytplugin.model.CommandParseResult
-import com.github.jk1.ytplugin.model.YouTrackCommand
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.github.jk1.ytplugin.components.ComponentAware
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
-import java.net.URLEncoder
 
 
-class RestComponentImpl(override val project: Project) :
-        AbstractProjectComponent(project), RestComponent, ComponentAware {
+abstract  class AbstractRestClient(override val project: Project) : ComponentAware {
 
-    override fun parseCommand(command: YouTrackCommand): CommandParseResult {
-        throw UnsupportedOperationException("Parse command")
-    }
-
-    override fun executeCommand(command: YouTrackCommand): CommandExecutionResult {
-        doREST(command.executeCommandUrl)
-        return CommandExecutionResult() // todo: parse response & fill result
-    }
-
-    override fun getUserGroups(login: String): List<String> {
-        return listOf("All Users")
-    }
-
-    private fun getHttpClient(): HttpClient {
+    protected fun createHttpClient(): HttpClient {
         val repo = taskManagerComponent.getYouTrackRepository()
         val client = taskManagerComponent.getRestClient()
         client.state.setCredentials(AuthScope.ANY,
@@ -64,8 +46,7 @@ class RestComponentImpl(override val project: Project) :
         }
     }
 
-    fun doREST(url: String) {
-        val client = getHttpClient()
+    protected fun doRest(url: String, client: HttpClient) {
         val method = PostMethod(url)
         val status = client.executeMethod(method)
         if (status == 400) {
@@ -78,19 +59,4 @@ class RestComponentImpl(override val project: Project) :
         }
         method.releaseConnection()
     }
-
-    private val YouTrackCommand.encodedCommand: String
-        get() = URLEncoder.encode(command, "UTF-8")
-
-    private val YouTrackCommand.executeCommandUrl: String
-        get() {
-            val baseUrl = taskManagerComponent.getYouTrackRepository().url
-            return "$baseUrl/rest/issue/execute/${issues.first().id}?command=$encodedCommand"
-        }
-
-    private val YouTrackCommand.intellisenseCommandUrl: String
-        get() {
-            val baseUrl = taskManagerComponent.getYouTrackRepository().url
-            return "$baseUrl/rest/issue/execute/intellisense/${issues.first().id}?command=$encodedCommand"
-        }
 }

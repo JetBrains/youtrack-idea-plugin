@@ -21,11 +21,9 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
     init {
         title = "Apply Command"
         previewLabel.text = "<html><font color='red'>1. Unknown command</font></html>"
-        restComponent.getUserGroups(taskManagerComponent.getYouTrackRepository().username).forEach {
-            visibilityGroupDropdown.addItem(it)
-        }
-        peer.window.addWindowFocusListener(object :WindowAdapter() {
-            override fun windowGainedFocus(e : WindowEvent) {
+        adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
+        peer.window.addWindowFocusListener(object : WindowAdapter() {
+            override fun windowGainedFocus(e: WindowEvent) {
                 commandField.requestFocusInWindow();
             }
         });
@@ -54,7 +52,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
 
     private fun createCommandStringPanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        with(taskManagerComponent.getActiveTask()){
+        with(taskManagerComponent.getActiveTask()) {
             val adaptedSummary = if (summary.length > 40) "${summary.substring(0, 40)}..." else summary
             panel.add(JLabel("Command for: $id $adaptedSummary"), BorderLayout.NORTH)
         }
@@ -63,7 +61,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
     }
 
     private fun createCommentPanel(): JPanel {
-        // reset Tab key behavior to transfer focus from text area instead of adding tab symbols
+        // reset Tab key behavior to transfer focus from the text area instead of adding tab symbols
         commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
         commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
         val panel = JPanel(BorderLayout())
@@ -81,18 +79,18 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         return panel;
     }
 
-    private fun createPreviewPanel() : JPanel {
+    private fun createPreviewPanel(): JPanel {
         val panel = JPanel(BorderLayout())
         val previewContainer = JPanel(BorderLayout())
         previewContainer.add(previewLabel, BorderLayout.NORTH)
         previewContainer.border = BorderFactory.createEmptyBorder(10, 0, 0, 0)
         panel.add(JLabel("Command Preview:                                               "), BorderLayout.NORTH)
-        panel.add( previewContainer, BorderLayout.CENTER)
+        panel.add(previewContainer, BorderLayout.CENTER)
         return panel;
     }
 
-    private fun getApplyAction() : Action{
-        return object : AbstractAction("Apply"){
+    private fun getApplyAction(): Action {
+        return object : AbstractAction("Apply") {
             override fun actionPerformed(e: ActionEvent) {
                 val command = YouTrackCommand(commandField.text, commandField.caretPosition, false)
                 commandComponent.execute(command)
@@ -101,8 +99,8 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         }
     }
 
-    private fun getSilentApplyAction() : Action{
-        return object : AbstractAction("Silent Apply"){
+    private fun getSilentApplyAction(): Action {
+        return object : AbstractAction("Silent Apply") {
             override fun actionPerformed(e: ActionEvent) {
                 val command = YouTrackCommand(commandField.text, commandField.caretPosition, true)
                 commandComponent.execute(command)

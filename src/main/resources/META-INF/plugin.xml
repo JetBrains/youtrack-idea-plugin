@@ -36,8 +36,8 @@
             <implementation-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponentImpl</implementation-class>
         </component>
         <component>
-            <interface-class>com.github.jk1.ytplugin.components.RestComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.components.RestComponentImpl</implementation-class>
+            <interface-class>com.github.jk1.ytplugin.components.AdminComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.components.AdminComponentImpl</implementation-class>
         </component>
     </project-components>
 
