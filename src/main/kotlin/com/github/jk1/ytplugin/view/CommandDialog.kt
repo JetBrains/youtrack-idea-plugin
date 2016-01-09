@@ -4,6 +4,10 @@ import com.github.jk1.ytplugin.components.ComponentAware
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.tasks.youtrack.YouTrackIntellisense
+import com.intellij.tasks.youtrack.lang.YouTrackLanguage
+import com.intellij.ui.LanguageTextField
 import java.awt.BorderLayout
 import java.awt.KeyboardFocusManager
 import java.awt.event.ActionEvent
@@ -13,7 +17,7 @@ import javax.swing.*
 
 public class CommandDialog(override val project: Project) : DialogWrapper(project), ComponentAware {
 
-    private val commandField = JTextField(40)
+    private val commandField = LanguageTextField(YouTrackLanguage.INSTANCE, project, "")
     private val commentArea = JTextArea(6, 40)
     private val visibilityGroupDropdown = JComboBox<String>()
     private val previewLabel = JLabel()
@@ -22,6 +26,9 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         title = "Apply Command"
         previewLabel.text = "<html><font color='red'>1. Unknown command</font></html>"
         adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
+        // Setup document for completion and highlighting
+        val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document);
+       // file?.putUserData(YouTrackIntellisense.INTELLISENSE_KEY, YouTrackIntellisense(taskManagerComponent.getYouTrackRepository()))
         peer.window.addWindowFocusListener(object : WindowAdapter() {
             override fun windowGainedFocus(e: WindowEvent) {
                 commandField.requestFocusInWindow();
@@ -92,8 +99,8 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
     private fun getApplyAction(): Action {
         return object : AbstractAction("Apply") {
             override fun actionPerformed(e: ActionEvent) {
-                val command = YouTrackCommand(commandField.text, commandField.caretPosition, false)
-                commandComponent.execute(command)
+                val command = YouTrackCommand(commandField.text, commandField.caretModel.offset, false)
+                commandComponent.executeAsync(command)
                 this@CommandDialog.close(0)
             }
         }
@@ -102,8 +109,8 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
     private fun getSilentApplyAction(): Action {
         return object : AbstractAction("Silent Apply") {
             override fun actionPerformed(e: ActionEvent) {
-                val command = YouTrackCommand(commandField.text, commandField.caretPosition, true)
-                commandComponent.execute(command)
+                val command = YouTrackCommand(commandField.text, commandField.caretModel.offset, true)
+                commandComponent.executeAsync(command)
                 this@CommandDialog.close(0)
             }
         }

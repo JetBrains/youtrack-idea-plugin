@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.components
 
-import com.github.jk1.ytplugin.model.CommandParseResult
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.github.jk1.ytplugin.rest.CommandRestClient
 import com.github.jk1.ytplugin.sendNotification
@@ -20,25 +19,19 @@ class CommandComponentImpl(override val project: Project) :
 
     val restClient = CommandRestClient(project)
 
-    override fun execute(command: YouTrackCommand) {
+    override fun executeAsync(command: YouTrackCommand) {
         executor.submit {
             try {
                 command.issues.add(taskManagerComponent.getActiveTask())
                 val result = restClient.executeCommand(command)
                 SwingUtilities.invokeLater {
-                    result.errors.forEach { sendNotification(text = it, type = NotificationType.ERROR) }
-                    result.messages.forEach { sendNotification(text = it, type = NotificationType.INFORMATION)  }
+                    result.errors.forEach { sendNotification("Command execution error", it, NotificationType.ERROR) }
+                    result.messages.forEach { sendNotification("YouTrack server message", it, NotificationType.INFORMATION) }
                 }
             } catch(e: Throwable) {
                 //todo: redirect to event log
                 e.printStackTrace()
             }
         }
-    }
-
-    override fun parse(command: YouTrackCommand): CommandParseResult {
-        val task = taskManagerComponent.getActiveTask()
-        command.issues.add(task)
-        return restClient.parseCommand(command)
     }
 }

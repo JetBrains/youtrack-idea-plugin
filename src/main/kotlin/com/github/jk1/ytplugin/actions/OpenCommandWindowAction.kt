@@ -14,21 +14,22 @@ class OpenCommandWindowAction : AnAction(
         "Apply YouTrack command to a current active task",
         AllIcons.Actions.Execute) {
 
+    val errorTitle = "Can't open YouTrack command window"
+
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null) {
             try {
                 CommandDialog(project).show()
             } catch(e: YouTrackPluginException) {
-                sendNotification("Can't open YouTrack command window", e.message, NotificationType.ERROR)
-                e.printStackTrace()
+                sendNotification(errorTitle, e.message, NotificationType.ERROR)
             }
         } else {
-            //todo: log it
+            sendNotification(errorTitle, "No open project found", NotificationType.ERROR)
         }
     }
 
     override fun update(event: AnActionEvent) {
-
+        event.presentation.isEnabledAndVisible = event.project != null
     }
 }

@@ -6,7 +6,6 @@ import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.PostMethod
-import org.jdom.input.SAXBuilder
 
 
 abstract  class AbstractRestClient(override val project: Project) : ComponentAware {
@@ -44,19 +43,5 @@ abstract  class AbstractRestClient(override val project: Project) : ComponentAwa
         } else {
             return client
         }
-    }
-
-    protected fun doRest(url: String, client: HttpClient) {
-        val method = PostMethod(url)
-        val status = client.executeMethod(method)
-        if (status == 400) {
-            val string = method.responseBodyAsStream
-            val element = SAXBuilder(false).build(string).rootElement
-            // LOG.debug("\n" + JDOMUtil.createOutputter("\n").outputString(JDOMUtil.loadDocument(element)))
-            if ("error".equals(element.name)) {
-                throw Exception(element.text)
-            }
-        }
-        method.releaseConnection()
     }
 }
