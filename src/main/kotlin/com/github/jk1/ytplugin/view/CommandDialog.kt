@@ -28,7 +28,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document);
-       // file?.putUserData(YouTrackIntellisense.INTELLISENSE_KEY, YouTrackIntellisense(taskManagerComponent.getYouTrackRepository()))
+        file?.putUserData(YouTrackIntellisense.INTELLISENSE_KEY, commandComponent.getIntellisense())
         peer.window.addWindowFocusListener(object : WindowAdapter() {
             override fun windowGainedFocus(e: WindowEvent) {
                 commandField.requestFocusInWindow();
