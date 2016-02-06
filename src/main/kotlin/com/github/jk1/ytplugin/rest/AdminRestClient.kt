@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 
 class AdminRestClient(override val project: Project) : AbstractRestClient(project) {
 
-    fun getUserGroups(login : String): List<String> {
+    fun getUserGroups(issueId : String): List<String> {
         return listOf("All Users")
     }
 }

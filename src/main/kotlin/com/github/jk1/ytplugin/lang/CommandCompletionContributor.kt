@@ -24,11 +24,8 @@ class CommandCompletionContributor : CompletionContributor() {
         }
         super.fillCompletionVariants(parameters, result);
 
-        val file = parameters.originalFile;
-        val intellisense = file.getUserData(YouTrackIntellisense.INTELLISENSE_KEY);
-        if (intellisense == null) {
-            return;
-        }
+        val file = parameters.originalFile
+        val intellisense = file.getUserData(YouTrackIntellisense.INTELLISENSE_KEY) ?: return
         val application = ApplicationManager.getApplication();
         val future = application.executeOnPooledThread (
                 Callable<List<YouTrackIntellisense.CompletionItem>> {
@@ -37,7 +34,7 @@ class CommandCompletionContributor : CompletionContributor() {
         try {
             val suggestions: List<YouTrackIntellisense.CompletionItem> = future.get(TIMEOUT, TimeUnit.MILLISECONDS);
             // actually backed by original CompletionResultSet
-            val result = result.withPrefixMatcher(extractPrefix(parameters)).caseInsensitive();
+            val result = result.withPrefixMatcher(extractPrefix(parameters)).caseInsensitive()
             result.addAllElements(suggestions.map {
                 LookupElementBuilder.create(it, it.option)
                         .withTypeText(it.description, true)
@@ -45,7 +42,7 @@ class CommandCompletionContributor : CompletionContributor() {
                         .withBoldness(it.styleClass.equals("keyword"))
             })
         } catch (ignored: TimeoutException) {
-            LOG.debug("YouTrack request took more than $TIMEOUT ms to complete");
+            LOG.debug("YouTrack request took more than $TIMEOUT ms to complete")
         } catch (e: Exception) {
             LOG.debug(e)
         }
@@ -55,10 +52,10 @@ class CommandCompletionContributor : CompletionContributor() {
      * Find first word left boundary before cursor and strip leading braces and '#' signs
      */
     fun extractPrefix(parameters: CompletionParameters): String {
-        val text = parameters.originalFile.text;
-        val caretOffset = parameters.offset;
+        val text = parameters.originalFile.text
+        val caretOffset = parameters.offset
         if (text.isEmpty() || caretOffset == 0) {
-            return "";
+            return ""
         }
         var stopAt = text.lastIndexOf('{', caretOffset - 1);
         // caret isn't inside braces
@@ -69,15 +66,15 @@ class CommandCompletionContributor : CompletionContributor() {
             }
             // use rightmost word boundary as last resort
             else {
-                stopAt = text.lastIndexOf(' ', caretOffset - 1);
+                stopAt = text.lastIndexOf(' ', caretOffset - 1)
             }
         }
         //int start = CharArrayUtil.shiftForward(text, lastSpace < 0 ? 0 : lastSpace + 1, "#{ ");
-        var prefixStart = stopAt + 1;
-        if (prefixStart < caretOffset && text.charAt(prefixStart) == '#') {
-            prefixStart++;
+        var prefixStart = stopAt + 1
+        if (prefixStart < caretOffset && text[prefixStart] == '#') {
+            prefixStart++
         }
-        return StringUtil.trimLeading(text.substring(prefixStart, caretOffset));
+        return StringUtil.trimLeading(text.substring(prefixStart, caretOffset))
     }
 
     /**
@@ -88,43 +85,43 @@ class CommandCompletionContributor : CompletionContributor() {
 
         override fun handleInsert(context: InsertionContext, item: LookupElement) {
             val completionItem = item.`object` as YouTrackIntellisense.CompletionItem
-            val document = context.document;
-            val editor = context.editor;
+            val document = context.document
+            val editor = context.editor
 
             context.commitDocument();
-            context.setAddCompletionChar(false);
+            context.setAddCompletionChar(false)
 
-            val prefix = completionItem.prefix;
-            val suffix = completionItem.suffix;
-            var text = document.text;
-            var offset = context.startOffset;
+            val prefix = completionItem.prefix
+            val suffix = completionItem.suffix
+            var text = document.text
+            var offset = context.startOffset
             // skip possible spaces after '{', e.g. "{  My Project <caret>"
             if (prefix.endsWith("{")) {
                 while (offset > prefix.length && Character.isWhitespace(text[offset - 1])) {
-                    offset--;
+                    offset--
                 }
             }
             if (!prefix.isEmpty() && !hasPrefixAt(document.text, offset - prefix.length, prefix)) {
-                document.insertString(offset, prefix);
+                document.insertString(offset, prefix)
             }
-            offset = context.tailOffset;
+            offset = context.tailOffset
             text = document.text;
             if (suffix.startsWith("} ")) {
                 while (offset < text.length - suffix.length && Character.isWhitespace(text[offset])) {
-                    offset++;
+                    offset++
                 }
             }
             if (!suffix.isEmpty() && !hasPrefixAt(text, offset, suffix)) {
-                document.insertString(offset, suffix);
+                document.insertString(offset, suffix)
             }
-            editor.caretModel.moveToOffset(context.tailOffset);
+            editor.caretModel.moveToOffset(context.tailOffset)
         }
 
         fun hasPrefixAt(text: String, offset: Int, prefix: String): Boolean {
             if (text.isEmpty() || offset < 0 || offset >= text.length) {
-                return false;
+                return false
             }
-            return text.regionMatches(offset, prefix, 0, prefix.length, true);
+            return text.regionMatches(offset, prefix, 0, prefix.length, true)
         }
     }
 }

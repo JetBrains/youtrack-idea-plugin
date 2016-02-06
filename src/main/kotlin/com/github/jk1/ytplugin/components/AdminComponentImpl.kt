@@ -10,7 +10,7 @@ public class AdminComponentImpl(override val project : Project) :
     val restClient = AdminRestClient(project)
 
     override fun getUserGroups(): List<String> {
-        val login = taskManagerComponent.getYouTrackRepository().username
-        return restClient.getUserGroups(login)
+        val taskId = taskManagerComponent.getActiveTask().id
+        return restClient.getUserGroups(taskId)
     }
 }

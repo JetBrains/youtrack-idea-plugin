@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.view
 
 import com.github.jk1.ytplugin.components.ComponentAware
+import com.github.jk1.ytplugin.lang.CommandLanguage
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -17,7 +18,7 @@ import javax.swing.*
 
 public class CommandDialog(override val project: Project) : DialogWrapper(project), ComponentAware {
 
-    private val commandField = LanguageTextField(YouTrackLanguage.INSTANCE, project, "")
+    private val commandField = LanguageTextField(CommandLanguage, project, "")
     private val commentArea = JTextArea(6, 40)
     private val visibilityGroupDropdown = JComboBox<String>()
     private val previewLabel = JLabel()
@@ -27,13 +28,13 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         previewLabel.text = "<html><font color='red'>1. Unknown command</font></html>"
         adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
         // Setup document for completion and highlighting
-        val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document);
+        val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
         file?.putUserData(YouTrackIntellisense.INTELLISENSE_KEY, commandComponent.getIntellisense())
         peer.window.addWindowFocusListener(object : WindowAdapter() {
             override fun windowGainedFocus(e: WindowEvent) {
-                commandField.requestFocusInWindow();
+                commandField.requestFocusInWindow()
             }
-        });
+        })
         init()
     }
 
@@ -64,26 +65,26 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
             panel.add(JLabel("Command for: $id $adaptedSummary"), BorderLayout.NORTH)
         }
         panel.add(commandField, BorderLayout.CENTER)
-        return panel;
+        return panel
     }
 
     private fun createCommentPanel(): JPanel {
         // reset Tab key behavior to transfer focus from the text area instead of adding tab symbols
-        commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+        commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null)
+        commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null)
         val panel = JPanel(BorderLayout())
         val scrollPane = JScrollPane(commentArea)
         panel.add(JLabel("Comment: "), BorderLayout.NORTH)
         panel.add(scrollPane, BorderLayout.CENTER)
         panel.border = BorderFactory.createEmptyBorder(10, 0, 10, 0)
-        return panel;
+        return panel
     }
 
     private fun createVisibilityGroupPanel(): JPanel {
         val panel = JPanel(BorderLayout())
         panel.add(JLabel("Visible for Group: "), BorderLayout.WEST)
         panel.add(visibilityGroupDropdown, BorderLayout.CENTER)
-        return panel;
+        return panel
     }
 
     private fun createPreviewPanel(): JPanel {
@@ -93,7 +94,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         previewContainer.border = BorderFactory.createEmptyBorder(10, 0, 0, 0)
         panel.add(JLabel("Command Preview:                                               "), BorderLayout.NORTH)
         panel.add(previewContainer, BorderLayout.CENTER)
-        return panel;
+        return panel
     }
 
     private fun getApplyAction(): Action {
