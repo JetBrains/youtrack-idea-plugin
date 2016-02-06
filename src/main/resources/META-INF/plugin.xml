@@ -12,7 +12,6 @@
 
     <!-- IntelliJ IDEA 15, WebStorm 11, PyCharm 5, PhpStorm 10, RubyMine 8, AppCode 3.3, CLion 1.2, DataGrip 1.0 -->
     <idea-version since-build="143.0"/>
-
     <!-- Enable plugin in all products -->
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->
@@ -33,7 +32,8 @@
         </component>
         <component>
             <interface-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponentImpl</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponentImpl
+            </implementation-class>
         </component>
         <component>
             <interface-class>com.github.jk1.ytplugin.components.AdminComponent</interface-class>
@@ -41,4 +41,12 @@
         </component>
     </project-components>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <!--YouTrack command language support-->
+        <fileTypeFactory implementation="com.github.jk1.ytplugin.lang.CommandFileFactory"/>
+        <lang.parserDefinition language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.lang.CommandParserDefinition"/>
+        <completion.contributor language="YouTrack Commands"
+                                implementationClass="com.github.jk1.ytplugin.lang.CommandCompletionContributor"/>
+        <externalAnnotator language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.lang.CommandHighlightingAnnotator"/>
+    </extensions>
 </idea-plugin>
