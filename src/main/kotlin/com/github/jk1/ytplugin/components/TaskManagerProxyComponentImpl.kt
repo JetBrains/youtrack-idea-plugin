@@ -9,8 +9,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
+import com.intellij.tasks.impl.BaseRepository
 import com.intellij.tasks.impl.BaseRepositoryImpl
-import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.commons.httpclient.HttpClient
 
 
@@ -31,10 +31,10 @@ class TaskManagerProxyComponentImpl(val project: Project) :
                 ?: throw TaskManagementDisabledException()
     }
 
-    override fun getYouTrackRepository(): YouTrackRepository {
+    override fun getYouTrackRepository(): BaseRepository {
         val repository = getTaskManager().allRepositories
                 ?.filter { it.isYouTrack() }
-                ?.firstOrNull() as YouTrackRepository?
+                ?.firstOrNull() as BaseRepository?
                 ?: throw NoYouTrackRepositoryException()
         if (repository.isConfigured) {
             return repository
@@ -51,5 +51,5 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         return method.invoke(getYouTrackRepository()) as HttpClient
     }
 
-    private fun TaskRepository.isYouTrack() = this is YouTrackRepository
+    private fun TaskRepository.isYouTrack() = this.javaClass.name.contains("youtrack", true)
 }

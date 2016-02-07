@@ -1,54 +1,53 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.model.CommandExecutionResult
+import com.github.jk1.ytplugin.model.CommandAssistResponse
+import com.github.jk1.ytplugin.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.youtrack.YouTrackIntellisense
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
 import java.net.URLEncoder
 
-class CommandRestClient(override val project: Project) : AbstractRestClient(project) {
+class CommandRestClient(override val project: Project) : AbstractRestClient(project), ResponseLoggerTrait {
 
-    companion object {
-        val LOG = Logger.getInstance(CommandRestClient::class.java)
-    }
+    override val logger: Logger = Logger.getInstance(CommandRestClient::class.java)
 
-    fun getIntellisense(command: YouTrackCommand): YouTrackIntellisense.Response {
+    fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)
         val startTime = System.currentTimeMillis()
         try {
             val status = createHttpClient().executeMethod(method)
             if (status == 200) {
-                return YouTrackIntellisense.Response(method.responseBodyAsStream)
+                return CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
-                throw RuntimeException(method.responseBodyAsString)
+                throw RuntimeException(method.responseBodyAsLoggedString())
             }
         } finally {
             method.releaseConnection()
-            LOG.debug("Intellisense request to YouTrack took ${System.currentTimeMillis() - startTime} ms to complete")
+            logger.debug("Intellisense request to YouTrack took ${System.currentTimeMillis() - startTime} ms")
         }
     }
 
-    fun executeCommand(command: YouTrackCommand): CommandExecutionResult {
+    fun executeCommand(command: YouTrackCommand): CommandExecutionResponse {
         val method = PostMethod(command.executeCommandUrl)
+        val startTime = System.currentTimeMillis()
         try {
             val status = createHttpClient().executeMethod(method)
-            if (status == 400) {
+            if (status != 200) {
                 val string = method.responseBodyAsStream
                 val element = SAXBuilder(false).build(string).rootElement
-                // LOG.debug("\n" + JDOMUtil.createOutputter("\n").outputString(JDOMUtil.loadDocument(element)))
                 if ("error".equals(element.name)) {
-                    return CommandExecutionResult(errors = listOf(element.text))
+                    return CommandExecutionResponse(errors = listOf(element.text))
                 } else {
-                    return CommandExecutionResult(messages = listOf(element.text))
+                    return CommandExecutionResponse(messages = listOf(element.text))
                 }
             }
-            return CommandExecutionResult()
+            return CommandExecutionResponse()
         } finally {
             method.releaseConnection()
+            logger.debug("Command execution request to YouTrack took ${System.currentTimeMillis() - startTime} ms")
         }
     }
 

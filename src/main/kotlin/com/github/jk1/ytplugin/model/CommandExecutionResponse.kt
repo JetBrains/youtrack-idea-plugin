@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.model
 
-class CommandExecutionResult(val messages: List<String> = listOf(), val errors: List<String> = listOf()) {
+class CommandExecutionResponse(val messages: List<String> = listOf(), val errors: List<String> = listOf()) {
 
     fun isSuccessful() = errors.isEmpty()
 

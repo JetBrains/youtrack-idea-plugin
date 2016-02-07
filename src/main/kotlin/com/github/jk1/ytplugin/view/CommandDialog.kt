@@ -1,13 +1,12 @@
 package com.github.jk1.ytplugin.view
 
+import com.github.jk1.ytplugin.components.CommandComponent
 import com.github.jk1.ytplugin.components.ComponentAware
 import com.github.jk1.ytplugin.lang.CommandLanguage
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.tasks.youtrack.YouTrackIntellisense
-import com.intellij.tasks.youtrack.lang.YouTrackLanguage
 import com.intellij.ui.LanguageTextField
 import java.awt.BorderLayout
 import java.awt.KeyboardFocusManager
@@ -29,7 +28,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
-        file?.putUserData(YouTrackIntellisense.INTELLISENSE_KEY, commandComponent.getIntellisense())
+        file?.putUserData(CommandComponent.USER_DATA_KEY, commandComponent)
         peer.window.addWindowFocusListener(object : WindowAdapter() {
             override fun windowGainedFocus(e: WindowEvent) {
                 commandField.requestFocusInWindow()
@@ -42,7 +41,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         return arrayOf(getApplyAction(), getSilentApplyAction(), this.cancelAction)
     }
 
-    override fun createCenterPanel(): JComponent? {
+    override fun createCenterPanel(): JComponent {
         val contextPane = JPanel(BorderLayout())
         contextPane.add(createLeftPane(), BorderLayout.WEST)
         contextPane.add(createPreviewPanel(), BorderLayout.EAST)

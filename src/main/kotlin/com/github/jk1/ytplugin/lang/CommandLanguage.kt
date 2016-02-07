@@ -1,12 +1,12 @@
 package com.github.jk1.ytplugin.lang
 
+import com.github.jk1.ytplugin.view.YouTrackPluginIcons
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.FileTypeConsumer
 import com.intellij.openapi.fileTypes.FileTypeFactory
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.psi.FileViewProvider
-import icons.TasksIcons
 import javax.swing.Icon
 
 object CommandLanguage : Language("YouTrack Commands") {
@@ -16,7 +16,7 @@ object CommandLanguage : Language("YouTrack Commands") {
 
 object CommandFileType : LanguageFileType(CommandLanguage) {
 
-    override fun getIcon(): Icon = TasksIcons.Youtrack
+    override fun getIcon(): Icon = YouTrackPluginIcons.YouTrack
 
     override fun getDefaultExtension() = "youtrack"
 

@@ -17,8 +17,8 @@ import com.intellij.psi.tree.TokenSet
 
 class CommandParserDefinition : ParserDefinition {
 
-    val ANY_TEXT = IElementType("ANY_TEXT", CommandLanguage);
-    val QUERY = IElementType("QUERY", CommandLanguage);
+    val ANY_TEXT = IElementType("ANY_TEXT", CommandLanguage)
+    val QUERY = IElementType("QUERY", CommandLanguage)
     val FILE = IFileElementType(CommandLanguage)
 
     override fun getFileNodeType(): IFileElementType = FILE
@@ -53,10 +53,10 @@ class CommandParserDefinition : ParserDefinition {
         lateinit var buffer: CharSequence
 
         override fun start(buffer: CharSequence , startOffset: Int, endOffset: Int, initialState: Int) {
-            //LOG.debug(String.format("buffer: '%s', start: %d, end: %d", buffer, startOffset, endOffset));
-            this.buffer = buffer;
-            this.start = startOffset;
-            this.end = endOffset;
+            //LOG.debug(String.format("buffer: '%s', start: %d, end: %d", buffer, startOffset, endOffset))
+            this.buffer = buffer
+            this.start = startOffset
+            this.end = endOffset
         }
 
         override fun getState(): Int = 0
@@ -72,7 +72,7 @@ class CommandParserDefinition : ParserDefinition {
         override fun getBufferEnd() = end
 
         override fun advance() {
-            start = end;
+            start = end
         }
     }
 
