@@ -60,7 +60,7 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
     private val YouTrackCommand.intellisenseCommandUrl: String
         get() {
             val baseUrl = taskManagerComponent.getYouTrackRepository().url
-            return "$baseUrl/rest/issue/${issues.first().id}/execute/intellisense?command=$encodedCommand&caret=$caret"
+            return "$baseUrl/rest/command/underlineAndSuggestAndCommands?command=$encodedCommand&caret=$caret&query=${issues.first().id}"
         }
 
     private val YouTrackCommand.encodedCommand: String

@@ -1,9 +1,10 @@
 package com.github.jk1.ytplugin.model
 
+import com.google.gson.JsonElement
+import com.google.gson.JsonNull
 import com.intellij.openapi.util.TextRange
-import org.jdom.Element
 
-public class CommandSuggestion(item: Element) {
+public class CommandSuggestion(item: JsonElement) {
 
     val matchRange: TextRange
     val completionRange: TextRange
@@ -16,25 +17,32 @@ public class CommandSuggestion(item: Element) {
 
     init {
         matchRange = TextRange(
-                Integer.parseInt(item.getChild("match").getAttributeValue("start")),
-                Integer.parseInt(item.getChild("match").getAttributeValue("end"))
+                item.asJsonObject.get("ms").asInt,
+                item.asJsonObject.get("me").asInt
         )
         completionRange = TextRange(
-                Integer.parseInt(item.getChild("completion").getAttributeValue("start")),
-                Integer.parseInt(item.getChild("completion").getAttributeValue("end"))
+                item.asJsonObject.get("cs").asInt,
+                item.asJsonObject.get("ce").asInt
         )
-        description = item.getChildText("description")
-        option = item.getChildText("option")
-        suffix = item.getChildText("suffix") ?: ""
-        prefix = item.getChildText("prefix") ?: ""
-        styleClass = item.getChildText("styleClass")
-        caretPosition = Integer.valueOf(item.getChildText("caret"))
+        description = item.asJsonObject.get("d").asStringNullSafe()
+        option = item.asJsonObject.get("o").asStringNullSafe()
+        suffix = item.asJsonObject.get("suf").asStringNullSafe()
+        prefix = item.asJsonObject.get("pre").asStringNullSafe()
+        styleClass = "string" // todo: to be customized, at least for a separator item
+        caretPosition = item.asJsonObject.get("cp").asInt
     }
 
-   /* public fun asLookupElement(){
-        LookupElementBuilder.create(this, option)
-                .withTypeText(it.description, true)
-                .withInsertHandler(CommandCompletionContributor.MyInsertHandler)
-                .withBoldness(it.styleClass.equals("keyword"))
-    }*/
+    fun JsonElement.asStringNullSafe(default: String = ""): String = when (this) {
+        is JsonNull -> default
+        else -> this.asString
+    }
+
+
+
+    /* public fun asLookupElement(){
+         LookupElementBuilder.create(this, option)
+                 .withTypeText(it.description, true)
+                 .withInsertHandler(CommandCompletionContributor.MyInsertHandler)
+                 .withBoldness(it.styleClass.equals("keyword"))
+     }*/
 }

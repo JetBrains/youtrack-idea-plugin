@@ -3,7 +3,10 @@ package com.github.jk1.ytplugin.view
 import com.github.jk1.ytplugin.components.CommandComponent
 import com.github.jk1.ytplugin.components.ComponentAware
 import com.github.jk1.ytplugin.lang.CommandLanguage
+import com.github.jk1.ytplugin.model.CommandPreview
 import com.github.jk1.ytplugin.model.YouTrackCommand
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiDocumentManager
@@ -29,6 +32,7 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
         file?.putUserData(CommandComponent.USER_DATA_KEY, commandComponent)
+        commandField.addDocumentListener(UpdatePreviewDocumentListener())
         peer.window.addWindowFocusListener(object : WindowAdapter() {
             override fun windowGainedFocus(e: WindowEvent) {
                 commandField.requestFocusInWindow()
@@ -113,6 +117,24 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
                 commandComponent.executeAsync(command)
                 this@CommandDialog.close(0)
             }
+        }
+    }
+
+    /**
+     * Formats parsed command preview as html and displays it in command window
+     */
+    inner class UpdatePreviewDocumentListener() : DocumentListener {
+
+        override fun documentChanged(event: DocumentEvent) {
+            val command = YouTrackCommand(commandField.text, commandField.caretModel.offset, false)
+            val response = commandComponent.suggest(command)
+            val previewList = response.previews.map { "<li>${it.html()}</li>" }.joinToString()
+            previewLabel.text = "<html><ol>$previewList</ol></html>"
+        }
+
+        fun CommandPreview.html() = if (error) "<span style='color:red'>$description</span>" else description
+
+        override fun beforeDocumentChange(event: DocumentEvent) {
         }
     }
 }
