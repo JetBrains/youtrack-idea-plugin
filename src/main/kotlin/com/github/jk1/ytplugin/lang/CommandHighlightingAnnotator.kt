@@ -6,16 +6,19 @@ import com.github.jk1.ytplugin.model.CommandHighlightRange
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.ExternalAnnotator
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiFile
 
+/**
+ * Highlights YouTrack command based on the server-residing command parser's response.
+ * It's main duty is to map highlight range classes and to compute necessary text
+ * attributes to display the command.
+ */
 class CommandHighlightingAnnotator : ExternalAnnotator<CommandAssistResponse, List<CommandHighlightRange>>() {
 
-    private val LOG = Logger.getInstance(CommandHighlightingAnnotator::class.java)
     private val TEXT_ATTRIBUTES = mapOf<String, TextAttributes>(
             "field" to DefaultLanguageHighlighterColors.CONSTANT.defaultAttributes,
             "keyword" to DefaultLanguageHighlighterColors.KEYWORD.defaultAttributes,

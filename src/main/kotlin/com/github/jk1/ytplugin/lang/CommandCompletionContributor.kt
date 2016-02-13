@@ -19,17 +19,14 @@ class CommandCompletionContributor : CompletionContributor() {
     final val LOG = Logger.getInstance(CommandCompletionContributor::class.java)
     final val TIMEOUT = 2000L // ms
 
-
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (LOG.isDebugEnabled) {
             LOG.debug(DebugUtil.psiToString(parameters.originalFile, true))
         }
         super.fillCompletionVariants(parameters, result)
-
         val file = parameters.originalFile
         val component : CommandComponent = file.getUserData(CommandComponent.USER_DATA_KEY) ?: return
-        val application = ApplicationManager.getApplication()
-        val future = application.executeOnPooledThread (
+        val future = ApplicationManager.getApplication().executeOnPooledThread (
                 Callable<List<CommandSuggestion>> {
                     val command =YouTrackCommand(parameters.originalFile.text, parameters.offset)
                     component.suggest(command).suggestions

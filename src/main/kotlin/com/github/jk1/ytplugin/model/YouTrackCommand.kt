@@ -4,7 +4,7 @@ import com.intellij.tasks.Task
 import java.util.*
 
 
-class YouTrackCommand(
+data class YouTrackCommand(
 
         val command: String,
         val caret: Int = 0,
