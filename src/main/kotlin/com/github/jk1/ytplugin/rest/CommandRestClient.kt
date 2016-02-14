@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.model.CommandAssistResponse
 import com.github.jk1.ytplugin.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.model.YouTrackCommand
+import com.github.jk1.ytplugin.model.YouTrackCommandExecution
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
@@ -30,13 +31,13 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
         }
     }
 
-    fun executeCommand(command: YouTrackCommand): CommandExecutionResponse {
+    fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val method = PostMethod(command.executeCommandUrl)
         val startTime = System.currentTimeMillis()
         try {
             val status = createHttpClient().executeMethod(method)
             if (status != 200) {
-                val string = method.responseBodyAsStream
+                val string = method.responseBodyAsLoggedStream()
                 val element = SAXBuilder(false).build(string).rootElement
                 if ("error".equals(element.name)) {
                     return CommandExecutionResponse(errors = listOf(element.text))
@@ -44,6 +45,7 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
                     return CommandExecutionResponse(messages = listOf(element.text))
                 }
             }
+            method.responseBodyAsLoggedString()
             return CommandExecutionResponse()
         } finally {
             method.releaseConnection()
@@ -51,18 +53,22 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
         }
     }
 
-    private val YouTrackCommand.executeCommandUrl: String
+    private val YouTrackCommandExecution.executeCommandUrl: String
         get() {
-            val baseUrl = taskManagerComponent.getYouTrackRepository().url
-            return "$baseUrl/rest/issue/execute/${issues.first().id}?command=$encodedCommand"
+            with (command) {
+                val baseUrl = taskManagerComponent.getYouTrackRepository().url
+                val execUrl = "$baseUrl/rest/issue/execute/${issues.first().id}"
+                return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup?.urlencoded}&disableNotifications=$silent"
+            }
         }
 
     private val YouTrackCommand.intellisenseCommandUrl: String
         get() {
             val baseUrl = taskManagerComponent.getYouTrackRepository().url
-            return "$baseUrl/rest/command/underlineAndSuggestAndCommands?command=$encodedCommand&caret=$caret&query=${issues.first().id}"
+            val assistUrl = "$baseUrl/rest/command/underlineAndSuggestAndCommands"
+            return "$assistUrl?command=${command.urlencoded}&caret=$caret&query=${issues.first().id}"
         }
 
-    private val YouTrackCommand.encodedCommand: String
-        get() = URLEncoder.encode(command, "UTF-8")
+    private val String.urlencoded: String
+        get() = URLEncoder.encode(this, "UTF-8")
 }

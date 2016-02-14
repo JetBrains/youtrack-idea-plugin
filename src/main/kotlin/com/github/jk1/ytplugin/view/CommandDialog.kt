@@ -6,6 +6,7 @@ import com.github.jk1.ytplugin.lang.CommandLanguage
 import com.github.jk1.ytplugin.model.CommandAssistResponse
 import com.github.jk1.ytplugin.model.CommandPreview
 import com.github.jk1.ytplugin.model.YouTrackCommand
+import com.github.jk1.ytplugin.model.YouTrackCommandExecution
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiDocumentManager
@@ -20,13 +21,12 @@ import javax.swing.*
 public class CommandDialog(override val project: Project) : DialogWrapper(project), ComponentAware {
 
     private val commandField = LanguageTextField(CommandLanguage, project, "")
-    private val commentArea = JTextArea(6, 40)
+    private val commentArea = JTextArea(6, 60)
     private val visibilityGroupDropdown = JComboBox<String>()
     private val previewLabel = JLabel()
 
     init {
         title = "Apply Command"
-        previewLabel.text = "<html><font color='red'>1. Unknown command</font></html>"
         adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
@@ -39,9 +39,10 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         init()
     }
 
-    override fun createActions(): Array<out Action> {
-        return arrayOf(getApplyAction(), getSilentApplyAction(), this.cancelAction)
-    }
+    override fun createActions(): Array<out Action> = arrayOf(
+            ExecuteCommandAction("Apply"),
+            ExecuteCommandAction("Silent Apply", true),
+            this.cancelAction)
 
     override fun createCenterPanel(): JComponent {
         val contextPane = JPanel(BorderLayout())
@@ -98,24 +99,18 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         return panel
     }
 
-    private fun getApplyAction(): Action {
-        return object : AbstractAction("Apply") {
-            override fun actionPerformed(e: ActionEvent) {
-                val command = YouTrackCommand(commandField.text, commandField.caretModel.offset, false)
-                commandComponent.executeAsync(command)
-                this@CommandDialog.close(0)
-            }
+    /**
+     * Submits command for async execution and closes command dialog immediately
+     */
+    inner class ExecuteCommandAction(name: String, val silent: Boolean = false) : AbstractAction(name) {
+        override fun actionPerformed(e: ActionEvent) {
+            val command = YouTrackCommand(commandField.text, commandField.caretModel.offset)
+            val execution = YouTrackCommandExecution(command, silent, commentArea.text, getVisibilityGroup())
+            commandComponent.executeAsync(execution)
+            this@CommandDialog.close(0)
         }
-    }
 
-    private fun getSilentApplyAction(): Action {
-        return object : AbstractAction("Silent Apply") {
-            override fun actionPerformed(e: ActionEvent) {
-                val command = YouTrackCommand(commandField.text, commandField.caretModel.offset, true)
-                commandComponent.executeAsync(command)
-                this@CommandDialog.close(0)
-            }
-        }
+        fun getVisibilityGroup() = visibilityGroupDropdown.selectedItem.toString()
     }
 
     /**
