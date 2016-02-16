@@ -1,7 +1,6 @@
 package com.github.jk1.ytplugin.components
 
 import com.github.jk1.ytplugin.NoActiveYouTrackTaskFoundException
-import com.github.jk1.ytplugin.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.TaskManagementDisabledException
 import com.github.jk1.ytplugin.YouTrackRepositoryNotConfiguredException
 import com.intellij.openapi.components.AbstractProjectComponent
@@ -32,10 +31,7 @@ class TaskManagerProxyComponentImpl(val project: Project) :
     }
 
     override fun getYouTrackRepository(): BaseRepository {
-        val repository = getTaskManager().allRepositories
-                ?.filter { it.isYouTrack() }
-                ?.firstOrNull() as BaseRepository?
-                ?: throw NoYouTrackRepositoryException()
+        val repository = getActiveTask().repository as BaseRepository
         if (repository.isConfigured) {
             return repository
         } else {
