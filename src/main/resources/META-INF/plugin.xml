@@ -2,13 +2,18 @@
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration Plugin</name>
     <version>0.1</version>
-    <vendor url="https://github.com/jk1/youtrack-idea-plugin">https://github.com/jk1/youtrack-idea-plugin</vendor>
+    <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
-        This plugin enhances bundled task management plugin to provide deeper integration with YouTrack bug tracker.
+        <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
+        <ul>
+            <li>Adds command window to execute YouTrack commands from IDE</li>
+            <li>More features are yet to come)</li>
+        </ul>
+        <p>Compatibility: YouTrack 5.2+, Intellij Idea 15.0.2+<p/>
     ]]></description>
 
-    <change-notes><![CDATA[ Initial version ]]></change-notes>
+    <!--change-notes><![CDATA[   ]]></change-notes-->
 
     <!-- IntelliJ IDEA 15, WebStorm 11, PyCharm 5, PhpStorm 10, RubyMine 8, AppCode 3.3, CLion 1.2, DataGrip 1.0 -->
     <idea-version since-build="143.0"/>

@@ -40,8 +40,12 @@ sourceSets {
 intellij {
     version '15.0.2'              //IntelliJ IDEA 15 dependency
     plugins 'tasks'               //Bundled plugin dependencies
+    updateSinceUntilBuild false
     instrumentCode false
     pluginName 'ytplugin'
+    publish {
+        pluginId '8215'
+    }
 }
 
 dependencies {
