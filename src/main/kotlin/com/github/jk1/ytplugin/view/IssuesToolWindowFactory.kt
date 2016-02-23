@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 
 class IssuesToolWindowFactory : ToolWindowFactory {
 
-    public override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         // todo: a tool window with issue search panel
     }
 }

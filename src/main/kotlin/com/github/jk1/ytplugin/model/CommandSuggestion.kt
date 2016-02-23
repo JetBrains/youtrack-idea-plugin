@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.intellij.openapi.util.TextRange
 
-public class CommandSuggestion(item: JsonElement) {
+class CommandSuggestion(item: JsonElement) {
 
     val matchRange: TextRange
     val completionRange: TextRange

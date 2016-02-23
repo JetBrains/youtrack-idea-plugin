@@ -16,7 +16,7 @@ interface ResponseLoggerTrait {
 
     val logger: Logger
 
-    public fun HttpMethod.responseBodyAsLoggedString(): String {
+    fun HttpMethod.responseBodyAsLoggedString(): String {
         val response = responseBodyAsString
         if (logger.isDebugEnabled){
             try {
@@ -36,7 +36,7 @@ interface ResponseLoggerTrait {
         return response
     }
 
-    public fun HttpMethod.responseBodyAsLoggedStream(): InputStream {
+    fun HttpMethod.responseBodyAsLoggedStream(): InputStream {
         if (logger.isDebugEnabled){
             return ByteArrayInputStream(responseBodyAsLoggedString().toByteArray("UTF-8"))
         } else {
@@ -44,13 +44,13 @@ interface ResponseLoggerTrait {
         }
     }
 
-    public fun logXml(element: Element) {
+    fun logXml(element: Element) {
         if (logger.isDebugEnabled) {
             logger.debug("\n${JDOMUtil.createOutputter("\n").outputString(element)}")
         }
     }
 
-    public fun logXml(xml: InputStream) {
+    fun logXml(xml: InputStream) {
         if (logger.isDebugEnabled) {
             try {
                 logger.debug("\n" + JDOMUtil.createOutputter("\n").outputString(JDOMUtil.loadDocument(xml)))
@@ -60,7 +60,7 @@ interface ResponseLoggerTrait {
         }
     }
 
-    public fun logJson(json: JsonElement) {
+    fun logJson(json: JsonElement) {
         if (logger.isDebugEnabled) {
             try {
                 val e = GsonBuilder().setPrettyPrinting().create()

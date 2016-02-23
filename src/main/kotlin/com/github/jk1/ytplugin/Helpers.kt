@@ -5,7 +5,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import javax.swing.SwingUtilities
 
-public fun sendNotification(
+fun sendNotification(
         title: String = "YouTrack plugin error",
         text: String?,
         type: NotificationType) = SwingUtilities.invokeLater {

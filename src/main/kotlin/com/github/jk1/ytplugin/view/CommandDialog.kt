@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.model.CommandAssistResponse
 import com.github.jk1.ytplugin.model.CommandPreview
 import com.github.jk1.ytplugin.model.YouTrackCommand
 import com.github.jk1.ytplugin.model.YouTrackCommandExecution
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiDocumentManager
@@ -14,20 +15,47 @@ import com.intellij.ui.LanguageTextField
 import java.awt.BorderLayout
 import java.awt.KeyboardFocusManager
 import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.*
 
-public class CommandDialog(override val project: Project) : DialogWrapper(project), ComponentAware {
 
-    private val commandField = LanguageTextField(CommandLanguage, project, "")
+class CommandDialog(override val project: Project) : DialogWrapper(project, false), ComponentAware {
+
+    private val commandField = createCommandField()
     private val commentArea = JTextArea(6, 60)
     private val visibilityGroupDropdown = JComboBox<String>()
     private val previewLabel = JLabel()
 
+    private val applyAction = ExecuteCommandAction("Apply")
+    private val silentApplyAction = ExecuteCommandAction("Silent Apply", true)
+
     init {
         title = "Apply Command"
+        // todo: lazy loading for permitted groups
         adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
+        init()
+    }
+
+    override fun createActions(): Array<out Action> = arrayOf(applyAction, silentApplyAction, cancelAction)
+
+    override fun createJButtonForAction(action: Action): JButton {
+        val button = super.createJButtonForAction(action)
+        button.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
+        button.actionMap.put("apply", action)
+        return button
+    }
+
+    override fun createCenterPanel(): JComponent {
+        val contextPane = JPanel(BorderLayout())
+        contextPane.add(createLeftPane(), BorderLayout.WEST)
+        contextPane.add(createPreviewPanel(), BorderLayout.EAST)
+        return contextPane
+    }
+
+    private fun createCommandField(): LanguageTextField {
+        val commandField = LanguageTextField(CommandLanguage, project, "")
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
         file?.putUserData(CommandComponent.USER_DATA_KEY, CommandSuggestListener())
@@ -36,19 +64,18 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
                 commandField.requestFocusInWindow()
             }
         })
-        init()
-    }
+        // todo: find a better way to attach onEnter handler to LanguageTextField
+        commandField.addDocumentListener(object: DocumentListener {
+            override fun documentChanged(p0: com.intellij.openapi.editor.event.DocumentEvent?) {
+                val component = commandField.editor!!.contentComponent
+                component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
+                component.actionMap.put("apply", applyAction)
+            }
 
-    override fun createActions(): Array<out Action> = arrayOf(
-            ExecuteCommandAction("Apply"),
-            ExecuteCommandAction("Silent Apply", true),
-            this.cancelAction)
-
-    override fun createCenterPanel(): JComponent {
-        val contextPane = JPanel(BorderLayout())
-        contextPane.add(createLeftPane(), BorderLayout.WEST)
-        contextPane.add(createPreviewPanel(), BorderLayout.EAST)
-        return contextPane
+            override fun beforeDocumentChange(p0: com.intellij.openapi.editor.event.DocumentEvent?) {
+            }
+        })
+        return commandField
     }
 
     private fun createLeftPane(): JPanel {
@@ -64,7 +91,9 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         val panel = JPanel(BorderLayout())
         with(taskManagerComponent.getActiveTask()) {
             val adaptedSummary = if (summary.length > 40) "${summary.substring(0, 40)}..." else summary
-            panel.add(JLabel("Command for: $id $adaptedSummary"), BorderLayout.NORTH)
+            val label = JLabel("Command for: $id $adaptedSummary")
+            label.border = BorderFactory.createEmptyBorder(0, 0, 2, 0)
+            panel.add(label, BorderLayout.NORTH)
         }
         panel.add(commandField, BorderLayout.CENTER)
         return panel
@@ -76,8 +105,10 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
         commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null)
         val panel = JPanel(BorderLayout())
         val scrollPane = JScrollPane(commentArea)
-        panel.add(JLabel("Comment: "), BorderLayout.NORTH)
+        val label = JLabel("Comment: ")
+        panel.add(label, BorderLayout.NORTH)
         panel.add(scrollPane, BorderLayout.CENTER)
+        label.border = BorderFactory.createEmptyBorder(0, 0, 2, 0)
         panel.border = BorderFactory.createEmptyBorder(10, 0, 10, 0)
         return panel
     }
@@ -105,19 +136,17 @@ public class CommandDialog(override val project: Project) : DialogWrapper(projec
     inner class ExecuteCommandAction(name: String, val silent: Boolean = false) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             val command = YouTrackCommand(commandField.text, commandField.caretModel.offset)
-            val execution = YouTrackCommandExecution(command, silent, commentArea.text, getVisibilityGroup())
+            val group = visibilityGroupDropdown.selectedItem.toString()
+            val execution = YouTrackCommandExecution(command, silent, commentArea.text, group)
             commandComponent.executeAsync(execution)
             this@CommandDialog.close(0)
         }
-
-        fun getVisibilityGroup() = visibilityGroupDropdown.selectedItem.toString()
     }
 
     /**
      * Formats parsed command preview as html and displays it in command window
      */
     inner class CommandSuggestListener() : CommandComponent by commandComponent {
-
         override fun suggest(command: YouTrackCommand): CommandAssistResponse {
             val response = commandComponent.suggest(command)
             SwingUtilities.invokeLater {
