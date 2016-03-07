@@ -11,7 +11,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.0.40"
+    id "org.jetbrains.intellij" version "0.0.43"
 }
 
 apply plugin: 'java'
@@ -38,7 +38,7 @@ sourceSets {
 }
 
 intellij {
-    version '15.0.2'              //IntelliJ IDEA 15 dependency
+    version '15.0.4'              //IntelliJ IDEA 15 dependency
     plugins 'tasks'               //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false
