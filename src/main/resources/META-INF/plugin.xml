@@ -34,15 +34,22 @@
         <component>
             <interface-class>com.github.jk1.ytplugin.components.CommandComponent</interface-class>
             <implementation-class>com.github.jk1.ytplugin.components.CommandComponentImpl</implementation-class>
+            <skipForDefaultProject/>
         </component>
         <component>
             <interface-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponent</interface-class>
             <implementation-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponentImpl
             </implementation-class>
+            <skipForDefaultProject/>
         </component>
         <component>
             <interface-class>com.github.jk1.ytplugin.components.AdminComponent</interface-class>
             <implementation-class>com.github.jk1.ytplugin.components.AdminComponentImpl</implementation-class>
+            <skipForDefaultProject/>
+        </component>
+        <component>
+            <implementation-class>com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent</implementation-class>
+            <skipForDefaultProject/>
         </component>
     </project-components>
 

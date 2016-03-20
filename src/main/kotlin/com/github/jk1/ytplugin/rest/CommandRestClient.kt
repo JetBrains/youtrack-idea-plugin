@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.model.CommandAssistResponse
 import com.github.jk1.ytplugin.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.model.YouTrackCommand
