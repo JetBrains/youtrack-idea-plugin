@@ -13,8 +13,6 @@ import java.net.URLEncoder
 
 class CommandRestClient(override val project: Project) : AbstractRestClient(project), ResponseLoggerTrait {
 
-    override val logger: Logger = Logger.getInstance(CommandRestClient::class.java)
-
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)
         val startTime = System.currentTimeMillis()

@@ -8,8 +8,6 @@ import org.jdom.input.SAXBuilder
 
 class AdminRestClient(override val project: Project) : AbstractRestClient(project), ResponseLoggerTrait {
 
-    override val logger: Logger = Logger.getInstance(AdminRestClient::class.java)
-
     fun getUserGroups(issueId: String): List<String> {
         val baseUrl = taskManagerComponent.getYouTrackRepository().url
         val getUsersUrl = "$baseUrl/rest/issueInternal/visibilityGroups/$issueId"

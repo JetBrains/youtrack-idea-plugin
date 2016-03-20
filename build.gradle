@@ -1,9 +1,7 @@
 buildscript {
-    ext.kotlinVersion = '1.0.0-beta-3595'
+    ext.kotlinVersion = '1.0.1'
 
-    repositories {
-        mavenCentral()
-    }
+    repositories { mavenCentral() }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
@@ -29,14 +27,6 @@ repositories {
     mavenCentral()
 }
 
-configurations {
-    provided
-}
-
-sourceSets {
-    main { compileClasspath += configurations.provided }
-}
-
 intellij {
     version '15.0.4'              //IntelliJ IDEA 15 dependency
     plugins 'tasks'               //Bundled plugin dependencies
@@ -50,7 +40,8 @@ intellij {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    provided fileTree(dir: "$projectDir/lib", include: '*.jar')
+    compile 'org.nanohttpd:nanohttpd:2.3.0'
+    compileOnly fileTree(dir: "$projectDir/lib", include: '*.jar')
 
     testCompile 'org.testng:testng:6.9.10'
 }

@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
+import com.intellij.openapi.diagnostic.Logger
 import javax.swing.SwingUtilities
 
 fun sendNotification(
@@ -11,3 +12,6 @@ fun sendNotification(
         type: NotificationType) = SwingUtilities.invokeLater {
     Notifications.Bus.notify(Notification("YouTrack Integration Plugin", title, text ?: "null", type))
 }
+
+val Any.logger : Logger
+    get() = Logger.getInstance(this.javaClass)

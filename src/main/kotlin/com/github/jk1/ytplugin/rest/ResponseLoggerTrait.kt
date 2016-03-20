@@ -1,9 +1,9 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.JDOMUtil
 import org.apache.commons.httpclient.HttpMethod
 import org.jdom.Element
@@ -13,8 +13,6 @@ import java.io.InputStream
 import java.util.*
 
 interface ResponseLoggerTrait {
-
-    val logger: Logger
 
     fun HttpMethod.responseBodyAsLoggedString(): String {
         val response = responseBodyAsString
@@ -38,7 +36,7 @@ interface ResponseLoggerTrait {
 
     fun HttpMethod.responseBodyAsLoggedStream(): InputStream {
         if (logger.isDebugEnabled){
-            return ByteArrayInputStream(responseBodyAsLoggedString().toByteArray("UTF-8"))
+            return ByteArrayInputStream(responseBodyAsLoggedString().toByteArray(Charsets.UTF_8))
         } else {
             return responseBodyAsStream
         }
