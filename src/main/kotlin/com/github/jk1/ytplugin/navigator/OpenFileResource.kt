@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.navigator
 
-import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.common.logger
 import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.LogicalPosition

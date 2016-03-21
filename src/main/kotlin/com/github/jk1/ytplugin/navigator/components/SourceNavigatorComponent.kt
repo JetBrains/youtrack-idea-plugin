@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.navigator.components
 
-import com.github.jk1.ytplugin.components.ComponentAware
-import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.navigator.ConnectionHandler
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project

@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.rest.AbstractRestClient
+import com.github.jk1.ytplugin.common.rest.AbstractRestClient
 import com.intellij.openapi.project.Project
 
 

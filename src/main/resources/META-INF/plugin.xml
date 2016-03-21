@@ -23,8 +23,8 @@
     <depends>com.intellij.tasks</depends>
 
     <actions>
-        <action id="com.github.jk1.ytplugin.actions.OpenCommandWindowAction"
-                class="com.github.jk1.ytplugin.actions.OpenCommandWindowAction">
+        <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
+                class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
             <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
@@ -32,19 +32,19 @@
 
     <project-components>
         <component>
-            <interface-class>com.github.jk1.ytplugin.components.CommandComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.components.CommandComponentImpl</implementation-class>
+            <interface-class>com.github.jk1.ytplugin.commands.components.CommandComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.commands.components.CommandComponentImpl</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
-            <interface-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.components.TaskManagerProxyComponentImpl
+            <interface-class>com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.common.components.TaskManagerProxyComponentImpl
             </implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
-            <interface-class>com.github.jk1.ytplugin.components.AdminComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.components.AdminComponentImpl</implementation-class>
+            <interface-class>com.github.jk1.ytplugin.commands.components.AdminComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.commands.components.AdminComponentImpl</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
@@ -55,10 +55,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!--YouTrack command language support-->
-        <fileTypeFactory implementation="com.github.jk1.ytplugin.lang.CommandFileFactory"/>
-        <lang.parserDefinition language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.lang.CommandParserDefinition"/>
+        <fileTypeFactory implementation="com.github.jk1.ytplugin.commands.lang.CommandFileFactory"/>
+        <lang.parserDefinition language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.commands.lang.CommandParserDefinition"/>
         <completion.contributor language="YouTrack Commands"
-                                implementationClass="com.github.jk1.ytplugin.lang.CommandCompletionContributor"/>
-        <externalAnnotator language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.lang.CommandHighlightingAnnotator"/>
+                                implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
+        <externalAnnotator language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
     </extensions>
 </idea-plugin>
