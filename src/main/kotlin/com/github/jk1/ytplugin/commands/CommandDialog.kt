@@ -43,7 +43,7 @@ class CommandDialog(override val project: Project) : DialogWrapper(project, fals
 
     override fun createJButtonForAction(action: Action): JButton {
         val button = super.createJButtonForAction(action)
-        button.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
+        button.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
         button.actionMap.put("apply", action)
         return button
     }
@@ -69,7 +69,7 @@ class CommandDialog(override val project: Project) : DialogWrapper(project, fals
         commandField.addDocumentListener(object: DocumentListener {
             override fun documentChanged(p0: DocumentEvent?) {
                 val component = commandField.editor!!.contentComponent
-                component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
+                component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
                 component.actionMap.put("apply", applyAction)
             }
 

@@ -2,13 +2,14 @@ package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.common.YouTrackPluginException
 import com.github.jk1.ytplugin.common.sendNotification
-import com.github.jk1.ytplugin.commands.CommandDialog
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
-
+/**
+ *
+ */
 class OpenCommandWindowAction : AnAction(
         "Execute YouTrack command",
         "Apply YouTrack command to a current active task",
@@ -18,11 +19,11 @@ class OpenCommandWindowAction : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
-        if (project != null) {
+        if (project != null && project.isInitialized) {
             try {
                 CommandDialog(project).show()
-            } catch(e: YouTrackPluginException) {
-                sendNotification(errorTitle, e.message, NotificationType.ERROR)
+            } catch(exception: YouTrackPluginException) {
+                exception.showAsNotificationBalloon(project)
             }
         } else {
             sendNotification(errorTitle, "No open project found", NotificationType.ERROR)

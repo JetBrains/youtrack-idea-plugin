@@ -63,7 +63,7 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
                 }
             }
 
-            ProjectUtil.focusProjectWindow(project, true);
+            ProjectUtil.focusProjectWindow(project, true)
             return true
         }
     }

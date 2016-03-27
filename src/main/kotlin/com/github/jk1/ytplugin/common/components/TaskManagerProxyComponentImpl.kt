@@ -1,8 +1,5 @@
 package com.github.jk1.ytplugin.common.components
 
-import com.github.jk1.ytplugin.common.NoActiveYouTrackTaskFoundException
-import com.github.jk1.ytplugin.common.TaskManagementDisabledException
-import com.github.jk1.ytplugin.common.YouTrackRepositoryNotConfiguredException
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
@@ -21,7 +18,7 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         if (task.isIssue && task.repository?.isYouTrack() ?: false) {
             return getTaskManager().activeTask
         } else {
-            throw NoActiveYouTrackTaskFoundException()
+            throw NoActiveYouTrackTaskException()
         }
     }
 
@@ -35,7 +32,7 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         if (repository.isConfigured) {
             return repository
         } else {
-            throw YouTrackRepositoryNotConfiguredException()
+            throw NoYouTrackRepositoryException()
         }
     }
 
