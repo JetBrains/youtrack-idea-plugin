@@ -9,11 +9,11 @@ import org.apache.commons.httpclient.HttpClient
 
 interface TaskManagerProxyComponent : ProjectComponent {
 
-    fun getTaskManager(): TaskManager
-
-    fun getYouTrackRepository(): BaseRepository
-
     fun getActiveTask(): Task
+
+    fun getActiveYouTrackRepository(): BaseRepository
+
+    fun getAllConfiguredYouTrackRepositories(): List<BaseRepository>
 
     fun getRestClient() : HttpClient
 }

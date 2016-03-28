@@ -16,20 +16,23 @@ import com.intellij.openapi.actionSystem.AnActionEvent
  */
 class NoActiveYouTrackTaskException : YouTrackPluginException("No YouTrack issue selected as an active task") {
 
+    // defined in task management plugin we depend on
     val GOTO_ACTION_TASK_ID = "tasks.goto"
 
     override val notification = Notification(
             "YouTrack Integration Plugin",
             "YouTrack Integration Plugin",
-            "$message <br/><br/><b><a href=\"#open\">Select Issue</a></b>",
-            NotificationType.WARNING,
+            """$message
+            <br/><br/>
+            <b><a href="#open">Select Issue</a></b>""",
+            NotificationType.ERROR,
             // notification hyperlink click handler
             NotificationListener { notification, notificationEvent ->
                 val action = ActionManager.getInstance().getAction(GOTO_ACTION_TASK_ID)
                 val context = DataManager.getInstance().dataContext
                 val event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, context)
-                action.actionPerformed(event)
                 notification.hideBalloon()
+                action.actionPerformed(event)
             }
     )
 }

@@ -57,7 +57,7 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
     private val YouTrackCommandExecution.executeCommandUrl: String
         get() {
             with (command) {
-                val baseUrl = taskManagerComponent.getYouTrackRepository().url
+                val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
                 val execUrl = "$baseUrl/rest/issue/execute/${issues.first().id}"
                 return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup?.urlencoded}&disableNotifications=$silent"
             }
@@ -65,7 +65,7 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
 
     private val YouTrackCommand.intellisenseCommandUrl: String
         get() {
-            val baseUrl = taskManagerComponent.getYouTrackRepository().url
+            val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
             val assistUrl = "$baseUrl/rest/command/underlineAndSuggestAndCommands"
             return "$assistUrl?command=${command.urlencoded}&caret=$caret&query=${issues.first().id}"
         }

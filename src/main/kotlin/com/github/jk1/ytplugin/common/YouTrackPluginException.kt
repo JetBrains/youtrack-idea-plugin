@@ -6,7 +6,6 @@ import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 import javax.swing.SwingUtilities
 
-
 abstract class YouTrackPluginException(override val message: String) : Exception(message) {
 
     open val notification = Notification(
@@ -20,11 +19,5 @@ abstract class YouTrackPluginException(override val message: String) : Exception
         Notifications.Bus.notify(notification, project)
     }
 }
-
-//class NoYouTrackRepositoryException() :
-//        YouTrackPluginException("No YouTrack server found") {}
-
-//class YouTrackRepositoryNotConfiguredException() :
-//        YouTrackPluginException("YouTrack server integration is not configured yet") {}
 
 

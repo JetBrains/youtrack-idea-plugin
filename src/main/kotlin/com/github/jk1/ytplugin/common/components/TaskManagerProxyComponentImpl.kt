@@ -22,17 +22,21 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         }
     }
 
-    override fun getTaskManager(): TaskManager {
-        return project.getComponent(TaskManager::class.java)
-                ?: throw TaskManagementDisabledException()
-    }
-
-    override fun getYouTrackRepository(): BaseRepository {
+    override fun getActiveYouTrackRepository(): BaseRepository {
         val repository = getActiveTask().repository as BaseRepository
-        if (repository.isConfigured) {
+        if (repository.isConfigured && repository.isYouTrack()) {
             return repository
         } else {
             throw NoYouTrackRepositoryException()
+        }
+    }
+
+    override fun getAllConfiguredYouTrackRepositories(): List<BaseRepository> {
+        val youTracks = getTaskManager().allRepositories.filter { it.isYouTrack() }.map { it as BaseRepository }
+        if (youTracks.isEmpty()) {
+            throw NoYouTrackRepositoryException()
+        } else {
+            return youTracks
         }
     }
 
@@ -41,7 +45,12 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         // we don't want to handle all the connection/testing/proxy stuff ourselves
         val method = BaseRepositoryImpl::class.java.getDeclaredMethod("getHttpClient")
         method.isAccessible = true
-        return method.invoke(getYouTrackRepository()) as HttpClient
+        return method.invoke(getActiveYouTrackRepository()) as HttpClient
+    }
+
+    private fun getTaskManager(): TaskManager {
+        return project.getComponent(TaskManager::class.java)
+                ?: throw TaskManagementDisabledException()
     }
 
     private fun TaskRepository.isYouTrack() = this.javaClass.name.contains("youtrack", true)
