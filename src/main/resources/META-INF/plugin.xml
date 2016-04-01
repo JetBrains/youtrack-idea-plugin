@@ -1,19 +1,24 @@
 <idea-plugin version="2">
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration Plugin</name>
-    <version>0.1</version>
+    <version>0.2</version>
     <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
         <ul>
             <li>Adds command window to execute YouTrack commands from IDE</li>
-            <li>More features are yet to come)</li>
+            <li>Supports code navigation when clicking on Java stacktraces in issue tracker</li>
         </ul>
         <p>Compatibility: YouTrack 5.2+, Intellij Idea 15.0.2+<p/>
     ]]></description>
 
-    <!--change-notes><![CDATA[   ]]></change-notes-->
+    <change-notes><![CDATA[
+        <ul>
+            <li>Error notifications now have integrated quick fix suggestions</li>
+            <li>Supports code navigation when clicking on Java stacktraces in issue tracker</li>
+        </ul>
+          ]]></change-notes>
 
     <!-- IntelliJ IDEA 15, WebStorm 11, PyCharm 5, PhpStorm 10, RubyMine 8, AppCode 3.3, CLion 1.2, DataGrip 1.0 -->
     <idea-version since-build="143.0"/>
@@ -33,7 +38,8 @@
     <project-components>
         <component>
             <interface-class>com.github.jk1.ytplugin.commands.components.CommandComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.commands.components.CommandComponentImpl</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.commands.components.CommandComponentImpl
+            </implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
@@ -48,7 +54,8 @@
             <skipForDefaultProject/>
         </component>
         <component>
-            <implementation-class>com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent
+            </implementation-class>
             <skipForDefaultProject/>
         </component>
     </project-components>
@@ -56,9 +63,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <!--YouTrack command language support-->
         <fileTypeFactory implementation="com.github.jk1.ytplugin.commands.lang.CommandFileFactory"/>
-        <lang.parserDefinition language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.commands.lang.CommandParserDefinition"/>
+        <lang.parserDefinition language="YouTrack Commands"
+                               implementationClass="com.github.jk1.ytplugin.commands.lang.CommandParserDefinition"/>
         <completion.contributor language="YouTrack Commands"
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
-        <externalAnnotator language="YouTrack Commands" implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
+        <externalAnnotator language="YouTrack Commands"
+                           implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
     </extensions>
 </idea-plugin>

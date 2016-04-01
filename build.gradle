@@ -12,16 +12,16 @@ plugins {
     id "org.jetbrains.intellij" version "0.0.43"
 }
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'idea'
 apply plugin: 'org.jetbrains.intellij'
 
 group 'com.github.jk1'
-version '0.1'
-
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+version '0.2'
 
 repositories {
     mavenCentral()
@@ -40,6 +40,7 @@ intellij {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     compile 'org.nanohttpd:nanohttpd:2.3.0'
     compileOnly fileTree(dir: "$projectDir/lib", include: '*.jar')
 
