@@ -13,6 +13,7 @@ class CommandAssistResponse(stream: InputStream) {
     val highlightRanges: List<CommandHighlightRange>
     val suggestions: List<CommandSuggestion>
     val previews: List<CommandPreview>
+    val timestamp = System.currentTimeMillis()
 
     init {
         val root = JsonParser().parse(InputStreamReader(stream)).asJsonObject

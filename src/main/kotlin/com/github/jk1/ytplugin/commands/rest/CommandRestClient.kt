@@ -24,7 +24,7 @@ class CommandRestClient(override val project: Project) : AbstractRestClient(proj
             if (status == 200) {
                 return CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
+                throw RuntimeException("HTTP $status: ${method.responseBodyAsLoggedString()}")
             }
         } finally {
             method.releaseConnection()

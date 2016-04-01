@@ -11,12 +11,15 @@ import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.containers.hash.LinkedHashMap
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class CommandComponentImpl(override val project: Project) : AbstractProjectComponent(project), CommandComponent {
 
     val logger: Logger = Logger.getInstance(CommandComponentImpl::class.java)
     val restClient = CommandRestClient(project)
+    val cache = SuggestResponseCache()
 
     override fun executeAsync(execution: YouTrackCommandExecution) {
         ApplicationManager.getApplication().executeOnPooledThread {
@@ -38,27 +41,52 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
 
     override fun suggest(command: YouTrackCommand): CommandAssistResponse {
         command.issues.add(taskManagerComponent.getActiveTask())
-        val response = CommandAssistCache[command] ?: restClient.assistCommand(command)
-        CommandAssistCache[command] = response
+        val response = cache[command] ?: restClient.assistCommand(command)
+        cache[command] = response
         return response
     }
 
-    private object CommandAssistCache : LinkedHashMap<YouTrackCommand, CommandAssistResponse>(10, true) {
+    inner class SuggestResponseCache {
+
+        val caches = HashMap<String, PerServerSuggestResponseCache>()
+
+        operator fun get(key: YouTrackCommand?): CommandAssistResponse? {
+            synchronized(this) {
+                return getCache()[key]
+            }
+        }
+
+        operator fun set(key: YouTrackCommand?, value: CommandAssistResponse) {
+            synchronized(this) {
+                getCache().put(key, value)
+            }
+        }
+
+        private fun getCache(): PerServerSuggestResponseCache{
+            val server = taskManagerComponent.getActiveYouTrackRepository().url
+            if (!caches.containsKey(server)){
+                caches.putIfAbsent(server, PerServerSuggestResponseCache())
+            }
+            return caches[server]!!
+        }
+    }
+
+    inner class PerServerSuggestResponseCache : LinkedHashMap<YouTrackCommand, CommandAssistResponse>(10, true) {
+
+        val CACHE_ENTRY_TTL = TimeUnit.MINUTES.convert(30, TimeUnit.MILLISECONDS)
+
         override fun removeEldestEntry(
                 eldest: MutableMap.MutableEntry<YouTrackCommand, CommandAssistResponse>,
                 key: YouTrackCommand, value: CommandAssistResponse):
                 Boolean = this.size > 30
 
         override fun get(key: YouTrackCommand?): CommandAssistResponse? {
-            synchronized(this) {
-                return super.get(key)
+            super.get(key)?.let {
+                if (Math.abs(System.currentTimeMillis() - it.timestamp) > CACHE_ENTRY_TTL) {
+                    remove(key)
+                }
             }
-        }
-
-        override fun put(key: YouTrackCommand?, value: CommandAssistResponse): CommandAssistResponse? {
-            synchronized(this) {
-                return super.put(key, value)
-            }
+            return super.get(key)
         }
     }
 }

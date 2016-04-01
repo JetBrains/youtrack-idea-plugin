@@ -10,7 +10,7 @@ data class YouTrackCommand(
         val caret: Int = 0,
         val issues: MutableList<Task> = ArrayList()) {}
 
-class YouTrackCommandExecution(
+data class YouTrackCommandExecution(
 
         val command: YouTrackCommand,
         val silent: Boolean = false,
