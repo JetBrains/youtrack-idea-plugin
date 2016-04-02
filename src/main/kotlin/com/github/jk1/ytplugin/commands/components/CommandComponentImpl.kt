@@ -65,7 +65,7 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
         private fun getCache(): PerServerSuggestResponseCache{
             val server = taskManagerComponent.getActiveYouTrackRepository().url
             if (!caches.containsKey(server)){
-                caches.putIfAbsent(server, PerServerSuggestResponseCache())
+                caches.put(server, PerServerSuggestResponseCache())
             }
             return caches[server]!!
         }
