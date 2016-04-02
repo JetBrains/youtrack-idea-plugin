@@ -13,7 +13,7 @@ class CommandSuggestion(item: JsonElement) {
     val suffix: String
     val prefix: String
     val option: String
-    val styleClass: String
+    val separator: Boolean
 
     init {
         matchRange = TextRange(
@@ -28,21 +28,12 @@ class CommandSuggestion(item: JsonElement) {
         option = item.asJsonObject.get("o").asStringNullSafe()
         suffix = item.asJsonObject.get("suf").asStringNullSafe()
         prefix = item.asJsonObject.get("pre").asStringNullSafe()
-        styleClass = "string" // todo: to be customized, at least for a separator item
         caretPosition = item.asJsonObject.get("cp").asInt
+        separator = item.asJsonObject.get("sep").asBoolean
     }
 
     fun JsonElement.asStringNullSafe(default: String = ""): String = when (this) {
         is JsonNull -> default
         else -> this.asString
     }
-
-
-
-    /* public fun asLookupElement(){
-         LookupElementBuilder.create(this, option)
-                 .withTypeText(it.description, true)
-                 .withInsertHandler(CommandCompletionContributor.MyInsertHandler)
-                 .withBoldness(it.styleClass.equals("keyword"))
-     }*/
 }
