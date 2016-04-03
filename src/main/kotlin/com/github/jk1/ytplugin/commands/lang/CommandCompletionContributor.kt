@@ -15,6 +15,9 @@ import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
+/**
+ * Provides smart completion for YouTrack command language.
+ */
 class CommandCompletionContributor : CompletionContributor() {
 
     final val LOG = Logger.getInstance(CommandCompletionContributor::class.java)
@@ -38,14 +41,22 @@ class CommandCompletionContributor : CompletionContributor() {
             result.withPrefixMatcher(extractPrefix(parameters))
                     .caseInsensitive()
                     .addAllElements(createLookupElements(suggestions))
-        } catch (ignored: TimeoutException) {
+        } catch (e: TimeoutException) {
             LOG.debug("YouTrack request took more than $TIMEOUT ms to complete")
         } catch (e: Exception) {
             LOG.warn(e)
         }
     }
 
+
     fun createLookupElements(suggestions: List<CommandSuggestion>): Iterable<LookupElement> {
+        /**
+         * |Bug             Type|     |Bug                  Type|
+         * |Feature         Type|     |Feature              Type|
+         * |Recent commands-----|  => |#Fixed    Recent commands|
+         * |#Fixed        20 Feb|     |#Reopen   Recent commands|
+         * |#Reopen       22 Feb|
+         */
         val separatorIndex = suggestions.indexOfFirst { it.separator }
         return suggestions.filter { !it.separator }.mapIndexed { index, suggestion ->
             val typeText = when {

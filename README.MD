@@ -27,6 +27,11 @@ Among the other context types task management plugin supports bug tracker issues
 
 Please refer to [YouTrack command guide](https://confluence.jetbrains.com/display/YTD65/Quick+Start+Guide.+Using+Command+Window) for the general command execution rules.
 
+#### Code navigation
+
+When clicking a stacktrace in YouTrack the plugin is able to open the corresponding file in IDE. This feature is somewhat similar to what TeamCity plugin offers, although current implementation doesn't perform VCS lookup to find the best match for source code changing over time.
+This feature requires local ports to be opened, so you may want to configure your firewall to allow connections to 127.0.0.1:63330..63339.
+
 ##Development
 
 To get an Idea project open ```build.gradle``` file with Intellij Idea and follow import instructions.

@@ -25,6 +25,9 @@ version '0.2'
 
 repositories {
     mavenCentral()
+    flatDir {
+        dirs 'lib'
+    }
 }
 
 intellij {
@@ -42,13 +45,13 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     compile 'org.nanohttpd:nanohttpd:2.3.0'
-    compileOnly fileTree(dir: "$projectDir/lib", include: '*.jar')
+    compileOnly name: 'tasks-api'
 
-    testCompile 'org.testng:testng:6.9.10'
+    testCompile 'junit:junit:4.12'
+    testCompile name: 'tasks-core'
 }
 
 test {
-    useTestNG()
     testLogging {
         showStandardStreams = true
         exceptionFormat = 'full'
