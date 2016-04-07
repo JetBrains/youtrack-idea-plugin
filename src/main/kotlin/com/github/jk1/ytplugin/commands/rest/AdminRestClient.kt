@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.commands.rest
 
-import com.github.jk1.ytplugin.common.rest.AbstractRestClient
+import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.common.rest.ResponseLoggerTrait
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -8,7 +8,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.jdom.input.SAXBuilder
 
 
-class AdminRestClient(override val project: Project) : AbstractRestClient(project), ResponseLoggerTrait {
+class AdminRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 
     fun getUserGroups(issueId: String): List<String> {
         val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url

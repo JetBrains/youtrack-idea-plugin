@@ -12,6 +12,7 @@ import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.containers.hash.LinkedHashMap
+import java.util.concurrent.Future
 
 
 class CommandComponentImpl(override val project: Project) : AbstractProjectComponent(project), CommandComponent {
@@ -19,8 +20,8 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
     val restClient = CommandRestClient(project)
     val assistCache = CommandSuggestResponseCache(project)
 
-    override fun executeAsync(execution: YouTrackCommandExecution) {
-        ApplicationManager.getApplication().executeOnPooledThread {
+    override fun executeAsync(execution: YouTrackCommandExecution): Future<*> {
+        return ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 execution.command.issues.add(taskManagerComponent.getActiveTask())
                 val result = restClient.executeCommand(execution)

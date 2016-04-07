@@ -5,7 +5,7 @@ import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.common.rest.AbstractRestClient
+import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.common.rest.ResponseLoggerTrait
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -14,7 +14,7 @@ import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
 import java.net.URLEncoder
 
-class CommandRestClient(override val project: Project) : AbstractRestClient(project), ResponseLoggerTrait {
+class CommandRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)

@@ -15,4 +15,4 @@ data class YouTrackCommandExecution(
         val command: YouTrackCommand,
         val silent: Boolean = false,
         val comment: String? = null,
-        val commentVisibleGroup: String? = null) {} // null means 'All Users' in YouTrack
+        val commentVisibleGroup: String) {} // null means 'All Users' in YouTrack
