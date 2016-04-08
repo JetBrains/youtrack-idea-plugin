@@ -2,7 +2,9 @@ package com.github.jk1.ytplugin.navigator.components
 
 import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.logger
+import com.github.jk1.ytplugin.common.sendNotification
 import com.github.jk1.ytplugin.navigator.ConnectionHandler
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD
@@ -22,17 +24,25 @@ class SourceNavigatorComponent(override val project: Project) : AbstractProjectC
     private var httpServer: NanoHTTPD? = null
 
     override fun projectOpened() {
-        val port = eligiblePorts.firstOrNull {
-            try {
-                ServerSocket(it).close()
-                true
-            } catch(e: IOException) {
-                logger.debug("Can't use port $it to listen for YouTrack connections: ${e.message}")
-                false
-            }
-        } ?: throw IllegalStateException("Can't listen on ports $eligiblePorts. Is there a firewall enabled?")
-        httpServer = ConnectionHandler(project, port)
-        httpServer?.start()
+        try {
+            val port = eligiblePorts.firstOrNull {
+                try {
+                    ServerSocket(it).close()
+                    true
+                } catch(e: IOException) {
+                    logger.debug("Can't use port $it to listen for YouTrack connections: ${e.message}")
+                    false
+                }
+            } ?: throw IllegalStateException("Can't listen on ports $eligiblePorts. Is there a firewall enabled?")
+
+            httpServer = ConnectionHandler(project, port)
+            httpServer?.start()
+        } catch(e: Exception) {
+            logger.debug(e)
+            sendNotification(
+                    text = "Can't listen on ports 63330 to 63339. 'Open in IDE' feature will be disabled",
+                    type = NotificationType.WARNING)
+        }
     }
 
     override fun projectClosed() {
