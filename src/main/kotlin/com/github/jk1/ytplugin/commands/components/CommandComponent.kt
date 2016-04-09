@@ -15,7 +15,7 @@ interface CommandComponent : ProjectComponent, ComponentAware {
         val USER_DATA_KEY = Key.create<CommandComponent>(CommandComponentImpl::class.toString())
     }
 
-    fun executeAsync(execution: YouTrackCommandExecution) : Future<*>
+    fun executeAsync(execution: YouTrackCommandExecution) : Future<Unit>
 
     fun suggest(command: YouTrackCommand): CommandAssistResponse
 
