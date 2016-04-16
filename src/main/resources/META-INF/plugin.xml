@@ -71,5 +71,7 @@
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
+        <toolWindow id="YouTrack" anchor="bottom"
+                    factoryClass="com.github.jk1.ytplugin.search.IssuesToolWindowFactory" canCloseContents="true"/>
     </extensions>
 </idea-plugin>
