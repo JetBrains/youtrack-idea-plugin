@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.ModuleType
 import com.intellij.testFramework.fixtures.*
 import com.intellij.testFramework.fixtures.impl.LightTempDirTestFixtureImpl
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import org.apache.commons.lang.RandomStringUtils
 
 interface IdeaProjectTrait {
@@ -25,7 +26,7 @@ interface IdeaProjectTrait {
         val ideaFactory = IdeaTestFixtureFactory.getFixtureFactory()
         val javaFactory = JavaTestFixtureFactory.getFixtureFactory()
         val fixtureBuilder = ideaFactory.createFixtureBuilder(RandomStringUtils.randomAlphabetic(10))
-        return javaFactory.createCodeInsightFixture(fixtureBuilder.fixture, LightTempDirTestFixtureImpl(true))
+        return javaFactory.createCodeInsightFixture(fixtureBuilder.fixture, TempDirTestFixtureImpl())
     }
 
     fun readAction(callback: () -> Unit) {
