@@ -9,16 +9,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PutMethod
 
 
-interface IssueRestTrait : RestClientTrait {
-
-    val serverUrl: String
-        get() = "https://ytplugintest.myjetbrains.com/youtrack"
-    val projectId: String
-        get() = "AT"
-    val username: String
-        get() = "ideplugin"
-    val password: String
-        get() = "ideplugin"
+interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
 
     override fun createHttpClient(): HttpClient {
         val client = HttpClient()
@@ -36,18 +27,6 @@ interface IssueRestTrait : RestClientTrait {
         return connect(method) {
             val status = createHttpClient().executeMethod(method)
             if (status == 201) {
-                method.getResponseHeader("Location").toExternalForm().split("/").last()
-            } else {
-                throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")
-            }
-        }
-    }
-
-    fun getIssue(id: String): String {
-        val method = GetMethod("$serverUrl/rest/issue/$id")
-        return connect(method) {
-            val status = createHttpClient().executeMethod(method)
-            if (status == 200) {
                 method.getResponseHeader("Location").toExternalForm().split("/").last()
             } else {
                 throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")

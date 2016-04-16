@@ -52,4 +52,6 @@ class SourceNavigatorComponent(override val project: Project) : AbstractProjectC
             logger.warn("Failed to stop embedded http server for project ${project.name}", e)
         }
     }
+
+    fun getActivePort() = httpServer?.listeningPort
 }

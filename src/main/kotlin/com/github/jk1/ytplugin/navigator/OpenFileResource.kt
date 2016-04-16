@@ -53,16 +53,12 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
             if (editor != null) {
                 val caretModel = editor.caretModel
                 if (data.line != null) {
-                    caretModel.moveToLogicalPosition(LogicalPosition(data.line - 1, 0))
-                }
-                if (data.offset != null) {
-                    caretModel.moveToOffset(data.offset)
-                }
-                ApplicationManager.getApplication().invokeLater {
-                    editor.scrollingModel.scrollToCaret(ScrollType.CENTER)
+                    caretModel.moveToLogicalPosition(LogicalPosition(data.line - 1, data.offset ?: 0))
+                    ApplicationManager.getApplication().invokeLater {
+                        editor.scrollingModel.scrollToCaret(ScrollType.CENTER)
+                    }
                 }
             }
-
             ProjectUtil.focusProjectWindow(project, true)
             return true
         }
