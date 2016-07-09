@@ -4,15 +4,15 @@ YouTrack-Idea-Plugin
 
 This plugin brings Jetbrains YouTrack bugtracker features to Intellij IDE family.
 
-The latest released version can be found at [JetBrains IDE plugin repositiry](https://plugins.jetbrains.com/plugin/8215) or installed directly from an IDE itself.
+The latest released version can be found at [JetBrains IDE plugin repository](https://plugins.jetbrains.com/plugin/8215) or installed directly from an IDE itself.
 
 **Compatible IDEs:** IntelliJ IDEA 15+, WebStorm 11+, PyCharm 5+, PhpStorm 10+, RubyMine 8+, AppCode 3.3+, CLion 1.2+, DataGrip 1.0+
 
-**Compatible Youtrack versions:** 5.2+
+**Compatible YouTrack versions:** 5.2+
 
 ##Installation and Configuration
 
-This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Having YouTrack plugin installed from a plugin repository  proceed as foolows:
+This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Having YouTrack plugin installed from a plugin repository  proceed as follows:
 
 1. Navigate to Settings dialog -> Tools -> Tasks -> Servers
 2. Configure connection to your YouTrack instance
@@ -38,13 +38,13 @@ To get an Idea project open ```build.gradle``` file with Intellij Idea and follo
 
 Handy development tasks:
 
-- ```./gradlew assemble``` to build plugin in build/distributions
+- ```./gradlew assemble``` to build plugin in build/distributions folder
 
-- ```./gradlew tests``` to run tests
+- ```./gradlew tests``` to run all tests
 
-- ```./gradlew runIdea``` to run IntelliJ IDEA with YouTrack plugin enabled
+- ```./gradlew runIdea``` to start a copy of IntelliJ IDEA with YouTrack plugin enabled
 
-Pull requests are most wellcome.
+Pull requests are most welcome.
 
 
 
