@@ -1,13 +1,12 @@
 package com.github.jk1.ytplugin.commands.rest
 
-import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.common.rest.RestClientTrait
+import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.common.rest.ResponseLoggerTrait
-import com.intellij.openapi.diagnostic.Logger
+import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
@@ -59,7 +58,7 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
             with (command) {
                 val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
                 val execUrl = "$baseUrl/rest/issue/execute/${issues.first().id}"
-                return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup?.urlencoded}&disableNotifications=$silent"
+                return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup.urlencoded}&disableNotifications=$silent"
             }
         }
 

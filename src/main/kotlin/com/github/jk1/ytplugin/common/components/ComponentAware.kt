@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.common.components
 
 import com.github.jk1.ytplugin.commands.components.AdminComponent
 import com.github.jk1.ytplugin.commands.components.CommandComponent
-import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent
 import com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent
 import com.intellij.openapi.project.Project
 

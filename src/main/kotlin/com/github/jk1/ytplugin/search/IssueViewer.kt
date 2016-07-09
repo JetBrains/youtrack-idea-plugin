@@ -14,8 +14,6 @@ import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import javax.swing.ListModel
-import javax.swing.event.ListDataListener
 
 /**
  * Created by elle on 27.03.16.

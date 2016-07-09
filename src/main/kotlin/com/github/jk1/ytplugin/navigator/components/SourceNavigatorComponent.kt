@@ -9,7 +9,6 @@ import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD
 import java.io.IOException
-import java.net.ServerSocket
 
 /**
  * Embedded HTTP server component to support 'Open in IDE' feature.
@@ -24,21 +23,18 @@ class SourceNavigatorComponent(override val project: Project) : AbstractProjectC
     private var httpServer: NanoHTTPD? = null
 
     override fun projectOpened() {
-        try {
-            val port = eligiblePorts.firstOrNull {
-                try {
-                    ServerSocket(it).close()
-                    true
-                } catch(e: IOException) {
-                    logger.debug("Can't use port $it to listen for YouTrack connections: ${e.message}")
-                    false
-                }
-            } ?: throw IllegalStateException("Can't listen on ports $eligiblePorts. Is there a firewall enabled?")
-
-            httpServer = ConnectionHandler(project, port)
-            httpServer?.start()
-        } catch(e: Exception) {
-            logger.debug(e)
+        val port = eligiblePorts.firstOrNull {
+            try {
+                val server = ConnectionHandler(project, it)
+                server.start()
+                httpServer = server
+                true
+            } catch(e: IOException) {
+                logger.debug("Can't use port $it to listen for YouTrack connections: ${e.message}")
+                false
+            }
+        }
+        if (port == null) {
             sendNotification(
                     text = "Can't listen on ports 63330 to 63339. 'Open in IDE' feature will be disabled",
                     type = NotificationType.WARNING)

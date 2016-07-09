@@ -1,22 +1,9 @@
 package com.github.jk1.ytplugin.search
 
-import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.components.AbstractProjectComponent
-import com.intellij.openapi.progress.PerformInBackgroundOption
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
-import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.JDOMUtil
 import com.intellij.util.containers.SortedList
-import org.jdom.Document
-import org.jdom.Element
-import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
 import java.util.*

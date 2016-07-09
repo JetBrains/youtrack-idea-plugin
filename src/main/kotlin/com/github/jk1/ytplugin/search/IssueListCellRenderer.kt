@@ -7,7 +7,6 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.border.CustomLineBorder
-import com.intellij.util.ui.EmptyIcon
 import com.intellij.util.ui.GraphicsUtil
 import com.intellij.util.ui.UIUtil
 import java.awt.*

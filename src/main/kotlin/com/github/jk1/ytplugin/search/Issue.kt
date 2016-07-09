@@ -1,8 +1,5 @@
 package com.github.jk1.ytplugin.search
 
-import org.jdom.Element
-import java.util.*
-
 /**
  * Created by elle on 28.03.16.
  */

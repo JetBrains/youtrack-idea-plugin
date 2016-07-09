@@ -1,7 +1,6 @@
 package com.github.jk1.ytplugin.common.rest
 
 import com.github.jk1.ytplugin.common.components.ComponentAware
-import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.UsernamePasswordCredentials

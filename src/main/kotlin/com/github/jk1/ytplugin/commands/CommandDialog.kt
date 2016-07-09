@@ -1,12 +1,12 @@
 package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.commands.components.CommandComponent
-import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.commands.lang.CommandLanguage
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
+import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
