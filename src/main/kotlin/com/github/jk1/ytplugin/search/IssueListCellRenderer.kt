@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.Gray

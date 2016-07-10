@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.actionSystem.DataProvider
@@ -15,9 +16,6 @@ import java.awt.BorderLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 
-/**
- * Created by elle on 27.03.16.
- */
 class IssueViewer(val project: Project, parent: Disposable) : JBLoadingPanel(BorderLayout(), parent), DataProvider, Disposable {
 
     var myList: JBList = JBList()
@@ -25,7 +23,7 @@ class IssueViewer(val project: Project, parent: Disposable) : JBLoadingPanel(Bor
     init {
         myList.fixedCellHeight = 80
         myList.cellRenderer = IssueListCellRenderer()
-        myList.model = CollectionListModel<Issue>(Issue("id", "summary", "description"))
+        myList.model = CollectionListModel<Issue>()
 
         val splitter = EditorSplitter(project)
 
@@ -63,7 +61,7 @@ class IssueViewer(val project: Project, parent: Disposable) : JBLoadingPanel(Bor
             return project
         }
         if (DataKey.create<Array<Issue>>("MYY_ISSUES_ARRAY").equals(dataId)) {
-            val values = myList.selectedValues
+            val values = myList.selectedValuesList
             val issues = arrayOfNulls<Issue>(values.size)
             for (i in values.indices) {
                 issues[i] = values[i] as Issue

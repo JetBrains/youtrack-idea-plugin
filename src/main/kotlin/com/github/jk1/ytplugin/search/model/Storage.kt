@@ -1,6 +1,12 @@
-package com.github.jk1.ytplugin.search
+package com.github.jk1.ytplugin.search.model
 
+import com.github.jk1.ytplugin.search.rest.IssuesRestClient
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.progress.PerformInBackgroundOption
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.util.containers.SortedList
@@ -8,9 +14,6 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-/**
- * Created by elle on 03.04.16.
- */
 class Storage(val project: Project) : AbstractProjectComponent(project) {
 
     private val myIssues = HashMap<String, Issue>()
@@ -21,7 +24,7 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
     private var myWorking: ActionCallback = ActionCallback.Done()
 
     fun getInstance(project: Project): Storage {
-        return project.getComponent(Storage::class.java!!.getName()) as Storage
+        return project.getComponent(Storage::class.java.name) as Storage
     }
 
     fun getAllIssues(): Collection<Issue> {
@@ -41,9 +44,9 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
     }
 
     private fun refresh(working: ActionCallback) {
-        /*val task = object : Task.Backgroundable(myProject, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
+        val task = object : Task.Backgroundable(myProject, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
             override fun run(indicator: ProgressIndicator) {
-                val session = YoutrackSession(myProject)
+                val session = IssuesRestClient(myProject)
                 val modificationStamp = PropertiesComponent.getInstance(myProject).getOrInitLong("MyyLastTimeUpdated", 0)
                 try {
                     val started = System.currentTimeMillis()
@@ -66,7 +69,7 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
                 fireIssuesChanged()
             }
         }
-        ProgressManager.getInstance().run(task)*/
+        ProgressManager.getInstance().run(task)
     }
 
     private fun fireIssuesChanged() {

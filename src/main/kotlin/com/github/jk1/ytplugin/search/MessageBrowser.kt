@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
@@ -15,9 +16,6 @@ import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 import javax.swing.text.html.HTMLEditorKit
 
-/**
- * Created by elle on 28.03.16.
- */
 class MessageBrowser(val project: Project) : JPanel(BorderLayout()) {
 
     var myBrowser: JTextPane = JTextPane()
@@ -25,12 +23,12 @@ class MessageBrowser(val project: Project) : JPanel(BorderLayout()) {
     fun showIssue(issue: Issue) {
 
         myBrowser = JTextPane()
-        myBrowser.setMargin(Insets(0, 0, 0, 0))
+        myBrowser.margin = Insets(0, 0, 0, 0)
         val editorKit = HTMLEditorKit()
-        myBrowser.setEditable(false)
+        myBrowser.isEditable = false
         editorKit.styleSheet.addRule(UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground()))
-        myBrowser.setEditorKit(editorKit)
-        myBrowser.setContentType("text/html")
+        myBrowser.editorKit = editorKit
+        myBrowser.contentType = "text/html"
         add(JBScrollPane(myBrowser, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER)
         revalidate()
         repaint()
