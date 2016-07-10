@@ -33,7 +33,7 @@ class OpenCommandWindowAction : AnAction(
         }
     }
 
-    private fun assertYouTrackRepositoryConfigured(project: Project){
+    private fun assertYouTrackRepositoryConfigured (project: Project){
         ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
     }
 

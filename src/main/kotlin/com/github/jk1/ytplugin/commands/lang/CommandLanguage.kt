@@ -16,7 +16,7 @@ object CommandLanguage : Language("YouTrack Commands") {
 
 object CommandFileType : LanguageFileType(CommandLanguage) {
 
-    override fun getIcon(): Icon = YouTrackPluginIcons.YouTrack
+    override fun getIcon(): Icon = YouTrackPluginIcons.YOUTRACK
 
     override fun getDefaultExtension() = "youtrack"
 
