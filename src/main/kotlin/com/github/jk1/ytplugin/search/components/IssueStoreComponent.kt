@@ -1,11 +1,11 @@
-package com.github.jk1.ytplugin.search.model
+package com.github.jk1.ytplugin.search.components
 
+import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.rest.IssuesRestClient
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
@@ -14,18 +14,13 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-class Storage(val project: Project) : AbstractProjectComponent(project) {
+class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project) {
 
     private val myIssues = HashMap<String, Issue>()
-
     private val mySortedIssues = SortedList(Comparator<String> { o1, o2 ->
         o1.compareTo(o2)
     })
     private var myWorking: ActionCallback = ActionCallback.Done()
-
-    fun getInstance(project: Project): Storage {
-        return project.getComponent(Storage::class.java.name) as Storage
-    }
 
     fun getAllIssues(): Collection<Issue> {
         return myIssues.values
@@ -36,46 +31,39 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
             return myWorking
         }
 
-        myWorking = ActionCallback()
+        myWorking = refresh()
 
-        refresh(myWorking)
 
         return myWorking
     }
 
-    private fun refresh(working: ActionCallback) {
-        val task = object : Task.Backgroundable(myProject, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
+    private fun refresh(): ActionCallback {
+        val future = ActionCallback()
+        object : Task.Backgroundable(project, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
             override fun run(indicator: ProgressIndicator) {
-                val session = IssuesRestClient(myProject)
-                val modificationStamp = PropertiesComponent.getInstance(myProject).getOrInitLong("MyyLastTimeUpdated", 0)
+                val restClient = IssuesRestClient(project)
+                val modificationStamp = PropertiesComponent.getInstance(project).getOrInitLong("MyyLastTimeUpdated", 0)
                 try {
                     val started = System.currentTimeMillis()
-                    val issues = session.getIssues(indicator, modificationStamp)
+                    val issues = restClient.getIssues(indicator, modificationStamp)
                     setIssues(issues)
-                    PropertiesComponent.getInstance(myProject).setValue("MyyLastTimeUpdated", started.toString())
+                    PropertiesComponent.getInstance(project).setValue("MyyLastTimeUpdated", started.toString())
                 } catch (e: Exception) {
+                    // todo: notification and logging
                     e.printStackTrace()
                 }
-
             }
 
             override fun onCancel() {
-                working.setDone()
+                future.setDone()
             }
 
             override fun onSuccess() {
-                working.setDone()
+                future.setDone()
                 save()
-                fireIssuesChanged()
             }
-        }
-        ProgressManager.getInstance().run(task)
-    }
-
-    private fun fireIssuesChanged() {
-        /*for (listener in myListeners) {
-            listener.storageUpdated()
-        }*/
+        }.queue()
+        return future
     }
 
     private fun setIssues(issues: List<Issue>) {
@@ -91,9 +79,8 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
     }
 
 
-
     fun getIssue(id: String): Issue? {
-        return myIssues.get(id)
+        return myIssues[id]
     }
 
     fun getSortedIssues(): SortedList<String> {
@@ -127,7 +114,7 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
         return PathManager.getSystemPath() + File.separator
         +"myy" + File.separator
         +url.replace("\\", "/").replace("/", File.separator)*/
-        return "";
+        return ""
     }
 
     @Throws(IOException::class)
@@ -178,7 +165,6 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
 
     override fun projectOpened() {
         load()
-        fireIssuesChanged()
     }
 
     override fun projectClosed() {
@@ -197,5 +183,8 @@ class Storage(val project: Project) : AbstractProjectComponent(project) {
     /*fun getIssueUrl(issue: Issue): String {
         return YoutrackSession(myProject).getUrl() + "/issue/" + issue.getId()
     }*/
+
+
+    override fun getComponentName(): String = javaClass.simpleName
 
 }

@@ -12,7 +12,9 @@ import java.io.InputStreamReader
 class IssuesRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 
     fun getIssues(indicator: ProgressIndicator, stamp: Long): List<Issue> {
-        val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
+        // todo: handle multiple repositories
+        // todo: throw an error if no suitable repositories have been found
+        val baseUrl = taskManagerComponent.getAllConfiguredYouTrackRepositories().first().url
         val getUsersUrl = "$baseUrl/rest/issues"
         val method = GetMethod(getUsersUrl)
 

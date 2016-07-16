@@ -45,7 +45,7 @@ class IssueViewer(val project: Project, parent: Disposable) : JBLoadingPanel(Bor
         ApplicationManager.getApplication().executeOnPooledThread {
             val model = Ref.create(myList.model)
             try {
-                model.set(IssuesModel(project, this))
+                model.set(IssuesModel(project))
             } finally {
                 ApplicationManager.getApplication().invokeLater {
                     myList.model = model.get()

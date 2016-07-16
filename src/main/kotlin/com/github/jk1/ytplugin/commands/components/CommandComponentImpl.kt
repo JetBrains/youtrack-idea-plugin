@@ -21,6 +21,7 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
     val assistCache = CommandSuggestResponseCache(project)
 
     override fun executeAsync(execution: YouTrackCommandExecution): Future<Unit> {
+        // todo: replace Future with ActionCallback
         val future = FutureResult<Unit>()
         object : Task.Backgroundable(project, "Executing YouTrack command") {
             override fun run(indicator: ProgressIndicator) {

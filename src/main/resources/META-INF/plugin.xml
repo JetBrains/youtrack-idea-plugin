@@ -60,6 +60,10 @@
             </implementation-class>
             <skipForDefaultProject/>
         </component>
+        <component>
+            <implementation-class>com.github.jk1.ytplugin.search.components.IssueStoreComponent</implementation-class>
+            <skipForDefaultProject/>
+        </component>
     </project-components>
 
     <extensions defaultExtensionNs="com.intellij">
