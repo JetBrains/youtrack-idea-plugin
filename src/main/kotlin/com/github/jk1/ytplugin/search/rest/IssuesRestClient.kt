@@ -4,22 +4,20 @@ import com.github.jk1.ytplugin.common.rest.ResponseLoggerTrait
 import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.search.model.Issue
 import com.google.gson.JsonParser
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
 import java.io.InputStreamReader
 
 class IssuesRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 
-    fun getIssues(indicator: ProgressIndicator, stamp: Long): List<Issue> {
+    fun getIssues(query: String): List<Issue> {
         // todo: handle multiple repositories
         // todo: throw an error if no suitable repositories have been found
-        val baseUrl = taskManagerComponent.getAllConfiguredYouTrackRepositories().first().url
-        val getUsersUrl = "$baseUrl/rest/issues"
-        val method = GetMethod(getUsersUrl)
-
+        val repo = taskManagerComponent.getAllConfiguredYouTrackRepositories().first()
+        val method = GetMethod("${repo.url}/rest/issue?filter=${query.urlencoded}")
+        method.setRequestHeader("Accept", "application/json")
         try {
-            val status = createHttpClient().executeMethod(method)
+            val status = createHttpClient(repo).executeMethod(method)
             if (status == 200) {
                 val stream = InputStreamReader(method.responseBodyAsLoggedStream())
                 val root = JsonParser().parse(stream).asJsonObject

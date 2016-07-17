@@ -68,7 +68,4 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
             val assistUrl = "$baseUrl/rest/command/underlineAndSuggestAndCommands"
             return "$assistUrl?command=${command.urlencoded}&caret=$caret&query=${issues.first().id}&noIssuesContext=false"
         }
-
-    private val String.urlencoded: String
-        get() = URLEncoder.encode(this, "UTF-8")
 }

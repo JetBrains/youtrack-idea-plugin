@@ -41,11 +41,15 @@ class TaskManagerProxyComponentImpl(val project: Project) :
     }
 
     override fun getRestClient(): HttpClient {
+        return getRestClient(getActiveYouTrackRepository())
+    }
+
+    override fun getRestClient(repository: BaseRepository): HttpClient {
         // dirty hack to get preconfigured http client from task management plugin
         // we don't want to handle all the connection/testing/proxy stuff ourselves
         val method = BaseRepositoryImpl::class.java.getDeclaredMethod("getHttpClient")
         method.isAccessible = true
-        return method.invoke(getActiveYouTrackRepository()) as HttpClient
+        return method.invoke(repository) as HttpClient
     }
 
     private fun getTaskManager(): TaskManager {

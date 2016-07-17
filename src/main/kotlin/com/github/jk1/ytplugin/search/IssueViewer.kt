@@ -1,10 +1,11 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.search.actions.CreateIssueAction
+import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
+import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
 import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.DataKey
-import com.intellij.openapi.actionSystem.DataProvider
-import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
@@ -53,6 +54,13 @@ class IssueViewer(val project: Project, parent: Disposable) : JBLoadingPanel(Bor
                 }
             }
         }
+        val group = DefaultActionGroup()
+        group.add(RefreshIssuesAction())
+        group.add(CreateIssueAction())
+        group.add(SetAsActiveTaskAction())
+        add(ActionManager.getInstance()
+                .createActionToolbar("Actions", group, false)
+                .component, BorderLayout.WEST)
 
     }
 

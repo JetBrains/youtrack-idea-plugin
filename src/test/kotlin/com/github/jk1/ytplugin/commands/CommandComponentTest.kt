@@ -26,7 +26,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
-        repository = getYouTrackRepository()
+        repository = createYouTrackRepository()
         localTask = repository.findTask(createIssue())!!
         readAction { getTaskManagerComponent().activateTask(localTask, true) }
     }

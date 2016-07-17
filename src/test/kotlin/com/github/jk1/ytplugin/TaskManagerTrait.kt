@@ -13,7 +13,7 @@ interface TaskManagerTrait: IdeaProjectTrait, YouTrackConnectionTrait {
 
     fun getTaskManagerComponent() = project.getComponent(TaskManager::class.java)!! as TaskManagerImpl
 
-    fun getYouTrackRepository(): YouTrackRepository {
+    fun createYouTrackRepository(): YouTrackRepository {
         val repository = YouTrackRepository(YouTrackRepositoryType())
         repository.url = serverUrl
         repository.username = username

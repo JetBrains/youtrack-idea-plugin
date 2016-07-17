@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.search
 
 import com.github.jk1.ytplugin.common.YouTrackPluginIcons
+import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory

@@ -15,4 +15,6 @@ interface TaskManagerProxyComponent : ProjectComponent {
     fun getAllConfiguredYouTrackRepositories(): List<BaseRepository>
 
     fun getRestClient() : HttpClient
+
+    fun getRestClient(repository: BaseRepository) : HttpClient
 }

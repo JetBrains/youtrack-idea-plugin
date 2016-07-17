@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.search.components
 
 import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.rest.IssuesRestClient
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
@@ -16,38 +15,35 @@ import java.util.*
 
 class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project) {
 
-    private val myIssues = HashMap<String, Issue>()
-    private val mySortedIssues = SortedList(Comparator<String> { o1, o2 ->
+    private val issues = HashMap<String, Issue>()
+    private val sortedIssues = SortedList(Comparator<String> { o1, o2 ->
         o1.compareTo(o2)
     })
-    private var myWorking: ActionCallback = ActionCallback.Done()
+    private var currentCallback: ActionCallback = ActionCallback.Done()
+
+    var searchQuery = ""
 
     fun getAllIssues(): Collection<Issue> {
-        return myIssues.values
+        return issues.values
     }
 
     fun update(): ActionCallback {
         if (isUpdating()) {
-            return myWorking
+            return currentCallback
         }
 
-        myWorking = refresh()
+        currentCallback = refresh()
 
 
-        return myWorking
+        return currentCallback
     }
 
     private fun refresh(): ActionCallback {
         val future = ActionCallback()
         object : Task.Backgroundable(project, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
             override fun run(indicator: ProgressIndicator) {
-                val restClient = IssuesRestClient(project)
-                val modificationStamp = PropertiesComponent.getInstance(project).getOrInitLong("MyyLastTimeUpdated", 0)
                 try {
-                    val started = System.currentTimeMillis()
-                    val issues = restClient.getIssues(indicator, modificationStamp)
-                    setIssues(issues)
-                    PropertiesComponent.getInstance(project).setValue("MyyLastTimeUpdated", started.toString())
+                    setIssues(IssuesRestClient(project).getIssues(searchQuery))
                 } catch (e: Exception) {
                     // todo: notification and logging
                     e.printStackTrace()
@@ -66,25 +62,23 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
         return future
     }
 
-    private fun setIssues(issues: List<Issue>) {
-        for (issue in issues) {
-            myIssues.put(issue.id, issue)
-        }
-        mySortedIssues.clear()
-        mySortedIssues.addAll(myIssues.keys)
+    private fun setIssues(updatedIssues: List<Issue>) {
+        issues.putAll(updatedIssues.associateBy { it.id })
+        sortedIssues.clear()
+        sortedIssues.addAll(this.issues.keys)
     }
 
     fun isUpdating(): Boolean {
-        return !myWorking.isDone
+        return !currentCallback.isDone
     }
 
 
     fun getIssue(id: String): Issue? {
-        return myIssues[id]
+        return issues[id]
     }
 
     fun getSortedIssues(): SortedList<String> {
-        return mySortedIssues
+        return sortedIssues
     }
 
     fun save() {
@@ -129,7 +123,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
             issues.createNewFile()
         }
         val xml = Element("issues")
-        for (issue in myIssues.values) {
+        for (issue in issues.values) {
             val element = issue.toXml()
 
             xml.addContent(element.clone() as Element)
