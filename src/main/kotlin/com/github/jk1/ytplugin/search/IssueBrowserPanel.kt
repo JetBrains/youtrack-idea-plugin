@@ -13,15 +13,16 @@ import java.util.regex.Pattern
 import javax.swing.JPanel
 import javax.swing.JTextPane
 import javax.swing.ScrollPaneConstants
+import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import javax.swing.SwingUtilities
 import javax.swing.text.html.HTMLEditorKit
 
-class MessageBrowser(val project: Project) : JPanel(BorderLayout()) {
+class IssueBrowserPanel(val project: Project) : JPanel(BorderLayout()) {
 
     var myBrowser: JTextPane = JTextPane()
 
     fun showIssue(issue: Issue) {
-
         myBrowser = JTextPane()
         myBrowser.margin = Insets(0, 0, 0, 0)
         val editorKit = HTMLEditorKit()
@@ -29,12 +30,11 @@ class MessageBrowser(val project: Project) : JPanel(BorderLayout()) {
         editorKit.styleSheet.addRule(UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground()))
         myBrowser.editorKit = editorKit
         myBrowser.contentType = "text/html"
-        add(JBScrollPane(myBrowser, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER)
+        add(JBScrollPane(myBrowser, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER)
         revalidate()
         repaint()
-
-        val s = generateHtml(issue)
-        SwingUtilities.invokeLater { myBrowser.setText(s) }
+        val preview = generateHtml(issue)
+        SwingUtilities.invokeLater { myBrowser.text = preview }
     }
 
     private val STACKTRACE_LINE = Pattern.compile("[\t]*at [[_a-zA-Z0-9]+\\.]+[_a-zA-Z$0-9]+\\.([a-zA-Z$0-9_]+|<init>)\\(([[[A-Za-z0-9_]+\\.java:[\\d]+]]+|[Native\\sMethod]+|[Unknown\\sSource]+)\\)+[ [~]*\\[[a-zA-Z0-9\\.\\:/]\\]]*")
@@ -45,8 +45,9 @@ class MessageBrowser(val project: Project) : JPanel(BorderLayout()) {
         val description = html(StringUtil.unescapeXml(issue.description))
 
         try {
-            var main = FileUtil.loadTextAndClose(MessageBrowser::class.java.getResourceAsStream("issue.html"))
-            val css = FileUtil.loadTextAndClose(MessageBrowser::class.java.getResourceAsStream(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css"))
+            var main = FileUtil.loadTextAndClose(IssueBrowserPanel::class.java.getResourceAsStream("issue.html"))
+            val css = FileUtil.loadTextAndClose(IssueBrowserPanel::class.java.getResourceAsStream(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css"))
+            // todo: a real url
             val url = "https://elle.myjetbrains.com/youtrack/issue/TEST-1"
             id = "<a href='$url'>$id</a>"
             main = StringUtil.replace(main, arrayOf("{##STYLES}", "{##ID}", "{##Summary}", "{##Description}"), arrayOf(css, id, summary, description))
@@ -60,10 +61,7 @@ class MessageBrowser(val project: Project) : JPanel(BorderLayout()) {
         return ""
     }
 
-    private fun html(description: String?): String {
-        if (description == null) {
-            return ""
-        }
+    private fun html(description: String): String {
         val buf = StringBuffer()
         var listStarted = false
         var preStarted = false

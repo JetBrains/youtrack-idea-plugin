@@ -13,7 +13,7 @@ class IssuesToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val contentManager = toolWindow.contentManager
-        val content = contentFactory.createContent(IssueViewer(project, contentManager), "Issues", false)
+        val content = contentFactory.createContent(IssueListPanel(project, contentManager), "Issues", false)
         content.isCloseable = false
         contentManager.addContent(content)
         // this icon is loaded via IconLoader, thus adaptive

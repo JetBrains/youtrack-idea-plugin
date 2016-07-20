@@ -14,9 +14,6 @@ import java.awt.*
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
-/**
- * Created by elle on 28.03.16.
- */
 class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Any> {
 
     private val myPriority = JLabel()

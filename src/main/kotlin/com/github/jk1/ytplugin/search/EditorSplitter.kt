@@ -16,8 +16,8 @@ class EditorSplitter(val project: Project) : JBSplitter(false) {
         SwingUtilities.invokeLater {
             proportion = myMessagesWidth.toFloat() / width.toFloat()
             firstComponent.addComponentListener(object : ComponentAdapter() {
-                override fun componentResized(e: ComponentEvent?) {
-                    PropertiesComponent.getInstance(project).setValue(WIDTH_PROPERTY_NAME, Math.max(350, e!!.component.width).toString())
+                override fun componentResized(e: ComponentEvent) {
+                    PropertiesComponent.getInstance(project).setValue(WIDTH_PROPERTY_NAME, Math.max(350, e.component.width).toString())
                 }
             })
         }

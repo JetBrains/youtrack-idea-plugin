@@ -8,6 +8,8 @@ import org.apache.commons.httpclient.HttpClient
 
 interface TaskManagerProxyComponent : ProjectComponent {
 
+    fun setActiveTask(task: Task)
+
     fun getActiveTask(): Task
 
     fun getActiveYouTrackRepository(): BaseRepository

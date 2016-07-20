@@ -22,6 +22,10 @@ class TaskManagerProxyComponentImpl(val project: Project) :
         }
     }
 
+    override fun setActiveTask(task: Task) {
+        getTaskManager().activateTask(task, true)
+    }
+
     override fun getActiveYouTrackRepository(): BaseRepository {
         val repository = getActiveTask().repository as BaseRepository
         if (repository.isConfigured && repository.isYouTrack()) {
