@@ -10,8 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.tasks.impl.BaseRepository
 import com.intellij.util.containers.SortedList
-import java.io.File
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -19,11 +17,11 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
     private val stores = ConcurrentHashMap<BaseRepository, Store>()
 
-    fun getStore(repo: BaseRepository): Store {
-        return stores.computeIfAbsent(repo, { Store(repo) })
+    operator fun get(repo: BaseRepository): Store {
+        return stores.getOrPut(repo, { Store(repo) })
     }
 
-    inner class Store(val repo: BaseRepository) {
+    inner class Store(repo: BaseRepository) {
         private val client = IssuesRestClient(project, repo)
         private val issues = HashMap<String, Issue>()
         private val sortedIssues = SortedList(Comparator<String> { o1, o2 ->

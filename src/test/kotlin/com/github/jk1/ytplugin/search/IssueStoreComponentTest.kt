@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.impl.BaseRepository
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
@@ -14,6 +15,7 @@ import java.util.*
 class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait {
 
     lateinit var fixture: IdeaProjectTestFixture
+    lateinit var repo: BaseRepository
     override val project: Project by lazy { fixture.project }
     val issues = ArrayList<String>()
 
@@ -22,14 +24,14 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
         issues.add(createIssue())
-        createYouTrackRepository()
-        issueStoreComponent.searchQuery = "project: AT"
+        repo = createYouTrackRepository()
+        issueStoreComponent[repo].searchQuery = "project: AT"
     }
 
     @Test
     fun testStoreLoad() {
-        issueStoreComponent.update().waitFor(5000)
-        Assert.assertEquals(1, issueStoreComponent.getAllIssues().size)
+        issueStoreComponent[repo].update().waitFor(5000)
+        Assert.assertEquals(1, issueStoreComponent.get(repo).getAllIssues().size)
     }
 
     @After

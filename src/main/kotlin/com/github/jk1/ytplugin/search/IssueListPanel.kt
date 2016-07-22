@@ -6,7 +6,8 @@ import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
 import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
 import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.impl.BaseRepository
 import com.intellij.ui.CollectionListModel
@@ -63,19 +64,19 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
 
     private fun initModel() {
         startLoading()
-        getStore().update().doWhenDone { stopLoading() }
+        issueStoreComponent[repo].update().doWhenDone { stopLoading() }
         issueListModel = object : AbstractListModel<Issue>() {
 
             override fun getElementAt(index: Int): Issue? {
-                return getStore().getIssue(getStore().getSortedIssues()[index])
+                // todo: rethink api to avoid calls like this
+                return issueStoreComponent[repo].getIssue(issueStoreComponent[repo].getSortedIssues()[index])
             }
 
             override fun getSize(): Int {
-                return getStore().getSortedIssues().count()
+                return issueStoreComponent[repo].getSortedIssues().count()
             }
         }
         issueList.model = issueListModel
     }
 
-    private fun getStore() = issueStoreComponent.getStore(repo)
 }

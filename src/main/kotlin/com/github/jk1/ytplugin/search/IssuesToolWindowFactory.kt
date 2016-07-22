@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.tasks.impl.BaseRepository
 import com.intellij.ui.content.ContentFactory
 
 

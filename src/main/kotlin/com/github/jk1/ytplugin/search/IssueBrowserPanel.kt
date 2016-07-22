@@ -12,7 +12,6 @@ import java.io.IOException
 import java.util.regex.Pattern
 import javax.swing.JPanel
 import javax.swing.JTextPane
-import javax.swing.ScrollPaneConstants
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import javax.swing.SwingUtilities

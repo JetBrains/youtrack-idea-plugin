@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
-import java.net.URLEncoder
 
 class CommandRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 

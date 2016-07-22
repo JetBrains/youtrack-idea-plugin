@@ -14,7 +14,7 @@ class RefreshIssuesAction(val repo: BaseRepository): AnAction("Refresh issues",
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
-            ComponentAware.of(project).issueStoreComponent.getStore(repo).update()
+            ComponentAware.of(project).issueStoreComponent[repo].update()
         }
     }
 }
