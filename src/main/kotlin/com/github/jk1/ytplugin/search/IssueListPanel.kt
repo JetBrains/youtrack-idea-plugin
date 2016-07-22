@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.impl.BaseRepository
 import com.intellij.ui.CollectionListModel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBLoadingPanel
@@ -20,7 +21,8 @@ import java.awt.event.ComponentEvent
 import javax.swing.AbstractListModel
 import javax.swing.JComponent
 
-class IssueListPanel(override val project: Project, parent: Disposable) : JBLoadingPanel(BorderLayout(), parent), ComponentAware {
+class IssueListPanel(override val project: Project, val repo: BaseRepository, parent: Disposable) :
+        JBLoadingPanel(BorderLayout(), parent), ComponentAware {
 
     private var issueList: JBList = JBList()
     private lateinit var issueListModel: AbstractListModel<Issue>
@@ -51,7 +53,7 @@ class IssueListPanel(override val project: Project, parent: Disposable) : JBLoad
 
     private fun createActionPanel(): JComponent {
         val group = DefaultActionGroup()
-        group.add(RefreshIssuesAction())
+        group.add(RefreshIssuesAction(repo))
         group.add(CreateIssueAction())
         group.add(SetAsActiveTaskAction({ issueListModel.getElementAt(issueList.selectedIndex).asTask() }))
         return ActionManager.getInstance()
@@ -61,17 +63,19 @@ class IssueListPanel(override val project: Project, parent: Disposable) : JBLoad
 
     private fun initModel() {
         startLoading()
-        issueStoreComponent.update().doWhenDone { stopLoading() }
+        getStore().update().doWhenDone { stopLoading() }
         issueListModel = object : AbstractListModel<Issue>() {
 
             override fun getElementAt(index: Int): Issue? {
-                return issueStoreComponent.getIssue(issueStoreComponent.getSortedIssues()[index])
+                return getStore().getIssue(getStore().getSortedIssues()[index])
             }
 
             override fun getSize(): Int {
-                return issueStoreComponent.getSortedIssues().count()
+                return getStore().getSortedIssues().count()
             }
         }
         issueList.model = issueListModel
     }
+
+    private fun getStore() = issueStoreComponent.getStore(repo)
 }

@@ -5,15 +5,13 @@ import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.search.model.Issue
 import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.impl.BaseRepository
 import org.apache.commons.httpclient.methods.GetMethod
 import java.io.InputStreamReader
 
-class IssuesRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
+class IssuesRestClient(override val project: Project, val repo: BaseRepository) : RestClientTrait, ResponseLoggerTrait {
 
     fun getIssues(query: String): List<Issue> {
-        // todo: handle multiple repositories
-        // todo: throw an error if no suitable repositories have been found
-        val repo = taskManagerComponent.getAllConfiguredYouTrackRepositories().first()
         val method = GetMethod("${repo.url}/rest/issue?filter=${query.urlencoded}")
         method.setRequestHeader("Accept", "application/json")
         try {
