@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.search
 
 import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.search.actions.BrowseIssueAction
 import com.github.jk1.ytplugin.search.actions.CreateIssueAction
 import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
 import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
@@ -31,11 +32,13 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
     init {
         val splitter = EditorSplitter(project)
         val browser = IssueBrowserPanel(project)
-        issueList.fixedCellHeight = 80
         issueList.cellRenderer = IssueListCellRenderer()
         issueList.model = CollectionListModel<Issue>()
         issueList.addListSelectionListener {
-            browser.showIssue(issueListModel.getElementAt(issueList.selectedIndex))
+            val issue = issueListModel.getElementAt(issueList.selectedIndex)
+            if (!issue.equals(browser.currentIssue)) {
+                browser.showIssue(issue)
+            }
         }
         val scrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
         scrollPane.addComponentListener(object : ComponentAdapter() {
@@ -43,7 +46,6 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
                 issueList.fixedCellWidth = scrollPane.visibleRect.width - 30
             }
         })
-
         splitter.firstComponent = scrollPane
         splitter.secondComponent = browser
         add(splitter, BorderLayout.CENTER)
@@ -54,9 +56,16 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
 
     private fun createActionPanel(): JComponent {
         val group = DefaultActionGroup()
+        val selectedTask = {
+            when {
+                issueList.selectedIndex == -1 -> null
+                else -> issueListModel.getElementAt(issueList.selectedIndex).asTask()
+            }
+        }
         group.add(RefreshIssuesAction(repo))
         group.add(CreateIssueAction())
-        group.add(SetAsActiveTaskAction({ issueListModel.getElementAt(issueList.selectedIndex).asTask() }))
+        group.add(SetAsActiveTaskAction(selectedTask))
+        group.add(BrowseIssueAction(selectedTask))
         return ActionManager.getInstance()
                 .createActionToolbar("Actions", group, false)
                 .component
@@ -64,19 +73,17 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
 
     private fun initModel() {
         startLoading()
-        issueStoreComponent[repo].update().doWhenDone { stopLoading() }
         issueListModel = object : AbstractListModel<Issue>() {
-
-            override fun getElementAt(index: Int): Issue? {
-                // todo: rethink api to avoid calls like this
-                return issueStoreComponent[repo].getIssue(issueStoreComponent[repo].getSortedIssues()[index])
+            init {
+                issueStoreComponent[repo].addListener { fireContentsChanged(IssueListPanel@this, 0, size) }
             }
 
-            override fun getSize(): Int {
-                return issueStoreComponent[repo].getSortedIssues().count()
-            }
+            override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
+
+            override fun getSize() = issueStoreComponent[repo].getAllIssues().size
         }
         issueList.model = issueListModel
+        issueStoreComponent[repo].update().doWhenDone { stopLoading() }
     }
 
 }

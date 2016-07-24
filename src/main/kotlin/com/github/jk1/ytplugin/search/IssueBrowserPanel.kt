@@ -19,38 +19,37 @@ import javax.swing.text.html.HTMLEditorKit
 
 class IssueBrowserPanel(val project: Project) : JPanel(BorderLayout()) {
 
-    var myBrowser: JTextPane = JTextPane()
+    var browserPane: JTextPane = JTextPane()
+    var currentIssue: Issue? = null
+
+    init {
+        val editorKit = HTMLEditorKit()
+        val css = UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground())
+        editorKit.styleSheet.addRule(css)
+        browserPane.editorKit = editorKit
+        browserPane.contentType = "text/html"
+        browserPane.margin = Insets(0, 0, 0, 0)
+        browserPane.isEditable = false
+        val scroll = JBScrollPane(browserPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED)
+        add(scroll, BorderLayout.CENTER)
+    }
 
     fun showIssue(issue: Issue) {
-        myBrowser = JTextPane()
-        myBrowser.margin = Insets(0, 0, 0, 0)
-        val editorKit = HTMLEditorKit()
-        myBrowser.isEditable = false
-        editorKit.styleSheet.addRule(UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground()))
-        myBrowser.editorKit = editorKit
-        myBrowser.contentType = "text/html"
-        add(JBScrollPane(myBrowser, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER)
-        revalidate()
-        repaint()
+        currentIssue = issue
         val preview = generateHtml(issue)
-        SwingUtilities.invokeLater { myBrowser.text = preview }
+        SwingUtilities.invokeLater { browserPane.text = preview }
     }
 
     private val STACKTRACE_LINE = Pattern.compile("[\t]*at [[_a-zA-Z0-9]+\\.]+[_a-zA-Z$0-9]+\\.([a-zA-Z$0-9_]+|<init>)\\(([[[A-Za-z0-9_]+\\.java:[\\d]+]]+|[Native\\sMethod]+|[Unknown\\sSource]+)\\)+[ [~]*\\[[a-zA-Z0-9\\.\\:/]\\]]*")
 
     private fun generateHtml(issue: Issue): String {
-        var id = issue.id
+        val id = issue.id
         val summary = issue.summary
         val description = html(StringUtil.unescapeXml(issue.description))
-
         try {
             var main = FileUtil.loadTextAndClose(IssueBrowserPanel::class.java.getResourceAsStream("issue.html"))
             val css = FileUtil.loadTextAndClose(IssueBrowserPanel::class.java.getResourceAsStream(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css"))
-            // todo: a real url
-            val url = "https://elle.myjetbrains.com/youtrack/issue/TEST-1"
-            id = "<a href='$url'>$id</a>"
             main = StringUtil.replace(main, arrayOf("{##STYLES}", "{##ID}", "{##Summary}", "{##Description}"), arrayOf(css, id, summary, description))
-
             main = StringUtil.replace(main, "{##comments}", "")
             return main
         } catch (e: IOException) {
@@ -78,7 +77,7 @@ class IssueBrowserPanel(val project: Project) : JPanel(BorderLayout()) {
                 var line = "-1"
                 val ind: Int
                 ind = s.indexOf(':', linkStart)
-                if (ind  < linkEnd && ind > 0) {
+                if (ind < linkEnd && ind > 0) {
                     line = s.substring(s.indexOf(':') + 1, linkEnd)
                 }
                 var fqn = s.substring(fqnStart, linkStart)

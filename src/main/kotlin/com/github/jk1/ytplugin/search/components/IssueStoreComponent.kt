@@ -9,7 +9,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.tasks.impl.BaseRepository
-import com.intellij.util.containers.SortedList
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -23,26 +22,17 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
     inner class Store(repo: BaseRepository) {
         private val client = IssuesRestClient(project, repo)
-        private val issues = HashMap<String, Issue>()
-        private val sortedIssues = SortedList(Comparator<String> { o1, o2 ->
-            o1.compareTo(o2)
-        })
+        private var issues: List<Issue> = listOf()
         private var currentCallback: ActionCallback = ActionCallback.Done()
+        private val listeners = mutableSetOf({ /**fileStore().save()*/ })
 
         var searchQuery = ""
-
-        fun getAllIssues(): Collection<Issue> {
-            return issues.values
-        }
 
         fun update(): ActionCallback {
             if (isUpdating()) {
                 return currentCallback
             }
-
             currentCallback = refresh()
-
-
             return currentCallback
         }
 
@@ -51,7 +41,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
             object : Task.Backgroundable(project, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
                     try {
-                        setIssues(client.getIssues(searchQuery))
+                        issues = client.getIssues(searchQuery)
                     } catch (e: Exception) {
                         // todo: notification and logging
                         e.printStackTrace()
@@ -64,31 +54,21 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
                 override fun onSuccess() {
                     future.setDone()
-                    //fileStore().save()
+                    listeners.forEach { it.invoke() }
                 }
             }.queue()
             return future
         }
 
-        private fun setIssues(updatedIssues: List<Issue>) {
-            issues.putAll(updatedIssues.associateBy { it.id })
-            sortedIssues.clear()
-            sortedIssues.addAll(this.issues.keys)
-        }
 
-        fun isUpdating(): Boolean {
-            return !currentCallback.isDone
-        }
+        fun isUpdating() = !currentCallback.isDone
 
+        fun getAllIssues(): Collection<Issue> = issues
 
-        fun getIssue(id: String): Issue? {
-            return issues[id]
-        }
+        fun getIssue(index: Int)= issues[index]
 
-        fun getSortedIssues(): SortedList<String> {
-            return sortedIssues
+        fun addListener(listener: () -> Unit){
+            listeners.add(listener)
         }
     }
-
-
 }

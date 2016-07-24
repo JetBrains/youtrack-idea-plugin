@@ -9,7 +9,11 @@ import com.intellij.tasks.impl.LocalTaskImpl
 import java.util.*
 import javax.swing.Icon
 
-class Issue(item: JsonElement) {
+class Issue(item: JsonElement, val repoUrl: String) {
+
+    private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
+            "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
+            "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links")
 
     val id: String
     val entityId: String
@@ -18,23 +22,29 @@ class Issue(item: JsonElement) {
     val createDate: Date
     val updateDate: Date
     val resolved: Boolean
-    val customFields: Map<String, String> = mutableMapOf()
+    val customFields: List<CustomField>
 
     init {
         val root = item.asJsonObject
         id = root.get("id").asString
         entityId = root.get("entityId").asString
-        summary = getPredefinedFieldValue("summary", root) ?: ""
-        description = getPredefinedFieldValue("description", root) ?: ""
-        createDate = Date(getPredefinedFieldValue("created", root)?.toLong() ?: 0)
-        updateDate = Date(getPredefinedFieldValue("updated", root)?.toLong() ?: 0)
+        summary = getFieldValue("summary", root) ?: ""
+        description = getFieldValue("description", root) ?: ""
+        createDate = Date(getFieldValue("created", root)?.toLong() ?: 0)
+        updateDate = Date(getFieldValue("updated", root)?.toLong() ?: 0)
         resolved = root.getAsJsonArray("field").any { "resolved".equals(it.asJsonObject.get("name").asString) }
+        customFields = root.getAsJsonArray("field").filter { it.isCustomField() }.map { CustomField(it) }
     }
 
-    private fun getPredefinedFieldValue(name: String, root: JsonObject): String? {
+    private fun getFieldValue(name: String, root: JsonObject): String? {
         return root.getAsJsonArray("field").firstOrNull {
             name.equals(it.asJsonObject.get("name").asString)
         }?.asJsonObject?.get("value")?.asString
+    }
+
+    private fun JsonElement.isCustomField(): Boolean {
+        val name = asJsonObject.get("name")
+        return name != null && !PREDEFINED_FIELDS.contains(name.asString)
     }
 
     fun asTask(): Task = object : Task() {
@@ -59,7 +69,8 @@ class Issue(item: JsonElement) {
 
         override fun isIssue() = true
 
-        // todo: proper url
-        override fun getIssueUrl() = "http://lol.de"
+        override fun getIssueUrl() = "$repoUrl/issue/$id"
     }
 }
+
+

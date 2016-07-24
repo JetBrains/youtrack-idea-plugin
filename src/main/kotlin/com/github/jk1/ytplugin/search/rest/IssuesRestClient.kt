@@ -19,7 +19,7 @@ class IssuesRestClient(override val project: Project, val repo: BaseRepository) 
             if (status == 200) {
                 val stream = InputStreamReader(method.responseBodyAsLoggedStream())
                 val root = JsonParser().parse(stream).asJsonObject
-                return root.getAsJsonArray("issue").map { Issue(it) }
+                return root.getAsJsonArray("issue").map { Issue(it, repo.url) }
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }

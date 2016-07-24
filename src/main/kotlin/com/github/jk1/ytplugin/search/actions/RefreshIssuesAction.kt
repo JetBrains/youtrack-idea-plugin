@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.tasks.impl.BaseRepository
 
 
-class RefreshIssuesAction(val repo: BaseRepository): AnAction("Refresh issues",
+class RefreshIssuesAction(val repo: BaseRepository) : AnAction("Refresh issues",
         "Update issue list from YouTrack server",
         AllIcons.Actions.Refresh) {
 
@@ -16,5 +16,12 @@ class RefreshIssuesAction(val repo: BaseRepository): AnAction("Refresh issues",
         if (project != null && project.isInitialized) {
             ComponentAware.of(project).issueStoreComponent[repo].update()
         }
+    }
+
+    override fun update(event: AnActionEvent) {
+        val project = event.project
+        event.presentation.isEnabled = project != null &&
+                project.isInitialized &&
+                !ComponentAware.of(project).issueStoreComponent[repo].isUpdating()
     }
 }
