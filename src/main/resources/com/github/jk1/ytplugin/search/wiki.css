@@ -1,0 +1,217 @@
+
+.java.code.title {
+  color: gray;
+}
+
+.text.tab {
+  white-space: nowrap;
+}
+
+.wiki.cutDots {
+  color: #9F9F9F;
+}
+
+.monospace {
+  font-family: monospace;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.wiki.tooltip {
+  position: absolute;
+  background: #FFFFD0;
+  border-color: #000000;
+  border: 2px;
+  padding: 5px;
+}
+
+.wiki.text {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre-wrap;
+}
+
+.wiki.text h1 {
+  font-size: 160%;
+}
+
+.wiki.text h2 {
+  font-size: 150%;
+}
+
+.wiki.text h3 {
+  font-size: 140%;
+}
+
+.wiki.text h4 {
+  font-size: 125%;
+}
+
+.wiki.text h5 {
+  font-size: 110%;
+}
+
+.wiki.text h6 {
+  font-size: 100%;
+}
+
+.wiki-parsed-html {
+  white-space: normal;
+}
+
+.wiki.quote {
+  border-left: 1px solid blue;
+  padding-left: 1em;
+  margin: 0;
+  display: inline-block;
+}
+
+pre.code .keyword {
+  color: #2505a3;
+  font-weight: bold;
+}
+
+pre.code .string {
+  color: green;
+}
+
+pre.code .number {
+  color: blue;
+}
+
+pre.code .comment {
+  font-style: italic;
+  color: gray;
+}
+
+.wiki-tbl {
+  width: auto!important;
+  table-layout: auto!important;
+  border-collapse: collapse!important;
+  border-spacing: 0!important;
+  border: 1px solid #898989;
+  margin-left: 1px;
+  margin-top: 1px;
+}
+
+.wiki-tbl-td {
+  padding: 2px;
+  border: 1px solid #898989;
+}
+
+.wiki-tbl-th {
+  padding: 2px;
+  font-weight: bold;
+  color: black;
+  border: 1px solid #898989;
+  background-color: #d4d5d6;
+}
+
+.wiki ul {
+  list-style-position: outside;
+  padding-left: 2em;
+  margin-left: 25px;
+  list-style-type: disc;
+
+}
+
+.wiki ul li {
+  list-style-position: outside;
+}
+
+.wiki ol {
+  list-style-position: outside;
+  padding-left: 2em;
+  margin-left: 25px;
+  list-style-type: decimal;
+
+}
+
+.wiki ol li {
+  list-style-position: outside;
+}
+
+.wiki del {
+  text-decoration: line-through;
+}
+
+ol.wiki-list0 {
+  list-style-type: decimal;
+  padding-left: 0;
+}
+
+ol.wiki-list1 {
+  list-style-type: upper-alpha;
+}
+
+ol.wiki-list2 {
+  list-style-type: lower-alpha;
+}
+
+ul.wiki-list0 {
+  list-style-type: фкьутшфт;
+  padding-left: 0;
+}
+
+ul.wiki-list1 {
+  list-style-type: circle;
+}
+
+ul.wiki-list2 {
+  list-style-type: square;
+}
+
+.dsLink {
+  text-decoration: none;
+  cursor: default;
+  color: black;
+}
+
+.dsLink:hover {
+  color: black;
+}
+
+.dsLinkEnabled {
+  cursor: pointer;
+}
+
+.wiki-minus {
+  background-position: 0 -10px;
+}
+
+.wiki-hellip {
+  color: gray;
+}
+
+.wiki-hidden {
+  display: none!important;
+}
+
+.wikicode {
+  background-color: #f9f9f9;
+  border: 1px dashed #2f6fab;
+  color: black;
+  line-height: 140%;
+  padding: 2px;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.wikicode .wikicode {
+  border: none;
+}
+
+.inline-code {
+  background-color: #f9f9f9;
+  display: inline;
+}
+
+.inline-code span {
+  display: inline;
+}
+
+.js-wrapper {
+  display: inline;
+  white-space: nowrap;
+}

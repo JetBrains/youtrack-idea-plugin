@@ -71,7 +71,7 @@ class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> 
             fields.append("   ")
         }
         time.foreground = if (isSelected) UIUtil.getListForeground(true) else JBColor(Color(75, 107, 244), Color(87, 120, 173))
-        time.text = SimpleDateFormat().format(issue.updateDate)
+        time.text = SimpleDateFormat().format(issue.updateDate) + " "
         //summary.foreground = if (isSelected) UIUtil.getListForeground(isSelected) else JBColor(Color(0, 68, 105), Color(160, 110, 0))
         return this
     }
