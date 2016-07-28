@@ -8,6 +8,10 @@ import org.apache.commons.httpclient.HttpClient
 
 interface TaskManagerProxyComponent : ProjectComponent {
 
+    companion object {
+        const val CONFIGURE_SERVERS_ACTION_ID = "tasks.configure.servers"
+    }
+
     fun setActiveTask(task: Task)
 
     fun getActiveTask(): Task

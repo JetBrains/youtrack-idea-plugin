@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.common.YouTrackPluginException
 import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.common.components.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.common.sendNotification
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
@@ -33,8 +34,11 @@ class OpenCommandWindowAction : AnAction(
         }
     }
 
-    private fun assertYouTrackRepositoryConfigured (project: Project){
-        ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+    private fun assertYouTrackRepositoryConfigured(project: Project) {
+        val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        if (repos.isEmpty()) {
+            throw NoYouTrackRepositoryException()
+        }
     }
 
     override fun update(event: AnActionEvent) {

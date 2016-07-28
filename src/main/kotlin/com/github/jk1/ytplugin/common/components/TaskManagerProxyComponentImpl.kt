@@ -36,12 +36,7 @@ class TaskManagerProxyComponentImpl(val project: Project) :
     }
 
     override fun getAllConfiguredYouTrackRepositories(): List<BaseRepository> {
-        val youTracks = getTaskManager().allRepositories.filter { it.isYouTrack() }.map { it as BaseRepository }
-        if (youTracks.isEmpty()) {
-            throw NoYouTrackRepositoryException()
-        } else {
-            return youTracks
-        }
+        return getTaskManager().allRepositories.filter { it.isYouTrack() }.map { it as BaseRepository }
     }
 
     override fun getRestClient(): HttpClient {

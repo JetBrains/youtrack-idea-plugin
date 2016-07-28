@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.common.components
 
 import com.github.jk1.ytplugin.common.YouTrackPluginException
+`import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.intellij.ide.DataManager
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
@@ -18,9 +19,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
  */
 class NoYouTrackRepositoryException() :
         YouTrackPluginException("YouTrack server integration is not configured yet") {
-
-    // defined in task management plugin we depend on
-    val CONFIGURE_SERVERS_ACTION_ID = "tasks.configure.servers"
 
     override val notification = Notification(
             "YouTrack Integration Plugin",
