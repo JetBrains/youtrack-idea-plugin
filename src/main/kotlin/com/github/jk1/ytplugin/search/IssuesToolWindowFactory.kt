@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.search
 
 import com.github.jk1.ytplugin.common.YouTrackPluginIcons
 import com.github.jk1.ytplugin.common.components.ComponentAware
-import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionManager

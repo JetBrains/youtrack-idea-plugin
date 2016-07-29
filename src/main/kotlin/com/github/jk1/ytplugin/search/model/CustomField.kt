@@ -2,6 +2,8 @@ package com.github.jk1.ytplugin.search.model
 
 import com.google.gson.JsonElement
 import java.awt.Color
+import java.text.SimpleDateFormat
+import java.util.*
 
 class CustomField(item: JsonElement) {
 
@@ -31,4 +33,14 @@ class CustomField(item: JsonElement) {
     }
 
     private fun JsonElement.asColor() = Color.decode(asString)
+
+    fun formatValues() = value.map { formatValue(it) }.joinToString()
+
+    fun formatValue(value: String): String {
+        if (value.matches(Regex("^[1-9][0-9]{12}"))) { // looks like a timestamp
+            return SimpleDateFormat().format(Date(value.toLong()))
+        } else {
+            return value
+        }
+    }
 }

@@ -63,7 +63,7 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
             }
         }
         group.add(RefreshIssuesAction(repo))
-        group.add(CreateIssueAction())
+        //group.add(CreateIssueAction()) todo: implement me
         group.add(SetAsActiveTaskAction(selectedTask))
         group.add(BrowseIssueAction(selectedTask))
         return ActionManager.getInstance()
