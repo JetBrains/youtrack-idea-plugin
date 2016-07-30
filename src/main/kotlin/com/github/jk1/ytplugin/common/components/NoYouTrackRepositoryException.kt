@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.common.components
 
 import com.github.jk1.ytplugin.common.YouTrackPluginException
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.common.runAction
 import com.intellij.ide.DataManager
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
@@ -29,11 +30,8 @@ class NoYouTrackRepositoryException() :
             NotificationType.ERROR,
             // notification hyperlink click handler
             NotificationListener { notification, notificationEvent ->
-                val action = ActionManager.getInstance().getAction(CONFIGURE_SERVERS_ACTION_ID)
-                val context = DataManager.getInstance().dataContext
-                val event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, context)
                 notification.hideBalloon()
-                action.actionPerformed(event)
+                CONFIGURE_SERVERS_ACTION_ID.runAction()
             }
     )
 }

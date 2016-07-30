@@ -5,9 +5,9 @@ import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
+import com.github.jk1.ytplugin.common.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
-import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
@@ -17,7 +17,7 @@ import org.junit.Test
 class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait {
 
     lateinit var fixture: IdeaProjectTestFixture
-    lateinit var repository: YouTrackRepository
+    lateinit var server: YouTrackServer
     lateinit var localTask: Task
 
     override val project: Project by lazy { fixture.project }
@@ -26,8 +26,8 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
-        repository = createYouTrackRepository()
-        localTask = repository.findTask(createIssue())!!
+        server = createYouTrackRepository()
+        localTask = server.findTask(createIssue())!!
         readAction { getTaskManagerComponent().activateTask(localTask, true) }
     }
 
@@ -48,7 +48,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
         val future = commandComponent.executeAsync(execution)
         future.get() // wait for the command to complete
 
-        Assert.assertTrue(repository.getIssues(localTask.id, 0, 1, true).first().isClosed)
+        Assert.assertTrue(server.getTasks(localTask.id, 0, 1).first().isClosed)
     }
 
     @After

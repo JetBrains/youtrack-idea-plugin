@@ -1,17 +1,22 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.common.runAction
 import com.github.jk1.ytplugin.search.actions.BrowseIssueAction
-import com.github.jk1.ytplugin.search.actions.CreateIssueAction
 import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
 import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
 import com.github.jk1.ytplugin.search.model.Issue
+import com.intellij.ide.DataManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.impl.BaseRepository
 import com.intellij.ui.CollectionListModel
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
@@ -23,7 +28,7 @@ import java.awt.event.ComponentEvent
 import javax.swing.AbstractListModel
 import javax.swing.JComponent
 
-class IssueListPanel(override val project: Project, val repo: BaseRepository, parent: Disposable) :
+class IssueListToolWindowContent(override val project: Project, val repo: YouTrackServer, parent: Disposable) :
         JBLoadingPanel(BorderLayout(), parent), ComponentAware {
 
     private var issueList: JBList = JBList()
@@ -31,7 +36,7 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
 
     init {
         val splitter = EditorSplitter(project)
-        val browser = IssueBrowserPanel(project)
+        val browser = IssueViewer(project)
         issueList.cellRenderer = IssueListCellRenderer()
         issueList.model = CollectionListModel<Issue>()
         issueList.addListSelectionListener {
@@ -51,7 +56,16 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
 
+        setupEmptyListPlaceholder()
         initModel()
+    }
+
+    private fun setupEmptyListPlaceholder() {
+        val placeholder = issueList.emptyText
+        placeholder.clear()
+        placeholder.appendText("No issues found ")
+        placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
+                { CONFIGURE_SERVERS_ACTION_ID.runAction() })
     }
 
     private fun createActionPanel(): JComponent {
@@ -66,6 +80,7 @@ class IssueListPanel(override val project: Project, val repo: BaseRepository, pa
         //group.add(CreateIssueAction()) todo: implement me
         group.add(SetAsActiveTaskAction(selectedTask))
         group.add(BrowseIssueAction(selectedTask))
+        group.add(ActionManager.getInstance().getAction(CONFIGURE_SERVERS_ACTION_ID))
         return ActionManager.getInstance()
                 .createActionToolbar("Actions", group, false)
                 .component

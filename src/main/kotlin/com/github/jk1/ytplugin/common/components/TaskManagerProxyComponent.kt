@@ -1,26 +1,53 @@
 package com.github.jk1.ytplugin.common.components
 
-import com.intellij.openapi.components.ProjectComponent
+import com.github.jk1.ytplugin.common.YouTrackServer
+import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
+import com.intellij.tasks.TaskManager
+import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.impl.BaseRepository
-import org.apache.commons.httpclient.HttpClient
 
-
-interface TaskManagerProxyComponent : ProjectComponent {
+/**
+ * Provides integration with task management plugin.
+ * Encapsulates plugin api details to decouple the rest of the plugin from it.
+ */
+class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent(project) {
 
     companion object {
         const val CONFIGURE_SERVERS_ACTION_ID = "tasks.configure.servers"
     }
 
-    fun setActiveTask(task: Task)
+    fun getActiveTask(): Task {
+        val task = getTaskManager().activeTask
+        if (task.isIssue && task.repository?.isYouTrack() ?: false) {
+            return getTaskManager().activeTask
+        } else {
+            throw NoActiveYouTrackTaskException()
+        }
+    }
 
-    fun getActiveTask(): Task
+    fun setActiveTask(task: Task) {
+        getTaskManager().activateTask(task, true)
+    }
 
-    fun getActiveYouTrackRepository(): BaseRepository
+    fun getActiveYouTrackRepository(): YouTrackServer {
+        val repository = getActiveTask().repository as BaseRepository
+        if (repository.isConfigured && repository.isYouTrack()) {
+            return YouTrackServer(repository)
+        } else {
+            throw NoYouTrackRepositoryException()
+        }
+    }
 
-    fun getAllConfiguredYouTrackRepositories(): List<BaseRepository>
+    fun getAllConfiguredYouTrackRepositories(): List<YouTrackServer> {
+        return getTaskManager().allRepositories.filter { it.isYouTrack() }.map { YouTrackServer(it as BaseRepository) }
+    }
 
-    fun getRestClient() : HttpClient
+    private fun getTaskManager(): TaskManager {
+        return project.getComponent(TaskManager::class.java)
+                ?: throw TaskManagementDisabledException()
+    }
 
-    fun getRestClient(repository: BaseRepository) : HttpClient
+    private fun TaskRepository.isYouTrack() = this.javaClass.name.contains("youtrack", true)
 }

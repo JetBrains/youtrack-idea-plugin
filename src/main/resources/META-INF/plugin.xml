@@ -45,8 +45,7 @@
             <skipForDefaultProject/>
         </component>
         <component>
-            <interface-class>com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.common.components.TaskManagerProxyComponentImpl
+            <implementation-class>com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent
             </implementation-class>
             <skipForDefaultProject/>
         </component>

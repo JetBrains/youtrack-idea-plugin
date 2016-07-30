@@ -1,18 +1,17 @@
 package com.github.jk1.ytplugin.search.rest
 
+import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.common.rest.ResponseLoggerTrait
 import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.search.model.Issue
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.impl.BaseRepository
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.methods.GetMethod
 import java.io.InputStreamReader
 
-class IssuesRestClient(override val project: Project, val repo: BaseRepository) : RestClientTrait, ResponseLoggerTrait {
+class IssuesRestClient(override val project: Project, val repo: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
     fun getIssues(query: String = ""): List<Issue> {
         val projects = getIssueIds(query).map { it.split("-")[0] }.distinct()

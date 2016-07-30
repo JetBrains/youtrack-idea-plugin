@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search.components
 
+import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.rest.IssuesRestClient
 import com.intellij.openapi.components.AbstractProjectComponent
@@ -8,25 +9,21 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
-import com.intellij.tasks.impl.BaseRepository
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project) {
 
-    private val stores = ConcurrentHashMap<BaseRepository, Store>()
+    private val stores = ConcurrentHashMap<YouTrackServer, Store>()
 
-    operator fun get(repo: BaseRepository): Store {
+    operator fun get(repo: YouTrackServer): Store {
         return stores.getOrPut(repo, { Store(repo) })
     }
 
-    inner class Store(repo: BaseRepository) {
+    inner class Store(private val repo: YouTrackServer) {
         private val client = IssuesRestClient(project, repo)
         private var issues: List<Issue> = listOf()
         private var currentCallback: ActionCallback = ActionCallback.Done()
-        private val listeners = mutableSetOf({ /**fileStore().save()*/ })
-
-        var searchQuery = ""
+        private val listeners = mutableSetOf({ /** todo: fileStore().save() */ })
 
         fun update(): ActionCallback {
             if (isUpdating()) {
@@ -41,7 +38,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
             object : Task.Backgroundable(project, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
                     try {
-                        issues = client.getIssues(searchQuery)
+                        issues = client.getIssues(repo.defaultSearch)
                     } catch (e: Exception) {
                         // todo: notification and logging
                         e.printStackTrace()

@@ -8,13 +8,13 @@ import java.awt.event.ComponentEvent
 import javax.swing.SwingUtilities
 
 class EditorSplitter(val project: Project) : JBSplitter(false) {
-    val WIDTH_PROPERTY_NAME = "MyyMessagesListWidth"
+    val WIDTH_PROPERTY_NAME = "youtrackPluginIssueBrowserPosition"
     val myMessagesWidth = PropertiesComponent.getInstance(project).getOrInitLong(WIDTH_PROPERTY_NAME, 350).toInt()
 
     override fun addNotify() {
         super.addNotify()
         SwingUtilities.invokeLater {
-            // todo: this proportion calculation throws exceptions sometimes
+            // todo: proportion calculation throws exceptions sometimes
             proportion = myMessagesWidth.toFloat() / width.toFloat()
             firstComponent.addComponentListener(object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent) {

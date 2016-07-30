@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin
 
+import com.github.jk1.ytplugin.common.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.impl.TaskManagerImpl
@@ -13,14 +14,15 @@ interface TaskManagerTrait: IdeaProjectTrait, YouTrackConnectionTrait {
 
     fun getTaskManagerComponent() = project.getComponent(TaskManager::class.java)!! as TaskManagerImpl
 
-    fun createYouTrackRepository(): YouTrackRepository {
+    fun createYouTrackRepository(): YouTrackServer {
         val repository = YouTrackRepository(YouTrackRepositoryType())
         repository.url = serverUrl
         repository.username = username
         repository.password = password
         repository.defaultSearch = ""
         getTaskManagerComponent().setRepositories(listOf(repository))
-        return repository
+        //todo: mock YouTrack here server to break dependency from task-core
+        return YouTrackServer(repository)
     }
 
     fun cleanUpTaskManager(){

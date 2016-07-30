@@ -3,20 +3,23 @@ package com.github.jk1.ytplugin.search
 import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.SimpleTextAttributes.*
+import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
+import com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN
 import com.intellij.ui.border.CustomLineBorder
-import com.intellij.util.ui.GraphicsUtil
 import com.intellij.util.ui.UIUtil
-import java.awt.*
-import java.text.DateFormat
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Component
+import java.awt.Font
 import java.text.SimpleDateFormat
-import javax.swing.*
-import javax.swing.border.EmptyBorder
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JPanel
+import javax.swing.ListCellRenderer
 
 class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> {
 

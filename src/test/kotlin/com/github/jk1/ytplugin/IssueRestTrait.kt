@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin
 
+import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.common.rest.RestClientTrait
-import com.intellij.tasks.impl.BaseRepository
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
@@ -22,7 +22,7 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
         return client
     }
 
-    override fun createHttpClient(repository: BaseRepository): HttpClient = createHttpClient()
+    override fun createHttpClient(repository: YouTrackServer): HttpClient = createHttpClient()
 
     fun createIssue(summary: String = "summary"): String {
         val method = PutMethod("$serverUrl/rest/issue?project=$projectId&summary=$summary")

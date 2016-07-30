@@ -9,7 +9,6 @@ import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Insets
 import java.io.IOException
-import java.util.regex.Pattern
 import javax.swing.JPanel
 import javax.swing.JTextPane
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -17,7 +16,7 @@ import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import javax.swing.SwingUtilities
 import javax.swing.text.html.HTMLEditorKit
 
-class IssueBrowserPanel(val project: Project) : JPanel(BorderLayout()) {
+class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
     var browserPane: JTextPane = JTextPane()
     var currentIssue: Issue? = null
