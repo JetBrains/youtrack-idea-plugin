@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.search.components
 import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.rest.IssuesRestClient
+import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
@@ -10,6 +11,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project) {
 
@@ -17,6 +19,12 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
     operator fun get(repo: YouTrackServer): Store {
         return stores.getOrPut(repo, { Store(repo) })
+    }
+
+    override fun projectOpened() {
+        JobScheduler.getScheduler().scheduleAtFixedRate({
+            stores.forEach { it.value.update() }
+        }, 5, 5, TimeUnit.MINUTES)
     }
 
     inner class Store(private val repo: YouTrackServer) {

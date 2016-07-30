@@ -4,10 +4,6 @@ import com.github.jk1.ytplugin.common.YouTrackPluginIcons
 import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.common.runAction
-import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -18,10 +14,7 @@ import java.awt.Cursor
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.BoxLayout
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 
 class IssuesToolWindowFactory : ToolWindowFactory {
@@ -30,6 +23,11 @@ class IssuesToolWindowFactory : ToolWindowFactory {
         createContent(project, toolWindow)
         // this icon is loaded via IconLoader, thus adaptive
         toolWindow.icon = YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW
+        ComponentAware.of(project).taskManagerComponent.addListener {
+            SwingUtilities.invokeLater {
+                createContent(project, toolWindow)
+            }
+        }
     }
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {
@@ -45,7 +43,7 @@ class IssuesToolWindowFactory : ToolWindowFactory {
         }
         repos.forEach {
             val tabName = when {
-                repos.size == 1 -> "Issues"
+                repos.size == 1 -> "Issues ${it.defaultSearch}"
                 else -> "Issues: ${it.url.split("//").last()}"
             }
             val panel = IssueListToolWindowContent(project, it, contentManager)

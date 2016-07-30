@@ -34,7 +34,7 @@ class CustomField(item: JsonElement) {
 
     private fun JsonElement.asColor() = Color.decode(asString)
 
-    fun formatValues() = value.map { formatValue(it) }.joinToString()
+    fun formatValues() = " ${value.map { formatValue(it) }.joinToString()} "
 
     fun formatValue(value: String): String {
         if (value.matches(Regex("^[1-9][0-9]{12}"))) { // looks like a timestamp

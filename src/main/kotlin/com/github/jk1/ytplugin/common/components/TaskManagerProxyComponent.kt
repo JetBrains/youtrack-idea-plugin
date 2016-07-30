@@ -1,12 +1,15 @@
 package com.github.jk1.ytplugin.common.components
 
 import com.github.jk1.ytplugin.common.YouTrackServer
+import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.impl.BaseRepository
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Provides integration with task management plugin.
@@ -16,6 +19,22 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
 
     companion object {
         const val CONFIGURE_SERVERS_ACTION_ID = "tasks.configure.servers"
+    }
+
+    private var configurationHash = 0L
+    private val listeners = ArrayList<() -> Unit>()
+
+    fun addListener(listener: () -> Unit) {
+        listeners.add(listener)
+    }
+
+    override fun projectOpened() {
+        syncTaskManagerConfig()
+        JobScheduler.getScheduler().scheduleAtFixedRate({
+            if (listeners.isNotEmpty()) {
+                syncTaskManagerConfig()
+            }
+        }, 5, 5, TimeUnit.SECONDS)
     }
 
     fun getActiveTask(): Task {
@@ -42,6 +61,16 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
 
     fun getAllConfiguredYouTrackRepositories(): List<YouTrackServer> {
         return getTaskManager().allRepositories.filter { it.isYouTrack() }.map { YouTrackServer(it as BaseRepository) }
+    }
+
+    private fun syncTaskManagerConfig() {
+        synchronized(this) {
+            val newHash = getTaskManager().allRepositories.fold(0L, { sum, it -> sum + it.hashCode() })
+            if (configurationHash != newHash) {
+                configurationHash = newHash
+                listeners.forEach { it.invoke() }
+            }
+        }
     }
 
     private fun getTaskManager(): TaskManager {

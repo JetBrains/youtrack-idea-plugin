@@ -67,7 +67,7 @@ class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> 
         fields.background = this.background
         issue.customFields.forEach {
             val attributes = when {
-                isSelected -> SimpleTextAttributes(STYLE_PLAIN, null)
+                isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, null)
                 else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
             }
             fields.append(it.formatValues(), attributes)
