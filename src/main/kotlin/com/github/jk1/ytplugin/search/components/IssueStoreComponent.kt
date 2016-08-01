@@ -23,7 +23,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
     }
 
     override fun projectOpened() {
-        JobScheduler.getScheduler().scheduleAtFixedRate({
+        JobScheduler.getScheduler().scheduleWithFixedDelay({
             stores.forEach { it.value.update() }
         }, 5, 5, TimeUnit.MINUTES)
     }

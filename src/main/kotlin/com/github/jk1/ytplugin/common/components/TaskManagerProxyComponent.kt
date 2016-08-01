@@ -30,7 +30,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
 
     override fun projectOpened() {
         syncTaskManagerConfig()
-        JobScheduler.getScheduler().scheduleAtFixedRate({
+        JobScheduler.getScheduler().scheduleWithFixedDelay({
             if (listeners.isNotEmpty()) {
                 syncTaskManagerConfig()
             }
