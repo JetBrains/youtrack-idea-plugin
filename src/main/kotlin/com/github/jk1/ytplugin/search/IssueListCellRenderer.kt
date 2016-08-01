@@ -58,6 +58,7 @@ class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> 
 
         background = UIUtil.getListBackground(isSelected)
         idSummary.clear()
+        idSummary.append(" ")
         idSummary.append(issue.id)
         idSummary.append(" ")
         idSummary.append(issue.summary, SimpleTextAttributes(STYLE_BOLD, null))

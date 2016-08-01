@@ -17,7 +17,7 @@ class CustomField(item: JsonElement) {
         name = item.asJsonObject.get("name").asString
         val valueIdItem = item.asJsonObject.get("valueId")
         val valueItem = item.asJsonObject.get("value")
-        if (valueIdItem == null || valueIdItem.isJsonNull){
+        if (valueIdItem == null || valueIdItem.isJsonNull) {
             // User type field uses a different presentation
             value = valueItem.asJsonArray.map { it.asJsonObject["fullName"].asString }
             valueId = valueItem.asJsonArray.map { it.asJsonObject["value"].asString }
@@ -32,7 +32,11 @@ class CustomField(item: JsonElement) {
         }
     }
 
-    private fun JsonElement.asColor() = Color.decode(asString)
+    private fun JsonElement.asColor() = when {
+    // #F0A -> #FF00AA
+        asString.length == 4 -> Color.decode(asString.drop(1).map { "$it$it" }.joinToString("", "#"))
+        else -> Color.decode(asString)
+    }
 
     fun formatValues() = " ${value.map { formatValue(it) }.joinToString()} "
 

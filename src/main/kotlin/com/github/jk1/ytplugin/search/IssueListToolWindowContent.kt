@@ -56,16 +56,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
 
-        setupEmptyListPlaceholder()
         initModel()
-    }
-
-    private fun setupEmptyListPlaceholder() {
-        val placeholder = issueList.emptyText
-        placeholder.clear()
-        placeholder.appendText("No issues found ")
-        placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
-                { CONFIGURE_SERVERS_ACTION_ID.runAction() })
     }
 
     private fun createActionPanel(): JComponent {
@@ -87,6 +78,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     }
 
     private fun initModel() {
+        issueList.emptyText.clear()
         startLoading()
         issueListModel = object : AbstractListModel<Issue>() {
             init {
@@ -99,6 +91,14 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         }
         issueList.model = issueListModel
         issueStoreComponent[repo].update().doWhenDone { stopLoading() }
+        issueStoreComponent[repo].addListener {
+            val placeholder = issueList.emptyText
+            placeholder.clear()
+            if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
+                placeholder.appendText("No issues found ")
+                placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
+                        { CONFIGURE_SERVERS_ACTION_ID.runAction() })
+            }
+        }
     }
-
 }
