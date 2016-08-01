@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration Plugin</name>
-    <version>0.2</version>
+    <version>0.3</version>
     <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
@@ -9,21 +9,21 @@
         <ul>
             <li>Adds command window to execute YouTrack commands from IDE</li>
             <li>Supports code navigation when clicking on Java stacktraces in issue tracker</li>
+            <li>Shows issue custom fields for YouTrack tasks</li>
+            <li>Renders YouTrack wiki markup</li>
         </ul>
         <p>Compatibility: YouTrack 5.2+, Intellij Idea 15.0.2+<p/>
     ]]></description>
 
     <change-notes><![CDATA[
-        <p>0.2:</p>
         <ul>
-            <li>Error notifications now have integrated quick fix suggestions</li>
-            <li>Command completion cache can handle multiple YouTrack servers properly</li>
-            <li>Added source code navigation when clicking on Java stacktraces in issue tracker</li>
+            <li>- Issue browser tool window added</li>
+            <li>- Enabled wiki markup support on issue content preview</li>
         </ul>
           ]]></change-notes>
 
     <!-- IntelliJ IDEA 15, WebStorm 11, PyCharm 5, PhpStorm 10, RubyMine 8, AppCode 3.3, CLion 1.2, DataGrip 1.0 -->
-    <idea-version since-build="143.0"/>
+    <idea-version since-build="143.0" until-build="171"/>
     <!-- Enable plugin in all products -->
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->

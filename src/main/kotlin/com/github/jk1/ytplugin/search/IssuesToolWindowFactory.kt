@@ -7,11 +7,13 @@ import com.github.jk1.ytplugin.common.runAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.ui.SimpleColoredComponent
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.content.ContentFactory
+import com.intellij.ui.content.ContentManager
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Cursor
-import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -21,9 +23,9 @@ class IssuesToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         createContent(project, toolWindow)
-        // this icon is loaded via IconLoader, thus adaptive
-        toolWindow.icon = YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW
+        toolWindow.icon = YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW // loaded via IconLoader, thus adaptive
         ComponentAware.of(project).taskManagerComponent.addListener {
+            // listen to task management plugin configuration changes and update tool window accordingly
             SwingUtilities.invokeLater {
                 createContent(project, toolWindow)
             }
@@ -31,49 +33,48 @@ class IssuesToolWindowFactory : ToolWindowFactory {
     }
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {
-        val contentFactory = ContentFactory.SERVICE.getInstance()
         val contentManager = toolWindow.contentManager
         contentManager.removeAllContents(false)
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
-        if (repos.isEmpty()) {
-            val panel = createPlaceholderPanel { createContent(project, toolWindow) }
-            val content = contentFactory.createContent(panel, "No server found", false)
-            content.isCloseable = false
-            contentManager.addContent(content)
-        }
-        repos.forEach {
-            val tabName = when {
-                repos.size == 1 -> "Issues ${it.defaultSearch}"
-                else -> "Issues: ${it.url.split("//").last()}"
+        when {
+            repos.size == 0 -> contentManager.addContent("No server found", createPlaceholderPanel())
+            repos.size == 1 -> {
+                val repo = repos.first()
+                val panel = IssueListToolWindowContent(project, repo, contentManager)
+                contentManager.addContent("Issues ${repo.defaultSearch}", panel)
             }
-            val panel = IssueListToolWindowContent(project, it, contentManager)
-            val content = contentFactory.createContent(panel, tabName, false)
-            content.isCloseable = false
-            contentManager.addContent(content)
+            else -> {
+                repos.forEach {
+                    val panel = IssueListToolWindowContent(project, it, contentManager)
+                    contentManager.addContent("Issues: ${it.url.split("//").last()}", panel)
+                }
+            }
         }
     }
 
-    private fun createPlaceholderPanel(refreshContentAction: () -> Unit): JComponent {
+    private fun ContentManager.addContent(title: String, component: JComponent){
+        val contentFactory = ContentFactory.SERVICE.getInstance()
+        val content = contentFactory.createContent(component, title, false)
+        content.isCloseable = false
+        addContent(content)
+    }
+
+    private fun createPlaceholderPanel(): JComponent {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
-        val actionContainer = JPanel(FlowLayout())
-        val messageLabel = JLabel("No YouTrack active repository found")
+        val messageLabel = JLabel("No YouTrack server found")
         val configureLabel = createLink("Configure", { CONFIGURE_SERVERS_ACTION_ID.runAction() })
-        val refreshLabel = createLink("Refresh", refreshContentAction)
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
-        actionContainer.add(configureLabel)
-        actionContainer.add(refreshLabel)
-        labelContainer.layout = BoxLayout(labelContainer, BoxLayout.Y_AXIS)
+        configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)
-        labelContainer.add(actionContainer)
-        labelContainer.maximumSize = messageLabel.preferredSize
+        labelContainer.add(configureLabel)
         panel.add(labelContainer, BorderLayout.NORTH)
         return panel
     }
 
     private fun createLink(text: String, onClick: () -> Unit): JComponent {
-        val label = JLabel()
-        label.text = "<html><body><a href=\"\">$text</a></body></html>"
+        val label = SimpleColoredComponent()
+        label.append(text, SimpleTextAttributes.LINK_ATTRIBUTES)
         label.cursor = Cursor(Cursor.HAND_CURSOR)
         label.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {

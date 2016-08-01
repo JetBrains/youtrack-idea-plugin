@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search.model
 
+import com.github.jk1.ytplugin.common.logger
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.intellij.tasks.Comment
@@ -32,8 +33,22 @@ class Issue(item: JsonElement, val repoUrl: String) {
         description = getFieldValue("description", root) ?: ""
         createDate = Date(getFieldValue("created", root)?.toLong() ?: 0)
         updateDate = Date(getFieldValue("updated", root)?.toLong() ?: 0)
-        resolved = root.getAsJsonArray("field").any { "resolved".equals(it.asJsonObject.get("name").asString) }
-        customFields = root.getAsJsonArray("field").filter { it.isCustomField() }.map { CustomField(it) }
+        resolved = getFieldValue("resolved", root) != null
+        customFields = root.getAsJsonArray("field")
+                .filter { it.isCustomField() }
+                .map { parseCustomFieldSafe(it) }
+                .filter { it != null }
+                .requireNoNulls()
+        // todo: parse comments, tags, links
+    }
+
+    private fun parseCustomFieldSafe(item: JsonElement): CustomField? {
+        try {
+            return CustomField(item)
+        } catch(e: Exception) {
+            logger.error("YouTrack issue parsing error: custom field cannot be parsed", e)
+            return null
+        }
     }
 
     private fun getFieldValue(name: String, root: JsonObject): String? {

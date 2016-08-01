@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
@@ -40,10 +41,10 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
     }
 
     private fun generateHtml(issue: Issue): String {
-        val id = issue.id
-        val summary = issue.summary
-        val description = StringUtil.unescapeXml(issue.description)
         try {
+            val id = issue.id
+            val summary = issue.summary
+            val description = StringUtil.unescapeXml(issue.description)
             var main = loadResource("issue.html")
             val css = loadResource(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css")
             val wikiCss = loadResource("wiki.css")
@@ -52,11 +53,10 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
                     arrayOf(css + wikiCss, id, summary, description))
             main = StringUtil.replace(main, "{##comments}", "")
             return main
-        } catch (e: IOException) {
-            // todo: fallback to plaintext and log
-            e.printStackTrace()
+        } catch (e: Exception) {
+            logger.warn("Issue rendering failed", e)
+            return "<html><body>An error occurred during issue rendering. Check IDE log for more details.</body></html>"
         }
-        return ""
     }
 
     private fun loadResource(name: String) = FileUtil.loadTextAndClose(javaClass.getResourceAsStream(name))

@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.search.components
 
 import com.github.jk1.ytplugin.common.YouTrackServer
+import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.rest.IssuesRestClient
 import com.intellij.concurrency.JobScheduler
@@ -48,8 +49,8 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
                     try {
                         issues = client.getIssues(repo.defaultSearch)
                     } catch (e: Exception) {
-                        // todo: notification and logging
-                        e.printStackTrace()
+                        // todo: notification?
+                        logger.error("YouTrack issues refresh failed", e)
                     }
                 }
 

@@ -11,11 +11,9 @@ table {
 pre {
     font-family: monospace;
     font-size: 10px;
-    /*background-color: #bbbbbb;*/
 }
 
 .header {
-    color: rgb(186, 111, 37);
     display: inline;
     font-family: arial, tahoma, verdana, sans-serif;
     font-size: 18px;
