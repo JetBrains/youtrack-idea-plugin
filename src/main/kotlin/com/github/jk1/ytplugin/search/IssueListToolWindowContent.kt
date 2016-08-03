@@ -12,7 +12,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
-import com.intellij.ui.CollectionListModel
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBLoadingPanel
@@ -20,7 +19,9 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
-import java.awt.event.*
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.AbstractListModel
 import javax.swing.JComponent
 import javax.swing.KeyStroke
@@ -28,45 +29,20 @@ import javax.swing.KeyStroke
 class IssueListToolWindowContent(override val project: Project, val repo: YouTrackServer, parent: Disposable) :
         JBLoadingPanel(BorderLayout(), parent), ComponentAware {
 
-    private var issueList: JBList = JBList()
+    private val issueList: JBList = JBList()
+    private val splitter = EditorSplitter()
+    private val viewer = IssueViewer(project)
     private lateinit var issueListModel: AbstractListModel<Issue>
 
     init {
-        val splitter = EditorSplitter()
-        val viewer = IssueViewer(project)
-        issueList.cellRenderer = IssueListCellRenderer()
-        issueList.model = CollectionListModel<Issue>()
-        issueList.addListSelectionListener {
-            val issue = issueListModel.getElementAt(issueList.selectedIndex)
-            if (!issue.equals(viewer.currentIssue)) {
-                viewer.showIssue(issue)
-            }
-        }
-        // keystrokes to expand/collapse issue preview
-        issueList.registerKeyboardAction({ splitter.collapse() },
-                KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), JComponent.WHEN_FOCUSED)
-        issueList.registerKeyboardAction({ splitter.expand() },
-                KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), JComponent.WHEN_FOCUSED)
-        issueList.registerKeyboardAction({ splitter.expand() },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED)
-        // expand issue preview on click
-        issueList.addMouseListener(object: MouseAdapter(){
-            override fun mousePressed(e: MouseEvent) {
-                splitter.expand()
-            }
-        })
-        val scrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        scrollPane.addComponentListener(object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent) {
-                issueList.fixedCellWidth = scrollPane.visibleRect.width - 30
-            }
-        })
-        splitter.firstComponent = scrollPane
+        val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
+        issueList.cellRenderer = IssueListCellRenderer({issueListScrollPane.viewport.width})
+        splitter.firstComponent = issueListScrollPane
         splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
-
-        initModel()
+        setupIssueListActionListeners()
+        initIssueListModel()
     }
 
     private fun createActionPanel(): JComponent {
@@ -87,7 +63,30 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
                 .component
     }
 
-    private fun initModel() {
+    private fun setupIssueListActionListeners(){
+        // update preview contents upon selection
+        issueList.addListSelectionListener {
+            val issue = issueListModel.getElementAt(issueList.selectedIndex)
+            if (!issue.equals(viewer.currentIssue)) {
+                viewer.showIssue(issue)
+            }
+        }
+        // keystrokes to expand/collapse issue preview
+        issueList.registerKeyboardAction({ splitter.collapse() },
+                KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), JComponent.WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.expand() },
+                KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), JComponent.WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.expand() },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED)
+        // expand issue preview on click
+        issueList.addMouseListener(object: MouseAdapter(){
+            override fun mousePressed(e: MouseEvent) {
+                splitter.expand()
+            }
+        })
+    }
+
+    private fun initIssueListModel() {
         issueList.emptyText.clear()
         startLoading()
         issueListModel = object : AbstractListModel<Issue>() {

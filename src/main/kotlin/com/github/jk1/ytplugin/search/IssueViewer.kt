@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Insets
+import java.awt.Rectangle
 import java.io.IOException
 import javax.swing.JPanel
 import javax.swing.JTextPane
@@ -37,7 +38,10 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
     fun showIssue(issue: Issue) {
         currentIssue = issue
         val preview = generateHtml(issue)
-        SwingUtilities.invokeLater { browserPane.text = preview }
+        SwingUtilities.invokeLater {
+            browserPane.text = preview
+            browserPane.caretPosition = 0
+        }
     }
 
     private fun generateHtml(issue: Issue): String {

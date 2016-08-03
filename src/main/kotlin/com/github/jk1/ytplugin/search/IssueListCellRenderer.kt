@@ -11,20 +11,21 @@ import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
 import com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Component
-import java.awt.Font
+import java.awt.*
 import java.text.SimpleDateFormat
 import javax.swing.*
 
-class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> {
+class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(BorderLayout()), ListCellRenderer<Issue> {
 
     private val idSummary = SimpleColoredComponent()
     private val fields = SimpleColoredComponent()
     private val time = JLabel()
     private val glyphs = JLabel()
-    private val font = if (SystemInfo.isMac) "Lucida Grande" else if (SystemInfo.isWindows) "Arial" else "Verdana"
+    private val font = when {
+        SystemInfo.isMac -> "Lucida Grande"
+        SystemInfo.isWindows -> "Arial"
+        else -> "Verdana"
+    }
 
     init {
         idSummary.isOpaque = false
@@ -54,12 +55,7 @@ class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> 
                                               isSelected: Boolean, cellHasFocus: Boolean): Component {
 
         background = UIUtil.getListBackground(isSelected)
-        idSummary.clear()
-        idSummary.append(" ")
-        idSummary.append(issue.id)
-        idSummary.append(" ")
-        idSummary.append(issue.summary, SimpleTextAttributes(STYLE_BOLD, null))
-        idSummary.icon = AllIcons.Toolwindows.ToolWindowDebugger
+        fillSummaryLine(issue)
         fields.clear()
         fields.isOpaque = !isSelected
         fields.background = this.background
@@ -74,5 +70,23 @@ class IssueListCellRenderer() : JPanel(BorderLayout()), ListCellRenderer<Issue> 
         time.foreground = if (isSelected) UIUtil.getListForeground(true) else JBColor(Color(75, 107, 244), Color(87, 120, 173))
         time.text = SimpleDateFormat().format(issue.updateDate) + " "
         return this
+    }
+
+    private fun fillSummaryLine(issue: Issue){
+        val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
+        idSummary.clear()
+        idSummary.icon = AllIcons.Toolwindows.ToolWindowDebugger
+        idSummary.iconTextGap = 3
+        idSummary.ipad = Insets(0, 4, 0, 0)
+        idSummary.append(issue.id)
+        idSummary.append(" ")
+        val summaryWords = issue.summary.split(" ").iterator()
+        // add summary words one by one until we hit viewport width limit
+        while (summaryWords.hasNext() && (viewportWidth > idSummary.computePreferredSize(false).width)){
+            idSummary.append(" ${summaryWords.next()}", SimpleTextAttributes(STYLE_BOLD, null))
+        }
+        if (summaryWords.hasNext()){
+            idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, null))
+        }
     }
 }

@@ -6,13 +6,13 @@ import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.rest.IssuesRestClient
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent
-import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import javax.swing.SwingUtilities
 
 class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project) {
 
@@ -24,8 +24,10 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
     override fun projectOpened() {
         JobScheduler.getScheduler().scheduleWithFixedDelay({
-            stores.forEach { it.value.update() }
-        }, 5, 5, TimeUnit.MINUTES)
+            SwingUtilities.invokeLater {
+                stores.forEach { it.value.update() }
+            }
+        }, 5, 5, TimeUnit.MINUTES) //  todo: customizable update interval
     }
 
     inner class Store(private val repo: YouTrackServer) {
@@ -44,7 +46,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
         private fun refresh(): ActionCallback {
             val future = ActionCallback()
-            object : Task.Backgroundable(project, "Updating issues from server", true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
+            object : Task.Backgroundable(project, "Updating issues from server", true, ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
                     try {
                         issues = client.getIssues(repo.defaultSearch)

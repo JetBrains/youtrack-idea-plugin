@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.common.components
 
 import com.github.jk1.ytplugin.common.YouTrackPluginException
+import com.github.jk1.ytplugin.common.runAction
 import com.intellij.ide.DataManager
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
@@ -17,7 +18,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class NoActiveYouTrackTaskException : YouTrackPluginException("No YouTrack issue selected as an active task") {
 
     // defined in task management plugin we depend on
-    val GOTO_ACTION_TASK_ID = "tasks.goto"
+    val GOTO_TASK_ACTION_ID = "tasks.goto"
 
     override val notification = Notification(
             "YouTrack Integration Plugin",
@@ -28,11 +29,8 @@ class NoActiveYouTrackTaskException : YouTrackPluginException("No YouTrack issue
             NotificationType.ERROR,
             // notification hyperlink click handler
             NotificationListener { notification, notificationEvent ->
-                val action = ActionManager.getInstance().getAction(GOTO_ACTION_TASK_ID)
-                val context = DataManager.getInstance().dataContext
-                val event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, context)
                 notification.hideBalloon()
-                action.actionPerformed(event)
+                GOTO_TASK_ACTION_ID.runAction()
             }
     )
 }
