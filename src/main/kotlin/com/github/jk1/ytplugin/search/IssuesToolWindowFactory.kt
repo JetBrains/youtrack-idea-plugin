@@ -41,12 +41,12 @@ class IssuesToolWindowFactory : ToolWindowFactory {
             repos.size == 1 -> {
                 val repo = repos.first()
                 val panel = IssueListToolWindowContent(project, repo, contentManager)
-                contentManager.addContent("Issues ${repo.defaultSearch}", panel)
+                contentManager.addContent("Issues | ${repo.defaultSearch}", panel)
             }
             else -> {
                 repos.forEach {
                     val panel = IssueListToolWindowContent(project, it, contentManager)
-                    contentManager.addContent("Issues: ${it.url.split("//").last()}", panel)
+                    contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                 }
             }
         }

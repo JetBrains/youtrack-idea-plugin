@@ -1,26 +1,82 @@
 package com.github.jk1.ytplugin.search
 
-import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.project.Project
-import com.intellij.ui.JBSplitter
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
-import javax.swing.SwingUtilities
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.ui.Divider
+import com.intellij.openapi.ui.Splitter
+import com.intellij.ui.ClickListener
+import org.jetbrains.annotations.NotNull
+import java.awt.Cursor
+import java.awt.GridBagConstraints
+import java.awt.GridBagConstraints.*
+import java.awt.GridBagLayout
+import java.awt.Insets
+import java.awt.event.MouseEvent
+import javax.swing.Icon
+import javax.swing.JLabel
 
-class EditorSplitter(val project: Project) : JBSplitter(false) {
-    val WIDTH_PROPERTY_NAME = "youtrackPluginIssueBrowserPosition"
-    val myMessagesWidth = PropertiesComponent.getInstance(project).getOrInitLong(WIDTH_PROPERTY_NAME, 350).toInt()
+class EditorSplitter() : Splitter(false) {
 
-    override fun addNotify() {
-        super.addNotify()
-        SwingUtilities.invokeLater {
-            // todo: proportion calculation throws exceptions sometimes
-            proportion = myMessagesWidth.toFloat() / width.toFloat()
-            firstComponent.addComponentListener(object : ComponentAdapter() {
-                override fun componentResized(e: ComponentEvent) {
-                    PropertiesComponent.getInstance(project).setValue(WIDTH_PROPERTY_NAME, Math.max(350, e.component.width).toString())
+    private var previewCollapsed = true
+
+    init {
+        isShowDividerControls = true
+        isShowDividerIcon = true
+        dividerWidth = 10
+        collapse()
+    }
+
+    fun isCollapsed() = previewCollapsed
+
+    fun collapse() {
+        proportion = 1.0f - getMinProportion(false)
+        previewCollapsed = true
+    }
+
+    fun expand() {
+        proportion = 0.5f
+        previewCollapsed = false
+    }
+
+    override fun createDivider(): Divider {
+        return object : Divider(GridBagLayout()) {
+
+            override fun setSwitchOrientationEnabled(switchOrientationEnabled: Boolean) {
+            }
+
+            override fun setResizeEnabled(resizeEnabled: Boolean) {
+            }
+
+            override fun setOrientation(ignored: Boolean) {
+                removeAll()
+                val collapseLabel = createLabel(AllIcons.General.ComboArrowRight)
+                val fillLabel = createLabel(AllIcons.General.SplitGlueH)
+                val expandLabel = createLabel(AllIcons.General.ComboArrowLeft)
+                add(collapseLabel, GridBagConstraints(0, 5, 1, 1, .0, .0, CENTER, NONE, Insets(0, 0, 0, 0), 0, 0))
+                add(fillLabel, GridBagConstraints(0, 4, 1, 1, .0, .0, CENTER, HORIZONTAL, Insets(0, 1, 0, 0), 0, 0))
+                add(expandLabel, GridBagConstraints(0, 1, 1, 1, .0, .0, CENTER, NONE, Insets(0, 0, 0, 0), 0, 0))
+                revalidate()
+                repaint()
+            }
+
+            private fun createLabel(icon: Icon): JLabel {
+                val label = JLabel(icon)
+                label.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                clickListener().installOn(label)
+                return label
+            }
+
+            private fun clickListener() = object : ClickListener() {
+                override fun onClick(@NotNull event: MouseEvent, clickCount: Int): Boolean {
+                    if (previewCollapsed) {
+                        expand()
+                    } else {
+                        collapse()
+                    }
+                    return true
                 }
-            })
+            }
         }
     }
+
+
 }

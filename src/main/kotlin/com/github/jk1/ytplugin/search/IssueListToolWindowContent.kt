@@ -8,11 +8,8 @@ import com.github.jk1.ytplugin.search.actions.BrowseIssueAction
 import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
 import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
 import com.github.jk1.ytplugin.search.model.Issue
-import com.intellij.ide.DataManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
@@ -23,10 +20,10 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
+import java.awt.event.*
 import javax.swing.AbstractListModel
 import javax.swing.JComponent
+import javax.swing.KeyStroke
 
 class IssueListToolWindowContent(override val project: Project, val repo: YouTrackServer, parent: Disposable) :
         JBLoadingPanel(BorderLayout(), parent), ComponentAware {
@@ -35,16 +32,29 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     private lateinit var issueListModel: AbstractListModel<Issue>
 
     init {
-        val splitter = EditorSplitter(project)
-        val browser = IssueViewer(project)
+        val splitter = EditorSplitter()
+        val viewer = IssueViewer(project)
         issueList.cellRenderer = IssueListCellRenderer()
         issueList.model = CollectionListModel<Issue>()
         issueList.addListSelectionListener {
             val issue = issueListModel.getElementAt(issueList.selectedIndex)
-            if (!issue.equals(browser.currentIssue)) {
-                browser.showIssue(issue)
+            if (!issue.equals(viewer.currentIssue)) {
+                viewer.showIssue(issue)
             }
         }
+        // keystrokes to expand/collapse issue preview
+        issueList.registerKeyboardAction({ splitter.collapse() },
+                KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), JComponent.WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.expand() },
+                KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), JComponent.WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.expand() },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED)
+        // expand issue preview on click
+        issueList.addMouseListener(object: MouseAdapter(){
+            override fun mousePressed(e: MouseEvent) {
+                splitter.expand()
+            }
+        })
         val scrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
         scrollPane.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
@@ -52,7 +62,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
             }
         })
         splitter.firstComponent = scrollPane
-        splitter.secondComponent = browser
+        splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
 
