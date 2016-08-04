@@ -20,13 +20,12 @@ import javax.swing.text.html.HTMLEditorKit
 
 class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
-    var browserPane: JTextPane = JTextPane()
+    val editorKit = HTMLEditorKit()
+    val browserPane: JTextPane = JTextPane()
     var currentIssue: Issue? = null
 
     init {
-        val editorKit = HTMLEditorKit()
-        val css = UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground())
-        editorKit.styleSheet.addRule(css)
+        editorKit.styleSheet.addRule(UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground()))
         browserPane.editorKit = editorKit
         browserPane.contentType = "text/html"
         browserPane.margin = Insets(0, 0, 0, 0)

@@ -54,14 +54,19 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
                                               issue: Issue, index: Int,
                                               isSelected: Boolean, cellHasFocus: Boolean): Component {
 
+        val fgColor = when {
+            isSelected -> UIUtil.getListForeground(true)
+            UIUtil.isUnderDarcula() ->  Color(200, 200, 200)
+            else -> Color(75, 107, 244)
+        }
         background = UIUtil.getListBackground(isSelected)
-        fillSummaryLine(issue)
+        fillSummaryLine(issue, fgColor)
         fields.clear()
         fields.isOpaque = !isSelected
         fields.background = this.background
         issue.customFields.forEach {
             val attributes = when {
-                isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, null)
+                isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
                 else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
             }
             fields.append(it.formatValues(), attributes)
@@ -72,21 +77,21 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         return this
     }
 
-    private fun fillSummaryLine(issue: Issue){
+    private fun fillSummaryLine(issue: Issue, fgColor: Color){
         val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
         idSummary.clear()
         idSummary.icon = AllIcons.Toolwindows.ToolWindowDebugger
         idSummary.iconTextGap = 3
         idSummary.ipad = Insets(0, 4, 0, 0)
-        idSummary.append(issue.id)
+        idSummary.append(issue.id, SimpleTextAttributes(STYLE_BOLD, fgColor))
         idSummary.append(" ")
         val summaryWords = issue.summary.split(" ").iterator()
         // add summary words one by one until we hit viewport width limit
         while (summaryWords.hasNext() && (viewportWidth > idSummary.computePreferredSize(false).width)){
-            idSummary.append(" ${summaryWords.next()}", SimpleTextAttributes(STYLE_BOLD, null))
+            idSummary.append(" ${summaryWords.next()}", SimpleTextAttributes(STYLE_BOLD, fgColor))
         }
         if (summaryWords.hasNext()){
-            idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, null))
+            idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, fgColor))
         }
     }
 }
