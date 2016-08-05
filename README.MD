@@ -1,6 +1,6 @@
 YouTrack-Idea-Plugin
 ======================
-[![Build Status](https://travis-ci.org/jk1/youtrack-idea-plugin.png?branch=master)](https://travis-ci.org/jk1/TeamCity-dependencies-gradle-plugin)
+[![Build Status](https://travis-ci.org/jk1/youtrack-idea-plugin.png?branch=master)](https://travis-ci.org/jk1/youtrack-idea-plugin)
 
 This plugin brings Jetbrains YouTrack bugtracker features to Intellij IDE family.
 
@@ -31,6 +31,10 @@ Please refer to [YouTrack command guide](https://confluence.jetbrains.com/displa
 
 When clicking a stacktrace in YouTrack the plugin is able to open the corresponding file in IDE. This feature is somewhat similar to what TeamCity plugin offers, although current implementation doesn't perform VCS lookup to find the best match for source code changing over time.
 This feature requires local ports to be opened, so you may want to configure your firewall to allow connections to 127.0.0.1:63330..63339.
+
+#### Issue view
+
+Plugin displays issue list maching the query set in server settings. When an issue is selected, issue preview appears with wiki warkup rendered. Issue comments and tags are coming soon.
 
 ##Development
 
