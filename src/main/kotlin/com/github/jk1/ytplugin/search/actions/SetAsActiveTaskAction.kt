@@ -6,7 +6,10 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.tasks.Task
 
-
+/**
+ * Takes selected issue from a tool window and sets it as an active Task manager task
+ * todo: context switch options: branch, state change, etc
+ */
 class SetAsActiveTaskAction(val getSelectedTask: () -> Task?) : AnAction(
         "Set as active task",
         "Create task manager task from a selected issue and switch to it",

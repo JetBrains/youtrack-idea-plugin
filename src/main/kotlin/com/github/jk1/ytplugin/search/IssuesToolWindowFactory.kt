@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.search
 import com.github.jk1.ytplugin.common.YouTrackPluginIcons
 import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.common.runAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -27,6 +28,7 @@ class IssuesToolWindowFactory : ToolWindowFactory {
         ComponentAware.of(project).taskManagerComponent.addListener {
             // listen to task management plugin configuration changes and update tool window accordingly
             SwingUtilities.invokeLater {
+                logger.debug("Server configuration change detected, reloading tool window contents")
                 createContent(project, toolWindow)
             }
         }
@@ -36,6 +38,7 @@ class IssuesToolWindowFactory : ToolWindowFactory {
         val contentManager = toolWindow.contentManager
         contentManager.removeAllContents(false)
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        logger.debug("${repos.size} YouTrack repositories discovered")
         when {
             repos.size == 0 -> contentManager.addContent("No server found", createPlaceholderPanel())
             repos.size == 1 -> {

@@ -47,7 +47,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
         try {
             return CustomField(item)
         } catch(e: Exception) {
-            logger.error("YouTrack issue parsing error: custom field cannot be parsed", e)
+            logger.warn("YouTrack issue parsing error: custom field cannot be parsed", e)
             return null
         }
     }

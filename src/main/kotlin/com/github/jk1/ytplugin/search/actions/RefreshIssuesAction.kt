@@ -6,7 +6,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
-
+/**
+ * Starts async issue store update from a remote server
+ */
 class RefreshIssuesAction(val repo: YouTrackServer) : AnAction("Refresh issues",
         "Update issue list from YouTrack server",
         AllIcons.Actions.Refresh) {

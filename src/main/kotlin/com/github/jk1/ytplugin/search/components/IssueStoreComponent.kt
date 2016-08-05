@@ -19,22 +19,23 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
     private val stores = ConcurrentHashMap<YouTrackServer, Store>()
 
     operator fun get(repo: YouTrackServer): Store {
-        return stores.getOrPut(repo, { Store(repo) })
-    }
-
-    override fun projectOpened() {
-        JobScheduler.getScheduler().scheduleWithFixedDelay({
-            SwingUtilities.invokeLater {
-                stores.forEach { it.value.update() }
-            }
-        }, 5, 5, TimeUnit.MINUTES) //  todo: customizable update interval
+        return stores.getOrPut(repo, {
+            logger.debug("Issue store opened for project ${project.name} and YouTrack server ${repo.url}")
+            val store = Store(repo)
+            JobScheduler.getScheduler().scheduleWithFixedDelay({
+                SwingUtilities.invokeLater { store.update() }
+            }, 5, 5, TimeUnit.MINUTES) //  todo: customizable update interval
+            store
+        })
     }
 
     inner class Store(private val repo: YouTrackServer) {
         private val client = IssuesRestClient(project, repo)
         private var issues: List<Issue> = listOf()
         private var currentCallback: ActionCallback = ActionCallback.Done()
-        private val listeners = mutableSetOf({ /** todo: fileStore().save() */ })
+        private val listeners = mutableSetOf({
+            /** todo: fileStore().save() */
+        })
 
         fun update(): ActionCallback {
             if (isUpdating()) {
@@ -45,10 +46,12 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
         }
 
         private fun refresh(): ActionCallback {
+            logger.debug("Issue store refresh started for project ${project.name} and YouTrack server ${repo.url}")
             val future = ActionCallback()
             object : Task.Backgroundable(project, "Updating issues from server", true, ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
                     try {
+                        logger.debug("Fetching issues for search query: ${repo.defaultSearch}")
                         issues = client.getIssues(repo.defaultSearch)
                     } catch (e: Exception) {
                         // todo: notification?
@@ -58,10 +61,12 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
                 override fun onCancel() {
                     future.setDone()
+                    logger.debug("Issue store refresh cancelled for YouTrack server ${repo.url}")
                 }
 
                 override fun onSuccess() {
                     future.setDone()
+                    logger.debug("Issue store has been updated for YouTrack server ${repo.url}")
                     listeners.forEach { it.invoke() }
                 }
             }.queue()
@@ -73,9 +78,9 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
 
         fun getAllIssues(): Collection<Issue> = issues
 
-        fun getIssue(index: Int)= issues[index]
+        fun getIssue(index: Int) = issues[index]
 
-        fun addListener(listener: () -> Unit){
+        fun addListener(listener: () -> Unit) {
             listeners.add(listener)
         }
     }
