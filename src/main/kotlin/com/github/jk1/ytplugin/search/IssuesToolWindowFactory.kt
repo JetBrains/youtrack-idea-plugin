@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.common.runAction
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -19,8 +20,11 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
-
-class IssuesToolWindowFactory : ToolWindowFactory {
+/**
+ *
+ * DumbAware tool window can be opened in a "dumb mode", when no IDE index is available.
+ */
+class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         createContent(project, toolWindow)
