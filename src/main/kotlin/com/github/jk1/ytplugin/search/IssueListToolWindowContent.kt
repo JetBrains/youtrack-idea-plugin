@@ -81,7 +81,9 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         // expand issue preview on click
         issueList.addMouseListener(object: MouseAdapter(){
             override fun mousePressed(e: MouseEvent) {
-                splitter.expand()
+                if (issueList.model.size > 0) {
+                    splitter.expand()
+                }
             }
         })
     }
