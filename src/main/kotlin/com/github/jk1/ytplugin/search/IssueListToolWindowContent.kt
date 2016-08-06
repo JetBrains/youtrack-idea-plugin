@@ -43,6 +43,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
         initIssueListModel()
+        // todo: new ListSpeedSearch(issueList)
     }
 
     private fun createActionPanel(): JComponent {

@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
+import java.io.Closeable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
@@ -21,21 +22,28 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
     operator fun get(repo: YouTrackServer): Store {
         return stores.getOrPut(repo, {
             logger.debug("Issue store opened for project ${project.name} and YouTrack server ${repo.url}")
-            val store = Store(repo)
-            JobScheduler.getScheduler().scheduleWithFixedDelay({
-                SwingUtilities.invokeLater { store.update() }
-            }, 5, 5, TimeUnit.MINUTES) //  todo: customizable update interval
-            store
+            Store(repo)
         })
     }
 
-    inner class Store(private val repo: YouTrackServer) {
+    override fun projectClosed() {
+        stores.values.forEach { it.close() }
+    }
+
+    inner class Store(private val repo: YouTrackServer) : Closeable {
         private val client = IssuesRestClient(project, repo)
         private var issues: List<Issue> = listOf()
         private var currentCallback: ActionCallback = ActionCallback.Done()
         private val listeners = mutableSetOf({
             /** todo: fileStore().save() */
         })
+        private val timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
+            SwingUtilities.invokeLater { update() }
+        }, 5, 5, TimeUnit.MINUTES)             //  todo: customizable update interval
+
+        override fun close() {
+            timedRefreshTask.cancel(false)
+        }
 
         fun update(): ActionCallback {
             if (isUpdating()) {

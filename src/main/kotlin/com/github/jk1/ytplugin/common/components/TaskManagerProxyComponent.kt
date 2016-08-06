@@ -9,6 +9,7 @@ import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.impl.BaseRepository
 import java.util.*
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 /**
@@ -23,18 +24,24 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
 
     private var configurationHash = 0L
     private val listeners = ArrayList<() -> Unit>()
-
-    fun addListener(listener: () -> Unit) {
-        listeners.add(listener)
-    }
+    private lateinit var timedRefreshTask: ScheduledFuture<*>
 
     override fun projectOpened() {
         syncTaskManagerConfig()
-        JobScheduler.getScheduler().scheduleWithFixedDelay({
+        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             if (listeners.isNotEmpty()) {
                 syncTaskManagerConfig()
             }
         }, 5, 5, TimeUnit.SECONDS)
+    }
+
+    override fun projectClosed() {
+        listeners.clear()
+        timedRefreshTask.cancel(false)
+    }
+
+    fun addListener(listener: () -> Unit) {
+        listeners.add(listener)
     }
 
     fun getActiveTask(): Task {
