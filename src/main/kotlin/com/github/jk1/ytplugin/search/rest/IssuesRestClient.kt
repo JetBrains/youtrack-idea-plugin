@@ -45,7 +45,7 @@ class IssuesRestClient(override val project: Project, val repo: YouTrackServer) 
         try {
             val status = createHttpClient(repo).executeMethod(this)
             if (status == 200) {
-                val stream = InputStreamReader(this.responseBodyAsLoggedStream())
+                val stream = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
                 val root = JsonParser().parse(stream)
                 return responseParser.invoke(root)
             } else {

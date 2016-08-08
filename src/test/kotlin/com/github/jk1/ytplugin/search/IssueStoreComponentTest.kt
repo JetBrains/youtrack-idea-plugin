@@ -10,6 +10,7 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.nio.charset.Charset
 import java.util.*
 
 class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait {
@@ -32,6 +33,37 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     fun testStoreLoad() {
         issueStoreComponent[server].update().waitFor(5000)
         Assert.assertEquals(1, issueStoreComponent[server].getAllIssues().size)
+    }
+
+    @Test
+    fun testCyrillicContentLoad() {
+        // this test is windows-specific and depends on default platform encoding
+        withDefaultCharset("windows-1251") {
+            val expectedSummary = "Ехал грека через реку"
+            val issue = createIssue(expectedSummary)
+            issues.add(issue)
+            issueStoreComponent[server].update().waitFor(5000)
+
+            Assert.assertTrue(issueStoreComponent[server].getAllIssues().any {
+                it.summary.equals(expectedSummary)
+            })
+        }
+    }
+
+    private fun withDefaultCharset(charset: String, code: () -> Unit) {
+        // a hacky way to change 'file.encoding' property in runtime
+        System.setProperty("file.encoding", charset)
+        val charsetField = Charset::class.java.getDeclaredField("defaultCharset")
+        charsetField.isAccessible = true
+        val defaultCharset = charsetField.get(null)
+        charsetField.set(null, null)
+        try {
+            code.invoke()
+        } finally {
+            // and revert everything afterwards
+            System.setProperty("file.encoding", "UTF-8")
+            charsetField.set(null, defaultCharset)
+        }
     }
 
     @After

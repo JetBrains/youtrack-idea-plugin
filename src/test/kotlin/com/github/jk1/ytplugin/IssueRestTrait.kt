@@ -25,7 +25,7 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
     override fun createHttpClient(repository: YouTrackServer): HttpClient = createHttpClient()
 
     fun createIssue(summary: String = "summary"): String {
-        val method = PutMethod("$serverUrl/rest/issue?project=$projectId&summary=$summary")
+        val method = PutMethod("$serverUrl/rest/issue?project=$projectId&summary=${summary.urlencoded}")
         return connect(method) {
             val status = createHttpClient().executeMethod(method)
             if (status == 201) {

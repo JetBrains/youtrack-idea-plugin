@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration Plugin</name>
-    <version>0.3</version>
+    <version>0.3.2</version>
     <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
@@ -76,6 +76,5 @@
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
         <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack@13.png"
                     factoryClass="com.github.jk1.ytplugin.search.IssuesToolWindowFactory" canCloseContents="true"/>
-        <!--lang.documentationProvider language="TEXT" implementationClass="com.github.jk1.ytplugin.common.IssueDocumentationProvider"/-->
     </extensions>
 </idea-plugin>
