@@ -34,7 +34,16 @@ This feature requires local ports to be opened, so you may want to configure you
 
 #### Issue view
 
-Plugin displays issue list maching the query set in server settings. When an issue is selected, issue preview appears with wiki warkup rendered. Issue comments and tags are coming soon.
+Plugin displays issue list matching the query set in server settings. When an issue is selected, issue preview appears with wiki warkup rendered. Issue comments and tags are coming soon.
+
+##Plugin logs
+
+If you think there's something wrong going on with the plugin try checking plugin logs.
+To enable debug logging proceed as follows:
+
+1. Navigate to 'Help' IDE menu and select 'Debug Log Settings...'
+2. Add com.github.jk1 category to the list
+3. In 'Help' menu select 'Show Log in File Manager' to explore logged data
 
 ##Development
 

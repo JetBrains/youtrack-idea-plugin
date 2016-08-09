@@ -18,7 +18,7 @@ fun sendNotification(
 }
 
 val Any.logger : Logger
-    get() = Logger.getInstance(this.javaClass)
+    get() = Logger.getInstance("com.github.jk1.ytplugin")
 
 fun String.runAction(){
     val action = ActionManager.getInstance().getAction(this)
