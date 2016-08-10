@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.search.rest
 
 import com.github.jk1.ytplugin.common.YouTrackServer
+import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.common.rest.ResponseLoggerTrait
 import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.search.model.Issue
@@ -37,7 +38,7 @@ class IssuesRestClient(override val project: Project, val repo: YouTrackServer) 
         // todo: customizable "max" limit
         val params = "filter=${query.urlencoded}&wikifyDescription=true&max=30"
         val method = GetMethod("$url?$params")
-        return method.execute { it.asJsonArray.map { Issue(it, repo.url) } }
+        return method.execute { it.asJsonArray.map { parseIssueSafe(it) }.filterNotNull() }
     }
 
     private fun <T> HttpMethod.execute(responseParser: (json: JsonElement) -> T): T {
@@ -53,6 +54,16 @@ class IssuesRestClient(override val project: Project, val repo: YouTrackServer) 
             }
         } finally {
             this.releaseConnection()
+        }
+    }
+
+    private fun parseIssueSafe(element: JsonElement): Issue?{
+        try {
+            return Issue(element, repo.url)
+        } catch(e: Exception) {
+            logger.warn("YouTrack issue parsing error. Offending element: $element")
+            logger.warn(e)
+            return null
         }
     }
 }
