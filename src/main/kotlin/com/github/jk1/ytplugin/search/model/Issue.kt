@@ -18,7 +18,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
             "sprint", "voterName", "permittedGroup")
 
     val id: String
-    val entityId: String
+    val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
     val summary: String
     val description: String
     val createDate: Date
@@ -29,7 +29,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
     init {
         val root = item.asJsonObject
         id = root.get("id").asString
-        entityId = root.get("entityId").asString
+        entityId = root.get("entityId")?.asString
         summary = getFieldValue("summary", root) ?: ""
         description = getFieldValue("description", root) ?: ""
         createDate = Date(getFieldValue("created", root)?.toLong() ?: 0)
@@ -48,7 +48,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
             return CustomField(item)
         } catch(e: Exception) {
             logger.warn("YouTrack issue parsing error: custom field cannot be parsed. Offending element: $item")
-            logger.warn(e)
+            logger.debug(e)
             return null
         }
     }

@@ -1,0 +1,162 @@
+{
+  "id": "JT-1",
+  "entityId": "25-4565",
+  "jiraId": null,
+  "field": [
+    {
+      "name": "projectShortName",
+      "value": "JT"
+    },
+    {
+      "name": "numberInProject",
+      "value": "1"
+    },
+    {
+      "name": "summary",
+      "value": "formatting problems in comments"
+    },
+    {
+      "name": "description",
+      "value": "check out the source chunks in this issue"
+    },
+    {
+      "name": "created",
+      "value": "1204725139256"
+    },
+    {
+      "name": "updated",
+      "value": "1466093544010"
+    },
+    {
+      "name": "updaterName",
+      "value": "jkeew"
+    },
+    {
+      "name": "updaterFullName",
+      "value": "Evgeny"
+    },
+    {
+      "name": "resolved",
+      "value": "1244133574760"
+    },
+    {
+      "name": "reporterName",
+      "value": "chowda"
+    },
+    {
+      "name": "reporterFullName",
+      "value": "Dan Booter"
+    },
+    {
+      "name": "commentsCount",
+      "value": "0"
+    },
+    {
+      "name": "votes",
+      "value": "0"
+    },
+    {
+      "name": "links",
+      "value": [
+        {
+          "value": "JT-633",
+          "type": "Relates",
+          "role": "relates to"
+        }
+      ]
+    },
+    {
+      "name": "State",
+      "value": [
+        "Without verification"
+      ],
+      "valueId": [
+        "Without verification"
+      ],
+      "color": null
+    },
+    {
+      "name": "Assignee",
+      "value": [
+        {
+          "value": "mazine",
+          "fullName": "Maxim Mazin"
+        }
+      ]
+    },
+    {
+      "name": "Subsystem",
+      "value": [
+        "No Subsystem"
+      ],
+      "valueId": [
+        "No Subsystem"
+      ],
+      "color": null
+    },
+    {
+      "name": "Type",
+      "valueIds": [
+        "Bug"
+      ],
+      "color": null
+    },
+    {
+      "nameEr": "Priority",
+      "valueEr": [
+        "Normal"
+      ],
+      "valueIdEr": [
+        "Normal"
+      ],
+      "color": {
+        "bg": "#e6f6cf",
+        "fg": "#4da400"
+      }
+    },
+    {
+      "name": "Fix versions",
+      "value": [
+        "Charisma EAP (57)"
+      ],
+      "valueId": [
+        "Charisma EAP (57)"
+      ],
+      "color": null
+    },
+    {
+      "name": "Fixed in builds",
+      "value": [
+        "3479"
+      ],
+      "valueId": [
+        "3479"
+      ],
+      "color": null
+    },
+    {
+      "name": "Verified by",
+      "value": [
+        {
+          "value": "jkeew",
+          "fullName": "Evgeny"
+        }
+      ]
+    },
+    {
+      "name": "sprint",
+      "value": [
+        {
+          "value": "No sprint",
+          "id": "RemindMe:No sprint"
+        },
+        {
+          "value": "No sprint",
+          "id": "iLab:No sprint"
+        }
+      ]
+    }
+  ],
+  "comment": [],
+  "tag": []
+}

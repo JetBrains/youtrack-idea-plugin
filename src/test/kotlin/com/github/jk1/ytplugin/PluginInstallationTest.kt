@@ -1,29 +1,20 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.commands.components.AdminComponent
-import com.github.jk1.ytplugin.commands.components.CommandComponent
-import com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent
+import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.intellij.tasks.TaskManager
-import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
-import com.intellij.testFramework.fixtures.JavaTestFixtureFactory
-import com.intellij.testFramework.fixtures.impl.LightTempDirTestFixtureImpl
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class PluginInstallationTest {
+class PluginInstallationTest : IdeaProjectTrait {
 
     lateinit var fixture: IdeaProjectTestFixture
 
     @Before
     fun setUp() {
-        val ideaFactory = IdeaTestFixtureFactory.getFixtureFactory()
-        val javaFactory = JavaTestFixtureFactory.getFixtureFactory()
-        val fixtureBuilder = ideaFactory.createLightFixtureBuilder(DefaultLightProjectDescriptor())
-        fixture = javaFactory.createCodeInsightFixture(fixtureBuilder.fixture, LightTempDirTestFixtureImpl(true))
+        fixture = getLightCodeInsightFixture()
         fixture.setUp()
     }
 
@@ -35,9 +26,13 @@ class PluginInstallationTest {
     @Test
     fun testPluginCanBeInstalled() {
         // fails on inconsistent plugin.xml, incomplete classpath and so on
-        Assert.assertNotNull(fixture.project?.getComponent(AdminComponent::class.java))
-        Assert.assertNotNull(fixture.project?.getComponent(CommandComponent::class.java))
-        Assert.assertNotNull(fixture.project?.getComponent(SourceNavigatorComponent::class.java))
+        with (ComponentAware.of(fixture.project)){
+            Assert.assertNotNull(adminComponent)
+            Assert.assertNotNull(commandComponent)
+            Assert.assertNotNull(sourceNavigatorComponent)
+            Assert.assertNotNull(taskManagerComponent)
+            Assert.assertNotNull(issueStoreComponent)
+        }
     }
 
     @After

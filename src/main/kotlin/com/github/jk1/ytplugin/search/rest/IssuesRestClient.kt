@@ -43,17 +43,14 @@ class IssuesRestClient(override val project: Project, val repo: YouTrackServer) 
 
     private fun <T> HttpMethod.execute(responseParser: (json: JsonElement) -> T): T {
         this.setRequestHeader("Accept", "application/json")
-        try {
+        return connect(this) {
             val status = createHttpClient(repo).executeMethod(this)
             if (status == 200) {
                 val stream = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
-                val root = JsonParser().parse(stream)
-                return responseParser.invoke(root)
+                responseParser.invoke(JsonParser().parse(stream))
             } else {
                 throw RuntimeException(this.responseBodyAsLoggedString())
             }
-        } finally {
-            this.releaseConnection()
         }
     }
 
@@ -62,7 +59,7 @@ class IssuesRestClient(override val project: Project, val repo: YouTrackServer) 
             return Issue(element, repo.url)
         } catch(e: Exception) {
             logger.warn("YouTrack issue parsing error. Offending element: $element")
-            logger.warn(e)
+            logger.debug(e)
             return null
         }
     }

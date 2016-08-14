@@ -1,0 +1,149 @@
+{
+  "id": "D-7596",
+  "jiraId": null,
+  "field": [
+    {
+      "name": "projectShortName",
+      "value": "D"
+    },
+    {
+      "name": "numberInProject",
+      "value": "7596"
+    },
+    {
+      "name": "summary",
+      "value": "summary"
+    },
+    {
+      "name": "description",
+      "value": "description"
+    },
+    {
+      "name": "created",
+      "value": "1469431741838"
+    },
+    {
+      "name": "updated",
+      "value": "1470820279061"
+    },
+    {
+      "name": "updaterName",
+      "value": "login"
+    },
+    {
+      "name": "updaterFullName",
+      "value": "James Login"
+    },
+    {
+      "name": "reporterName",
+      "value": "login"
+    },
+    {
+      "name": "reporterFullName",
+      "value": "James Login"
+    },
+    {
+      "name": "commentsCount",
+      "value": "4"
+    },
+    {
+      "name": "votes",
+      "value": "0"
+    },
+    {
+      "name": "links",
+      "value": [
+        {
+          "type": "Subtask",
+          "role": "subtask of",
+          "value": "D-7578"
+        },
+        {
+          "type": "Depend",
+          "role": "is required for",
+          "value": "D-7677"
+        }
+      ]
+    },
+    {
+      "name": "Priority",
+      "value": [
+        "Normal"
+      ]
+    },
+    {
+      "name": "Type",
+      "value": [
+        "Task"
+      ]
+    },
+    {
+      "name": "State",
+      "value": [
+        "Open"
+      ]
+    },
+    {
+      "name": "Component",
+      "value": [
+        "Xperience"
+      ]
+    },
+    {
+      "name": "Assignee",
+      "value": [
+        {
+          "fullName": "James Login",
+          "value": "login"
+        }
+      ]
+    },
+    {
+      "name": "Sprint",
+      "value": [
+        "16-07"
+      ]
+    },
+    {
+      "name": "attachments",
+      "value": [
+        {
+          "id": "68-3333",
+          "url": "http://youtrack.com/_persistent/v1.png?file=68-3333&v=0&c=true",
+          "value": "login_2Faktor_v1.png"
+        },
+        {
+          "id": "68-3334",
+          "url": "http://youtrack.com/_persistent/v1_nach.png?file=68-3334&v=0&c=true",
+          "value": "login_2Faktor_v1_nachgelagert.png"
+        },
+        {
+          "id": "68-3335",
+          "url": "http://youtrack.com/_persistent/_v1_dyn.png?file=68-3335&v=0&c=true",
+          "value": "login_2Faktor_v1_dynamisch.png"
+        }
+      ]
+    }
+  ],
+  "comment": [
+    {
+      "id": "80-16711",
+      "author": "jeff",
+      "authorFullName": "Jeff Arlen",
+      "issueId": "D-7596",
+      "parentId": null,
+      "deleted": false,
+      "jiraId": null,
+      "text": "comment",
+      "shownForIssueAuthor": false,
+      "created": 1470302495625,
+      "updated": null,
+      "replies": []
+    }
+  ],
+  "tag": [
+    {
+      "value": "Star"
+    }
+  ]
+}

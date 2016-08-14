@@ -18,9 +18,23 @@ class CustomField(item: JsonElement) {
         val valueIdItem = item.asJsonObject.get("valueId")
         val valueItem = item.asJsonObject.get("value")
         if (valueIdItem == null || valueIdItem.isJsonNull) {
-            // User type field uses a different presentation
-            value = valueItem.asJsonArray.map { it.asJsonObject["fullName"].asString }
-            valueId = valueItem.asJsonArray.map { it.asJsonObject["value"].asString }
+            value = valueItem.asJsonArray.map {
+                if (it.isJsonObject) {
+                    // User type field uses a different presentation
+                    it.asJsonObject["fullName"].asString
+                } else {
+                    // 5.2 does not return value id
+                    it.asString
+                }
+            }
+            valueId = valueItem.asJsonArray.map {
+                if (it.isJsonObject) {
+                    it.asJsonObject["value"].asString
+                } else {
+                    // 5.2 does not return value id
+                    it.asString
+                }
+            }
         } else {
             value = valueItem.asJsonArray.map { it.asString }
             valueId = valueIdItem.asJsonArray.map { it.asString }
