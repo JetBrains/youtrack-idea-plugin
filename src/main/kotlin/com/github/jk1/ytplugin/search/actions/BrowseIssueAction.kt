@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.search.actions
 
 import com.github.jk1.ytplugin.common.logger
+import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.actionSystem.AnAction
@@ -11,7 +12,7 @@ import com.intellij.tasks.Task
  * Opens currently selected issue in a browser.
  * This is about tool window selection, not about an active task.
  */
-class BrowseIssueAction(val getSelectedTask: () -> Task?) : AnAction(
+class BrowseIssueAction(val getSelectedIssue: () -> Issue?) : AnAction(
         "Open in Browser",
         "Opens selected YouTrack issue in your favorite browser",
         AllIcons.General.Web) {
@@ -19,7 +20,7 @@ class BrowseIssueAction(val getSelectedTask: () -> Task?) : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
-            val task = getSelectedTask.invoke()
+            val task = getSelectedIssue.invoke()?.asTask()
             // youtrack issues always have a url defined
             if (task != null) {
                 logger.debug("Opening ${task.id} browser: ${task.issueUrl}")
@@ -29,6 +30,6 @@ class BrowseIssueAction(val getSelectedTask: () -> Task?) : AnAction(
     }
 
     override fun update(event: AnActionEvent) {
-        event.presentation.isEnabled = getSelectedTask.invoke() != null
+        event.presentation.isEnabled = getSelectedIssue.invoke() != null
     }
 }

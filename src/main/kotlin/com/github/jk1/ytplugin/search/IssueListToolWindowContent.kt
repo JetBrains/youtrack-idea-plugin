@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.common.runAction
+import com.github.jk1.ytplugin.search.actions.AnalyzeStacktraceAction
 import com.github.jk1.ytplugin.search.actions.BrowseIssueAction
 import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
 import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
@@ -48,16 +49,17 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
 
     private fun createActionPanel(): JComponent {
         val group = DefaultActionGroup()
-        val selectedTask = {
+        val selectedIssue = {
             when {
                 issueList.selectedIndex == -1 -> null
-                else -> issueListModel.getElementAt(issueList.selectedIndex).asTask()
+                else -> issueListModel.getElementAt(issueList.selectedIndex)
             }
         }
         group.add(RefreshIssuesAction(repo))
         //group.add(CreateIssueAction()) todo: implement me
-        group.add(SetAsActiveTaskAction(selectedTask))
-        group.add(BrowseIssueAction(selectedTask))
+        group.add(SetAsActiveTaskAction(selectedIssue))
+        group.add(BrowseIssueAction(selectedIssue))
+        group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(ActionManager.getInstance().getAction(CONFIGURE_SERVERS_ACTION_ID))
         return ActionManager.getInstance()
                 .createActionToolbar("Actions", group, false)
