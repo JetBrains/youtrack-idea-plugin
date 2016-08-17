@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.search.model
 import com.github.jk1.ytplugin.common.logger
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.intellij.tasks.Comment
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskType
 import com.intellij.tasks.impl.LocalTaskImpl
@@ -25,6 +24,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
     val updateDate: Date
     val resolved: Boolean
     val customFields: List<CustomField>
+    val comments: List<IssueComment>
 
     init {
         val root = item.asJsonObject
@@ -40,7 +40,8 @@ class Issue(item: JsonElement, val repoUrl: String) {
                 .map { parseCustomFieldSafe(it) }
                 .filter { it != null }
                 .requireNoNulls()
-        // todo: parse comments, tags, links
+        comments = root.getAsJsonArray("comment").map { IssueComment(it) }
+        // todo: parse tags, links
     }
 
     private fun parseCustomFieldSafe(item: JsonElement): CustomField? {
@@ -78,7 +79,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
 
         override fun isClosed() = this@Issue.resolved
 
-        override fun getComments(): Array<out Comment> = arrayOf()
+        override fun getComments() = this@Issue.comments.map { it.asTaskManagerComment() }.toTypedArray()
 
         override fun getIcon(): Icon = LocalTaskImpl.getIconFromType(type, isIssue)
 
