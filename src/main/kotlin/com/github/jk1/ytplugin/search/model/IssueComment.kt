@@ -12,7 +12,6 @@ class IssueComment(item: JsonElement) {
     val authorLogin: String
     val authorName: String
     val text: String
-    val permittedGroup: String?
     val created: Date
     val updated: Date?
 
@@ -25,10 +24,6 @@ class IssueComment(item: JsonElement) {
         updated = when (item.asJsonObject.get("updated")) {
             is JsonNull -> null
             else -> Date(item.asJsonObject.get("updated").asLong)
-        }
-        permittedGroup = when (item.asJsonObject.get("permittedGroup")){
-            is JsonNull -> null
-            else -> item.asJsonObject.get("permittedGroup").asString
         }
     }
 
