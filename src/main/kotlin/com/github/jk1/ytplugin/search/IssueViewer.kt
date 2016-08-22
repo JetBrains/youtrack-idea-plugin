@@ -2,65 +2,104 @@ package com.github.jk1.ytplugin.search
 
 import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.search.model.Issue
+import com.github.jk1.ytplugin.search.model.IssueComment
+import com.intellij.icons.AllIcons
+import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.ui.SimpleColoredComponent
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Insets
-import java.awt.Rectangle
-import java.io.IOException
-import javax.swing.JPanel
-import javax.swing.JTextPane
-import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
-import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-import javax.swing.SwingUtilities
+import java.text.SimpleDateFormat
+import javax.swing.*
+import javax.swing.ScrollPaneConstants.*
+import javax.swing.event.HyperlinkEvent
 import javax.swing.text.html.HTMLEditorKit
 
 class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
-    val editorKit = HTMLEditorKit()
-    val browserPane: JTextPane = JTextPane()
     var currentIssue: Issue? = null
+    val rootPane = JPanel()
+    val issuePane = createHtmlPane()
 
     init {
-        editorKit.styleSheet.addRule(UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground()))
-        browserPane.editorKit = editorKit
-        browserPane.contentType = "text/html"
-        browserPane.margin = Insets(0, 0, 0, 0)
-        browserPane.isEditable = false
-        val scroll = JBScrollPane(browserPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED)
-        add(scroll, BorderLayout.CENTER)
+        rootPane.layout = BoxLayout(rootPane, BoxLayout.Y_AXIS)
+        add(JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER)
     }
 
     fun showIssue(issue: Issue) {
-        currentIssue = issue
         val preview = generateHtml(issue)
+        currentIssue = issue
         SwingUtilities.invokeLater {
-            browserPane.text = preview
-            browserPane.caretPosition = 0
+            rootPane.removeAll()
+            rootPane.add(issuePane)
+            if (issue.comments.isNotEmpty()) {
+                issuePane.border = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.GRAY)
+            }
+            issue.comments.forEach { rootPane.add(createCommentPanel(it)) }
+            issuePane.text = preview
+            issuePane.caretPosition = 0
         }
+    }
+
+    private fun createCommentPanel(comment: IssueComment): JPanel {
+        val topPanel = JPanel(BorderLayout())
+        val commentPanel = JPanel(BorderLayout())
+        val header = SimpleColoredComponent()
+        header.icon = AllIcons.Modules.Types.UserDefined
+        header.append(comment.authorName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        header.append(" at ")
+        header.append(SimpleDateFormat("dd MMM yyyy HH:mm").format(comment.created))
+        topPanel.add(header, BorderLayout.WEST)
+        val commentPane = createHtmlPane()
+        commentPane.margin = Insets(2, 4, 0, 0)
+        commentPane.text = comment.text
+        commentPanel.add(commentPane, BorderLayout.CENTER)
+        val panel = JPanel(BorderLayout())
+        panel.add(topPanel, BorderLayout.NORTH)
+        panel.add(commentPanel, BorderLayout.CENTER)
+        panel.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+        return panel
+    }
+
+    private fun createHtmlPane(): JTextPane {
+        val htmlPane = JTextPane()
+        val editorKit = HTMLEditorKit()
+        val rules = UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground())
+        editorKit.styleSheet.addRule(rules)
+        htmlPane.editorKit = editorKit
+        htmlPane.contentType = "text/html"
+        htmlPane.isEditable = false
+        htmlPane.addHyperlinkListener {
+            if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
+                val url = "${currentIssue?.repoUrl}${it.description}"
+                BrowserLauncher.getInstance().open(url)
+            }
+        }
+        return htmlPane
     }
 
     private fun generateHtml(issue: Issue): String {
         try {
-            val id = issue.id
-            val summary = issue.summary
-            val description = StringUtil.unescapeXml(issue.description)
-            var main = loadResource("issue.html")
-            val css = loadResource(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css")
-            val wikiCss = loadResource("wiki.css")
-            main = StringUtil.replace(main,
-                    arrayOf("{##STYLES}", "{##ID}", "{##Summary}", "{##Description}"),
-                    arrayOf(css + wikiCss, id, summary, description))
-            main = StringUtil.replace(main, "{##comments}", "")
-            return main
+            return ResourceTemplate("issue.html")
+                    .put("styles", loadStyles())
+                    .put("id", issue.id)
+                    .put("summary", issue.summary)
+                    .put("description", StringUtil.unescapeXml(issue.description))
+                    .render()
         } catch (e: Exception) {
             logger.warn("Issue rendering failed", e)
             return "<html><body>An error occurred during issue rendering. Check IDE log for more details.</body></html>"
         }
     }
+
+    private fun loadStyles() = loadResource(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css") +
+            loadResource("wiki.css")
 
     private fun loadResource(name: String) = FileUtil.loadTextAndClose(javaClass.getResourceAsStream(name))
 }

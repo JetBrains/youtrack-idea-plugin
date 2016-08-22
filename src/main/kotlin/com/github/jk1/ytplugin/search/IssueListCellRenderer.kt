@@ -61,19 +61,9 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         }
         background = UIUtil.getListBackground(isSelected)
         fillSummaryLine(issue, fgColor)
-        fields.clear()
-        fields.isOpaque = !isSelected
-        fields.background = this.background
-        issue.customFields.forEach {
-            val attributes = when {
-                isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
-                else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
-            }
-            fields.append(it.formatValues(), attributes)
-            fields.append("   ")
-        }
+        fillCustomFields(issue, fgColor, isSelected)
         time.foreground = if (isSelected) UIUtil.getListForeground(true) else JBColor(Color(75, 107, 244), Color(87, 120, 173))
-        time.text = SimpleDateFormat().format(issue.updateDate) + " "
+        time.text = SimpleDateFormat("dd MMM yyyy HH:mm").format(issue.updateDate) + " "
         return this
     }
 
@@ -92,6 +82,20 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         }
         if (summaryWords.hasNext()){
             idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, fgColor))
+        }
+    }
+
+    private fun fillCustomFields(issue: Issue, fgColor: Color, isSelected: Boolean){
+        fields.clear()
+        fields.isOpaque = !isSelected
+        fields.background = this.background
+        issue.customFields.forEach {
+            val attributes = when {
+                isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
+                else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
+            }
+            fields.append(it.formatValues(), attributes)
+            fields.append("   ")
         }
     }
 }
