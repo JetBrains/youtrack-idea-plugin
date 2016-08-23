@@ -86,16 +86,19 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
     }
 
     private fun fillCustomFields(issue: Issue, fgColor: Color, isSelected: Boolean){
+        val viewportWidth = viewportWidthProvider.invoke() - 100
         fields.clear()
         fields.isOpaque = !isSelected
         fields.background = this.background
         issue.customFields.forEach {
-            val attributes = when {
-                isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
-                else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
+            if (viewportWidth > fields.computePreferredSize(false).width) {
+                val attributes = when {
+                    isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
+                    else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
+                }
+                fields.append(it.formatValues(), attributes)
+                fields.append("   ")
             }
-            fields.append(it.formatValues(), attributes)
-            fields.append("   ")
         }
     }
 }
