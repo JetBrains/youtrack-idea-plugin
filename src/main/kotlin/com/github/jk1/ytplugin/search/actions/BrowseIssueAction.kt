@@ -6,7 +6,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.tasks.Task
+import com.intellij.openapi.project.DumbAware
 
 /**
  * Opens currently selected issue in a browser.
@@ -15,7 +15,7 @@ import com.intellij.tasks.Task
 class BrowseIssueAction(val getSelectedIssue: () -> Issue?) : AnAction(
         "Open in Browser",
         "Opens selected YouTrack issue in your favorite browser",
-        AllIcons.General.Web) {
+        AllIcons.General.Web), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project

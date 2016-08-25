@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.DumbAware
 import org.apache.commons.lang.StringEscapeUtils
 import java.awt.datatransfer.StringSelection
 
@@ -17,7 +18,7 @@ import java.awt.datatransfer.StringSelection
 class AnalyzeStacktraceAction(val getSelectedIssue: () -> Issue?) : AnAction(
         "Analyze Stacktrace",
         "Open analyze stacktrace dialog for stacktrace from issue description",
-        AllIcons.Debugger.ThreadStates.Exception) {
+        AllIcons.Debugger.ThreadStates.Exception), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project

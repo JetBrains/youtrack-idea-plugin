@@ -18,7 +18,7 @@ import com.intellij.openapi.project.Project
 class OpenCommandWindowAction : AnAction(
         "Execute YouTrack command",
         "Apply YouTrack command to a current active task",
-        AllIcons.Actions.Execute), DumbAware {
+        AllIcons.Debugger.CommandLine), DumbAware {
 
     val errorTitle = "Can't open YouTrack command window"
 

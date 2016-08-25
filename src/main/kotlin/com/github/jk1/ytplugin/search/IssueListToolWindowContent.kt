@@ -4,10 +4,7 @@ import com.github.jk1.ytplugin.common.YouTrackServer
 import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.common.runAction
-import com.github.jk1.ytplugin.search.actions.AnalyzeStacktraceAction
-import com.github.jk1.ytplugin.search.actions.BrowseIssueAction
-import com.github.jk1.ytplugin.search.actions.RefreshIssuesAction
-import com.github.jk1.ytplugin.search.actions.SetAsActiveTaskAction
+import com.github.jk1.ytplugin.search.actions.*
 import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -33,11 +30,13 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     private val issueList: JBList = JBList()
     private val splitter = EditorSplitter()
     private val viewer = IssueViewer(project)
-    private lateinit var issueListModel: AbstractListModel<Issue>
+    private val issueListModel: IssueListModel = IssueListModel()
+    private lateinit var issueCellRenderer: IssueListCellRenderer
 
     init {
         val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        issueList.cellRenderer = IssueListCellRenderer({issueListScrollPane.viewport.width})
+        issueCellRenderer = IssueListCellRenderer({issueListScrollPane.viewport.width})
+        issueList.cellRenderer = issueCellRenderer
         splitter.firstComponent = issueListScrollPane
         splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
@@ -60,6 +59,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         group.add(SetAsActiveTaskAction(selectedIssue))
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
+        group.add(ToggleIssueViewAction(project, issueCellRenderer, issueListModel))
         group.add(ActionManager.getInstance().getAction(CONFIGURE_SERVERS_ACTION_ID))
         return ActionManager.getInstance()
                 .createActionToolbar("Actions", group, false)
@@ -94,15 +94,6 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     private fun initIssueListModel() {
         issueList.emptyText.clear()
         startLoading()
-        issueListModel = object : AbstractListModel<Issue>() {
-            init {
-                issueStoreComponent[repo].addListener { fireContentsChanged(IssueListPanel@this, 0, size) }
-            }
-
-            override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
-
-            override fun getSize() = issueStoreComponent[repo].getAllIssues().size
-        }
         issueList.model = issueListModel
         issueStoreComponent[repo].update().doWhenDone { stopLoading() }
         issueStoreComponent[repo].addListener {
@@ -114,5 +105,17 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
                         { CONFIGURE_SERVERS_ACTION_ID.runAction() })
             }
         }
+    }
+
+    inner class IssueListModel: AbstractListModel<Issue>() {
+        init {
+            issueStoreComponent[repo].addListener { update() }
+        }
+
+        override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
+
+        override fun getSize() = issueStoreComponent[repo].getAllIssues().size
+
+        fun update() { fireContentsChanged(IssueListPanel@this, 0, size) }
     }
 }

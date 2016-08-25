@@ -8,6 +8,8 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.Logger
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.swing.SwingUtilities
 
 fun sendNotification(
@@ -22,7 +24,9 @@ val Any.logger : Logger
 
 fun String.runAction(){
     val action = ActionManager.getInstance().getAction(this)
-    val context = DataManager.getInstance().dataContext
+    val context = DataManager.getInstance().dataContextFromFocus.result
     val event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, context)
     action.actionPerformed(event)
 }
+
+fun Date.format() = SimpleDateFormat("dd MMM yyyy HH:mm").format(this)

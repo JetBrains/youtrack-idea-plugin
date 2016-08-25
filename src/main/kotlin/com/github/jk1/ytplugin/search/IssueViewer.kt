@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.search
 
+import com.github.jk1.ytplugin.common.format
 import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.model.IssueComment
@@ -15,9 +16,9 @@ import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Insets
-import java.text.SimpleDateFormat
 import javax.swing.*
-import javax.swing.ScrollPaneConstants.*
+import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import javax.swing.event.HyperlinkEvent
 import javax.swing.text.html.HTMLEditorKit
 
@@ -54,7 +55,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         header.icon = AllIcons.Modules.Types.UserDefined
         header.append(comment.authorName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         header.append(" at ")
-        header.append(SimpleDateFormat("dd MMM yyyy HH:mm").format(comment.created))
+        header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
         val commentPane = createHtmlPane()
         commentPane.margin = Insets(2, 4, 0, 0)

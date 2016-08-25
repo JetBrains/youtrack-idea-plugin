@@ -44,6 +44,8 @@ class Issue(item: JsonElement, val repoUrl: String) {
         // todo: parse tags, links
     }
 
+    override fun toString() = "$id $summary"
+
     private fun parseCustomFieldSafe(item: JsonElement): CustomField? {
         try {
             return CustomField(item)

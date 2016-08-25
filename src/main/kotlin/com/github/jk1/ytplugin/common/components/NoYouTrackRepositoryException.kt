@@ -3,13 +3,9 @@ package com.github.jk1.ytplugin.common.components
 import com.github.jk1.ytplugin.common.YouTrackPluginException
 import com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.common.runAction
-import com.intellij.ide.DataManager
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.AnActionEvent
 
 /**
  * Thrown when no configured YouTrack repository can be found. Although we may still have an

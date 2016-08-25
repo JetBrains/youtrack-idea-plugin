@@ -25,8 +25,6 @@ class EditorSplitter() : Splitter(false) {
         collapse()
     }
 
-    fun isCollapsed() = previewCollapsed
-
     fun collapse() {
         proportion = 1.0f - getMinProportion(false)
         previewCollapsed = true

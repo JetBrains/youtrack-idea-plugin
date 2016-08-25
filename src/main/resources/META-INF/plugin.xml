@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration Plugin</name>
-    <version>0.3.2</version>
+    <version>0.4</version>
     <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
@@ -17,8 +17,12 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li>- Issue browser tool window added</li>
-            <li>- Enabled wiki markup support on issue content preview</li>
+            <li>- Issue browser now displays comments</li>
+            <li>- Clickable links in issue browser</li>
+            <li>- "Analyze stacktrace" action is now available if issue description has a stacktrace</li>
+            <li>- Resolved issue marked with strikeout issue ids</li>
+            <li>- Compact view mode for issue list</li>
+            <li>- Better YouTrack 5.2 compatibility</li>
         </ul>
           ]]></change-notes>
 

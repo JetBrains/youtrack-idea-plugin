@@ -34,7 +34,7 @@ This feature requires local ports to be opened, so you may want to configure you
 
 #### Issue view
 
-Plugin displays issue list matching the query set in server settings. When an issue is selected, issue preview appears with wiki warkup rendered. Issue comments and tags are coming soon.
+Plugin displays issue list matching the query set in server settings. When an issue is selected, issue preview appears with wiki markup rendered.
 
 ##Plugin logs
 

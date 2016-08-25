@@ -5,7 +5,7 @@ import com.github.jk1.ytplugin.search.model.Issue
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.tasks.Task
+import com.intellij.openapi.project.DumbAware
 
 /**
  * Takes selected issue from a tool window and sets it as an active Task manager task
@@ -14,7 +14,7 @@ import com.intellij.tasks.Task
 class SetAsActiveTaskAction(val getSelectedIssue: () -> Issue?) : AnAction(
         "Set as active task",
         "Create task manager task from a selected issue and switch to it",
-        AllIcons.Graph.Export) {
+        AllIcons.Graph.Export), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
