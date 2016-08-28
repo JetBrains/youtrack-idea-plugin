@@ -22,7 +22,7 @@ apply plugin: 'idea'
 apply plugin: 'org.jetbrains.intellij'
 
 group 'com.github.jk1'
-version '0.3.2'
+version '0.4'
 
 repositories {
     mavenCentral()
@@ -37,9 +37,6 @@ intellij {
     updateSinceUntilBuild false
     instrumentCode false
     pluginName 'ytplugin'
-    publish {
-        pluginId '8215'
-    }
 }
 
 dependencies {
