@@ -26,6 +26,10 @@ class YouTrackServer(private val delegate: BaseRepository) {
         return method.invoke(delegate) as HttpClient
     }
 
+    fun login() {
+        delegate.createCancellableConnection()?.call()
+    }
+
     fun findTask(id: String) = delegate.findTask(id)
 
     fun getTasks(query: String?, offset: Int, limit: Int) = delegate.getIssues(query, offset, limit, true)

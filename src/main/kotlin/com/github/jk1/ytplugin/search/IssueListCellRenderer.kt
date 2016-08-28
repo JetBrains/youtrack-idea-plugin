@@ -12,15 +12,13 @@ import com.intellij.ui.SimpleTextAttributes.*
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
-import javax.swing.JLabel
-import javax.swing.JList
-import javax.swing.JPanel
-import javax.swing.ListCellRenderer
+import javax.swing.*
 
 class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(BorderLayout()), ListCellRenderer<Issue> {
 
     private val topPanel = JPanel(BorderLayout())
     private val bottomPanel = JPanel(BorderLayout())
+    private val idSummaryPanel = JPanel(BorderLayout())
     private val idSummary = SimpleColoredComponent()
     private val fields = SimpleColoredComponent()
     private val time = JLabel()
@@ -39,12 +37,13 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
 
     init {
         idSummary.isOpaque = false
+        idSummaryPanel.isOpaque = false
         idSummary.font = Font(font, Font.PLAIN, 13)
         fields.font = Font(font, Font.PLAIN, 12)
         time.font = Font(font, Font.PLAIN, 10)
         border = CustomLineBorder(JBColor(Gray._220, Gray._85), 0, 0, 1, 0)
         topPanel.isOpaque = false
-        topPanel.add(idSummary, BorderLayout.WEST)
+        topPanel.add(idSummaryPanel, BorderLayout.WEST)
         topPanel.add(time, BorderLayout.EAST)
         bottomPanel.isOpaque = false
         bottomPanel.add(fields, BorderLayout.WEST)
@@ -72,8 +71,9 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
 
     private fun fillSummaryLine(issue: Issue, fgColor: Color) {
         val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
+        idSummaryPanel.removeAll()
         idSummary.clear()
-        installIcon(issue)
+        createIcon(issue)
         idSummary.ipad = Insets(0, 4, 0, 0)
         var idStyle = STYLE_BOLD
         if (issue.resolved) {
@@ -89,6 +89,8 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         if (summaryWords.hasNext()) {
             idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, fgColor))
         }
+        idSummaryPanel.add(createIcon(issue), BorderLayout.WEST)
+        idSummaryPanel.add(idSummary, BorderLayout.EAST)
     }
 
     private fun fillCustomFields(issue: Issue, fgColor: Color, isSelected: Boolean) {
@@ -108,19 +110,19 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         }
     }
 
-    private fun installIcon(issue: Issue) {
-        val priorityCF = issue.customFields.firstOrNull { "Priority".equals(it.name) }
-        if (!compactView || priorityCF == null) {
-            idSummary.icon = AllIcons.Toolwindows.ToolWindowDebugger
-            idSummary.iconTextGap = 3
+    private fun createIcon(issue: Issue): JComponent {
+        val priorityField = issue.customFields.firstOrNull { "Priority".equals(it.name) }
+        if (!compactView || priorityField == null) {
+            val label = JLabel(AllIcons.Toolwindows.ToolWindowDebugger)
+            label.border = BorderFactory.createEmptyBorder(0, 3, 0, 0)
+            return label
         } else {
-            var style = STYLE_BOLD.or(STYLE_SMALLER)
-            if (!UIUtil.isUnderDarcula()) {
-                style = style.or(STYLE_OPAQUE)
-            }
-            val attributes = SimpleTextAttributes(priorityCF.backgroundColor, priorityCF.foregroundColor, null, style)
-            idSummary.append(" ${priorityCF.value.first().first()} ", attributes)
-            idSummary.append(" ")
+            val label = JLabel(" ${priorityField.value.first().first()} ")
+            label.background = priorityField.backgroundColor
+            label.foreground = priorityField.foregroundColor
+            label.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+            label.isOpaque = !UIUtil.isUnderDarcula()
+            return label
         }
     }
 }

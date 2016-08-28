@@ -60,6 +60,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
                 override fun run(indicator: ProgressIndicator) {
                     try {
                         logger.debug("Fetching issues for search query: ${repo.defaultSearch}")
+                        repo.login()
                         issues = client.getIssues(repo.defaultSearch)
                     } catch (e: Exception) {
                         // todo: notification?
