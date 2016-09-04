@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.commands.components.CommandComponent
+import com.github.jk1.ytplugin.commands.components.CommandSession
 import com.github.jk1.ytplugin.commands.lang.CommandLanguage
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandPreview
@@ -22,7 +23,7 @@ import java.awt.event.WindowEvent
 import javax.swing.*
 
 
-class CommandDialog(override val project: Project) : DialogWrapper(project, false), ComponentAware {
+class CommandDialog(override val project: Project, val session: CommandSession) : DialogWrapper(project, false), ComponentAware {
 
     private val commandField = createCommandField()
     private val commentArea = JTextArea(6, 60)
@@ -59,14 +60,15 @@ class CommandDialog(override val project: Project) : DialogWrapper(project, fals
         val commandField = LanguageTextField(CommandLanguage, project, "")
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
-        file?.putUserData(CommandComponent.USER_DATA_KEY, CommandSuggestListener())
+        file?.putUserData(CommandComponent.COMPONENT_KEY, CommandSuggestListener())
+        file?.putUserData(CommandComponent.SESSION_KEY, session)
         peer.window.addWindowFocusListener(object : WindowAdapter() {
             override fun windowGainedFocus(e: WindowEvent) {
                 commandField.requestFocusInWindow()
             }
         })
         // todo: find a better way to attach onEnter handler to LanguageTextField
-        commandField.addDocumentListener(object: DocumentListener {
+        commandField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(p0: DocumentEvent?) {
                 val component = commandField.editor!!.contentComponent
                 component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
@@ -136,9 +138,8 @@ class CommandDialog(override val project: Project) : DialogWrapper(project, fals
      */
     inner class ExecuteCommandAction(name: String, val silent: Boolean = false) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
-            val command = YouTrackCommand(commandField.text, commandField.caretModel.offset)
             val group = visibilityGroupDropdown.selectedItem.toString()
-            val execution = YouTrackCommandExecution(command, silent, commentArea.text, group)
+            val execution = YouTrackCommandExecution(session, commandField.text, silent, commentArea.text, group)
             commandComponent.executeAsync(execution)
             this@CommandDialog.close(0)
         }

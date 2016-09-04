@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.commands.lang
 
 import com.github.jk1.ytplugin.commands.components.CommandComponent
+import com.github.jk1.ytplugin.commands.components.CommandComponent.Companion.COMPONENT_KEY
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandHighlightRange
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
@@ -27,9 +28,11 @@ class CommandHighlightingAnnotator : ExternalAnnotator<CommandAssistResponse, Li
     )
 
     override fun collectInformation(file: PsiFile, editor: Editor, hasErrors: Boolean): CommandAssistResponse {
-        val component: CommandComponent = file.getUserData(CommandComponent.USER_DATA_KEY) ?:
+        val component: CommandComponent = file.getUserData(COMPONENT_KEY) ?:
                 throw IllegalStateException("Command component user data is missing from PSI file")
-        return component.suggest(YouTrackCommand(file.text, editor.caretModel.offset))
+        val session = file.getUserData(CommandComponent.SESSION_KEY) ?:
+                throw IllegalStateException("Command component user data is missing from PSI file")
+        return component.suggest(YouTrackCommand(session, file.text, editor.caretModel.offset))
     }
 
     override fun doAnnotate(collectedInfo: CommandAssistResponse): List<CommandHighlightRange> {

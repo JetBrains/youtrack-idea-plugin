@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.commands
 
+import com.github.jk1.ytplugin.commands.components.CommandSession
 import com.github.jk1.ytplugin.common.YouTrackPluginException
 import com.github.jk1.ytplugin.common.components.ComponentAware
 import com.github.jk1.ytplugin.common.components.NoYouTrackRepositoryException
@@ -27,7 +28,7 @@ class OpenCommandWindowAction : AnAction(
         if (project != null && project.isInitialized) {
             try {
                 assertYouTrackRepositoryConfigured(project)
-                CommandDialog(project).show()
+                CommandDialog(project, CommandSession(project)).show()
             } catch(exception: YouTrackPluginException) {
                 exception.showAsNotificationBalloon(project)
             }

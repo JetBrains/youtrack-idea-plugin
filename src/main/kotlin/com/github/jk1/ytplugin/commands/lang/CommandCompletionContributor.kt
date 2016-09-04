@@ -1,6 +1,8 @@
 package com.github.jk1.ytplugin.commands.lang
 
 import com.github.jk1.ytplugin.commands.components.CommandComponent
+import com.github.jk1.ytplugin.commands.components.CommandComponent.Companion.COMPONENT_KEY
+import com.github.jk1.ytplugin.commands.components.CommandComponent.Companion.SESSION_KEY
 import com.github.jk1.ytplugin.commands.model.CommandSuggestion
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.intellij.codeInsight.completion.CompletionContributor
@@ -22,8 +24,8 @@ import java.util.concurrent.TimeoutException
  */
 class CommandCompletionContributor : CompletionContributor() {
 
-    final val LOG = Logger.getInstance(CommandCompletionContributor::class.java)
-    final val TIMEOUT = 2000L // ms
+    val LOG = Logger.getInstance(CommandCompletionContributor::class.java)
+    val TIMEOUT = 2000L // ms
 
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (LOG.isDebugEnabled) {
@@ -31,10 +33,11 @@ class CommandCompletionContributor : CompletionContributor() {
         }
         super.fillCompletionVariants(parameters, result)
         val file = parameters.originalFile
-        val component: CommandComponent = file.getUserData(CommandComponent.USER_DATA_KEY) ?: return
+        val component = file.getUserData(COMPONENT_KEY) ?: return
+        val session = file.getUserData(SESSION_KEY) ?: return
         val future = ApplicationManager.getApplication().executeOnPooledThread (
                 Callable<List<CommandSuggestion>> {
-                    val command = YouTrackCommand(parameters.originalFile.text, parameters.offset)
+                    val command = YouTrackCommand(session, parameters.originalFile.text, parameters.offset)
                     component.suggest(command).suggestions
                 })
         try {

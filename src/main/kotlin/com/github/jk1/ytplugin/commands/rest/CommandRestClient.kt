@@ -56,7 +56,7 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
         get() {
             with (command) {
                 val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
-                val execUrl = "$baseUrl/rest/issue/execute/${issues.first().id}"
+                val execUrl = "$baseUrl/rest/issue/execute/${session.task.id}"
                 return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup.urlencoded}&disableNotifications=$silent"
             }
         }
@@ -65,6 +65,11 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
         get() {
             val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
             val assistUrl = "$baseUrl/rest/command/underlineAndSuggestAndCommands"
-            return "$assistUrl?command=${command.urlencoded}&caret=$caret&query=${issues.first().id}&noIssuesContext=false"
+            val result = "$assistUrl?command=${command.urlencoded}&caret=$caret&noIssuesContext=false"
+            return if (session.hasEntityId()){
+                "$result&issueIds=${session.compressedEntityId}"
+            } else {
+                "$result&query=${session.task.id}"
+            }
         }
 }

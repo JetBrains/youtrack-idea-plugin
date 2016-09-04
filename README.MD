@@ -47,6 +47,7 @@ To enable debug logging proceed as follows:
 
 ##Development
 
+Plugin requires JDK 8 installed for development.
 To get an Idea project open ```build.gradle``` file with Intellij Idea and follow import instructions.
 
 Handy development tasks:
@@ -58,6 +59,5 @@ Handy development tasks:
 - ```./gradlew runIdea``` to start a copy of IntelliJ IDEA with YouTrack plugin enabled
 
 Pull requests are most welcome.
-
 
 

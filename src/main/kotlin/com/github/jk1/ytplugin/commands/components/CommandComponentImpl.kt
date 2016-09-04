@@ -27,7 +27,6 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
             override fun run(indicator: ProgressIndicator) {
                 try {
                     indicator.text = title
-                    execution.command.issues.add(taskManagerComponent.getActiveTask())
                     val result = restClient.executeCommand(execution)
                     result.errors.forEach {
                         sendNotification("Command execution error", it, NotificationType.ERROR)
@@ -47,7 +46,6 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
     }
 
     override fun suggest(command: YouTrackCommand): CommandAssistResponse {
-        command.issues.add(taskManagerComponent.getActiveTask())
         val response = assistCache[command] ?: restClient.assistCommand(command)
         assistCache[command] = response
         return response

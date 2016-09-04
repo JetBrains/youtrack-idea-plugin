@@ -17,10 +17,10 @@ import javax.swing.SwingUtilities
 
 class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project) {
 
-    private val stores = ConcurrentHashMap<YouTrackServer, Store>()
+    private val stores = ConcurrentHashMap<String, Store>()
 
     operator fun get(repo: YouTrackServer): Store {
-        return stores.getOrPut(repo, {
+        return stores.getOrPut(repo.id, {
             logger.debug("Issue store opened for project ${project.name} and YouTrack server ${repo.url}")
             Store(repo)
         })
@@ -30,7 +30,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
         stores.values.forEach { it.close() }
     }
 
-    inner class Store(private val repo: YouTrackServer) : Closeable {
+    inner class Store(private val repo: YouTrackServer) : Closeable, Iterable<Issue> {
         private val client = IssuesRestClient(project, repo)
         private var issues: List<Issue> = listOf()
         private var currentCallback: ActionCallback = ActionCallback.Done()
@@ -88,6 +88,8 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
         fun getAllIssues(): Collection<Issue> = issues
 
         fun getIssue(index: Int) = issues[index]
+
+        override fun iterator() = issues.iterator()
 
         fun addListener(listener: () -> Unit) {
             listeners.add(listener)

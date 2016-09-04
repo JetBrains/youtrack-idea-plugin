@@ -67,30 +67,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
         return name != null && !PREDEFINED_FIELDS.contains(name.asString)
     }
 
-    fun asTask(): Task = object : Task() {
-
-        override fun getId(): String = this@Issue.id
-
-        override fun getSummary(): String = this@Issue.summary
-
-        override fun getDescription(): String = this@Issue.description
-
-        override fun getCreated() = this@Issue.createDate
-
-        override fun getUpdated() = this@Issue.updateDate
-
-        override fun isClosed() = this@Issue.resolved
-
-        override fun getComments() = this@Issue.comments.map { it.asTaskManagerComment() }.toTypedArray()
-
-        override fun getIcon(): Icon = LocalTaskImpl.getIconFromType(type, isIssue)
-
-        override fun getType(): TaskType = TaskType.OTHER
-
-        override fun isIssue() = true
-
-        override fun getIssueUrl() = "$repoUrl/issue/$id"
-    }
+    fun asTask() = IssueTask(this, repoUrl)
 }
 
 

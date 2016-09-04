@@ -12,7 +12,8 @@ import java.util.concurrent.Future
 interface CommandComponent : ProjectComponent, ComponentAware {
 
     companion object {
-        val USER_DATA_KEY = Key.create<CommandComponent>(CommandComponentImpl::class.toString())
+        val COMPONENT_KEY: Key<CommandComponent> = Key.create(CommandComponentImpl::class.toString())
+        val SESSION_KEY: Key<CommandSession> = Key.create(CommandSession::class.toString())
     }
 
     fun executeAsync(execution: YouTrackCommandExecution) : Future<Unit>

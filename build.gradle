@@ -26,9 +26,6 @@ version '0.4'
 
 repositories {
     mavenCentral()
-    flatDir {
-        dirs 'lib'
-    }
 }
 
 intellij {
@@ -43,10 +40,8 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     compile 'org.nanohttpd:nanohttpd:2.3.0'
-    compileOnly name: 'tasks-api'
 
     testCompile 'junit:junit:4.12'
-    testCompile name: 'tasks-core'
 
     signature 'org.codehaus.mojo.signature:java17:1.0@signature'
 }

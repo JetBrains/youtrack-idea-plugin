@@ -8,6 +8,7 @@ import org.apache.commons.httpclient.HttpClient
 
 class YouTrackServer(private val delegate: BaseRepository) {
 
+    val id: String get() = "$username@$url $defaultSearch"
     val url: String get() = delegate.url
     val username: String get() = delegate.username
     val password: String get() = delegate.password
