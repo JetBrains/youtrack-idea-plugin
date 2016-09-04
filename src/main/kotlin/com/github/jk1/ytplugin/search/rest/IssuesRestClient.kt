@@ -14,12 +14,19 @@ import java.io.InputStreamReader
 
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
- * There's no direct API to get formatted issues by a search query, so two-stage fetch is used:
- * - Fetch issues by search query and select all projects these issues belong to
- * - For each project request formatted issues with the same search query applied
  */
 class IssuesRestClient(override val project: Project, val repo: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
+    fun getIssue(id: String): Issue? {
+        val method = GetMethod("${repo.url}/rest/issue/$id?wikifyDescription=true")
+        return method.execute { parseIssueSafe(it) }
+    }
+
+    /**
+     * There's no direct API to get formatted issues by a search query, so two-stage fetch is used:
+     * - Fetch issues by search query and select all projects these issues belong to
+     * - For each project request formatted issues with the same search query applied
+     */
     fun getIssues(query: String = ""): List<Issue> {
         val projects = getIssueIds(query).map { it.split("-")[0] }.distinct()
         return projects.flatMap { getWikifiedIssuesInProject(it, query) }

@@ -54,8 +54,7 @@
             <skipForDefaultProject/>
         </component>
         <component>
-            <interface-class>com.github.jk1.ytplugin.commands.components.AdminComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.commands.components.AdminComponentImpl</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.commands.components.AdminComponent</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>

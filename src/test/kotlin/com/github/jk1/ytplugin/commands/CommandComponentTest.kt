@@ -29,6 +29,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
         server = createYouTrackRepository()
+        server.defaultSearch = "project: AT"
         localTask = server.findTask(createIssue("summary"))!!
         readAction { getTaskManagerComponent().activateTask(localTask, true) }
         session = CommandSession(project)
@@ -45,6 +46,19 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
     }
 
     @Test
+    fun testCommandCompletionWithIssueInLocalStore() {
+        issueStoreComponent[server].update().waitFor(5000)
+        val command = YouTrackCommand(CommandSession(project), "Fixed", 5)
+        val assist = commandComponent.suggest(command)
+
+        Assert.assertTrue(command.session.hasEntityId())
+        Assert.assertNotNull(assist.suggestions.find { "Fixed".equals(it.option) })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed".equals(it.option) })
+        Assert.assertNotNull(assist.suggestions.find { "fixed in".equals(it.option) })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed in build".equals(it.option) })
+    }
+
+    @Test
     fun testCommandExecution() {
         val execution = YouTrackCommandExecution(session, "Fixed", false, null, "All Users")
         val future = commandComponent.executeAsync(execution)
@@ -52,9 +66,6 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
 
         Assert.assertTrue(server.getTasks(localTask.id, 0, 1).first().isClosed)
     }
-
-    // 25-1268810 -> 4rnA
-    // 25-76732 -> Iky
 
     @After
     fun tearDown() {

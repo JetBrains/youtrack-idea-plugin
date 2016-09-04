@@ -24,7 +24,7 @@ class BrowseIssueAction(val getSelectedIssue: () -> Issue?) : AnAction(
             // youtrack issues always have a url defined
             if (task != null) {
                 logger.debug("Opening ${task.id} browser: ${task.issueUrl}")
-                BrowserLauncher.getInstance().open(task.issueUrl!!)
+                BrowserLauncher.getInstance().open(task.issueUrl)
             }
         }
     }

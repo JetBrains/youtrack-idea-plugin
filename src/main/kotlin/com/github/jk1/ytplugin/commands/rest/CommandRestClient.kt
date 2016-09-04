@@ -54,7 +54,7 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
 
     private val YouTrackCommandExecution.executeCommandUrl: String
         get() {
-            with (command) {
+            with(command) {
                 val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
                 val execUrl = "$baseUrl/rest/issue/execute/${session.task.id}"
                 return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup.urlencoded}&disableNotifications=$silent"
@@ -66,9 +66,10 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
             val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
             val assistUrl = "$baseUrl/rest/command/underlineAndSuggestAndCommands"
             val result = "$assistUrl?command=${command.urlencoded}&caret=$caret&noIssuesContext=false"
-            return if (session.hasEntityId()){
+            return if (session.hasEntityId()) {
                 "$result&issueIds=${session.compressedEntityId}"
             } else {
+                logger.debug("No persistent id found for ${session.task.id}, command suggests may be imprecise and slow")
                 "$result&query=${session.task.id}"
             }
         }
