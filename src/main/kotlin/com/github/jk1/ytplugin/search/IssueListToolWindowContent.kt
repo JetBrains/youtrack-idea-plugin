@@ -10,12 +10,15 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+import com.intellij.util.Function
+import com.intellij.util.containers.Convertor
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -43,7 +46,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
         initIssueListModel()
-        // todo: new ListSpeedSearch(issueList)
+        ListSpeedSearch(issueList)
     }
 
     private fun createActionPanel(): JComponent {
