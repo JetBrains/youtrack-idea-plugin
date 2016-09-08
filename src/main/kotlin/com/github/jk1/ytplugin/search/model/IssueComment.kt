@@ -8,23 +8,14 @@ import java.util.*
 
 class IssueComment(item: JsonElement) {
 
-    val id: String
-    val authorLogin: String
-    val authorName: String
-    val text: String
-    val created: Date
-    val updated: Date?
-
-    init {
-        id = item.asJsonObject.get("id").asString
-        authorLogin = item.asJsonObject.get("author").asString
-        authorName = item.asJsonObject.get("authorFullName").asString
-        text = item.asJsonObject.get("text").asString
-        created = Date(item.asJsonObject.get("created").asLong)
-        updated = when (item.asJsonObject.get("updated")) {
-            is JsonNull -> null
-            else -> Date(item.asJsonObject.get("updated").asLong)
-        }
+    val id: String = item.asJsonObject.get("id").asString
+    val authorLogin: String = item.asJsonObject.get("author").asString
+    val authorName: String = item.asJsonObject.get("authorFullName").asString
+    val text: String = item.asJsonObject.get("text").asString
+    val created: Date = Date(item.asJsonObject.get("created").asLong)
+    val updated: Date? = when (item.asJsonObject.get("updated")) {
+        is JsonNull -> null
+        else -> Date(item.asJsonObject.get("updated").asLong)
     }
 
     fun asTaskManagerComment() = object : Comment() {

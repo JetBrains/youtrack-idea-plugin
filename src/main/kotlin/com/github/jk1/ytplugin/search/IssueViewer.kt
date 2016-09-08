@@ -12,13 +12,12 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Insets
+import java.awt.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
 import javax.swing.event.HyperlinkEvent
 import javax.swing.text.html.HTMLEditorKit
 
@@ -26,26 +25,74 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null
     val rootPane = JPanel()
+    val scrollPane: JBScrollPane
     val issuePane = createHtmlPane()
+    lateinit var scrollToTop: () -> Unit
 
     init {
         rootPane.layout = BoxLayout(rootPane, BoxLayout.Y_AXIS)
-        add(JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER)
+        scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_NEVER)
+        add(scrollPane, BorderLayout.CENTER)
     }
 
     fun showIssue(issue: Issue) {
-        val preview = generateHtml(issue)
+        rootPane.removeAll()
         currentIssue = issue
-        SwingUtilities.invokeLater {
-            rootPane.removeAll()
-            rootPane.add(issuePane)
-            if (issue.comments.isNotEmpty()) {
-                issuePane.border = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.GRAY)
-            }
-            issue.comments.forEach { rootPane.add(createCommentPanel(it)) }
-            issuePane.text = preview
-            issuePane.caretPosition = 0
+        val header = createHeaderPanel(issue)
+        rootPane.add(header)
+        issue.links.groupBy { it.role }.forEach {
+            rootPane.add(createLinkPanel(it.key, it.value.map { it.value }))
         }
+        if (issue.tags.isNotEmpty()) {
+            rootPane.add(createTagPanel(issue))
+        }
+        rootPane.add(issuePane)
+        if (issue.comments.isNotEmpty()) {
+            val tabsPane = JBTabbedPane()
+            val commentsPanel = JPanel()
+            commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
+            tabsPane.addTab("Comments", commentsPanel)
+            issue.comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+            rootPane.add(tabsPane)
+        }
+        issuePane.text = generateHtml(issue)
+        scrollToTop.invoke()
+    }
+
+    private fun createHeaderPanel(issue: Issue): JPanel {
+        val panel = JPanel(BorderLayout())
+        // todo: strikeout resolved issue ids
+        val textArea = JTextArea()
+        textArea.text = "${issue.id} ${issue.summary}";
+        textArea.wrapStyleWord = true;
+        textArea.lineWrap = true;
+        textArea.isOpaque = false;
+        textArea.isEditable = false;
+        textArea.isFocusable = false;
+        textArea.background = UIManager.getColor("Label.background");
+        textArea.font = UIManager.getFont("Label.font");
+        textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
+        textArea.font = Font("arial", Font.PLAIN, 18)
+        panel.add(textArea, BorderLayout.CENTER)
+        panel.maximumSize = issuePane.size
+        scrollToTop = { textArea.caretPosition = 0 }
+        return panel
+    }
+
+    private fun createTagPanel(issue: Issue): JPanel {
+        val panel = JPanel(FlowLayout(FlowLayout.LEFT))
+        issue.tags.forEach {
+            val label = JLabel("${it.value}")
+            panel.add(label)
+        }
+        return panel
+    }
+
+    private fun createLinkPanel(role: String, links: List<String>): JPanel {
+        val panel = JPanel(FlowLayout(FlowLayout.LEFT))
+        panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
+        panel.add(JLabel("${role.capitalize()}: ${links.joinToString(", ")}"))
+        return panel
     }
 
     private fun createCommentPanel(comment: IssueComment): JPanel {
@@ -89,8 +136,6 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         try {
             return ResourceTemplate("issue.html")
                     .put("styles", loadStyles())
-                    .put("id", issue.id)
-                    .put("summary", issue.summary)
                     .put("description", StringUtil.unescapeXml(issue.description))
                     .render()
         } catch (e: Exception) {
