@@ -67,7 +67,7 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
             val assistUrl = "$baseUrl/rest/command/underlineAndSuggestAndCommands"
             val result = "$assistUrl?command=${command.urlencoded}&caret=$caret&noIssuesContext=false"
             return if (session.hasEntityId()) {
-                "$result&issueIds=${session.compressedEntityId}"
+                "$result&issueIds=${session.compressedEntityId?.urlencoded}"
             } else {
                 logger.debug("No persistent id found for ${session.task.id}, command suggests may be imprecise and slow")
                 "$result&query=${session.task.id}"
