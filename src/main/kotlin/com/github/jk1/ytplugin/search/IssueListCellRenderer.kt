@@ -23,11 +23,6 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
     private val fields = SimpleColoredComponent()
     private val time = JLabel()
     private val glyphs = JLabel()
-    private val font = when {
-        SystemInfo.isMac -> "Lucida Grande"
-        SystemInfo.isWindows -> "Arial"
-        else -> "Verdana"
-    }
 
     var compactView: Boolean = true
         set(value) {
@@ -38,9 +33,9 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
     init {
         idSummary.isOpaque = false
         idSummaryPanel.isOpaque = false
-        idSummary.font = Font(font, Font.PLAIN, 13)
-        fields.font = Font(font, Font.PLAIN, 12)
-        time.font = Font(font, Font.PLAIN, 10)
+        idSummary.font = Font(time.font.family, Font.PLAIN, 13)
+        fields.font = Font(time.font.family, Font.PLAIN, 12)
+        time.font = Font(time.font.family, Font.PLAIN, 10)
         border = CustomLineBorder(JBColor(Gray._220, Gray._85), 0, 0, 1, 0)
         topPanel.isOpaque = false
         topPanel.add(idSummaryPanel, BorderLayout.WEST)
