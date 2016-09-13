@@ -15,6 +15,8 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import java.awt.*
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
@@ -40,11 +42,11 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         currentIssue = issue
         val header = createHeaderPanel(issue)
         rootPane.add(header)
-        issue.links.groupBy { it.role }.forEach {
-            rootPane.add(createLinkPanel(it.key, it.value.map { it.value }))
-        }
         if (issue.tags.isNotEmpty()) {
             rootPane.add(createTagPanel(issue))
+        }
+        issue.links.groupBy { it.role }.forEach {
+            rootPane.add(createLinkPanel(it.key, it.value.map { it.value }))
         }
         rootPane.add(issuePane)
         if (issue.comments.isNotEmpty()) {
@@ -63,26 +65,36 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         val panel = JPanel(BorderLayout())
         // todo: strikeout resolved issue ids
         val textArea = JTextArea()
-        textArea.text = "${issue.id} ${issue.summary}";
-        textArea.wrapStyleWord = true;
-        textArea.lineWrap = true;
-        textArea.isOpaque = false;
-        textArea.isEditable = false;
-        textArea.isFocusable = false;
-        textArea.background = UIManager.getColor("Label.background");
-        textArea.font = UIManager.getFont("Label.font");
+        textArea.text = "${issue.id} ${issue.summary}"
+        textArea.wrapStyleWord = true
+        textArea.lineWrap = true
+        textArea.isOpaque = false
+        textArea.isEditable = false
+        textArea.isFocusable = false
+        textArea.background = UIManager.getColor("Label.background")
         textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
         textArea.font = Font("arial", Font.PLAIN, 18)
         panel.add(textArea, BorderLayout.CENTER)
         panel.maximumSize = issuePane.size
         scrollToTop = { textArea.caretPosition = 0 }
+        // rootPane.addComponentListener(ResizeListener { panel.maximumSize = issuePane.size })
         return panel
     }
 
     private fun createTagPanel(issue: Issue): JPanel {
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
+        panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         issue.tags.forEach {
-            val label = JLabel("${it.value}")
+            val label = JLabel(" ${it.text} ")
+            if (UIUtil.isUnderDarcula()) {
+                val color = Color(200, 200, 200)
+                label.foreground = color
+                label.border = BorderFactory.createLineBorder(color)
+            } else {
+                label.foreground = it.foregroundColor
+                label.background = it.backgroundColor
+                label.isOpaque = true
+            }
             panel.add(label)
         }
         return panel
@@ -148,4 +160,10 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
             loadResource("wiki.css")
 
     private fun loadResource(name: String) = FileUtil.loadTextAndClose(javaClass.getResourceAsStream(name))
+
+    inner class ResizeListener(val action: () -> Unit) : ComponentAdapter() {
+        override fun componentResized(e: ComponentEvent) {
+            action.invoke()
+        }
+    }
 }
