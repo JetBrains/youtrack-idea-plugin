@@ -44,7 +44,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
                 .filter { it != null }
                 .requireNoNulls()
         links = (root.getFieldValue("links")?.asJsonArray ?: JsonArray())
-                .map { IssueJsonParser.parseLink(it) }
+                .map { IssueJsonParser.parseLink(it, repoUrl) }
                 .filter { it != null }
                 .requireNoNulls()
         tags = root.getAsJsonArray(("tag"))

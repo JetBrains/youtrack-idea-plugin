@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.common.format
 import com.github.jk1.ytplugin.common.logger
 import com.github.jk1.ytplugin.search.model.Issue
 import com.github.jk1.ytplugin.search.model.IssueComment
+import com.github.jk1.ytplugin.search.model.IssueLink
 import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.project.Project
@@ -15,8 +16,6 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import java.awt.*
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
@@ -26,13 +25,12 @@ import javax.swing.text.html.HTMLEditorKit
 class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null
-    val rootPane = JPanel()
+    val rootPane = JPanel(BorderLayout())
     val scrollPane: JBScrollPane
     val issuePane = createHtmlPane()
     lateinit var scrollToTop: () -> Unit
 
     init {
-        rootPane.layout = BoxLayout(rootPane, BoxLayout.Y_AXIS)
         scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_NEVER)
         add(scrollPane, BorderLayout.CENTER)
     }
@@ -40,22 +38,24 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
     fun showIssue(issue: Issue) {
         rootPane.removeAll()
         currentIssue = issue
-        val header = createHeaderPanel(issue)
-        rootPane.add(header)
+        val container  = JPanel()
+        container.layout = BoxLayout(container, BoxLayout.Y_AXIS)
+        rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
+        rootPane.add(container, BorderLayout.CENTER)
         if (issue.tags.isNotEmpty()) {
-            rootPane.add(createTagPanel(issue))
+            container.add(createTagPanel(issue))
         }
         issue.links.groupBy { it.role }.forEach {
-            rootPane.add(createLinkPanel(it.key, it.value.map { it.value }))
+            container.add(createLinkPanel(it.key, it.value))
         }
-        rootPane.add(issuePane)
+        container.add(issuePane)
         if (issue.comments.isNotEmpty()) {
             val tabsPane = JBTabbedPane()
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
             tabsPane.addTab("Comments", commentsPanel)
             issue.comments.forEach { commentsPanel.add(createCommentPanel(it)) }
-            rootPane.add(tabsPane)
+            container.add(tabsPane)
         }
         issuePane.text = generateHtml(issue)
         scrollToTop.invoke()
@@ -75,9 +75,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
         textArea.font = Font("arial", Font.PLAIN, 18)
         panel.add(textArea, BorderLayout.CENTER)
-        panel.maximumSize = issuePane.size
         scrollToTop = { textArea.caretPosition = 0 }
-        // rootPane.addComponentListener(ResizeListener { panel.maximumSize = issuePane.size })
         return panel
     }
 
@@ -100,10 +98,11 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         return panel
     }
 
-    private fun createLinkPanel(role: String, links: List<String>): JPanel {
+    private fun createLinkPanel(role: String, links: List<IssueLink>): JPanel {
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
-        panel.add(JLabel("${role.capitalize()}: ${links.joinToString(", ")}"))
+        panel.add(JLabel("${role.capitalize()}: "))
+        links.forEach { panel.add(HyperlinkLabel(it.value, it.url)) }
         return panel
     }
 
@@ -147,7 +146,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
     private fun generateHtml(issue: Issue): String {
         try {
             return ResourceTemplate("issue.html")
-                    .put("styles", loadStyles())
+                    .put("styles", loadResource("style.css") + loadResource("wiki.css"))
                     .put("description", StringUtil.unescapeXml(issue.description))
                     .render()
         } catch (e: Exception) {
@@ -156,14 +155,5 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         }
     }
 
-    private fun loadStyles() = loadResource(if (UIUtil.isUnderDarcula()) "style_dark.css" else "style.css") +
-            loadResource("wiki.css")
-
     private fun loadResource(name: String) = FileUtil.loadTextAndClose(javaClass.getResourceAsStream(name))
-
-    inner class ResizeListener(val action: () -> Unit) : ComponentAdapter() {
-        override fun componentResized(e: ComponentEvent) {
-            action.invoke()
-        }
-    }
 }

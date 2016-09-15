@@ -12,17 +12,6 @@ pre {
     font-size: 10px;
 }
 
-.header {
-    color: rgb(51, 51, 51);
-    display: inline;
-    font-family: arial, tahoma, verdana, sans-serif;
-    font-size: 18px;
-    height: auto;
-    text-align: left;
-    width: auto;
-    word-wrap: break-word;
-}
-
 .description {
     display: block;
     font-family: arial, tahoma, verdana, sans-serif;
