@@ -35,6 +35,7 @@
                 class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
             <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
         </action>
     </actions>
 
