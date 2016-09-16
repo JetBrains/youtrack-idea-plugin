@@ -32,7 +32,10 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     @Test
     fun testStoreLoad() {
         issueStoreComponent[server].update().waitFor(5000)
-        Assert.assertEquals(1, issueStoreComponent[server].getAllIssues().size)
+
+        val storedIssues = issueStoreComponent[server].getAllIssues()
+        Assert.assertEquals(1, storedIssues.size)
+        Assert.assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
 
     @Test
@@ -48,6 +51,17 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
                 it.summary.equals(expectedSummary)
             })
         }
+    }
+
+    @Test
+    fun testMultiProjectQuery() {
+        server.defaultSearch = "project: AT, MT"
+
+        issueStoreComponent[server].update().waitFor(5000)
+
+        val storedIssues = issueStoreComponent[server].getAllIssues()
+        Assert.assertTrue(storedIssues.size > 0)
+        Assert.assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
 
     private fun withDefaultCharset(charset: String, code: () -> Unit) {

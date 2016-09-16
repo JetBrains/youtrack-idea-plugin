@@ -24,11 +24,12 @@ class IssuesRestClient(override val project: Project, val repo: YouTrackServer) 
     /**
      * There's no direct API to get formatted issues by a search query, so two-stage fetch is used:
      * - Fetch issues by search query and select all projects these issues belong to
-     * - For each project request formatted issues with the same search query applied
+     * - For each project request formatted issues with an auxiliary search request like "PR-1, PR-2, ..."
+     * Auxiliary source request is necessary due to https://github.com/jk1/youtrack-idea-plugin/issues/30
      */
     fun getIssues(query: String = ""): List<Issue> {
-        val projects = getIssueIds(query).map { it.split("-")[0] }.distinct()
-        return projects.flatMap { getWikifiedIssuesInProject(it, query) }
+        val projects = getIssueIds(query).groupBy { it.split("-")[0] }
+        return projects.flatMap { getWikifiedIssuesInProject(it.key, it.value.joinToString(", ")) }
     }
 
     private fun getIssueIds(query: String = ""): List<String> {

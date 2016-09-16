@@ -29,7 +29,7 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
         return connect(method) {
             val status = createHttpClient().executeMethod(method)
             if (status == 201) {
-                method.getResponseHeader("Location").toExternalForm().split("/").last()
+                method.getResponseHeader("Location").toExternalForm().split("/").last().trim()
             } else {
                 throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")
             }
