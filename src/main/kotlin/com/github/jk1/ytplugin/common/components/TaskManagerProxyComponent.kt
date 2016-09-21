@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Provides integration with task management plugin.
- * Encapsulates plugin api details to decouple the rest of the plugin from it.
+ * Encapsulates task management api details to decouple the rest of our plugin from them.
  */
 class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent(project) {
 
@@ -60,15 +60,17 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
     fun getActiveYouTrackRepository(): YouTrackServer {
         val repository = getActiveTask().repository as BaseRepository
         if (repository.isConfigured && repository.isYouTrack()) {
-            return YouTrackServer(repository)
+            return YouTrackServer(repository, project)
         } else {
             throw NoYouTrackRepositoryException()
         }
     }
 
-    fun getAllConfiguredYouTrackRepositories(): List<YouTrackServer> {
-        return getTaskManager().allRepositories.filter { it.isYouTrack() }.map { YouTrackServer(it as BaseRepository) }
-    }
+    fun getAllConfiguredYouTrackRepositories() = getTaskManager()
+            .allRepositories
+            .filter { it.isYouTrack() }
+            .map { YouTrackServer(it as BaseRepository, project) }
+
 
     private fun syncTaskManagerConfig() {
         synchronized(this) {

@@ -22,7 +22,7 @@ interface TaskManagerTrait: IdeaProjectTrait, YouTrackConnectionTrait {
         repository.defaultSearch = ""
         getTaskManagerComponent().setRepositories(listOf(repository))
         //todo: mock YouTrack here server to break dependency from task-core
-        return YouTrackServer(repository)
+        return YouTrackServer(repository, project)
     }
 
     fun cleanUpTaskManager(){

@@ -32,18 +32,6 @@ class IssueJsonParseTest {
         assertEquals("check out the source chunks in this issue", issue.description)
     }
 
-    @Test
-    fun testIssueTask() {
-        val task = Issue(getJsonElement("malformed_custom_field.json"), serverUrl).asTask()
-
-        assertEquals("$serverUrl/issue/JT-1", task.issueUrl)
-        assertEquals("JT-1", task.id)
-        assertEquals("formatting problems in comments", task.summary)
-        assertEquals("check out the source chunks in this issue", task.description)
-        assertTrue(task.isIssue)
-        assertTrue(task.isClosed)
-    }
-
     private fun getJsonElement(resourceName: String): JsonElement {
         val reader = InputStreamReader(this.javaClass.getResourceAsStream(resourceName))
         return JsonParser().parse(reader)

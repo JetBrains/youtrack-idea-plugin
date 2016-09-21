@@ -1,12 +1,16 @@
 package com.github.jk1.ytplugin.common
 
+import com.github.jk1.ytplugin.search.model.Issue
+import com.github.jk1.ytplugin.search.model.IssueTask
+import com.intellij.openapi.project.Project
+import com.intellij.tasks.Task
 import com.intellij.tasks.impl.BaseRepository
 import com.intellij.tasks.impl.BaseRepositoryImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.commons.httpclient.HttpClient
 
 
-class YouTrackServer(private val delegate: BaseRepository) {
+class YouTrackServer(private val delegate: BaseRepository, val project: Project) {
 
     val id: String get() = "$username@$url $defaultSearch"
     val url: String get() = delegate.url
@@ -30,6 +34,8 @@ class YouTrackServer(private val delegate: BaseRepository) {
     fun login() {
         delegate.createCancellableConnection()?.call()
     }
+
+    fun createTask(issue: Issue): Task = IssueTask(issue, delegate)
 
     fun findTask(id: String) = delegate.findTask(id)
 

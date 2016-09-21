@@ -59,7 +59,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         }
         group.add(RefreshIssuesAction(repo))
         //group.add(CreateIssueAction()) todo: implement me
-        group.add(SetAsActiveTaskAction(selectedIssue))
+        group.add(SetAsActiveTaskAction(selectedIssue, repo))
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issueCellRenderer, issueListModel))

@@ -20,11 +20,11 @@ class BrowseIssueAction(val getSelectedIssue: () -> Issue?) : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
-            val task = getSelectedIssue.invoke()?.asTask()
+            val issue = getSelectedIssue.invoke()
             // youtrack issues always have a url defined
-            if (task != null) {
-                logger.debug("Opening ${task.id} browser: ${task.issueUrl}")
-                BrowserLauncher.getInstance().open(task.issueUrl)
+            if (issue != null) {
+                logger.debug("Opening ${issue.id} browser: ${issue.url}")
+                BrowserLauncher.getInstance().open(issue.url)
             }
         }
     }

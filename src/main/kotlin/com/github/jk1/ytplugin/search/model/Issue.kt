@@ -13,6 +13,8 @@ class Issue(item: JsonElement, val repoUrl: String) {
             "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
             "sprint", "voterName", "permittedGroup")
 
+    val json: String
+
     val id: String
     val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
     val summary: String
@@ -24,9 +26,11 @@ class Issue(item: JsonElement, val repoUrl: String) {
     val comments: List<IssueComment>
     val links: List<IssueLink>
     val tags: List<IssueTag>
+    val url: String
 
     init {
         val root = item.asJsonObject
+        json = item.toString()
         id = root.get("id").asString
         entityId = root.get("entityId")?.asString
         summary = root.getFieldValue("summary")?.asString ?: ""
@@ -51,6 +55,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
                 .map { IssueJsonParser.parseTag(it) }
                 .filter { it != null }
                 .requireNoNulls()
+        url = "$repoUrl/issue/$id"
     }
 
     override fun toString() = "$id $summary" // Quick search in issue list relies on that
@@ -65,8 +70,6 @@ class Issue(item: JsonElement, val repoUrl: String) {
         val name = asJsonObject.get("name")
         return name != null && !PREDEFINED_FIELDS.contains(name.asString)
     }
-
-    fun asTask() = IssueTask(this, repoUrl)
 }
 
 

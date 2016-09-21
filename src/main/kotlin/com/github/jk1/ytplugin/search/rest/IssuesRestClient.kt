@@ -6,7 +6,6 @@ import com.github.jk1.ytplugin.common.rest.RestClientTrait
 import com.github.jk1.ytplugin.search.model.Issue
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.methods.GetMethod
 import java.io.InputStreamReader
@@ -14,7 +13,9 @@ import java.io.InputStreamReader
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
  */
-class IssuesRestClient(override val project: Project, val repo: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+
+    override val project = repo.project
 
     fun getIssue(id: String): Issue? {
         val method = GetMethod("${repo.url}/rest/issue/$id?wikifyDescription=true")
