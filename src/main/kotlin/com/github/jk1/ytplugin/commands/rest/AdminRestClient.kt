@@ -22,6 +22,9 @@ class AdminRestClient(override val project: Project) : RestClientTrait, Response
                 return groupElements.map {
                    it.getAttribute("name").value
                 }
+            } else if (status == 404) {
+                // YouTrack 5.2 has no rest method to get visibility groups
+                return listOf("All Users")
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
