@@ -16,6 +16,9 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import java.awt.*
+import java.net.MalformedURLException
+import java.net.URI
+import java.net.URL
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
@@ -136,11 +139,22 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         htmlPane.isEditable = false
         htmlPane.addHyperlinkListener {
             if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                val url = "${currentIssue?.repoUrl}${it.description}"
-                BrowserLauncher.getInstance().open(url)
+                BrowserLauncher.getInstance().open(it.absoluteUrl)
             }
         }
         return htmlPane
+    }
+
+    private val HyperlinkEvent.absoluteUrl: String get() {
+        try {
+            val uri = URI(description)
+            if (uri.isAbsolute) {
+                return description
+            }
+        } catch(e: MalformedURLException) {
+           logger.debug("Unable to parse $description as URI, will try to prefix it with YouTrack server address")
+        }
+        return "${currentIssue?.repoUrl}$description"
     }
 
     private fun generateHtml(issue: Issue): String {
