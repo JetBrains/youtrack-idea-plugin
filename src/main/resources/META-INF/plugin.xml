@@ -20,6 +20,7 @@
             <li>- Issue browser now displays tags and links</li>
             <li>- Command window suggestions are faster and more accurate</li>
             <li>- Quick search support added to issue list (start typing to filter)</li>
+            <li>- Issues are cached across IDE restarts now, making offline work with issues possible.</li>
         </ul>
           ]]></change-notes>
 
