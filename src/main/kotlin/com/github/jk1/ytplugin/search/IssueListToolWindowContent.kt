@@ -95,12 +95,14 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     private fun initIssueListModel() {
         issueList.emptyText.clear()
         issueList.model = issueListModel
+        startLoading()
         if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-            // display fancy animation if there're no issues to show yet
-            startLoading()
-            issueStoreComponent[repo].update().doWhenDone { stopLoading() }
+            issueStoreComponent[repo].update().doWhenDone {
+                issueListModel.update()
+                stopLoading()
+            }
         } else {
-            issueStoreComponent[repo].update()
+            stopLoading()
         }
         issueStoreComponent[repo].addListener {
             val placeholder = issueList.emptyText

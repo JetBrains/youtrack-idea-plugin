@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.common.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
@@ -36,7 +37,15 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
     init {
         title = "Apply Command"
         // todo: lazy loading for permitted groups
-        adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
+        // todo: redesign error handlers for CW
+        try {
+            adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
+        } catch(e: Exception) {
+            logger.info("Failed to load eligible visibility groups for command window")
+            logger.debug(e)
+            // todo: extract youtrack-specific constants
+            visibilityGroupDropdown.addItem("All Users")
+        }
         init()
     }
 
