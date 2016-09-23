@@ -18,10 +18,9 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import java.net.MalformedURLException
 import java.net.URI
-import java.net.URL
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import javax.swing.event.HyperlinkEvent
 import javax.swing.text.html.HTMLEditorKit
 
@@ -34,7 +33,9 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
     lateinit var scrollToTop: () -> Unit
 
     init {
-        scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_NEVER)
+        issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
+        scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
+        scrollPane.verticalScrollBar.unitIncrement = 16;
         add(scrollPane, BorderLayout.CENTER)
     }
 
@@ -94,6 +95,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
             } else {
                 label.foreground = it.foregroundColor
                 label.background = it.backgroundColor
+                label.border = BorderFactory.createLineBorder(it.backgroundColor, 2)
                 label.isOpaque = true
             }
             panel.add(label)
