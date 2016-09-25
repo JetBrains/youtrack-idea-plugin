@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.commands.model
 
-import com.github.jk1.ytplugin.commands.components.CommandSession
+import com.github.jk1.ytplugin.commands.CommandSession
 
 data class YouTrackCommand(
 

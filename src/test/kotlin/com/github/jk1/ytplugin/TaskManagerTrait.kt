@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.common.YouTrackServer
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.impl.TaskManagerImpl

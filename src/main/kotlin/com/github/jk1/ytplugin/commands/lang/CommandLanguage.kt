@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.commands.lang
 
-import com.github.jk1.ytplugin.common.YouTrackPluginIcons
+import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.FileTypeConsumer

@@ -42,27 +42,24 @@
 
     <project-components>
         <component>
-            <interface-class>com.github.jk1.ytplugin.commands.components.CommandComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.commands.components.CommandComponentImpl
-            </implementation-class>
+            <interface-class>com.github.jk1.ytplugin.commands.CommandComponent</interface-class>
+            <implementation-class>com.github.jk1.ytplugin.commands.CommandComponentImpl</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
-            <implementation-class>com.github.jk1.ytplugin.common.components.TaskManagerProxyComponent
-            </implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
-            <implementation-class>com.github.jk1.ytplugin.commands.components.AdminComponent</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.commands.AdminComponent</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
-            <implementation-class>com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent
-            </implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.navigator.SourceNavigatorComponent</implementation-class>
             <skipForDefaultProject/>
         </component>
         <component>
-            <implementation-class>com.github.jk1.ytplugin.search.components.IssueStoreComponent</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreComponent</implementation-class>
             <skipForDefaultProject/>
         </component>
     </project-components>
@@ -77,6 +74,6 @@
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
         <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack@13.png"
-                    factoryClass="com.github.jk1.ytplugin.search.IssuesToolWindowFactory" canCloseContents="true"/>
+                    factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
     </extensions>
 </idea-plugin>

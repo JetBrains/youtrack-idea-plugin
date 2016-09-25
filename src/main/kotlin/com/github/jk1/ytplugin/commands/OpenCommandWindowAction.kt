@@ -1,10 +1,11 @@
 package com.github.jk1.ytplugin.commands
 
-import com.github.jk1.ytplugin.commands.components.CommandSession
-import com.github.jk1.ytplugin.common.YouTrackPluginException
-import com.github.jk1.ytplugin.common.components.ComponentAware
-import com.github.jk1.ytplugin.common.components.NoYouTrackRepositoryException
-import com.github.jk1.ytplugin.common.sendNotification
+import com.github.jk1.ytplugin.commands.CommandSession
+import com.github.jk1.ytplugin.YouTrackPluginException
+import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.sendNotification
+import com.github.jk1.ytplugin.ui.CommandDialog
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction

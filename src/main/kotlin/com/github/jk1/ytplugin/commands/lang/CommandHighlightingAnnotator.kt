@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.commands.lang
 
-import com.github.jk1.ytplugin.commands.components.CommandComponent
-import com.github.jk1.ytplugin.commands.components.CommandComponent.Companion.COMPONENT_KEY
+import com.github.jk1.ytplugin.commands.CommandComponent
+import com.github.jk1.ytplugin.commands.CommandComponent.Companion.COMPONENT_KEY
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandHighlightRange
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand

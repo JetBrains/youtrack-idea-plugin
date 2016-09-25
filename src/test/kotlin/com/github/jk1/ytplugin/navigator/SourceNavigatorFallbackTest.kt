@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.navigator
 
 import com.github.jk1.ytplugin.IdeaProjectTrait
-import com.github.jk1.ytplugin.navigator.components.SourceNavigatorComponent
+import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert

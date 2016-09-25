@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.navigator
 
-import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD
 

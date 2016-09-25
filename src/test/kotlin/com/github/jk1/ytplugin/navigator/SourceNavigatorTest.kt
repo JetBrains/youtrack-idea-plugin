@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.navigator
 
 import com.github.jk1.ytplugin.IdeaProjectTrait
-import com.github.jk1.ytplugin.common.rest.RestClientTrait
+import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture
 import org.apache.commons.httpclient.HttpClient

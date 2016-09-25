@@ -3,10 +3,10 @@ package com.github.jk1.ytplugin.commands
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
-import com.github.jk1.ytplugin.commands.components.CommandSession
+import com.github.jk1.ytplugin.commands.CommandSession
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.common.YouTrackServer
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture

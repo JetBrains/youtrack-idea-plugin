@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.common.components.ComponentAware
+import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.tasks.TaskManager
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
