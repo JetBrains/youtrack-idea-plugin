@@ -31,7 +31,7 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
         val projects = getIssueIds(query).groupBy { it.split("-")[0] }
         return projects.flatMap {
             val issueIdsQuery = it.value.joinToString(prefix = "issue id: ", separator = ", ")
-            return getWikifiedIssuesInProject(it.key, issueIdsQuery)
+            getWikifiedIssuesInProject(it.key, issueIdsQuery)
         }
     }
 
