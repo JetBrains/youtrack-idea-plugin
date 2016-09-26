@@ -1,9 +1,7 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.rest.ResponseLoggerTrait
-import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.HttpMethod
@@ -25,12 +23,16 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
     /**
      * There's no direct API to get formatted issues by a search query, so two-stage fetch is used:
      * - Fetch issues by search query and select all projects these issues belong to
-     * - For each project request formatted issues with an auxiliary search request like "PR-1, PR-2, ..."
-     * Auxiliary source request is necessary due to https://github.com/jk1/youtrack-idea-plugin/issues/30
+     * - For each project request formatted issues with an auxiliary search request like
+     * "issue id: PR-1 or issue id: PR-2 or ...". Auxiliary source request is necessary
+     *  due to https://github.com/jk1/youtrack-idea-plugin/issues/30
      */
     fun getIssues(query: String = ""): List<Issue> {
         val projects = getIssueIds(query).groupBy { it.split("-")[0] }
-        return projects.flatMap { getWikifiedIssuesInProject(it.key, it.value.joinToString(", ")) }
+        return projects.flatMap {
+            val issueIdsQuery = it.value.joinToString(prefix = "issue id: ", separator = ", ")
+            return getWikifiedIssuesInProject(it.key, issueIdsQuery)
+        }
     }
 
     private fun getIssueIds(query: String = ""): List<String> {
@@ -61,6 +63,4 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
             }
         }
     }
-
-
 }
