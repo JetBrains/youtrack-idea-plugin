@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.commands.lang
 
-import com.github.jk1.ytplugin.commands.CommandComponent
 import com.github.jk1.ytplugin.commands.CommandComponent.Companion.COMPONENT_KEY
 import com.github.jk1.ytplugin.commands.CommandComponent.Companion.SESSION_KEY
 import com.github.jk1.ytplugin.commands.model.CommandSuggestion

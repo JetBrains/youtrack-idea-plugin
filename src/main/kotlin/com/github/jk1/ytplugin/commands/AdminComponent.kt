@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.commands
 
-import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 

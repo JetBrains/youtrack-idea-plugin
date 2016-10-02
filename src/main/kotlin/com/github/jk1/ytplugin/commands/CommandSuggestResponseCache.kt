@@ -1,8 +1,8 @@
 package com.github.jk1.ytplugin.commands
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.containers.hash.LinkedHashMap

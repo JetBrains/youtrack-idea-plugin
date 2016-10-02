@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.rest.RestClientTrait
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope

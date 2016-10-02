@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.ui
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.commands.CommandComponent
 import com.github.jk1.ytplugin.commands.CommandSession
 import com.github.jk1.ytplugin.commands.lang.CommandLanguage
@@ -7,7 +8,6 @@ import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener

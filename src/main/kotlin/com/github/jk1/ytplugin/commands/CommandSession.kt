@@ -1,8 +1,8 @@
 package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.tasks.IssueTask
 import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.tasks.IssueTask
 import com.intellij.openapi.project.Project
 
 /**

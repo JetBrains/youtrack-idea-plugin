@@ -1,10 +1,10 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.format
-import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueComment
 import com.github.jk1.ytplugin.issues.model.IssueLink
+import com.github.jk1.ytplugin.logger
 import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.project.Project

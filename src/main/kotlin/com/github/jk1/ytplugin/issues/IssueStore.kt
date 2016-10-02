@@ -1,9 +1,9 @@
 package com.github.jk1.ytplugin.issues
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.ActionCallback

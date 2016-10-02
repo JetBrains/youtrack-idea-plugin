@@ -1,12 +1,12 @@
 package com.github.jk1.ytplugin.tasks
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
+import com.intellij.tasks.actions.OpenTaskDialog
 import com.intellij.tasks.impl.BaseRepository
 import java.util.*
 import java.util.concurrent.ScheduledFuture
@@ -54,7 +54,9 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
     }
 
     fun setActiveTask(task: Task) {
-        getTaskManager().activateTask(task, true)
+        OpenTaskDialog(project, task).show()
+        // todo: configurable action with command patterns
+        // getTaskManager().activateTask(task, true)
     }
 
     fun getActiveYouTrackRepository(): YouTrackServer {

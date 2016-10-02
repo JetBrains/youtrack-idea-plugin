@@ -1,11 +1,11 @@
 package com.github.jk1.ytplugin.ui
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
-import com.github.jk1.ytplugin.runAction
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.runAction
+import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup

@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
-import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.logger
 import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.actionSystem.AnAction

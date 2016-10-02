@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.navigator
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.sendNotification
-import com.github.jk1.ytplugin.navigator.ConnectionHandler
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project

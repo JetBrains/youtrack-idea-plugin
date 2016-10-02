@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleColoredComponent

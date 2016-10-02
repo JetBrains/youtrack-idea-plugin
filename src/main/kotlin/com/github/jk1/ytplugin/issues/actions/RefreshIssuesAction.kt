@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

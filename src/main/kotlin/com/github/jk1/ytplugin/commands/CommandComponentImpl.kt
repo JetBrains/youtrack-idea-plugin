@@ -3,8 +3,8 @@ package com.github.jk1.ytplugin.commands
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.rest.CommandRestClient
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.CommandRestClient
 import com.github.jk1.ytplugin.sendNotification
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.AbstractProjectComponent

@@ -1,8 +1,8 @@
 package com.github.jk1.ytplugin.issues
 
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent

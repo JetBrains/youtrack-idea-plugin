@@ -5,8 +5,6 @@ import com.github.jk1.ytplugin.commands.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.ResponseLoggerTrait
-import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod

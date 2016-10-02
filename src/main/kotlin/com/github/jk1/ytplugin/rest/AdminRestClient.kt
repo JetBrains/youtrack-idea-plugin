@@ -1,7 +1,5 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.rest.ResponseLoggerTrait
-import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
 import org.jdom.input.SAXBuilder
