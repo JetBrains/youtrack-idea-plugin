@@ -28,21 +28,20 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null
     val rootPane = JPanel(BorderLayout())
-    val scrollPane: JBScrollPane
-    val issuePane = createHtmlPane()
+    val issueTemplate = ResourceTemplate("issue.html")
     lateinit var scrollToTop: () -> Unit
 
     init {
-        issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
-        scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        scrollPane.verticalScrollBar.unitIncrement = 16;
+        val scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
+        scrollPane.verticalScrollBar.unitIncrement = 16
         add(scrollPane, BorderLayout.CENTER)
+        issueTemplate.put("styles", loadResource("style.css") + loadResource("wiki.css"))
     }
 
     fun showIssue(issue: Issue) {
         rootPane.removeAll()
         currentIssue = issue
-        val container  = JPanel()
+        val container = JPanel()
         container.layout = BoxLayout(container, BoxLayout.Y_AXIS)
         rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
         rootPane.add(container, BorderLayout.CENTER)
@@ -52,6 +51,8 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         issue.links.groupBy { it.role }.forEach {
             container.add(createLinkPanel(it.key, it.value))
         }
+        val issuePane = createHtmlPane()
+        issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         container.add(issuePane)
         if (issue.comments.isNotEmpty()) {
             val tabsPane = JBTabbedPane()
@@ -61,7 +62,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
             issue.comments.forEach { commentsPanel.add(createCommentPanel(it)) }
             container.add(tabsPane)
         }
-        issuePane.text = generateHtml(issue)
+        issuePane.text = generateIssuePreviewHtml(issue)
         scrollToTop.invoke()
     }
 
@@ -154,17 +155,14 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
                 return description
             }
         } catch(e: MalformedURLException) {
-           logger.debug("Unable to parse $description as URI, will try to prefix it with YouTrack server address")
+            logger.debug("Unable to parse $description as URI, will try to prefix it with YouTrack server address")
         }
         return "${currentIssue?.repoUrl}$description"
     }
 
-    private fun generateHtml(issue: Issue): String {
+    private fun generateIssuePreviewHtml(issue: Issue): String {
         try {
-            return ResourceTemplate("issue.html")
-                    .put("styles", loadResource("style.css") + loadResource("wiki.css"))
-                    .put("description", StringUtil.unescapeXml(issue.description))
-                    .render()
+            return issueTemplate.put("description", StringUtil.unescapeXml(issue.description)).render()
         } catch (e: Exception) {
             logger.warn("Issue rendering failed", e)
             return "<html><body>An error occurred during issue rendering. Check IDE log for more details.</body></html>"
