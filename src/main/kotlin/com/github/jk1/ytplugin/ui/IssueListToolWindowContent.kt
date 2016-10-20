@@ -24,6 +24,7 @@ import java.awt.event.MouseEvent
 import javax.swing.AbstractListModel
 import javax.swing.JComponent
 import javax.swing.KeyStroke
+import javax.swing.SwingUtilities
 
 class IssueListToolWindowContent(override val project: Project, val repo: YouTrackServer, parent: Disposable) :
         JBLoadingPanel(BorderLayout(), parent), ComponentAware {
@@ -70,9 +71,14 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     private fun setupIssueListActionListeners(){
         // update preview contents upon selection
         issueList.addListSelectionListener {
-            val issue = issueListModel.getElementAt(issueList.selectedIndex)
-            if (!issue.equals(viewer.currentIssue)) {
-                viewer.showIssue(issue)
+            val selectedIndex = issueList.selectedIndex
+            if (selectedIndex == -1) {
+                splitter.collapse()
+            } else {
+                val issue = issueListModel.getElementAt(selectedIndex)
+                if (!issue.equals(viewer.currentIssue)) {
+                    viewer.showIssue(issue)
+                }
             }
         }
         // keystrokes to expand/collapse issue preview
@@ -104,13 +110,23 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         } else {
             stopLoading()
         }
+        // listen to IssueStore updates and repaint issue list accordingly
         issueStoreComponent[repo].addListener {
-            val placeholder = issueList.emptyText
-            placeholder.clear()
-            if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-                placeholder.appendText("No issues found ")
-                placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
-                        { CONFIGURE_SERVERS_ACTION_ID.runAction() })
+            SwingUtilities.invokeLater {
+                val placeholder = issueList.emptyText
+                placeholder.clear()
+                if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
+                    placeholder.appendText("No issues found ")
+                    placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
+                            { CONFIGURE_SERVERS_ACTION_ID.runAction() })
+                }
+                issueListModel.update()
+                val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(viewer.currentIssue)
+                if (updatedSelectedIssueIndex == -1) {
+                    issueList.clearSelection()
+                } else {
+                    issueList.selectedIndex = updatedSelectedIssueIndex
+                }
             }
         }
     }

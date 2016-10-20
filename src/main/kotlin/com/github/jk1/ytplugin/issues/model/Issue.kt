@@ -60,6 +60,10 @@ class Issue(item: JsonElement, val repoUrl: String) {
 
     override fun toString() = "$id $summary" // Quick search in issue list relies on that
 
+    override fun equals(other: Any?) = toString().equals(other?.toString())
+
+    override fun hashCode(): Int = toString().hashCode()
+
     private fun JsonObject.getFieldValue(name: String): JsonElement? {
         return this.getAsJsonArray("field").firstOrNull {
             name.equals(it.asJsonObject.get("name").asString)
