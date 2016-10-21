@@ -73,7 +73,7 @@
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
-        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack@13.png"
+        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
                     factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
     </extensions>
 </idea-plugin>
