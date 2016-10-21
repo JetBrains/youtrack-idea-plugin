@@ -26,17 +26,20 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
      * - For each project request formatted issues with an auxiliary search request like
      * "issue id: PR-1 or issue id: PR-2 or ...". Auxiliary source request is necessary
      *  due to https://github.com/jk1/youtrack-idea-plugin/issues/30
+     * - Sort issues to match the order from the first request
      */
     fun getIssues(query: String = ""): List<Issue> {
-        val projects = getIssueIds(query).groupBy { it.split("-")[0] }
-        return projects.flatMap {
+        val issuesIds = getIssueIds(query)
+        val projects = issuesIds.groupBy { it.split("-")[0] }
+        val wikifiedIssues = projects.flatMap {
             val issueIdsQuery = it.value.joinToString(prefix = "issue id: ", separator = ", ")
             getWikifiedIssuesInProject(it.key, issueIdsQuery)
         }
+        return issuesIds.map { id -> wikifiedIssues.first { issue -> id.equals(issue.id) } }
     }
 
     private fun getIssueIds(query: String = ""): List<String> {
-        val method = GetMethod("${repo.url}/rest/issue?filter=${query.urlencoded}&max=30")
+        val method = GetMethod("${repo.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true")
         return method.execute {
             val issues = it.asJsonObject.getAsJsonArray("issue")
             issues.map { it.asJsonObject.get("id").asString }

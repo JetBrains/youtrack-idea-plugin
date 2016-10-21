@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.nio.charset.Charset
@@ -18,15 +19,21 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     lateinit var fixture: IdeaProjectTestFixture
     lateinit var server: YouTrackServer
     override val project: Project by lazy { fixture.project }
-    val issues = ArrayList<String>()
+    val issues = ArrayList<String>() //cleanup queue
 
     @Before
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
-        issues.add(createIssue())
+        createIssue()
         server = createYouTrackRepository()
         server.defaultSearch = "project: AT"
+    }
+
+    override fun createIssue(summary: String): String {
+        val issue = super.createIssue(summary)
+        issues.add(issue)
+        return issue
     }
 
     @Test
@@ -35,7 +42,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
         val storedIssues = issueStoreComponent[server].getAllIssues()
         Assert.assertEquals(1, storedIssues.size)
-        Assert.assertTrue(storedIssues.map { it.id }.contains(issues.first()))
+        assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
 
     @Test
@@ -43,11 +50,10 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         // this test is windows-specific and depends on default platform encoding
         withDefaultCharset("windows-1251") {
             val expectedSummary = "Ехал грека через реку"
-            val issue = createIssue(expectedSummary)
-            issues.add(issue)
+            createIssue(expectedSummary)
             issueStoreComponent[server].update().waitFor(5000)
 
-            Assert.assertTrue(issueStoreComponent[server].getAllIssues().any {
+            assertTrue(issueStoreComponent[server].getAllIssues().any {
                 it.summary.equals(expectedSummary)
             })
         }
@@ -60,8 +66,41 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         issueStoreComponent[server].update().waitFor(5000)
 
         val storedIssues = issueStoreComponent[server].getAllIssues()
-        Assert.assertTrue(storedIssues.size > 0)
-        Assert.assertTrue(storedIssues.map { it.id }.contains(issues.first()))
+        assertTrue(storedIssues.size > 0)
+        assertTrue(storedIssues.map { it.id }.contains(issues.first()))
+    }
+
+    @Test
+    fun testImplicitSort() {
+        val secondIssue = createIssue()
+        val thirdIssue = createIssue()
+        touchIssue(secondIssue)
+
+        issueStoreComponent[server].update().waitFor(5000)
+
+        with(issueStoreComponent[server]){
+            Assert.assertEquals(3, getAllIssues().size)
+            Assert.assertEquals(secondIssue, getIssue(0).id)
+            Assert.assertEquals(thirdIssue, getIssue(1).id)
+            Assert.assertEquals(issues.first(), getIssue(2).id)
+        }
+    }
+
+    @Test
+    fun testExplicitSort() {
+        server.defaultSearch = "project: AT sort by: updated asc"
+        val secondIssue = createIssue()
+        val thirdIssue = createIssue()
+        touchIssue(secondIssue)
+
+        issueStoreComponent[server].update().waitFor(5000)
+
+        with(issueStoreComponent[server]){
+            Assert.assertEquals(3, getAllIssues().size)
+            Assert.assertEquals(issues.first(), getIssue(0).id)
+            Assert.assertEquals(thirdIssue, getIssue(1).id)
+            Assert.assertEquals(secondIssue, getIssue(2).id)
+        }
     }
 
     private fun withDefaultCharset(charset: String, code: () -> Unit) {

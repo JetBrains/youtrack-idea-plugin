@@ -6,6 +6,7 @@ import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.DeleteMethod
+import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.PutMethod
 
 
@@ -32,6 +33,16 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
                 method.getResponseHeader("Location").toExternalForm().split("/").last().trim()
             } else {
                 throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")
+            }
+        }
+    }
+
+    fun touchIssue(id: String) {
+        val method = PostMethod("$serverUrl/rest/issue/$id?summary=updatedsummary")
+        return connect(method) {
+            val status = createHttpClient().executeMethod(method)
+            if (status != 200) {
+                throw IllegalStateException("Unable to update an issue: ${method.responseBodyAsString}")
             }
         }
     }
