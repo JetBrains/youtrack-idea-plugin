@@ -52,6 +52,7 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
 
         val fgColor = when {
             isSelected -> UIUtil.getListForeground(true)
+            issue.resolved -> Color(150, 150, 150)
             UIUtil.isUnderDarcula() -> Color(200, 200, 200)
             else -> Color(75, 107, 244)
         }

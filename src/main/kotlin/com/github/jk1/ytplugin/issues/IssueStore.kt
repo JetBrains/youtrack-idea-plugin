@@ -58,7 +58,9 @@ class IssueStore(val repo: YouTrackServer, private var issues: List<Issue> = lis
         override fun onSuccess() {
             future.setDone()
             logger.debug("Issue store has been updated for YouTrack server ${repo.url}")
-            listeners.forEach { it.invoke() }
+            if (!project.isDisposed) {
+                listeners.forEach { it.invoke() }
+            }
         }
     }
 }
