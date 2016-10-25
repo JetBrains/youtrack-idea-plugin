@@ -44,8 +44,8 @@ object VirtualFileFinder {
     }
 
     fun matchParents(candidate: VirtualFile, relativeFile: File): Int {
-        var fileParent: File? = relativeFile.parentFile
-        var candidateParent: VirtualFile? = candidate.parent
+        val fileParent: File? = relativeFile.parentFile
+        val candidateParent: VirtualFile? = candidate.parent
         if (fileParent != null && candidateParent != null && candidateParent.name == fileParent.name) {
             return 1 + matchParents(candidateParent, fileParent)
         } else {

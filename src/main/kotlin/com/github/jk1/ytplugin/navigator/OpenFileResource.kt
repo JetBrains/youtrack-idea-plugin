@@ -45,7 +45,7 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
 
     private fun navigateTo(virtualFile: VirtualFile, data: OpenFileData): Boolean {
         val editorProviderManager = FileEditorProviderManager.getInstance()
-        if (editorProviderManager.getProviders(project, virtualFile).size == 0) {
+        if (editorProviderManager.getProviders(project, virtualFile).isEmpty()) {
             return false
         } else {
             val descriptor = OpenFileDescriptor(project, virtualFile)
