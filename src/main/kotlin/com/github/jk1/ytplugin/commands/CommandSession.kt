@@ -22,7 +22,7 @@ class CommandSession(override val project: Project) : ComponentAware {
         } else {
             // try local store first, fall back to rest api if not found
             val repo = taskManagerComponent.getActiveYouTrackRepository()
-            val issue = issueStoreComponent[repo].firstOrNull { it.id.equals(task.id) }
+            val issue = issueStoreComponent[repo].firstOrNull { it.id == task.id }
                     ?: IssuesRestClient(repo).getIssue(task.id)
             entityId = issue?.entityId
         }

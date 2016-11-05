@@ -38,5 +38,6 @@ class YouTrackServer(private val delegate: BaseRepository, val project: Project)
 
     fun findTask(id: String) = delegate.findTask(id)
 
-    fun getTasks(query: String?, offset: Int, limit: Int) = delegate.getIssues(query, offset, limit, true)
+    fun getTasks(query: String?, offset: Int, limit: Int): Array<Task>
+            = delegate.getIssues(query, offset, limit, true)
 }

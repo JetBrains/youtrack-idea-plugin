@@ -36,7 +36,7 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
             if (status != 200) {
                 val string = method.responseBodyAsLoggedStream()
                 val element = SAXBuilder(false).build(string).rootElement
-                if ("error".equals(element.name)) {
+                if ("error" == element.name) {
                     return CommandExecutionResponse(errors = listOf(element.text))
                 } else {
                     return CommandExecutionResponse(messages = listOf(element.text))

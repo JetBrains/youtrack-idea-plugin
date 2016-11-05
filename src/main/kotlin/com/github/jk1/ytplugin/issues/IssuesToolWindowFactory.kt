@@ -48,7 +48,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         logger.debug("${repos.size} YouTrack repositories discovered")
         when {
-            repos.size == 0 -> contentManager.addContent("", createPlaceholderPanel())
+            repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel())
             repos.size == 1 -> {
                 val repo = repos.first()
                 val panel = IssueListToolWindowContent(project, repo, contentManager)

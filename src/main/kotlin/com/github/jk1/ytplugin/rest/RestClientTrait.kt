@@ -25,7 +25,7 @@ interface RestClientTrait : ComponentAware {
 
     fun <R> connect(closeable: HttpMethod, block: (HttpMethod) -> R): R {
         try {
-            return block(closeable);
+            return block(closeable)
         } finally {
             closeable.releaseConnection()
         }

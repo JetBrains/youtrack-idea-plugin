@@ -39,9 +39,9 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
         val command = YouTrackCommand(session, "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
-        Assert.assertNotNull(assist.suggestions.find { "Fixed".equals(it.option) })
-        Assert.assertNotNull(assist.suggestions.find { "fixed in".equals(it.option) })
-        Assert.assertNotNull(assist.suggestions.find { "Fixed in build".equals(it.option) })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
+        Assert.assertNotNull(assist.suggestions.find { "fixed in" == it.option })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed in build" == it.option })
     }
 
     @Test
@@ -51,10 +51,10 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
         val assist = commandComponent.suggest(command)
 
         Assert.assertTrue(command.session.hasEntityId())
-        Assert.assertNotNull(assist.suggestions.find { "Fixed".equals(it.option) })
-        Assert.assertNotNull(assist.suggestions.find { "Fixed".equals(it.option) })
-        Assert.assertNotNull(assist.suggestions.find { "fixed in".equals(it.option) })
-        Assert.assertNotNull(assist.suggestions.find { "Fixed in build".equals(it.option) })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
+        Assert.assertNotNull(assist.suggestions.find { "fixed in" == it.option })
+        Assert.assertNotNull(assist.suggestions.find { "Fixed in build" == it.option })
     }
 
     @Test

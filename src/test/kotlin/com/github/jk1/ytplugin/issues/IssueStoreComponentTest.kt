@@ -54,7 +54,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
             issueStoreComponent[server].update().waitFor(5000)
 
             assertTrue(issueStoreComponent[server].getAllIssues().any {
-                it.summary.equals(expectedSummary)
+                it.summary == expectedSummary
             })
         }
     }
@@ -66,7 +66,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         issueStoreComponent[server].update().waitFor(5000)
 
         val storedIssues = issueStoreComponent[server].getAllIssues()
-        assertTrue(storedIssues.size > 0)
+        assertTrue(storedIssues.isNotEmpty())
         assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
 

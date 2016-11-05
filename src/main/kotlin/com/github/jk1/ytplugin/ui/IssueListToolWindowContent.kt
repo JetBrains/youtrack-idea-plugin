@@ -77,7 +77,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
                 splitter.collapse()
             } else {
                 val issue = issueListModel.getElementAt(selectedIndex)
-                if (!issue.equals(viewer.currentIssue)) {
+                if (issue != viewer.currentIssue) {
                     viewer.showIssue(issue)
                 }
             }

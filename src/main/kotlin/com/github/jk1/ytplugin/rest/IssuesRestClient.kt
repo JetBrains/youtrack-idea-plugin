@@ -35,7 +35,7 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
             val issueIdsQuery = it.value.joinToString(prefix = "issue id: ", separator = ", ")
             getWikifiedIssuesInProject(it.key, issueIdsQuery)
         }
-        return issuesIds.map { id -> wikifiedIssues.first { issue -> id.equals(issue.id) } }
+        return issuesIds.map { id -> wikifiedIssues.first { issue -> id == issue.id } }
     }
 
     private fun getIssueIds(query: String = ""): List<String> {

@@ -6,7 +6,7 @@ import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 import javax.swing.SwingUtilities
 
-abstract class YouTrackPluginException(override val message: String) : Exception(message) {
+abstract class YouTrackPluginException(final override val message: String) : Exception(message) {
 
     open val notification = Notification(
             "YouTrack Integration Plugin",

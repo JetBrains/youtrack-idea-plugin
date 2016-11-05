@@ -25,7 +25,7 @@
           ]]></change-notes>
 
     <!-- IntelliJ IDEA 15, WebStorm 11, PyCharm 5, PhpStorm 10, RubyMine 8, AppCode 3.3, CLion 1.2, DataGrip 1.0 -->
-    <idea-version since-build="143.0" until-build="171"/>
+    <idea-version since-build="143.0" until-build="171.0"/>
     <!-- Enable plugin in all products -->
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->

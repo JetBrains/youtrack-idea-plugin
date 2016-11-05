@@ -15,7 +15,7 @@ import fi.iki.elonen.NanoHTTPD
 
 class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
 
-    override fun canHandle(session: NanoHTTPD.IHTTPSession) = "/file".equals(session.uri)
+    override fun canHandle(session: NanoHTTPD.IHTTPSession) = "/file" == session.uri
 
     override fun handle(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
         var response: NanoHTTPD.Response? = null

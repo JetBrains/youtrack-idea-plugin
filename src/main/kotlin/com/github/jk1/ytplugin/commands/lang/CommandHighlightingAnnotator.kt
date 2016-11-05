@@ -41,7 +41,7 @@ class CommandHighlightingAnnotator : ExternalAnnotator<CommandAssistResponse, Li
 
     override fun apply(file: PsiFile, ranges: List<CommandHighlightRange>, holder: AnnotationHolder) {
         ranges.forEach {
-            if ("error".equals(it.styleClass)) {
+            if ("error" == it.styleClass) {
                 holder.createErrorAnnotation(it.getTextRange(), null)
             } else {
                 val info = holder.createInfoAnnotation(it.getTextRange(), null)

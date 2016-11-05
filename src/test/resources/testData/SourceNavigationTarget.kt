@@ -5,7 +5,7 @@ package testData
  */
 class SourceNavigationTarget {
 
-
-
+// these empty lines
+// do make sense
 
 }

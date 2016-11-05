@@ -106,7 +106,7 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
     }
 
     private fun createIcon(issue: Issue): JComponent {
-        val priorityField = issue.customFields.firstOrNull { "Priority".equals(it.name) }
+        val priorityField = issue.customFields.firstOrNull { "Priority" == it.name }
         if (!compactView || priorityField == null) {
             val label = JLabel(AllIcons.Toolwindows.ToolWindowDebugger)
             label.border = BorderFactory.createEmptyBorder(0, 3, 0, 0)

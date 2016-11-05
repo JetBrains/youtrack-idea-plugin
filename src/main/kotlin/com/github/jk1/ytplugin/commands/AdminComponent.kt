@@ -9,8 +9,9 @@ class AdminComponent(override val project : Project) : AbstractProjectComponent(
 
     val restClient = AdminRestClient(project)
 
-    fun getUserGroups(): List<String> {
+    fun getActiveTaskVisibilityGroups(): List<String> {
+        val repo = taskManagerComponent.getActiveYouTrackRepository()
         val taskId = taskManagerComponent.getActiveTask().id
-        return restClient.getUserGroups(taskId)
+        return restClient.getVisibilityGroups(repo, taskId)
     }
 }

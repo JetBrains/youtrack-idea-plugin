@@ -39,7 +39,7 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
         // todo: lazy loading for permitted groups
         // todo: redesign error handlers for CW
         try {
-            adminComponent.getUserGroups().forEach { visibilityGroupDropdown.addItem(it) }
+            adminComponent.getActiveTaskVisibilityGroups().forEach { visibilityGroupDropdown.addItem(it) }
         } catch(e: Exception) {
             logger.info("Failed to load eligible visibility groups for command window")
             logger.debug(e)
