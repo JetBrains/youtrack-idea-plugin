@@ -9,14 +9,14 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 group 'com.github.jk1'
-version '0.5.2'
+version '0.6'
 
 repositories {
     mavenCentral()
 }
 
 intellij {
-    version '15.0.4'              //IntelliJ IDEA 15 dependency
+    version 'IC-2016.1'           //IntelliJ IDEA 16 dependency
     plugins 'tasks'               //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false
