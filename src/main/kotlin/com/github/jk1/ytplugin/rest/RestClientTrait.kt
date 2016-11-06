@@ -11,6 +11,7 @@ import java.net.URLEncoder
 
 interface RestClientTrait : ComponentAware {
 
+    @Deprecated("Use #createHttpClient(repository) instead")
     fun createHttpClient(): HttpClient {
         return createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
     }

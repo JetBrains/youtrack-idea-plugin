@@ -33,7 +33,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         createContent(project, toolWindow)
         toolWindow.icon = YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW // loaded via IconLoader, thus adaptive
-        ComponentAware.of(project).taskManagerComponent.addListener {
+        ComponentAware.of(project).taskManagerComponent.addConfigurationChangeListener {
             // listen to task management plugin configuration changes and update tool window accordingly
             SwingUtilities.invokeLater {
                 logger.debug("Server configuration change detected, reloading tool window contents")

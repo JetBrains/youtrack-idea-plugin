@@ -40,7 +40,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
         timedRefreshTask.cancel(false)
     }
 
-    fun addListener(listener: () -> Unit) {
+    fun addConfigurationChangeListener(listener: () -> Unit) {
         listeners.add(listener)
     }
 

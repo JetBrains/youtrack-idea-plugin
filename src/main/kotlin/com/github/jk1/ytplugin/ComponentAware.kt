@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.commands.AdminComponent
+import com.github.jk1.ytplugin.editor.AdminComponent
 import com.github.jk1.ytplugin.commands.CommandComponent
 import com.github.jk1.ytplugin.issues.IssueStoreComponent
 import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
