@@ -4,17 +4,17 @@ import com.github.jk1.ytplugin.ui.IssueListCellRenderer
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 
 
 class ToggleIssueViewAction(val project: Project, val renderer: IssueListCellRenderer,
-                            val listModel: IssueListToolWindowContent.IssueListModel) : AnAction(
-        "Toggle issue list presentation",
-        "Toggle issue list presentation detail level",
-        AllIcons.Actions.Collapseall), DumbAware {
+                            val listModel: IssueListToolWindowContent.IssueListModel) : IssueAction() {
+
+    override val text = "Toggle issue list presentation"
+    override val description = "Toggle issue list presentation detail level"
+    override val icon = AllIcons.Actions.Collapseall!!
+    override val shortcut = "control shift T"
 
     val DATA_KEY = "ytplugin.issueListCompactView"
     val store: PropertiesComponent = PropertiesComponent.getInstance(project)

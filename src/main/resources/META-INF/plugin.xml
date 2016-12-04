@@ -17,10 +17,9 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li>- Issue browser now displays tags and links</li>
-            <li>- Command window suggestions are faster and more accurate</li>
-            <li>- Quick search support added to issue list (start typing to filter)</li>
-            <li>- Issues are cached across IDE restarts now, making offline work with issues possible.</li>
+            <li>- Ctrl+Clickable issue IDs in VCS commit messages</li>
+            <li>- Ctrl+Clickable issue IDs in source code comments</li>
+            <li>- Keyboard shortcuts installed for all issue tool window actions</li>
         </ul>
           ]]></change-notes>
 

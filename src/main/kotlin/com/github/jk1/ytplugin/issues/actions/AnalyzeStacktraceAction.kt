@@ -3,10 +3,8 @@ package com.github.jk1.ytplugin.issues.actions
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ide.CopyPasteManager
-import com.intellij.openapi.project.DumbAware
 import org.apache.commons.lang.StringEscapeUtils
 import java.awt.datatransfer.StringSelection
 
@@ -14,11 +12,15 @@ import java.awt.datatransfer.StringSelection
  * Checks, if issue description contains an exception and enables analyze stack trace
  * action for that exception. Current implementation can recognize only one exception
  * per issue and ignores comments.
+ *
+ * todo: add configurable option to skip an unscramble dialog and analyze stacktrace right away
  */
-class AnalyzeStacktraceAction(val getSelectedIssue: () -> Issue?) : AnAction(
-        "Analyze Stacktrace",
-        "Open analyze stacktrace dialog for stacktrace from issue description",
-        AllIcons.Debugger.ThreadStates.Exception), DumbAware {
+class AnalyzeStacktraceAction(val getSelectedIssue: () -> Issue?) : IssueAction() {
+
+    override val text = "Analyze Stacktrace"
+    override val description = "Open analyze stacktrace dialog for stacktrace from issue description"
+    override val icon = AllIcons.Debugger.ThreadStates.Exception!!
+    override val shortcut = "control shift S"
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project

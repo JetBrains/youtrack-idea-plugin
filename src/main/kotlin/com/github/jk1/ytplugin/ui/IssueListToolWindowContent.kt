@@ -8,7 +8,6 @@ import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGU
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
@@ -18,7 +17,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
-import java.awt.event.KeyEvent
+import java.awt.event.KeyEvent.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.AbstractListModel
@@ -37,7 +36,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
 
     init {
         val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        issueCellRenderer = IssueListCellRenderer({issueListScrollPane.viewport.width})
+        issueCellRenderer = IssueListCellRenderer({ issueListScrollPane.viewport.width })
         issueList.cellRenderer = issueCellRenderer
         splitter.firstComponent = issueListScrollPane
         splitter.secondComponent = viewer
@@ -49,7 +48,7 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     }
 
     private fun createActionPanel(): JComponent {
-        val group = DefaultActionGroup()
+        val group = IssueActionGroup(this)
         val selectedIssue = {
             when {
                 issueList.selectedIndex == -1 -> null
@@ -63,13 +62,11 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issueCellRenderer, issueListModel))
-        group.add(ActionManager.getInstance().getAction(CONFIGURE_SERVERS_ACTION_ID))
-        return ActionManager.getInstance()
-                .createActionToolbar("Actions", group, false)
-                .component
+        group.addConfigureTaskServerAction()
+        return group.createToolbar()
     }
 
-    private fun setupIssueListActionListeners(){
+    private fun setupIssueListActionListeners() {
         // update preview contents upon selection
         issueList.addListSelectionListener {
             val selectedIndex = issueList.selectedIndex
@@ -83,14 +80,11 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
             }
         }
         // keystrokes to expand/collapse issue preview
-        issueList.registerKeyboardAction({ splitter.collapse() },
-                KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), JComponent.WHEN_FOCUSED)
-        issueList.registerKeyboardAction({ splitter.expand() },
-                KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), JComponent.WHEN_FOCUSED)
-        issueList.registerKeyboardAction({ splitter.expand() },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
+        issueList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
         // expand issue preview on click
-        issueList.addMouseListener(object: MouseAdapter(){
+        issueList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 if (issueList.model.size > 0) {
                     splitter.expand()
@@ -132,12 +126,14 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         }
     }
 
-    inner class IssueListModel: AbstractListModel<Issue>() {
+    inner class IssueListModel : AbstractListModel<Issue>() {
 
         override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
 
         override fun getSize() = issueStoreComponent[repo].getAllIssues().size
 
-        fun update() { fireContentsChanged(IssueListPanel@this, 0, size) }
+        fun update() {
+            fireContentsChanged(IssueListPanel@this, 0, size)
+        }
     }
 }

@@ -21,8 +21,6 @@ class OpenCommandWindowAction : AnAction(
         "Apply YouTrack command to a current active task",
         AllIcons.Debugger.CommandLine), DumbAware {
 
-    val errorTitle = "Can't open YouTrack command window"
-
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
@@ -33,7 +31,9 @@ class OpenCommandWindowAction : AnAction(
                 exception.showAsNotificationBalloon(project)
             }
         } else {
-            sendNotification(errorTitle, "No open project found", NotificationType.ERROR)
+            sendNotification(
+                    "Can't open YouTrack command window",
+                    "No open project found", NotificationType.ERROR)
         }
     }
 
