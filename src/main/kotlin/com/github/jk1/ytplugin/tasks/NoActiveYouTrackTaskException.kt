@@ -20,7 +20,7 @@ class NoActiveYouTrackTaskException : YouTrackPluginException("No YouTrack issue
             "YouTrack Integration Plugin",
             "YouTrack Integration Plugin",
             """$message
-            <br/><br/>
+            <br/>
             <b><a href="#open">Select Issue</a></b>""",
             NotificationType.ERROR,
             // notification hyperlink click handler

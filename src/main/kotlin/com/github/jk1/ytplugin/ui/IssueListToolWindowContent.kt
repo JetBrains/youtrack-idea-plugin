@@ -29,11 +29,11 @@ import javax.swing.SwingUtilities
 class IssueListToolWindowContent(override val project: Project, val repo: YouTrackServer, parent: Disposable) :
         JBLoadingPanel(BorderLayout(), parent), ComponentAware {
 
-    private val issueList: JBList = JBList()
+    private val issueList: JBList<Issue> = JBList()
     private val splitter = EditorSplitter()
     private val viewer = IssueViewer(project)
     private val issueListModel: IssueListModel = IssueListModel()
-    private lateinit var issueCellRenderer: IssueListCellRenderer
+    private val issueCellRenderer: IssueListCellRenderer
 
     init {
         val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)

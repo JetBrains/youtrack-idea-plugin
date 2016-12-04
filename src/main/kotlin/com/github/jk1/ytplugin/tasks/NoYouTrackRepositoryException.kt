@@ -21,7 +21,7 @@ class NoYouTrackRepositoryException() :
             "YouTrack Integration Plugin",
             "YouTrack plugin error",
             """$message
-            <br/><br/>
+            <br/>
             <b><a href="#open">Set up YouTrack server connection</a></b>""",
             NotificationType.ERROR,
             // notification hyperlink click handler

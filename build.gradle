@@ -16,7 +16,7 @@ repositories {
 }
 
 intellij {
-    version 'IC-2016.1'           //IntelliJ IDEA 16 dependency
+    version 'IC-2016.3'           //IntelliJ IDEA 16 dependency
     plugins 'tasks'               //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false

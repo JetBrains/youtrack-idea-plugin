@@ -19,7 +19,7 @@ class TaskManagementDisabledException() :
             "YouTrack Integration Plugin",
             "YouTrack plugin error",
             """$message
-            <br/><br/>
+            <br/>
             <b><a href="#open">Enable Plugin</a></b>""",
             NotificationType.ERROR,
             // notification hyperlink click handler
