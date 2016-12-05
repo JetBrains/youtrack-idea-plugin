@@ -44,7 +44,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
         listeners.add(listener)
     }
 
-    fun getActiveTask(): Task {
+    fun getActiveYouTrackTask(): Task {
         val task = getTaskManager().activeTask
         if (task.isIssue && task.repository?.isYouTrack() ?: false) {
             return getTaskManager().activeTask
@@ -53,6 +53,8 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
         }
     }
 
+    fun getActiveTask() = getTaskManager().activeTask
+
     fun setActiveTask(task: Task) {
         OpenTaskDialog(project, task).show()
         // todo: configurable action with command patterns
@@ -60,7 +62,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
     }
 
     fun getActiveYouTrackRepository(): YouTrackServer {
-        val repository = getActiveTask().repository as BaseRepository
+        val repository = getActiveYouTrackTask().repository as BaseRepository
         if (repository.isConfigured && repository.isYouTrack()) {
             return YouTrackServer(repository, project)
         } else {

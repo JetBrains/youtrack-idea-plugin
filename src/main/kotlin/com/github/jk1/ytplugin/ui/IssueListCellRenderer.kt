@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.issues.model.Issue
-import com.intellij.icons.AllIcons
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleColoredComponent
@@ -13,7 +12,9 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import javax.swing.*
 
-class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(BorderLayout()), ListCellRenderer<Issue> {
+class IssueListCellRenderer(
+        val viewportWidthProvider: () -> Int,
+        val iconProvider: IssueListCellIconProvider) : JPanel(BorderLayout()), ListCellRenderer<Issue> {
 
     private val topPanel = JPanel(BorderLayout())
     private val bottomPanel = JPanel(BorderLayout())
@@ -42,6 +43,7 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         bottomPanel.isOpaque = false
         bottomPanel.add(fields, BorderLayout.WEST)
         bottomPanel.add(glyphs, BorderLayout.EAST)
+        bottomPanel.border = BorderFactory.createEmptyBorder(3, 0, 0, 0)
         add(topPanel, BorderLayout.NORTH)
         add(bottomPanel, BorderLayout.SOUTH)
     }
@@ -68,7 +70,6 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
         idSummaryPanel.removeAll()
         idSummary.clear()
-        createIcon(issue)
         idSummary.ipad = Insets(0, 4, 0, 0)
         var idStyle = STYLE_BOLD
         if (issue.resolved) {
@@ -84,7 +85,7 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         if (summaryWords.hasNext()) {
             idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, fgColor))
         }
-        idSummaryPanel.add(createIcon(issue), BorderLayout.WEST)
+        idSummaryPanel.add(iconProvider.createIcon(issue, compactView), BorderLayout.WEST)
         idSummaryPanel.add(idSummary, BorderLayout.EAST)
     }
 
@@ -105,19 +106,5 @@ class IssueListCellRenderer(val viewportWidthProvider: () -> Int) : JPanel(Borde
         }
     }
 
-    private fun createIcon(issue: Issue): JComponent {
-        val priorityField = issue.customFields.firstOrNull { "Priority" == it.name }
-        if (!compactView || priorityField == null) {
-            val label = JLabel(AllIcons.Toolwindows.ToolWindowDebugger)
-            label.border = BorderFactory.createEmptyBorder(0, 3, 0, 0)
-            return label
-        } else {
-            val label = JLabel(" ${priorityField.value.first().first()} ")
-            label.background = priorityField.backgroundColor
-            label.foreground = priorityField.foregroundColor
-            label.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-            label.isOpaque = !UIUtil.isUnderDarcula()
-            return label
-        }
-    }
+
 }

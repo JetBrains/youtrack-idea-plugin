@@ -32,11 +32,12 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
     private val splitter = EditorSplitter()
     private val viewer = IssueViewer(project)
     private val issueListModel: IssueListModel = IssueListModel()
+    private val iconProvider: IssueListCellIconProvider = IssueListCellIconProvider(project)
     private val issueCellRenderer: IssueListCellRenderer
 
     init {
         val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        issueCellRenderer = IssueListCellRenderer({ issueListScrollPane.viewport.width })
+        issueCellRenderer = IssueListCellRenderer({ issueListScrollPane.viewport.width }, iconProvider)
         issueList.cellRenderer = issueCellRenderer
         splitter.firstComponent = issueListScrollPane
         splitter.secondComponent = viewer

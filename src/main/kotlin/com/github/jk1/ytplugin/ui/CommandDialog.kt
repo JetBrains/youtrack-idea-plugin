@@ -101,7 +101,7 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
 
     private fun createCommandStringPanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        with(taskManagerComponent.getActiveTask()) {
+        with(taskManagerComponent.getActiveYouTrackTask()) {
             val adaptedSummary = if (summary.length > 40) "${summary.substring(0, 40)}..." else summary
             val label = JLabel("Command for: $id $adaptedSummary")
             label.border = BorderFactory.createEmptyBorder(0, 0, 2, 0)

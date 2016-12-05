@@ -12,7 +12,7 @@ import com.intellij.openapi.project.Project
  */
 class CommandSession(override val project: Project) : ComponentAware {
 
-    val task = taskManagerComponent.getActiveTask()
+    val task = taskManagerComponent.getActiveYouTrackTask()
     val compressedEntityId: String?
 
     init {
