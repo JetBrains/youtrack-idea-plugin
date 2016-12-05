@@ -5,40 +5,44 @@ import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import com.intellij.concurrency.JobScheduler
-import com.intellij.openapi.components.AbstractProjectComponent
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
-@State(name = "YouTrack Issues", storages = arrayOf(Storage(file = "issues.xml")))
-class IssueStoreComponent(val project: Project) : AbstractProjectComponent(project),
-        PersistentStateComponent<IssueStoreComponent.Memento> {
+@State(name = "YouTrack Issues", storages = arrayOf(Storage(value = "issues.xml")))
+class IssueStoreComponent() : ApplicationComponent, PersistentStateComponent<IssueStoreComponent.Memento> {
 
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()
-    private val timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
-        SwingUtilities.invokeLater { stores.forEach { it.value.update() } }
-    }, 5, 5, TimeUnit.MINUTES)     //  todo: customizable update interval
+    private lateinit var timedRefreshTask: ScheduledFuture<*>
 
-    operator fun get(repo: YouTrackServer): IssueStore {
-        return stores.getOrPut(repo.id, {
-            logger.debug("Issue store opened for project ${project.name} and YouTrack server ${repo.url}")
-            loadedMemento.getStore(repo) ?: IssueStore(repo)
-        })
+    override fun initComponent() {
+        //  todo: customizable update interval
+        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
+            SwingUtilities.invokeLater { stores.forEach { it.value.update() } }
+        }, 5, 5, TimeUnit.MINUTES)
     }
 
-    override fun projectClosed() {
+    override fun disposeComponent() {
         timedRefreshTask.cancel(false)
     }
+
+    override fun getComponentName() = ""
 
     override fun getState() = Memento(stores.values)
 
     override fun loadState(state: Memento?) {
         loadedMemento = state!!
+    }
+
+    operator fun get(repo: YouTrackServer): IssueStore {
+        return stores.getOrPut(repo.id, {
+            logger.debug("Issue store opened for YouTrack server ${repo.url}")
+            loadedMemento.getStore(repo) ?: IssueStore(repo)
+        })
     }
 
     class Memento constructor() {
@@ -52,6 +56,7 @@ class IssueStoreComponent(val project: Project) : AbstractProjectComponent(proje
         }
 
         fun getStore(repo: YouTrackServer) : IssueStore?{
+            // todo: handle read errors
             val issuesJson = persistentIssues[repo.id] ?: return null
             val issues = JsonParser().parse(issuesJson).asJsonArray
                     .map { IssueJsonParser.parseIssue(it, repo.url) }
