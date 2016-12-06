@@ -5,8 +5,10 @@ import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import com.intellij.concurrency.JobScheduler
-import com.intellij.openapi.components.*
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.components.ApplicationComponent
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -30,7 +32,7 @@ class IssueStoreComponent() : ApplicationComponent, PersistentStateComponent<Iss
         timedRefreshTask.cancel(false)
     }
 
-    override fun getComponentName() = ""
+    override fun getComponentName(): String = javaClass.canonicalName
 
     override fun getState() = Memento(stores.values)
 
@@ -48,14 +50,14 @@ class IssueStoreComponent() : ApplicationComponent, PersistentStateComponent<Iss
     class Memento constructor() {
 
         // implementation should stay mutable as deserializer calls #clear() on it
-        var persistentIssues: Map<String, String>  = mutableMapOf()
+        var persistentIssues: Map<String, String> = mutableMapOf()
 
         // primary constructor is reserved for serializer
-        constructor(stores: Iterable<IssueStore>): this(){
+        constructor(stores: Iterable<IssueStore>) : this() {
             persistentIssues = stores.associate { Pair(it.repo.id, "[${it.map { it.json }.joinToString(", ")}]") }
         }
 
-        fun getStore(repo: YouTrackServer) : IssueStore?{
+        fun getStore(repo: YouTrackServer): IssueStore? {
             // todo: handle read errors
             val issuesJson = persistentIssues[repo.id] ?: return null
             val issues = JsonParser().parse(issuesJson).asJsonArray

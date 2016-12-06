@@ -7,6 +7,12 @@ import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.IssueNavigationConfiguration
+import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.YouTrackIssueNavigationLink
+import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.createdByYouTrackPlugin
+import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.setProjects
+import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.pointsTo
+import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.intellij.openapi.vcs.IssueNavigationLink
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
@@ -25,7 +31,7 @@ class AdminComponent(override val project: Project) : AbstractProjectComponent(p
         // update navigation links every 30 min to recognize new projects
         projectListRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             updateNavigationLinkPatterns()
-        }, 0, 60, TimeUnit.MINUTES)
+        }, 1, 60, TimeUnit.MINUTES)
         // update navigation links when server connection configuration has been changed
         taskManagerComponent.addConfigurationChangeListener { updateNavigationLinkPatterns() }
     }
@@ -36,29 +42,35 @@ class AdminComponent(override val project: Project) : AbstractProjectComponent(p
 
     private fun updateNavigationLinkPatterns() {
         val navigationConfig = IssueNavigationConfiguration.getInstance(project)
-        taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach { repo ->
-            try {
-                val links = navigationConfig.links.filterNotNull().filter { link -> link.linkRegexp.startsWith(repo.url) }
-                val generatedLinks = links.filter { it is YouTrackIssueNavigationLink }
-                if (links.isEmpty() || generatedLinks.isNotEmpty()) {
-                    repo.login()
-                    val projects = restClient.getAccessibleProjects(repo)
-                    if (projects.isNotEmpty()) {
-                        var link = generatedLinks.firstOrNull() as? YouTrackIssueNavigationLink
-                        if (link == null){
-                            link = YouTrackIssueNavigationLink(repo.url)
-                            navigationConfig.links.add(link)
-                        }
-                        link.setProjects(projects)
-                    } else {
-                        logger.info("No accessible projects found for ${repo.url}")
-                    }
-                } else {
-                    logger.info("Issue navigation link pattern for ${repo.url} has been overridden and won't be updated")
-                }
-            } catch(e: Exception) {
-                logger.error(e)
+        navigationConfig.links.remove(null) // where are these nulls coming from I wonder
+        taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach { server ->
+            val links = navigationConfig.links.filter { it.pointsTo(server) }
+            val generatedLinks = links.filter { it.createdByYouTrackPlugin }
+            if (links.isEmpty()) {
+                // no issue links to that server have been defined so far
+                val link = YouTrackIssueNavigationLink(server.url)
+                updateIssueLinkProjects(link, server)
+                navigationConfig.links.add(link)
+            } else if (generatedLinks.isNotEmpty()) {
+                // there is a link created by plugin, let's actualize it
+                updateIssueLinkProjects(generatedLinks.first(), server)
+            } else {
+                logger.debug("Issue navigation link pattern for ${server.url} has been overridden and won't be updated")
             }
+        }
+    }
+
+    private fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
+        try {
+            repo.login()
+            val projects = restClient.getAccessibleProjects(repo)
+            if (projects.isEmpty()) {
+                logger.debug("No accessible projects found for ${repo.url}")
+            } else {
+                link.setProjects(projects)
+            }
+        } catch(e: Exception) {
+            logger.info(e)
         }
     }
 }
