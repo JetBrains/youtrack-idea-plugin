@@ -3,13 +3,13 @@ package com.github.jk1.ytplugin.tasks
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
-import com.intellij.tasks.impl.BaseRepository
 import com.intellij.tasks.impl.BaseRepositoryImpl
+import com.intellij.tasks.youtrack.YouTrackIntellisense
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.commons.httpclient.HttpClient
 
 
-class YouTrackServer(private val delegate: BaseRepository, val project: Project) {
+class YouTrackServer(private val delegate: YouTrackRepository, val project: Project) {
 
     val id: String get() = "$username@$url $defaultSearch"
     val url: String get() = delegate.url
@@ -17,10 +17,14 @@ class YouTrackServer(private val delegate: BaseRepository, val project: Project)
     val password: String get() = delegate.password
 
     var defaultSearch: String
-        get() = (delegate as YouTrackRepository).defaultSearch
+        get() = delegate.defaultSearch
         set(value) {
-            (delegate as YouTrackRepository).defaultSearch = value
+            delegate.defaultSearch = value
         }
+
+    fun login() {
+        delegate.createCancellableConnection()?.call()
+    }
 
     fun getRestClient(): HttpClient {
         // dirty hack to get preconfigured http client from task management plugin
@@ -30,9 +34,7 @@ class YouTrackServer(private val delegate: BaseRepository, val project: Project)
         return method.invoke(delegate) as HttpClient
     }
 
-    fun login() {
-        delegate.createCancellableConnection()?.call()
-    }
+    fun getSearchCompletionProvider() = YouTrackIntellisense(delegate)
 
     fun createTask(issue: Issue): Task = IssueTask(issue, delegate)
 

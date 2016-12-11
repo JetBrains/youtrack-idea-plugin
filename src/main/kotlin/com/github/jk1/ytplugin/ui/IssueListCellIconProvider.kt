@@ -33,7 +33,7 @@ class IssueListCellIconProvider(override val project: Project) : ComponentAware 
             label.border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
             return label
         } else {
-            val label = JLabel()
+            val label = if (UIUtil.isUnderDarcula()) JLabel(AllIcons.Icons.Ide.SpeedSearchPrompt) else JLabel()
             label.border = BorderFactory.createEmptyBorder(0, 2, 0, 0)
             return label
         }

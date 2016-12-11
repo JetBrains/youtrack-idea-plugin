@@ -1,0 +1,58 @@
+package com.github.jk1.ytplugin
+
+import com.github.jk1.ytplugin.issues.actions.IssueActionGroup
+import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.editor.event.DocumentAdapter
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.tasks.youtrack.YouTrackIntellisense.INTELLISENSE_KEY
+import com.intellij.tasks.youtrack.lang.YouTrackLanguage
+import com.intellij.ui.LanguageTextField
+import java.awt.BorderLayout
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
+import javax.swing.*
+
+class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
+
+    private val project = server.project
+    private val searchField = LanguageTextField(YouTrackLanguage.INSTANCE, project, server.defaultSearch)
+    private val actionGroup = IssueActionGroup(searchField)
+
+    var actionListener = { search: String -> }
+
+    init {
+        searchField.border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
+        searchField.setPlaceholder("Empty search query - all issues will be displayed")
+        actionGroup.add(SearchIssueAnAction())
+        add(searchField, BorderLayout.CENTER)
+        add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
+        // completion support
+        val file = PsiDocumentManager.getInstance(project).getPsiFile(searchField.document)
+        file?.putUserData(INTELLISENSE_KEY, server.getSearchCompletionProvider())
+        // key bindings
+        // todo: find a better way to attach onEnter handler to LanguageTextField
+        searchField.addDocumentListener(object : DocumentAdapter() {
+            override fun documentChanged(e: DocumentEvent?) {
+                val component = searchField.editor!!.contentComponent
+                component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
+                component.actionMap.put("apply", SearchIssueSwingAction())
+            }
+        })
+    }
+
+    inner class SearchIssueSwingAction : AbstractAction() {
+        override fun actionPerformed(event: ActionEvent) {
+            actionListener.invoke(searchField.text)
+        }
+    }
+
+    inner class SearchIssueAnAction() : AnAction(AllIcons.Actions.Find) {
+        override fun actionPerformed(e: AnActionEvent?) {
+            actionListener.invoke(searchField.text)
+        }
+    }
+}

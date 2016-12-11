@@ -8,6 +8,7 @@ import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.actions.OpenTaskDialog
 import com.intellij.tasks.impl.BaseRepository
+import com.intellij.tasks.youtrack.YouTrackRepository
 import java.util.*
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -64,7 +65,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
     fun getActiveYouTrackRepository(): YouTrackServer {
         val repository = getActiveYouTrackTask().repository as BaseRepository
         if (repository.isConfigured && repository.isYouTrack()) {
-            return YouTrackServer(repository, project)
+            return YouTrackServer(repository as YouTrackRepository, project)
         } else {
             throw NoYouTrackRepositoryException()
         }
@@ -73,7 +74,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
     fun getAllConfiguredYouTrackRepositories() = getTaskManager()
             .allRepositories
             .filter { it.isYouTrack() }
-            .map { YouTrackServer(it as BaseRepository, project) }
+            .map { YouTrackServer(it as YouTrackRepository, project) }
 
 
     private fun syncTaskManagerConfig() {

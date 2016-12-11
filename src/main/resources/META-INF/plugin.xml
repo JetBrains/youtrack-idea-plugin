@@ -17,8 +17,8 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li>- Ctrl+Clickable issue IDs in VCS commit messages</li>
-            <li>- Ctrl+Clickable issue IDs in source code comments</li>
+            <li>- Ctrl + Clickable issue IDs in VCS commit messages</li>
+            <li>- Ctrl + Clickable issue IDs in source code comments</li>
             <li>- Keyboard shortcuts installed for all issue tool window actions</li>
         </ul>
           ]]></change-notes>

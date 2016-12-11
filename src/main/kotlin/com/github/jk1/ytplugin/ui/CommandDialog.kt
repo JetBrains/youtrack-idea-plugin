@@ -9,8 +9,8 @@ import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
+import com.intellij.openapi.editor.event.DocumentAdapter
 import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiDocumentManager
@@ -77,14 +77,11 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
             }
         })
         // todo: find a better way to attach onEnter handler to LanguageTextField
-        commandField.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(p0: DocumentEvent?) {
+        commandField.addDocumentListener(object : DocumentAdapter() {
+            override fun documentChanged(event: DocumentEvent) {
                 val component = commandField.editor!!.contentComponent
                 component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
                 component.actionMap.put("apply", applyAction)
-            }
-
-            override fun beforeDocumentChange(p0: DocumentEvent?) {
             }
         })
         return commandField

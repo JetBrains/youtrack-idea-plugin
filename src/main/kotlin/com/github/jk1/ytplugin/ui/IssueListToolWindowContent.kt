@@ -1,85 +1,64 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.IssueSearchBar
 import com.github.jk1.ytplugin.issues.actions.*
-import com.github.jk1.ytplugin.issues.model.Issue
-import com.github.jk1.ytplugin.runAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.project.Project
-import com.intellij.ui.ListSpeedSearch
-import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBLoadingPanel
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.AbstractListModel
 import javax.swing.JComponent
+import javax.swing.JPanel
 import javax.swing.KeyStroke
-import javax.swing.SwingUtilities
 
-class IssueListToolWindowContent(override val project: Project, val repo: YouTrackServer, parent: Disposable) :
-        JBLoadingPanel(BorderLayout(), parent), ComponentAware {
+class IssueListToolWindowContent(val repo: YouTrackServer, parent: Disposable) : JPanel(BorderLayout()), ComponentAware {
 
-    private val issueList: JBList<Issue> = JBList()
+    override val project: Project = repo.project
+
     private val splitter = EditorSplitter()
     private val viewer = IssueViewer(project)
-    private val issueListModel: IssueListModel = IssueListModel()
-    private val iconProvider: IssueListCellIconProvider = IssueListCellIconProvider(project)
-    private val issueCellRenderer: IssueListCellRenderer
+    private val issueList = IssueList(repo, parent)
+    private val searchBar = IssueSearchBar(repo)
 
     init {
-        val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        issueCellRenderer = IssueListCellRenderer({ issueListScrollPane.viewport.width }, iconProvider)
-        issueList.cellRenderer = issueCellRenderer
-        splitter.firstComponent = issueListScrollPane
+        val leftPanel = JPanel(BorderLayout())
+        leftPanel.add(searchBar, BorderLayout.NORTH)
+        leftPanel.add(issueList, BorderLayout.CENTER)
+        splitter.firstComponent = leftPanel
         splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
-        initIssueListModel()
-        ListSpeedSearch(issueList)
     }
 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
-        val selectedIssue = {
-            when {
-                issueList.selectedIndex == -1 -> null
-                else -> issueListModel.getElementAt(issueList.selectedIndex)
-            }
-        }
+        val selectedIssue = { issueList.getSelectedIssue() }
         group.add(RefreshIssuesAction(repo))
         //group.add(CreateIssueAction()) todo: implement me
         group.add(SetAsActiveTaskAction(selectedIssue, repo))
         group.add(CopyIssueLinkAction(selectedIssue))
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
-        group.add(ToggleIssueViewAction(project, issueCellRenderer, issueListModel))
+        group.add(ToggleIssueViewAction(project, issueList))
         group.addConfigureTaskServerAction()
-        return group.createToolbar()
+        return group.createVerticalToolbarComponent()
     }
 
     private fun setupIssueListActionListeners() {
         // update preview contents upon selection
         issueList.addListSelectionListener {
-            val selectedIndex = issueList.selectedIndex
-            if (selectedIndex == -1) {
+            val selectedIssue = issueList.getSelectedIssue()
+            if (selectedIssue == null) {
                 splitter.collapse()
-            } else {
-                val issue = issueListModel.getElementAt(selectedIndex)
-                if (issue != viewer.currentIssue) {
-                    viewer.showIssue(issue)
-                }
+            } else if (selectedIssue != viewer.currentIssue) {
+                viewer.showIssue(selectedIssue)
             }
         }
+
         // keystrokes to expand/collapse issue preview
         issueList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
         issueList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
@@ -87,54 +66,15 @@ class IssueListToolWindowContent(override val project: Project, val repo: YouTra
         // expand issue preview on click
         issueList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
-                if (issueList.model.size > 0) {
+                if (issueList.getIssueCount() > 0) {
                     splitter.expand()
                 }
             }
         })
-    }
-
-    private fun initIssueListModel() {
-        issueList.emptyText.clear()
-        issueList.model = issueListModel
-        startLoading()
-        if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-            issueStoreComponent[repo].update().doWhenDone {
-                issueListModel.update()
-                stopLoading()
-            }
-        } else {
-            stopLoading()
-        }
-        // listen to IssueStore updates and repaint issue list accordingly
-        issueStoreComponent[repo].addListener {
-            SwingUtilities.invokeLater {
-                val placeholder = issueList.emptyText
-                placeholder.clear()
-                if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-                    placeholder.appendText("No issues found ")
-                    placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
-                            { CONFIGURE_SERVERS_ACTION_ID.runAction() })
-                }
-                issueListModel.update()
-                val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(viewer.currentIssue)
-                if (updatedSelectedIssueIndex == -1) {
-                    issueList.clearSelection()
-                } else {
-                    issueList.selectedIndex = updatedSelectedIssueIndex
-                }
-            }
-        }
-    }
-
-    inner class IssueListModel : AbstractListModel<Issue>() {
-
-        override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
-
-        override fun getSize() = issueStoreComponent[repo].getAllIssues().size
-
-        fun update() {
-            fireContentsChanged(IssueListPanel@this, 0, size)
+        // apply issue search
+        searchBar.actionListener = { search ->
+            repo.defaultSearch = search
+            issueStoreComponent[repo].update()
         }
     }
 }
