@@ -24,8 +24,8 @@ intellij {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:1.0.1"
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.0.1"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:1.0.1"
+    compileOnly "org.jetbrains.kotlin:kotlin-reflect:1.0.1"
     compile 'org.nanohttpd:nanohttpd:2.3.0'
 
     testCompile 'junit:junit:4.12'
