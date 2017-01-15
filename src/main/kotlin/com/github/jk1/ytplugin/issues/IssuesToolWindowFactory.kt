@@ -49,11 +49,6 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         logger.debug("${repos.size} YouTrack repositories discovered")
         when {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel())
-            repos.size == 1 -> {
-                val repo = repos.first()
-                val panel = IssueListToolWindowContent(repo, contentManager)
-                contentManager.addContent("Issues | ${repo.defaultSearch}", panel)
-            }
             else -> {
                 repos.forEach {
                     val panel = IssueListToolWindowContent(it, contentManager)

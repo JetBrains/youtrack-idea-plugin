@@ -8,7 +8,8 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.ActionCallback
 
-class IssueStore(val repo: YouTrackServer, private var issues: List<Issue> = listOf()) : Iterable<Issue> {
+class IssueStore(val repo: YouTrackServer, @Volatile private var issues: List<Issue> = listOf()) : Iterable<Issue> {
+
     private val client = IssuesRestClient(repo)
     private var currentCallback: ActionCallback = ActionCallback.Done()
     private val listeners: MutableSet<() -> Unit> = mutableSetOf()
@@ -24,7 +25,7 @@ class IssueStore(val repo: YouTrackServer, private var issues: List<Issue> = lis
 
     fun isUpdating() = !currentCallback.isDone
 
-    fun getAllIssues(): Collection<Issue> = issues
+    fun getAllIssues() = issues
 
     fun getIssue(index: Int) = issues[index]
 

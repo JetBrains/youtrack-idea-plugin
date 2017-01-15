@@ -8,7 +8,9 @@ import com.intellij.tasks.youtrack.YouTrackIntellisense
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.commons.httpclient.HttpClient
 
-
+/**
+ * Wraps task management plugin repository to provide handy accessor operations.
+ */
 class YouTrackServer(private val delegate: YouTrackRepository, val project: Project) {
 
     val id: String get() = "$username@$url $defaultSearch"
@@ -17,9 +19,13 @@ class YouTrackServer(private val delegate: YouTrackRepository, val project: Proj
     val password: String get() = delegate.password
 
     var defaultSearch: String
-        get() = delegate.defaultSearch
+        get() = synchronized(delegate) {
+            delegate.defaultSearch
+        }
         set(value) {
-            delegate.defaultSearch = value
+            synchronized(delegate) {
+                delegate.defaultSearch = value
+            }
         }
 
     fun login() {

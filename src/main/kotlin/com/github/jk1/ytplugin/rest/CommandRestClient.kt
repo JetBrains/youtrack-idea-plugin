@@ -6,17 +6,20 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.project.Project
+import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
 
 class CommandRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 
+    val client: HttpClient get() = createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
+
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)
         val startTime = System.currentTimeMillis()
         try {
-            val status = createHttpClient().executeMethod(method)
+            val status = client.executeMethod(method)
             if (status == 200) {
                 return CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
@@ -32,7 +35,7 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
         val method = PostMethod(command.executeCommandUrl)
         val startTime = System.currentTimeMillis()
         try {
-            val status = createHttpClient().executeMethod(method)
+            val status = client.executeMethod(method)
             if (status != 200) {
                 val string = method.responseBodyAsLoggedStream()
                 val element = SAXBuilder(false).build(string).rootElement

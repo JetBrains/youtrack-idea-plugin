@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin
+package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.issues.actions.IssueActionGroup
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -42,6 +42,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
                 component.actionMap.put("apply", SearchIssueSwingAction())
             }
         })
+        border = BorderFactory.createEmptyBorder(0, 0, 0, -15)
     }
 
     inner class SearchIssueSwingAction : AbstractAction() {

@@ -46,6 +46,15 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     }
 
     @Test
+    fun testStoreUpdate() {
+        issueStoreComponent[server].update().waitFor(5000)
+        Assert.assertEquals(1, issueStoreComponent[server].getAllIssues().size)
+        server.defaultSearch = "#Resolved"
+        issueStoreComponent[server].update().waitFor(5000)
+        Assert.assertEquals(0, issueStoreComponent[server].getAllIssues().size)
+    }
+
+    @Test
     fun testCyrillicContentLoad() {
         // this test is windows-specific and depends on default platform encoding
         withDefaultCharset("windows-1251") {
@@ -104,7 +113,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     }
 
     private fun withDefaultCharset(charset: String, code: () -> Unit) {
-        // a hacky way to change 'file.encoding' property in runtime
+        // a hacky way to change 'file.encoding' system property in runtime
         System.setProperty("file.encoding", charset)
         val charsetField = Charset::class.java.getDeclaredField("defaultCharset")
         charsetField.isAccessible = true

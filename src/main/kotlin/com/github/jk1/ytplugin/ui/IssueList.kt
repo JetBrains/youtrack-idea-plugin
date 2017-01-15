@@ -58,19 +58,20 @@ class IssueList(val repo: YouTrackServer, parent: Disposable) : JBLoadingPanel(B
                             { TaskManagerProxyComponent.CONFIGURE_SERVERS_ACTION_ID.runAction() })
                 }
                 issueListModel.update()
-                //val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(viewer.currentIssue)
                 val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())
                 if (updatedSelectedIssueIndex == -1) {
                     issueList.clearSelection()
                 } else {
                     issueList.selectedIndex = updatedSelectedIssueIndex
                 }
+                stopLoading()
             }
         }
     }
 
     fun getSelectedIssue() = when {
         issueList.selectedIndex == -1 -> null
+        issueList.selectedIndex >= issueListModel.size -> null
         else -> issueListModel.getElementAt(issueList.selectedIndex)
     }
 

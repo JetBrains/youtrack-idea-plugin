@@ -7,6 +7,8 @@ import javax.swing.JComponent
 
 class IssueActionGroup(val parent: JComponent) : DefaultActionGroup() {
 
+    override fun isDumbAware() = true
+
     fun add(action: IssueAction) {
         action.register(parent)
         super.add(action)

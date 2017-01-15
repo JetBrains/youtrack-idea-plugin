@@ -21,7 +21,7 @@ interface TaskManagerTrait: IdeaProjectTrait, YouTrackConnectionTrait {
         repository.password = password
         repository.defaultSearch = ""
         getTaskManagerComponent().setRepositories(listOf(repository))
-        //todo: mock YouTrack here server to break dependency from task-core
+        //todo: mock YouTrack server here to break dependency from task-core
         return YouTrackServer(repository, project)
     }
 
