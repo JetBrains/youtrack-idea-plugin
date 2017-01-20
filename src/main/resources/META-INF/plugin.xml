@@ -17,9 +17,9 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li>- Ctrl + Clickable issue IDs in VCS commit messages</li>
-            <li>- Ctrl + Clickable issue IDs in source code comments</li>
-            <li>- Keyboard shortcuts installed for all issue tool window actions</li>
+            <li> Ctrl + Clickable issue IDs in VCS commit messages</li>
+            <li> Ctrl + Clickable issue IDs in source code comments</li>
+            <li> Keyboard shortcuts installed for all issue tool window actions</li>
         </ul>
           ]]></change-notes>
 
@@ -41,7 +41,7 @@
 
     <application-components>
         <component>
-            <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreComponent</implementation-class>
+            <implementation-class>com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent</implementation-class>
         </component>
     </application-components>
 
@@ -63,6 +63,10 @@
             <implementation-class>com.github.jk1.ytplugin.navigator.SourceNavigatorComponent</implementation-class>
             <skipForDefaultProject/>
         </component>
+      <component>
+        <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdateTimerComponent</implementation-class>
+        <skipForDefaultProject/>
+      </component>
     </project-components>
 
     <extensions defaultExtensionNs="com.intellij">

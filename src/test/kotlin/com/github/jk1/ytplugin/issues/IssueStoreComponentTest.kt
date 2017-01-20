@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.issues
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
@@ -14,7 +15,7 @@ import org.junit.Test
 import java.nio.charset.Charset
 import java.util.*
 
-class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait {
+class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     lateinit var fixture: IdeaProjectTestFixture
     lateinit var server: YouTrackServer
@@ -130,6 +131,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @After
     fun tearDown() {
+        issueStoreComponent.remove(server)
         issues.forEach { deleteIssue(it) }
         cleanUpTaskManager()
         fixture.tearDown()

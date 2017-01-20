@@ -4,35 +4,21 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
-import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
-import javax.swing.SwingUtilities
 
 @State(name = "YouTrack Issues", storages = arrayOf(Storage(value = "issues.xml")))
-class IssueStoreComponent() : ApplicationComponent, PersistentStateComponent<IssueStoreComponent.Memento> {
+class PersistentIssueStoreComponent() : ApplicationComponent, PersistentStateComponent<PersistentIssueStoreComponent.Memento> {
 
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()
-    private lateinit var timedRefreshTask: ScheduledFuture<*>
 
-    override fun initComponent() {
-        //  todo: customizable update interval
-        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
-            SwingUtilities.invokeLater {
-                stores.values.filter { it.isValid() }.forEach { it.update() }
-            }
-        }, 5, 5, TimeUnit.MINUTES)
-    }
+    override fun initComponent() { }
 
-    override fun disposeComponent() {
-        timedRefreshTask.cancel(false)
-    }
+    override fun disposeComponent() {}
 
     override fun getComponentName(): String = javaClass.canonicalName
 
@@ -47,6 +33,10 @@ class IssueStoreComponent() : ApplicationComponent, PersistentStateComponent<Iss
             logger.debug("Issue store opened for YouTrack server ${repo.url}")
             loadedMemento.getStore(repo) ?: IssueStore(repo)
         })
+    }
+
+    fun remove(repo: YouTrackServer) {
+       stores.remove(repo.id)
     }
 
     class Memento constructor() {

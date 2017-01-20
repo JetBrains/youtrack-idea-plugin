@@ -10,10 +10,11 @@ import org.apache.commons.httpclient.HttpClient
 
 /**
  * Wraps task management plugin repository to provide handy accessor operations.
+ * This is a snapshot implementation and may not reflect the latest changes made to delegate object.
  */
 class YouTrackServer(private val delegate: YouTrackRepository, val project: Project) {
 
-    val id: String get() = "$username@$url $defaultSearch"
+    val id: String get() = "${project.name} $username@$url"
     val url: String get() = delegate.url
     val username: String get() = delegate.username
     val password: String get() = delegate.password
