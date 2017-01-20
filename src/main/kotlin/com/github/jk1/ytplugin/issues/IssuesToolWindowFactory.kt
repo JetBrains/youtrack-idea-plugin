@@ -6,8 +6,10 @@ import com.github.jk1.ytplugin.runAction
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.SimpleColoredComponent
@@ -44,16 +46,19 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {
         val contentManager = toolWindow.contentManager
-        contentManager.removeAllContents(false)
+        contentManager.removeAllContents(true)
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         logger.debug("${repos.size} YouTrack repositories discovered")
         when {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel())
             else -> {
                 repos.forEach {
-                    val panel = IssueListToolWindowContent(it, contentManager)
+                    val panel = IssueListToolWindowContent(it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                 }
+                Disposer.register(project, Disposable {
+                    contentManager.removeAllContents(true)
+                })
             }
         }
     }

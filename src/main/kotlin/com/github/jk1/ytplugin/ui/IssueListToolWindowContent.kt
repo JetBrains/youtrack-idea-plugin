@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
@@ -13,13 +12,13 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
-class IssueListToolWindowContent(val repo: YouTrackServer, parent: Disposable) : JPanel(BorderLayout()), ComponentAware {
+class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
 
     private val splitter = EditorSplitter()
     private val viewer = IssueViewer(project)
-    private val issueList = IssueList(repo, parent)
+    private val issueList = IssueList(repo)
     private val searchBar = IssueSearchBar(repo)
 
     init {

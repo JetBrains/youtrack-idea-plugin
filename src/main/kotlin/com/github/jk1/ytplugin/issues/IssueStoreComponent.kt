@@ -24,7 +24,9 @@ class IssueStoreComponent() : ApplicationComponent, PersistentStateComponent<Iss
     override fun initComponent() {
         //  todo: customizable update interval
         timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
-            SwingUtilities.invokeLater { stores.forEach { it.value.update() } }
+            SwingUtilities.invokeLater {
+                stores.values.filter { it.isValid() }.forEach { it.update() }
+            }
         }, 5, 5, TimeUnit.MINUTES)
     }
 

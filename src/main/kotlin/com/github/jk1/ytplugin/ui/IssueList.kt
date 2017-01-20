@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.runAction
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.openapi.Disposable
 import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
@@ -19,7 +18,7 @@ import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 
-class IssueList(val repo: YouTrackServer, parent: Disposable) : JBLoadingPanel(BorderLayout(), parent), ComponentAware {
+class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
 
     override val project = repo.project
     private val issueList: JBList<Issue> = JBList()

@@ -23,6 +23,8 @@ class IssueStore(val repo: YouTrackServer, @Volatile private var issues: List<Is
         return currentCallback
     }
 
+    fun isValid() = !repo.project.isDisposed
+
     fun isUpdating() = !currentCallback.isDone
 
     fun getAllIssues() = issues
