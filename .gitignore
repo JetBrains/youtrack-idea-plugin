@@ -9,3 +9,6 @@
 /classes
 /build
 /out
+
+#gradle caches
+/.gradle

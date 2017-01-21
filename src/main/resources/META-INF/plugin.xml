@@ -65,7 +65,7 @@
             <skipForDefaultProject/>
         </component>
       <component>
-        <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdateTimerComponent</implementation-class>
+        <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent</implementation-class>
         <skipForDefaultProject/>
       </component>
     </project-components>

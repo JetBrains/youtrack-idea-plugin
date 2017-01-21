@@ -10,17 +10,16 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * Application-scoped persistent issue data cache. Issue data is persisted in a home folder instead of
+ * a project directory. This comes in handy for projects with /.idea under VCS control.
+ */
 @State(name = "YouTrack Issues", storages = arrayOf(Storage(value = "issues.xml")))
-class PersistentIssueStoreComponent() : ApplicationComponent, PersistentStateComponent<PersistentIssueStoreComponent.Memento> {
+class PersistentIssueStoreComponent() : ApplicationComponent.Adapter(),
+        PersistentStateComponent<PersistentIssueStoreComponent.Memento> {
 
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()
-
-    override fun initComponent() { }
-
-    override fun disposeComponent() {}
-
-    override fun getComponentName(): String = javaClass.canonicalName
 
     override fun getState() = Memento(stores.values)
 
@@ -31,7 +30,7 @@ class PersistentIssueStoreComponent() : ApplicationComponent, PersistentStateCom
     operator fun get(repo: YouTrackServer): IssueStore {
         return stores.getOrPut(repo.id, {
             logger.debug("Issue store opened for YouTrack server ${repo.url}")
-            loadedMemento.getStore(repo) ?: IssueStore(repo)
+            loadedMemento.getStore(repo)
         })
     }
 
@@ -49,13 +48,18 @@ class PersistentIssueStoreComponent() : ApplicationComponent, PersistentStateCom
             persistentIssues = stores.associate { Pair(it.repo.id, "[${it.map { it.json }.joinToString(", ")}]") }
         }
 
-        fun getStore(repo: YouTrackServer): IssueStore? {
-            // todo: handle read errors
-            val issuesJson = persistentIssues[repo.id] ?: return null
-            val issues = JsonParser().parse(issuesJson).asJsonArray
-                    .map { IssueJsonParser.parseIssue(it, repo.url) }
-                    .filterNotNull()
-            return IssueStore(repo, issues)
+        fun getStore(repo: YouTrackServer): IssueStore {
+            try {
+                val issuesJson = persistentIssues[repo.id] ?: return IssueStore(repo)
+                val issues = JsonParser().parse(issuesJson).asJsonArray
+                        .map { IssueJsonParser.parseIssue(it, repo.url) }
+                        .filterNotNull()
+                logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
+                return IssueStore(repo, issues)
+            } catch(e: Exception) {
+                logger.warn("Failed to load issue store file cache for ${repo.url}", e)
+                return IssueStore(repo)
+            }
         }
     }
 }

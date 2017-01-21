@@ -33,7 +33,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
             if (listeners.isNotEmpty()) {
                 syncTaskManagerConfig()
             }
-        }, 5, 5, TimeUnit.SECONDS)
+        }, 3, 3, TimeUnit.SECONDS)
     }
 
     override fun projectClosed() {

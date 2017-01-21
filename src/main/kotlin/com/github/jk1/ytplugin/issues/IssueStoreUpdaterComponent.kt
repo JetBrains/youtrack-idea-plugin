@@ -8,8 +8,12 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
-
-class IssueStoreUpdateTimerComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
+/**
+ * Project-scoped issue store maintenance component.
+ *  - Manages timed issue store updates for active projects
+ *  - Removes stale and obsolete data upon task management configuration changes
+ */
+class IssueStoreUpdaterComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
 
     private lateinit var timedRefreshTask: ScheduledFuture<*>
 
