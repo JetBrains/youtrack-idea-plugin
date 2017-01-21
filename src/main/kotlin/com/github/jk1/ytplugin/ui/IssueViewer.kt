@@ -36,6 +36,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         scrollPane.verticalScrollBar.unitIncrement = 16
         add(scrollPane, BorderLayout.CENTER)
         issueTemplate.put("styles", loadResource("style.css") + loadResource("wiki.css"))
+        rootPane.isFocusable = true
     }
 
     fun showIssue(issue: Issue) {
@@ -59,6 +60,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
             tabsPane.addTab("Comments", commentsPanel)
+            tabsPane.isFocusable = false
             issue.comments.forEach { commentsPanel.add(createCommentPanel(it)) }
             container.add(tabsPane)
         }
@@ -145,6 +147,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
                 BrowserLauncher.getInstance().open(it.absoluteUrl)
             }
         }
+        htmlPane.isFocusable = false
         return htmlPane
     }
 

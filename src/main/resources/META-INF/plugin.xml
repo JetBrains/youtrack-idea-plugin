@@ -17,9 +17,10 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li> Ctrl + Clickable issue IDs in VCS commit messages</li>
-            <li> Ctrl + Clickable issue IDs in source code comments</li>
-            <li> Keyboard shortcuts installed for all issue tool window actions</li>
+            <li> Ctrl + Clickable issue IDs in VCS commit messages </li>
+            <li> Ctrl + Clickable issue IDs in source code comments </li>
+            <li> Keyboard shortcuts installed for all issue tool window actions </li>
+            <li> Active task is now marked with star icon in issue list </li>
         </ul>
           ]]></change-notes>
 
