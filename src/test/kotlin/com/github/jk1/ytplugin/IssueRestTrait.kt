@@ -9,10 +9,9 @@ import org.apache.commons.httpclient.methods.DeleteMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.PutMethod
 
-
 interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
 
-    override fun createHttpClient(): HttpClient {
+    override fun createHttpClient(repository: YouTrackServer): HttpClient {
         val client = HttpClient()
         client.params.connectionManagerTimeout = 30000 // ms
         client.params.soTimeout = 30000 // ms
@@ -23,7 +22,7 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
         return client
     }
 
-    override fun createHttpClient(repository: YouTrackServer): HttpClient = createHttpClient()
+    private fun createHttpClient() = createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
 
     fun createIssue(summary: String = "summary"): String {
         val method = PutMethod("$serverUrl/rest/issue?project=$projectId&summary=${summary.urlencoded}")

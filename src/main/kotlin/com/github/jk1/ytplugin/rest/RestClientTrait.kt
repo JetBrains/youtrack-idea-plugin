@@ -11,11 +11,6 @@ import java.net.URLEncoder
 
 interface RestClientTrait : ComponentAware {
 
-    @Deprecated("Use #createHttpClient(repository) instead")
-    fun createHttpClient(): HttpClient {
-        return createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
-    }
-
     fun createHttpClient(repository: YouTrackServer): HttpClient {
         val client = repository.getRestClient()
         val credentials = UsernamePasswordCredentials(repository.username, repository.password)

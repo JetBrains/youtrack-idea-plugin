@@ -15,12 +15,15 @@ repositories {
     mavenCentral()
 }
 
+def supportedVersions = ['IC-2016.3', 'LATEST-EAP-SNAPSHOT']
+
 intellij {
-    version 'IC-2016.3'           //IntelliJ IDEA 16 dependency
-    plugins 'tasks'               //Bundled plugin dependencies
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : supportedVersions.first()
+    plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false
     pluginName 'ytplugin'
+    println "This build uses IDEA $version"
 }
 
 dependencies {
@@ -34,11 +37,24 @@ dependencies {
 }
 
 test {
-    dependsOn animalsnifferMain     // make sure we're java 1.7 compatible
     testLogging {
         showStandardStreams = true
         exceptionFormat = 'full'
     }
     outputs.upToDateWhen { false }
 }
+
+task testAllSupportedIdes {
+    dependsOn supportedVersions.collect { "runTestsWithIdea$it" }
+    supportedVersions.forEach { version ->
+        task "runTestsWithIdea$version"(type: GradleBuild) {
+            buildFile = 'build.gradle'
+            tasks = ['test']
+            startParameter.projectProperties = [ideaVersion: version]
+        }
+    }
+}
+
+// runs on travis CI
+check.dependsOn animalsnifferMain, testAllSupportedIdes
 
