@@ -11,7 +11,9 @@ import org.apache.commons.httpclient.methods.PutMethod
 
 interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
 
-    override fun createHttpClient(repository: YouTrackServer): HttpClient {
+    override fun createHttpClient(repository: YouTrackServer) = createHttpClient()
+
+    private fun createHttpClient() : HttpClient {
         val client = HttpClient()
         client.params.connectionManagerTimeout = 30000 // ms
         client.params.soTimeout = 30000 // ms
@@ -21,8 +23,6 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
         client.state.setCredentials(AuthScope.ANY, credentials)
         return client
     }
-
-    private fun createHttpClient() = createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
 
     fun createIssue(summary: String = "summary"): String {
         val method = PutMethod("$serverUrl/rest/issue?project=$projectId&summary=${summary.urlencoded}")
