@@ -1,85 +1,87 @@
-<idea-plugin version="2">
-    <id>com.github.jk1.ytplugin</id>
-    <name>YouTrack Integration Plugin</name>
-    <version>0.6</version>
-    <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
+<idea-plugin>
+  <id>com.github.jk1.ytplugin</id>
+  <name>YouTrack Integration Plugin</name>
+  <version>0.6</version>
+  <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
-    <description><![CDATA[
+  <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
         <ul>
             <li>Adds command window to execute YouTrack commands from IDE</li>
-            <li>Supports code navigation when clicking on Java stacktraces in issue tracker</li>
-            <li>Shows issue custom fields for YouTrack tasks</li>
+            <li>Supports code navigation when clicking on Java stack traces in issue tracker</li>
+            <li>Provides issue browser</li>
             <li>Renders YouTrack wiki markup</li>
+            <li>Recognizes YouTrack issue ids in Java code comments and VCS history</li>
         </ul>
-        <p>Compatibility: YouTrack 5.2+, Intellij Idea 15.0.2+<p/>
+        <p>Compatibility: YouTrack 5.2+<p/>
     ]]></description>
 
-    <change-notes><![CDATA[
+  <change-notes><![CDATA[
         <ul>
-            <li> Ctrl + Clickable issue IDs in VCS commit messages </li>
-            <li> Ctrl + Clickable issue IDs in source code comments </li>
+            <li> Issue search bar added </li>
+            <li> Ctrl + Clickable issue ids in VCS commit messages </li>
+            <li> Ctrl + Clickable issue ids in source code comments </li>
             <li> Keyboard shortcuts installed for all issue tool window actions </li>
             <li> Active task is now marked with star icon in issue list </li>
         </ul>
           ]]></change-notes>
 
-    <!-- Compatible with Idea platform 2016.1 - 2017.3 -->
-    <idea-version since-build="145" until-build="173.*"/>
-    <!-- Enable plugin in all products except MPS -->
-    <depends>com.intellij.modules.lang</depends>
-    <!-- We depend on bundled task management plugin -->
-    <depends>com.intellij.tasks</depends>
+  <!-- Compatible with Idea platform 2016.1 - 2017.3 -->
+  <idea-version since-build="145" until-build="173.*"/>
+  <!-- Enable plugin in all products except MPS -->
+  <depends>com.intellij.modules.lang</depends>
+  <!-- We depend on bundled task management plugin -->
+  <depends>com.intellij.tasks</depends>
 
-    <actions>
-        <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
-                class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
-            <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
-        </action>
-    </actions>
+  <actions>
+    <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
+            class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
+      <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+    </action>
+  </actions>
 
-    <application-components>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent</implementation-class>
-        </component>
-    </application-components>
+  <application-components>
+    <component>
+      <implementation-class>com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent</implementation-class>
+    </component>
+  </application-components>
 
-    <project-components>
-        <component>
-            <interface-class>com.github.jk1.ytplugin.commands.CommandComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.commands.CommandComponentImpl</implementation-class>
-            <skipForDefaultProject/>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent</implementation-class>
-            <skipForDefaultProject/>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.editor.AdminComponent</implementation-class>
-            <skipForDefaultProject/>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.navigator.SourceNavigatorComponent</implementation-class>
-            <skipForDefaultProject/>
-        </component>
-      <component>
-        <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent</implementation-class>
-        <skipForDefaultProject/>
-      </component>
-    </project-components>
+  <project-components>
+    <component>
+      <interface-class>com.github.jk1.ytplugin.commands.CommandComponent</interface-class>
+      <implementation-class>com.github.jk1.ytplugin.commands.CommandComponentImpl</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+    <component>
+      <implementation-class>com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+    <component>
+      <implementation-class>com.github.jk1.ytplugin.editor.AdminComponent</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+    <component>
+      <implementation-class>com.github.jk1.ytplugin.navigator.SourceNavigatorComponent</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+    <component>
+      <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+  </project-components>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <!--YouTrack command language support-->
-        <fileTypeFactory implementation="com.github.jk1.ytplugin.commands.lang.CommandFileFactory"/>
-        <lang.parserDefinition language="YouTrack Commands"
-                               implementationClass="com.github.jk1.ytplugin.commands.lang.CommandParserDefinition"/>
-        <completion.contributor language="YouTrack Commands"
-                                implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
-        <externalAnnotator language="YouTrack Commands"
-                           implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
-        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
-                    factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
-    </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <!--YouTrack command language support-->
+    <fileTypeFactory implementation="com.github.jk1.ytplugin.commands.lang.CommandFileFactory"/>
+    <lang.parserDefinition language="YouTrack Commands"
+                           implementationClass="com.github.jk1.ytplugin.commands.lang.CommandParserDefinition"/>
+    <completion.contributor language="YouTrack Commands"
+                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
+    <externalAnnotator language="YouTrack Commands"
+                       implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
+    <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
+                factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
+  </extensions>
 </idea-plugin>

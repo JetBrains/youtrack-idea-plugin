@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.event.DocumentAdapter
 import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.tasks.youtrack.YouTrackIntellisense.INTELLISENSE_KEY
 import com.intellij.tasks.youtrack.lang.YouTrackLanguage
@@ -51,7 +52,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         }
     }
 
-    inner class SearchIssueAnAction() : AnAction(AllIcons.Actions.Find) {
+    inner class SearchIssueAnAction() : AnAction(AllIcons.Actions.Find), DumbAware {
         override fun actionPerformed(e: AnActionEvent?) {
             actionListener.invoke(searchField.text)
         }
