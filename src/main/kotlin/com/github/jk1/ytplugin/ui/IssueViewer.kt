@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.format
+import com.github.jk1.ytplugin.issues.model.Attachment
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueComment
 import com.github.jk1.ytplugin.issues.model.IssueLink
@@ -43,7 +44,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         rootPane.removeAll()
         currentIssue = issue
         val container = JPanel()
-        container.layout = BoxLayout(container, BoxLayout.Y_AXIS)
+        container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
         rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
         rootPane.add(container, BorderLayout.CENTER)
         if (issue.tags.isNotEmpty()) {
@@ -55,14 +56,11 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         val issuePane = createHtmlPane()
         issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         container.add(issuePane)
+        if (issue.attachments.isNotEmpty()) {
+            container.add(createAttachmentsPanel(issue.attachments))
+        }
         if (issue.comments.isNotEmpty()) {
-            val tabsPane = JBTabbedPane()
-            val commentsPanel = JPanel()
-            commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
-            tabsPane.addTab("Comments", commentsPanel)
-            tabsPane.isFocusable = false
-            issue.comments.forEach { commentsPanel.add(createCommentPanel(it)) }
-            container.add(tabsPane)
+            container.add(createCommentsPanel(issue.comments))
         }
         issuePane.text = generateIssuePreviewHtml(issue)
         scrollToTop.invoke()
@@ -112,6 +110,28 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         panel.add(JLabel("${role.capitalize()}: "))
         links.forEach { panel.add(HyperlinkLabel(it.value, it.url)) }
         return panel
+    }
+
+    private fun createAttachmentsPanel(links: List<Attachment>): JPanel {
+        val panel = JPanel()
+        panel.layout = BoxLayout(panel, BoxLayout.PAGE_AXIS)
+        panel.border = BorderFactory.createEmptyBorder(0, 15, 4, 0)
+        links.forEach {
+            val link = HyperlinkLabel(it.fileName, it.url, AllIcons.FileTypes.Any_type)
+            link.alignmentX = Component.RIGHT_ALIGNMENT
+            panel.add(link)
+        }
+        return panel
+    }
+
+    private fun createCommentsPanel(comments: List<IssueComment>): JComponent{
+        val tabsPane = JBTabbedPane()
+        val commentsPanel = JPanel()
+        commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
+        tabsPane.addTab("Comments", commentsPanel)
+        tabsPane.isFocusable = false
+        comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+        return tabsPane
     }
 
     private fun createCommentPanel(comment: IssueComment): JPanel {

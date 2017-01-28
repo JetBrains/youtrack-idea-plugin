@@ -6,10 +6,11 @@ import java.awt.Color
 import java.awt.Cursor
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.Icon
 import javax.swing.JLabel
 import javax.swing.SwingConstants
 
-class HyperlinkLabel(anchor: String, url: String) : JLabel() {
+class HyperlinkLabel(anchor: String, url: String, icon: Icon? = null) : JLabel() {
 
     private val clickListener = object: MouseAdapter(){
         override fun mouseClicked(e: MouseEvent) {
@@ -18,13 +19,14 @@ class HyperlinkLabel(anchor: String, url: String) : JLabel() {
     }
 
     init {
-        text = "<html><a href='$url'>$anchor</a></html>"
-        horizontalAlignment = SwingConstants.LEFT
-        isOpaque = false
-        toolTipText = url
-        cursor = Cursor(Cursor.HAND_CURSOR)
+        this.icon = icon
+        this.text = "<html><a href='$url'>$anchor</a></html>"
+        this.horizontalAlignment = SwingConstants.LEFT
+        this.isOpaque = false
+        this.toolTipText = url
+        this.cursor = Cursor(Cursor.HAND_CURSOR)
         if (UIUtil.isUnderDarcula()) {
-            foreground = Color(87, 120, 173)
+            this.foreground = Color(87, 120, 173)
         }
         addMouseListener(clickListener)
     }

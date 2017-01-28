@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration Plugin</name>
-  <version>0.6</version>
+  <version>0.7</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
@@ -18,11 +18,8 @@
 
   <change-notes><![CDATA[
         <ul>
-            <li> Issue search bar added </li>
-            <li> Ctrl + Clickable issue ids in VCS commit messages </li>
-            <li> Ctrl + Clickable issue ids in source code comments </li>
-            <li> Keyboard shortcuts installed for all issue tool window actions </li>
-            <li> Active task is now marked with star icon in issue list </li>
+            <li> Command window has been optimized to be faster and non-blocking </li>
+            <li> Issue viewer now displays issue attachments </li>
         </ul>
           ]]></change-notes>
 

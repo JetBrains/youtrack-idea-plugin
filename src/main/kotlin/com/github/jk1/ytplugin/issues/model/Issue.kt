@@ -26,6 +26,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
     val comments: List<IssueComment>
     val links: List<IssueLink>
     val tags: List<IssueTag>
+    val attachments: List<Attachment>
     val url: String
 
     init {
@@ -55,6 +56,10 @@ class Issue(item: JsonElement, val repoUrl: String) {
                 .map { IssueJsonParser.parseTag(it) }
                 .filter { it != null }
                 .requireNoNulls()
+        attachments = (root.getFieldValue("attachments")?.asJsonArray ?: JsonArray())
+                .map { IssueJsonParser.parseAttachment(it) }
+                .filter { it != null }
+                .requireNoNulls()
         url = "$repoUrl/issue/$id"
     }
 
@@ -66,7 +71,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
 
     private fun JsonObject.getFieldValue(name: String): JsonElement? {
         return this.getAsJsonArray("field").firstOrNull {
-            name == it.asJsonObject.get("name").asString
+            name == it.asJsonObject.get("name")?.asString
         }?.asJsonObject?.get("value")
     }
 

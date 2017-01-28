@@ -16,6 +16,8 @@ object IssueJsonParser {
 
     fun parseLink(element: JsonElement, url: String) = parseSafe(element, { IssueLink(element, url) })
 
+    fun parseAttachment(element: JsonElement) = parseSafe(element, { Attachment(element) })
+
     private fun <T> parseSafe(element: JsonElement, parser: () -> T): T? {
         try {
             return parser.invoke()
