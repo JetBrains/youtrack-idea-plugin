@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
+import com.github.jk1.ytplugin.editor.AdminComponent
 import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.editor.event.DocumentAdapter
 import com.intellij.openapi.editor.event.DocumentEvent
@@ -36,15 +37,13 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
 
     init {
         title = "Apply Command"
-        // todo: lazy loading for permitted groups
-        // todo: redesign error handlers for CW
-        try {
-            adminComponent.getActiveTaskVisibilityGroups().forEach { visibilityGroupDropdown.addItem(it) }
-        } catch(e: Exception) {
-            logger.info("Failed to load eligible visibility groups for command window")
-            logger.debug(e)
-            // todo: extract youtrack-specific constants
-            visibilityGroupDropdown.addItem("All Users")
+        // put placeholder value while group list is loaded in background
+        visibilityGroupDropdown.addItem(AdminComponent.ALL_USERS)
+        adminComponent.getActiveTaskVisibilityGroups { groups ->
+            SwingUtilities.invokeLater {
+                visibilityGroupDropdown.removeAllItems()
+                groups.forEach { visibilityGroupDropdown.addItem(it) }
+            }
         }
         init()
     }

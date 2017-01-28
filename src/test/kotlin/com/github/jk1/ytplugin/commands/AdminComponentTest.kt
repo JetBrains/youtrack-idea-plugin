@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -30,12 +31,13 @@ class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
     }
 
     @Test
-    fun getVisibilityGroups(){
-        val groups = adminComponent.getActiveTaskVisibilityGroups()
-
-        assertTrue(groups.contains("All Users"))
-        assertTrue(groups.contains("Registered Users"))
-        assertTrue(groups.contains("Automated Test-team"))
+    fun getVisibilityGroups() {
+        adminComponent.getActiveTaskVisibilityGroups({ groups ->
+            assertEquals(3, groups.size)
+            assertTrue(groups.contains("All Users"))
+            assertTrue(groups.contains("Registered Users"))
+            assertTrue(groups.contains("Automated Test-team"))
+        }).get()
     }
 
     @After

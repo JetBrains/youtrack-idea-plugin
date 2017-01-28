@@ -11,20 +11,44 @@ import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.YouTrackIssueNa
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.createdByYouTrackPlugin
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.setProjects
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.pointsTo
+import com.github.jk1.ytplugin.sendNotification
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.vcs.IssueNavigationLink
+import com.intellij.util.concurrency.FutureResult
+import java.util.concurrent.Future
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class AdminComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
 
+    companion object {
+        val ALL_USERS = "All Users"
+    }
+
     private val restClient = AdminRestClient(project)
     private lateinit var projectListRefreshTask: ScheduledFuture<*>
 
-    fun getActiveTaskVisibilityGroups(): List<String> {
-        val repo = taskManagerComponent.getActiveYouTrackRepository()
-        val taskId = taskManagerComponent.getActiveYouTrackTask().id
-        return restClient.getVisibilityGroups(repo, taskId)
+    fun getActiveTaskVisibilityGroups(callback: (List<String>) -> Unit): Future<Unit> {
+        val future = FutureResult<Unit>()
+        object : Task.Backgroundable(project, "Loading eligible visibility groups") {
+            override fun run(indicator: ProgressIndicator) {
+                try {
+                    indicator.text = title
+                    val repo = taskManagerComponent.getActiveYouTrackRepository()
+                    val taskId = taskManagerComponent.getActiveYouTrackTask().id
+                    callback.invoke(restClient.getVisibilityGroups(repo, taskId))
+                } catch(e: Throwable) {
+                    logger.info("Failed to load eligible visibility groups for issue")
+                    logger.debug(e)
+                } finally {
+                    future.set(Unit)
+                }
+            }
+        }.queue()
+        return future
     }
 
     override fun projectOpened() {

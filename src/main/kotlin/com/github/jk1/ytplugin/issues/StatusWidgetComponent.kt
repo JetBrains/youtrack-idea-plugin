@@ -9,6 +9,10 @@ import com.intellij.openapi.wm.WindowManager
 import java.awt.Component
 import javax.swing.SwingUtilities
 
+/**
+ * Status widget is not used yet, we just have nothing meaningful to display.
+ * todo: plug it in when notification support will be implemented
+ */
 class StatusWidgetComponent(val project: Project) : AbstractProjectComponent(project) {
 
     @Volatile var offline = false

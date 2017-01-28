@@ -42,22 +42,6 @@ interface ResponseLoggerTrait {
         }
     }
 
-    fun logXml(element: Element) {
-        if (logger.isDebugEnabled) {
-            logger.debug("\n${JDOMUtil.createOutputter("\n").outputString(element)}")
-        }
-    }
-
-    fun logXml(xml: InputStream) {
-        if (logger.isDebugEnabled) {
-            try {
-                logger.debug("\n" + JDOMUtil.createOutputter("\n").outputString(JDOMUtil.loadDocument(xml)))
-            } catch (e: Exception) {
-                logger.debug(e)
-            }
-        }
-    }
-
     fun logJson(json: JsonElement) {
         if (logger.isDebugEnabled) {
             try {
