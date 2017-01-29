@@ -5,38 +5,29 @@ import com.github.jk1.ytplugin.issues.model.Attachment
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueComment
 import com.github.jk1.ytplugin.issues.model.IssueLink
-import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
-import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import java.awt.*
-import java.net.MalformedURLException
-import java.net.URI
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-import javax.swing.event.HyperlinkEvent
-import javax.swing.text.html.HTMLEditorKit
 
 class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null
     val rootPane = JPanel(BorderLayout())
-    val issueTemplate = ResourceTemplate("issue.html")
     lateinit var scrollToTop: () -> Unit
 
     init {
         val scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
         scrollPane.verticalScrollBar.unitIncrement = 16
         add(scrollPane, BorderLayout.CENTER)
-        issueTemplate.put("styles", loadResource("style.css") + loadResource("wiki.css"))
         rootPane.isFocusable = true
     }
 
@@ -53,7 +44,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         issue.links.groupBy { it.role }.forEach {
             container.add(createLinkPanel(it.key, it.value))
         }
-        val issuePane = createHtmlPane()
+        val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
         issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         container.add(issuePane)
         if (issue.attachments.isNotEmpty()) {
@@ -62,7 +53,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         if (issue.comments.isNotEmpty()) {
             container.add(createCommentsPanel(issue.comments))
         }
-        issuePane.text = generateIssuePreviewHtml(issue)
+        issuePane.setHtml(issue.description)
         scrollToTop.invoke()
     }
 
@@ -78,7 +69,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         textArea.isFocusable = false
         textArea.background = UIManager.getColor("Label.background")
         textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
-        textArea.font = Font(textArea.font.family, Font.PLAIN, 18)
+        textArea.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, 18)
         panel.add(textArea, BorderLayout.CENTER)
         scrollToTop = { textArea.caretPosition = 0 }
         return panel
@@ -143,9 +134,9 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         header.append(" at ")
         header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
-        val commentPane = createHtmlPane()
+        val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
         commentPane.margin = Insets(2, 4, 0, 0)
-        commentPane.text = comment.text
+        commentPane.setHtml(comment.text)
         commentPanel.add(commentPane, BorderLayout.CENTER)
         val panel = JPanel(BorderLayout())
         panel.add(topPanel, BorderLayout.NORTH)
@@ -153,44 +144,4 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         panel.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
         return panel
     }
-
-    private fun createHtmlPane(): JTextPane {
-        val htmlPane = JTextPane()
-        val editorKit = HTMLEditorKit()
-        val rules = UIUtil.displayPropertiesToCSS(UIUtil.getLabelFont(), UIUtil.getLabelForeground())
-        editorKit.styleSheet.addRule(rules)
-        htmlPane.editorKit = editorKit
-        htmlPane.contentType = "text/html"
-        htmlPane.isEditable = false
-        htmlPane.addHyperlinkListener {
-            if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                BrowserLauncher.getInstance().open(it.absoluteUrl)
-            }
-        }
-        htmlPane.isFocusable = false
-        return htmlPane
-    }
-
-    private val HyperlinkEvent.absoluteUrl: String get() {
-        try {
-            val uri = URI(description)
-            if (uri.isAbsolute) {
-                return description
-            }
-        } catch(e: MalformedURLException) {
-            logger.debug("Unable to parse $description as URI, will try to prefix it with YouTrack server address")
-        }
-        return "${currentIssue?.repoUrl}$description"
-    }
-
-    private fun generateIssuePreviewHtml(issue: Issue): String {
-        try {
-            return issueTemplate.put("description", StringUtil.unescapeXml(issue.description)).render()
-        } catch (e: Exception) {
-            logger.warn("Issue rendering failed", e)
-            return "<html><body>An error occurred during issue rendering. Check IDE log for more details.</body></html>"
-        }
-    }
-
-    private fun loadResource(name: String) = FileUtil.loadTextAndClose(javaClass.getResourceAsStream(name))
 }
