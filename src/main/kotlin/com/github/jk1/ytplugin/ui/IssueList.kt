@@ -90,7 +90,8 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
 
         override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
 
-        override fun getSize() = issueStoreComponent[repo].getAllIssues().size
+        // we still can get this method invoked from swing focus lost handler on project close
+        override fun getSize() = if (project.isDisposed) 0 else issueStoreComponent[repo].getAllIssues().size
 
         fun update() {
             fireContentsChanged(this, 0, size)
