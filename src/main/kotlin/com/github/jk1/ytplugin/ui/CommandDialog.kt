@@ -9,7 +9,6 @@ import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.editor.AdminComponent
-import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.editor.event.DocumentAdapter
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.project.Project
@@ -153,14 +152,14 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
     /**
      * Formats parsed command preview as html and displays it in command window
      */
-    inner class CommandSuggestListener() : CommandComponent by commandComponent {
+    inner class CommandSuggestListener : CommandComponent by commandComponent {
         override fun suggest(command: YouTrackCommand): CommandAssistResponse {
             val response = commandComponent.suggest(command)
             SwingUtilities.invokeLater {
                 val previewList = response.previews.mapIndexed { i, preview ->
                     "${i + 1}. ${preview.html()}"
                 }.joinToString("<br/>")
-                previewLabel.text = "<html>$previewList</html>"
+                previewLabel.text = "<html><body style='width:180px'>$previewList"
             }
             return response
         }
