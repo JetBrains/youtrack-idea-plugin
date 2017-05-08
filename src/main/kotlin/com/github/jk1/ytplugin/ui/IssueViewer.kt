@@ -69,7 +69,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         textArea.isFocusable = false
         textArea.background = UIManager.getColor("Label.background")
         textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
-        textArea.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, 18)
+        textArea.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 6)
         panel.add(textArea, BorderLayout.CENTER)
         scrollToTop = { textArea.caretPosition = 0 }
         return panel

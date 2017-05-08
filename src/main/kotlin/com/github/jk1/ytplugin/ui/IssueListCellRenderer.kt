@@ -33,9 +33,9 @@ class IssueListCellRenderer(
     init {
         idSummary.isOpaque = false
         idSummaryPanel.isOpaque = false
-        idSummary.font = Font(time.font.family, Font.PLAIN, 13)
-        fields.font = Font(time.font.family, Font.PLAIN, 12)
-        time.font = Font(time.font.family, Font.PLAIN, 10)
+        idSummary.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+        fields.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size)
+        time.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size - 2 )
         border = CustomLineBorder(JBColor(Gray._220, Gray._85), 0, 0, 1, 0)
         topPanel.isOpaque = false
         topPanel.add(idSummaryPanel, BorderLayout.WEST)
