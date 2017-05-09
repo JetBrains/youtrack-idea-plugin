@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.issues.model.IssueComment
 import com.github.jk1.ytplugin.issues.model.IssueLink
 import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
@@ -47,12 +48,10 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
         issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         container.add(issuePane)
-        if (issue.attachments.isNotEmpty()) {
-            container.add(createAttachmentsPanel(issue.attachments))
-        }
-        if (issue.comments.isNotEmpty()) {
-            container.add(createCommentsPanel(issue.comments))
-        }
+        val tabs = JBTabbedPane()
+        addCommentsTab(issue.comments, tabs)
+        addAttachmentsTab(issue.attachments, tabs)
+        container.add(tabs)
         issuePane.setHtml(issue.description)
         scrollToTop.invoke()
     }
@@ -103,26 +102,29 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         return panel
     }
 
-    private fun createAttachmentsPanel(links: List<Attachment>): JPanel {
-        val panel = JPanel()
-        panel.layout = BoxLayout(panel, BoxLayout.PAGE_AXIS)
-        panel.border = BorderFactory.createEmptyBorder(0, 15, 4, 0)
-        links.forEach {
-            val link = HyperlinkLabel(it.fileName, it.url, AllIcons.FileTypes.Any_type)
-            link.alignmentX = Component.RIGHT_ALIGNMENT
-            panel.add(link)
+    private fun addAttachmentsTab(files: List<Attachment>, tabs: JBTabbedPane) {
+        if (files.isNotEmpty()) {
+            val panel = JPanel()
+            panel.layout = BoxLayout(panel, BoxLayout.PAGE_AXIS)
+            panel.border = BorderFactory.createEmptyBorder(0, 15, 4, 0)
+            files.forEach {
+                val fileType = FileTypeManager.getInstance().getFileTypeByExtension(it.fileName.split(".").last())
+                val link = HyperlinkLabel(it.fileName, it.url, fileType.icon)
+                link.alignmentX = Component.RIGHT_ALIGNMENT
+                panel.add(link)
+            }
+            tabs.addTab("Attachments (${files.size})", panel)
         }
-        return panel
     }
 
-    private fun createCommentsPanel(comments: List<IssueComment>): JComponent{
-        val tabsPane = JBTabbedPane()
-        val commentsPanel = JPanel()
-        commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
-        tabsPane.addTab("Comments", commentsPanel)
-        tabsPane.isFocusable = false
-        comments.forEach { commentsPanel.add(createCommentPanel(it)) }
-        return tabsPane
+    private fun addCommentsTab(comments: List<IssueComment>, tabs: JBTabbedPane){
+        if (comments.isNotEmpty()) {
+            val commentsPanel = JPanel()
+            commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
+            tabs.addTab("Comments (${comments.size})", commentsPanel)
+            tabs.isFocusable = false
+            comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+        }
     }
 
     private fun createCommentPanel(comment: IssueComment): JPanel {
