@@ -20,6 +20,7 @@
         <ul>
             <li> Command window has been optimized to be faster and non-blocking </li>
             <li> Issue viewer now displays issue attachments </li>
+            <li> A number of small bugs fixed </li>
         </ul>
           ]]></change-notes>
 

@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij' version '0.2.0'
+    id 'org.jetbrains.intellij' version '0.2.9'
     id 'ru.vyarus.animalsniffer' version '1.2.0'
     id "com.zoltu.kotlin" version "1.0.5"
     id 'idea'
@@ -9,13 +9,13 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 group 'com.github.jk1'
-version '0.6'
+version '0.7'
 
 repositories {
     mavenCentral()
 }
 
-def supportedVersions = ['IC-2016.3', 'LATEST-EAP-SNAPSHOT']
+def supportedVersions = ['IC-2016.3', 'IC-2017.1', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     version project.hasProperty('ideaVersion') ? project.ideaVersion : supportedVersions.first()
