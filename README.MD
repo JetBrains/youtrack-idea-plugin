@@ -10,7 +10,7 @@ The latest released version can be found at [JetBrains IDE plugin repository](ht
 
 **Compatible YouTrack versions:** 5.2+
 
-##Installation and Configuration
+## Installation and Configuration
 
 This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Having YouTrack plugin installed from a plugin repository  proceed as follows:
 
@@ -36,7 +36,7 @@ This feature requires local ports to be opened, so you may want to configure you
 
 Plugin displays issue list matching the query set in server settings. When an issue is selected, issue preview appears with wiki markup rendered.
 
-##Plugin logs
+## Plugin logs
 
 If you think there's something wrong going on with the plugin try checking plugin logs.
 To enable debug logging proceed as follows:
@@ -45,7 +45,7 @@ To enable debug logging proceed as follows:
 2. Add com.github.jk1 category to the list
 3. In 'Help' menu select 'Show Log in File Manager' to explore logged data
 
-##Development
+## Development
 
 Plugin requires JDK 8 installed for development.
 To get an Idea project open ```build.gradle``` file with Intellij Idea and follow import instructions.
