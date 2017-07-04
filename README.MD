@@ -12,7 +12,7 @@ The latest released version can be found at [JetBrains IDE plugin repository](ht
 
 ## Installation and Configuration
 
-This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Having YouTrack plugin installed from a plugin repository  proceed as follows:
+This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Gogland IDE is known to have [some issues](https://github.com/jk1/youtrack-idea-plugin/issues/66) with that though. Having YouTrack plugin installed from a plugin repository  proceed as follows:
 
 1. Navigate to Settings dialog -> Tools -> Tasks -> Servers
 2. Configure connection to your YouTrack instance
