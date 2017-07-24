@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
 import com.intellij.ide.browsers.BrowserLauncher
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.util.ui.UIUtil
 import java.net.MalformedURLException
 import java.net.URI
@@ -35,11 +36,11 @@ object WikiHtmlPaneFactory {
         text = "<html><body><div class='wiki text'>$html</div></body></html>"
     }
 
-    class EventListener(val issue: Issue) : HyperlinkListener {
+    class EventListener(private val issue: Issue) : HyperlinkListener {
 
         override fun hyperlinkUpdate(event: HyperlinkEvent) {
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                BrowserLauncher.getInstance().open(event.absoluteUrl)
+                ServiceManager.getService(BrowserLauncher::class.java).open(event.absoluteUrl)
             }
         }
 

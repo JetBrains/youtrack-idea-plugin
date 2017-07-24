@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.ui
 
 import com.intellij.ide.browsers.BrowserLauncher
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.util.ui.UIUtil
 import java.awt.Color
 import java.awt.Cursor
@@ -14,7 +15,7 @@ class HyperlinkLabel(anchor: String, url: String, icon: Icon? = null) : JLabel()
 
     private val clickListener = object: MouseAdapter(){
         override fun mouseClicked(e: MouseEvent) {
-            BrowserLauncher.getInstance().open(url)
+            ServiceManager.getService(BrowserLauncher::class.java).open(url)
         }
     }
 
