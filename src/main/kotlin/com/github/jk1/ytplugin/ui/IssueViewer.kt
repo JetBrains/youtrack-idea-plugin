@@ -46,7 +46,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
             container.add(createLinkPanel(it.key, it.value))
         }
         val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
-        issuePane.border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
+        issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
         container.add(issuePane)
         val tabs = JBTabbedPane()
         addCommentsTab(issue.comments, tabs)
@@ -54,6 +54,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         container.add(tabs)
         issuePane.setHtml(issue.description)
         scrollToTop.invoke()
+        issuePane.repaint()
     }
 
     private fun createHeaderPanel(issue: Issue): JPanel {
