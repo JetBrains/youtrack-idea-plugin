@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.issues
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssuesRestClient
@@ -8,22 +9,18 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.ActionCallback
 
-class IssueStore(val repo: YouTrackServer, @Volatile private var issues: List<Issue> = listOf()) : Iterable<Issue> {
+class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterable<Issue> {
 
-    private val client = IssuesRestClient(repo)
     private var currentCallback: ActionCallback = ActionCallback.Done()
-    private val listeners: MutableSet<() -> Unit> = mutableSetOf()
 
-    fun update(): ActionCallback {
+    fun update(repo: YouTrackServer): ActionCallback {
         if (!isUpdating()) {
             logger.debug("Issue store refresh started for project ${repo.project.name} and YouTrack server ${repo.url}")
             currentCallback = ActionCallback()
-            RefreshIssuesTask(currentCallback).queue()
+            RefreshIssuesTask(currentCallback, repo).queue()
         }
         return currentCallback
     }
-
-    fun isValid() = !repo.project.isDisposed
 
     fun isUpdating() = !currentCallback.isDone
 
@@ -33,18 +30,14 @@ class IssueStore(val repo: YouTrackServer, @Volatile private var issues: List<Is
 
     override fun iterator() = issues.iterator()
 
-    fun addListener(listener: () -> Unit) {
-        listeners.add(listener)
-    }
-
-    inner class RefreshIssuesTask(val future: ActionCallback) :
+    inner class RefreshIssuesTask(private val future: ActionCallback, private val repo: YouTrackServer) :
             Task.Backgroundable(repo.project, "Updating issues from server", true, ALWAYS_BACKGROUND) {
 
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issues for search query: ${repo.defaultSearch}")
                 repo.login()
-                issues = client.getIssues(repo.defaultSearch)
+                issues = IssuesRestClient(repo).getIssues(repo.defaultSearch)
             } catch (e: Exception) {
                 logger.info("YouTrack issues refresh failed: ${e.message}")
                 logger.debug(e)
@@ -61,9 +54,7 @@ class IssueStore(val repo: YouTrackServer, @Volatile private var issues: List<Is
         override fun onSuccess() {
             future.setDone()
             logger.debug("Issue store has been updated for YouTrack server ${repo.url}")
-            if (!project.isDisposed) {
-                listeners.forEach { it.invoke() }
-            }
+            ComponentAware.of(repo.project).issueUpdaterComponent.onAfterUpdate()
         }
     }
 }

@@ -74,7 +74,7 @@ class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout
         searchBar.actionListener = { search ->
             issueList.startLoading()
             repo.defaultSearch = search
-            issueStoreComponent[repo].update()
+            issueStoreComponent[repo].update(repo)
         }
     }
 }

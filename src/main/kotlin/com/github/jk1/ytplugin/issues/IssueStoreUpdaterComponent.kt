@@ -10,22 +10,20 @@ import javax.swing.SwingUtilities
 
 /**
  * Project-scoped issue store maintenance component.
- *
- *  - Manages timed issue store updates for active projects
- *  - Removes stale and obsolete data upon task management configuration changes
+ * Manages timed issue store updates for active projects
  */
 class IssueStoreUpdaterComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
 
     private lateinit var timedRefreshTask: ScheduledFuture<*>
-    private @Volatile var componentDisposed = false
+    private val listeners: MutableSet<() -> Unit> = mutableSetOf()
 
     override fun initComponent() {
         //  todo: customizable update interval
         timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             SwingUtilities.invokeLater {
-                taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
-                    if (!project.isDisposed && !componentDisposed) {
-                        issueStoreComponent[it].update()
+                if (!project.isDisposed) {
+                    taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
+                        issueStoreComponent[it].update(it)
                     }
                 }
             }
@@ -33,7 +31,14 @@ class IssueStoreUpdaterComponent(override val project: Project) : AbstractProjec
     }
 
     override fun disposeComponent() {
-        timedRefreshTask.cancel(false)
-        componentDisposed = true
+        timedRefreshTask.cancel(true)
+    }
+
+    fun addUpdateListener(listener: () -> Unit) {
+        listeners.add(listener)
+    }
+
+    fun onAfterUpdate() {
+        listeners.forEach { it.invoke() }
     }
 }

@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin
 
 import com.github.jk1.ytplugin.editor.AdminComponent
 import com.github.jk1.ytplugin.commands.CommandComponent
+import com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent
 import com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent
 import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
@@ -32,4 +33,7 @@ interface ComponentAware {
 
     val issueStoreComponent: PersistentIssueStoreComponent
         get() = project.getComponent(PersistentIssueStoreComponent::class.java)!!
+
+    val issueUpdaterComponent: IssueStoreUpdaterComponent
+        get() = project.getComponent(IssueStoreUpdaterComponent::class.java)!!
 }

@@ -20,7 +20,7 @@ class RefreshIssuesAction(val repo: YouTrackServer) : IssueAction() {
         val project = event.project
         if (project != null && project.isInitialized) {
             logger.debug("Issue store refresh requested for ${repo.url}")
-            ComponentAware.of(project).issueStoreComponent[repo].update()
+            ComponentAware.of(project).issueStoreComponent[repo].update(repo)
         }
     }
 

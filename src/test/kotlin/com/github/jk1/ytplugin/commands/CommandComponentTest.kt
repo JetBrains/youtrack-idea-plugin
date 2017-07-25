@@ -46,7 +46,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
 
     @Test
     fun testCommandCompletionWithIssueInLocalStore() {
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
         val command = YouTrackCommand(CommandSession(project), "Fixed", 5)
         val assist = commandComponent.suggest(command)
 

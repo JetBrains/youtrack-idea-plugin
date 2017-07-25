@@ -39,7 +39,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @Test
     fun testStoreLoad() {
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
 
         val storedIssues = issueStoreComponent[server].getAllIssues()
         Assert.assertEquals(1, storedIssues.size)
@@ -48,10 +48,10 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @Test
     fun testStoreUpdate() {
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
         Assert.assertEquals(1, issueStoreComponent[server].getAllIssues().size)
         server.defaultSearch = "#Resolved"
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
         Assert.assertEquals(0, issueStoreComponent[server].getAllIssues().size)
     }
 
@@ -61,7 +61,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         withDefaultCharset("windows-1251") {
             val expectedSummary = "Ехал грека через реку"
             createIssue(expectedSummary)
-            issueStoreComponent[server].update().waitFor(5000)
+            issueStoreComponent[server].update(server).waitFor(5000)
 
             assertTrue(issueStoreComponent[server].getAllIssues().any {
                 it.summary == expectedSummary
@@ -73,7 +73,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     fun testMultiProjectQuery() {
         server.defaultSearch = "project: AT, MT"
 
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
 
         val storedIssues = issueStoreComponent[server].getAllIssues()
         assertTrue(storedIssues.isNotEmpty())
@@ -86,7 +86,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         val thirdIssue = createIssue()
         touchIssue(secondIssue)
 
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
 
         with(issueStoreComponent[server]){
             Assert.assertEquals(3, getAllIssues().size)
@@ -103,7 +103,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         val thirdIssue = createIssue()
         touchIssue(secondIssue)
 
-        issueStoreComponent[server].update().waitFor(5000)
+        issueStoreComponent[server].update(server).waitFor(5000)
 
         with(issueStoreComponent[server]){
             Assert.assertEquals(3, getAllIssues().size)

@@ -39,7 +39,7 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
         issueList.model = issueListModel
         startLoading()
         if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-            issueStoreComponent[repo].update().doWhenDone {
+            issueStoreComponent[repo].update(repo).doWhenDone {
                 issueListModel.update()
                 stopLoading()
             }
@@ -47,7 +47,7 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
             stopLoading()
         }
         // listen to IssueStore updates and repaint issue list accordingly
-        issueStoreComponent[repo].addListener {
+        issueUpdaterComponent.addUpdateListener {
             SwingUtilities.invokeLater {
                 val placeholder = issueList.emptyText
                 placeholder.clear()

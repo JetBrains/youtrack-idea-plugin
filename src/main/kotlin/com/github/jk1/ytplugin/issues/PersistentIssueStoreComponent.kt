@@ -21,7 +21,7 @@ class PersistentIssueStoreComponent() : ApplicationComponent.Adapter(),
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()
 
-    override fun getState() = Memento(stores.values)
+    override fun getState() = Memento(stores)
 
     override fun loadState(state: Memento?) {
         loadedMemento = state!!
@@ -44,21 +44,21 @@ class PersistentIssueStoreComponent() : ApplicationComponent.Adapter(),
         var persistentIssues: Map<String, String> = mutableMapOf()
 
         // primary constructor is reserved for serializer
-        constructor(stores: Iterable<IssueStore>) : this() {
-            persistentIssues = stores.associate { Pair(it.repo.id, "[${it.map { it.json }.joinToString(", ")}]") }
+        constructor(stores: Map<String, IssueStore>) : this() {
+            persistentIssues = stores.mapValues { "[${it.value.map { it.json }.joinToString(", ")}]" }
         }
 
         fun getStore(repo: YouTrackServer): IssueStore {
             try {
-                val issuesJson = persistentIssues[repo.id] ?: return IssueStore(repo)
+                val issuesJson = persistentIssues[repo.id] ?: return IssueStore()
                 val issues = JsonParser().parse(issuesJson).asJsonArray
                         .map { IssueJsonParser.parseIssue(it, repo.url) }
                         .filterNotNull()
                 logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
-                return IssueStore(repo, issues)
+                return IssueStore(issues)
             } catch(e: Exception) {
                 logger.warn("Failed to load issue store file cache for ${repo.url}", e)
-                return IssueStore(repo)
+                return IssueStore()
             }
         }
     }
