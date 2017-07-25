@@ -46,7 +46,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
             container.add(createLinkPanel(it.key, it.value))
         }
         val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
-        issuePane.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
+        issuePane.border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
         container.add(issuePane)
         val tabs = JBTabbedPane()
         addCommentsTab(issue.comments, tabs)
@@ -68,7 +68,7 @@ class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
         textArea.isFocusable = false
         textArea.background = UIManager.getColor("Label.background")
         textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
-        textArea.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 6)
+        textArea.font = textArea.font.deriveFont(4.0f + textArea.font.size)
         panel.add(textArea, BorderLayout.CENTER)
         scrollToTop = { textArea.caretPosition = 0 }
         return panel
