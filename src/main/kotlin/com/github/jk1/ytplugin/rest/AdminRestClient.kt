@@ -13,15 +13,16 @@ class AdminRestClient(override val project: Project) : RestClientTrait, Response
         val method = GetMethod(getGroupsUrl)
         return connect(method) {
             val status = createHttpClient(server).executeMethod(method)
+            val defaultGroups = listOf("All Users")
             if (status == 200) {
                 val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
                 val groupElements = root.rootElement.children
-                groupElements.map {
+                defaultGroups + groupElements.map {
                     it.getAttribute("name").value
                 }
             } else if (status == 404) {
                 // YouTrack 5.2 has no rest method to get visibility groups
-                listOf("All Users")
+                defaultGroups
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }

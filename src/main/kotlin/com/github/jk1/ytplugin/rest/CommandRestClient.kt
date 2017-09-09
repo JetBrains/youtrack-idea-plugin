@@ -58,7 +58,12 @@ class CommandRestClient(override val project: Project) : RestClientTrait, Respon
             with(command) {
                 val baseUrl = taskManagerComponent.getActiveYouTrackRepository().url
                 val execUrl = "$baseUrl/rest/issue/execute/${session.task.id}"
-                return "$execUrl?command=${command.urlencoded}&comment=${comment?.urlencoded}&group=${commentVisibleGroup.urlencoded}&disableNotifications=$silent"
+                var params = "command=${command.urlencoded}&comment=${comment?.urlencoded}&disableNotifications=$silent"
+                if (commentVisibleGroup != "All Users") {
+                    // 'All Users' shouldn't be passed as a parameter value. Localized YouTracks can't understand that.
+                    params = "$params&group=${commentVisibleGroup.urlencoded}"
+                }
+                return "$execUrl?$params"
             }
         }
 
