@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+jar {
+    baseName = "youtrack-plugin-api-$version"
+}
+
+dependencies {
+    // any IDE/plugin classpath should contain it already
+    compileOnly 'org.jetbrains:annotations:13.0'
+}

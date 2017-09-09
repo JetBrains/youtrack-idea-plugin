@@ -5,14 +5,16 @@ plugins {
     id 'idea'
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+allprojects {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
 
-group 'com.github.jk1'
-version '0.7.1'
+    group 'com.github.jk1'
+    version '0.7.2'
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+    }
 }
 
 def supportedVersions = ['IC-2016.3', 'IC-2017.1', 'IC-2017.2', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
@@ -27,6 +29,7 @@ intellij {
 }
 
 dependencies {
+    compile project(':api')
     compile 'org.nanohttpd:nanohttpd:2.3.0'
 
     testCompile 'junit:junit:4.12'

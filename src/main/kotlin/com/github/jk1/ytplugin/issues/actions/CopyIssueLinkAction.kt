@@ -7,7 +7,7 @@ import com.intellij.openapi.ide.CopyPasteManager
 import java.awt.datatransfer.StringSelection
 
 
-class CopyIssueLinkAction(val getSelectedIssue: () -> Issue?) : IssueAction() {
+class CopyIssueLinkAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
     override val text = "Copy Issue Link"
     override val description = "Copy issue URL to a clipboard"

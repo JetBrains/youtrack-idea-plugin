@@ -17,7 +17,7 @@ class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout
     override val project: Project = repo.project
 
     private val splitter = EditorSplitter()
-    private val viewer = IssueViewer(project)
+    private val viewer = IssueViewer()
     private val issueList = IssueList(repo)
     private val searchBar = IssueSearchBar(repo)
 
@@ -42,6 +42,7 @@ class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout
         group.add(CopyIssueLinkAction(selectedIssue))
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
+        //group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issueList))
         group.addConfigureTaskServerAction()
         return group.createVerticalToolbarComponent()

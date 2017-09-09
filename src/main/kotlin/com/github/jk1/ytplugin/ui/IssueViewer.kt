@@ -8,7 +8,6 @@ import com.github.jk1.ytplugin.issues.model.IssueLink
 import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileTypes.FileTypeManager
-import com.intellij.openapi.project.Project
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
@@ -19,11 +18,11 @@ import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
-class IssueViewer(val project: Project) : JPanel(BorderLayout()) {
+class IssueViewer : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null
-    val rootPane = JPanel(BorderLayout())
-    lateinit var scrollToTop: () -> Unit
+    private val rootPane = JPanel(BorderLayout())
+    private lateinit var scrollToTop: () -> Unit
 
     init {
         val scrollPane = JBScrollPane(rootPane, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)

@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration Plugin</name>
-  <version>0.7.1</version>
+  <version>0.7.2</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
@@ -14,6 +14,14 @@
             <li>Recognizes YouTrack issue ids in Java code comments and VCS history</li>
         </ul>
         <p>Compatibility: YouTrack 5.2+<p/>
+        <br>
+        <p>If you like this plugin, you can support it:<p/>
+        <ul>
+            <li>Spread it: Tell your friends who are using YouTrack about this plugin</li>
+            <li>Vote for it: Write your review and vote for it at the IntelliJ plugin repository</li>
+            <li>Star it: Star it <a href="https://github.com/jk1/youtrack-idea-plugin">at GitHub</a></li>
+            <li>Improve it: Report bugs or feature requests. Or even fix / implement them by yourself - everything is open source!</li>
+        </ul>
     ]]></description>
 
   <change-notes><![CDATA[
@@ -24,7 +32,7 @@
         </ul>
           ]]></change-notes>
 
-  <!-- Compatible with Idea platform 2016.1 - 2017.3 -->
+  <!-- Compatible with Idea platform 2016.3 - 2017.3 -->
   <idea-version since-build="145" until-build="173.*"/>
   <!-- Enable plugin in all products except MPS -->
   <depends>com.intellij.modules.lang</depends>
@@ -66,6 +74,11 @@
     </component>
     <component>
       <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+    <component>
+      <interface-class>com.github.jk1.ytplugin.YouTrackPluginApi</interface-class>
+      <implementation-class>com.github.jk1.ytplugin.YouTrackPluginApiComponent</implementation-class>
       <skipForDefaultProject/>
     </component>
   </project-components>

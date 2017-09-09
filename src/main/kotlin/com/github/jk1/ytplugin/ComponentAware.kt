@@ -36,4 +36,7 @@ interface ComponentAware {
 
     val issueUpdaterComponent: IssueStoreUpdaterComponent
         get() = project.getComponent(IssueStoreUpdaterComponent::class.java)!!
+
+    val pluginApiComponent: YouTrackPluginApiComponent
+        get() = project.getComponent(YouTrackPluginApi::class.java) as YouTrackPluginApiComponent
 }
