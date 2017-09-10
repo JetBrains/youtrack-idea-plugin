@@ -1,13 +1,15 @@
 
-.java.code.title {
+/* CSS rules have been modified to make swing css parser understand composite selectors: .wiki .quote -> .wiki quote */
+
+.java code title {
   color: gray;
 }
 
-.text.tab {
+.text tab {
   white-space: nowrap;
 }
 
-.wiki.cutDots {
+.wiki cutDots {
   color: #9F9F9F;
 }
 
@@ -17,7 +19,7 @@
   overflow-y: hidden;
 }
 
-.wiki.tooltip {
+.wiki tooltip {
   position: absolute;
   background: #FFFFD0;
   border-color: #000000;
@@ -25,33 +27,33 @@
   padding: 5px;
 }
 
-.wiki.text {
+.wiki text {
   overflow-x: auto;
   overflow-y: hidden;
   white-space: pre-wrap;
 }
 
-.wiki.text h1 {
+h1.wiki text {
   font-size: 160%;
 }
 
-.wiki.text h2 {
+h2.wiki text {
   font-size: 150%;
 }
 
-.wiki.text h3 {
+h3.wiki text  {
   font-size: 140%;
 }
 
-.wiki.text h4 {
+h4.wiki text {
   font-size: 125%;
 }
 
-.wiki.text h5 {
+h5.wiki text {
   font-size: 110%;
 }
 
-.wiki.text h6 {
+h6.wiki text {
   font-size: 100%;
 }
 
@@ -59,27 +61,27 @@
   white-space: normal;
 }
 
-.wiki.quote {
-  border-left: 1px solid blue;
-  padding-left: 1em;
-  margin: 0;
+.wiki quote {
+  border-left: 3px solid #4B6BF4;
+  padding-left: 5px;
+  margin: 5px;
   display: inline-block;
 }
 
-pre.code .keyword {
+pre.code keyword {
   color: #2505a3;
   font-weight: bold;
 }
 
-pre.code .string {
+pre.code string {
   color: green;
 }
 
-pre.code .number {
+pre.code number {
   color: blue;
 }
 
-pre.code .comment {
+pre.code comment {
   font-style: italic;
   color: gray;
 }

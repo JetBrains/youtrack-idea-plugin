@@ -33,7 +33,7 @@ object WikiHtmlPaneFactory {
     }
 
     fun JTextPane.setHtml(html: String){
-        text = "<html><body><div class='wiki text'>$html</div></body></html>"
+        text = "<html><body>$html</body></html>"
     }
 
     class EventListener(private val issue: Issue) : HyperlinkListener {
