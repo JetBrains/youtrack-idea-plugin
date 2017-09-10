@@ -11,7 +11,7 @@ import com.intellij.notification.NotificationType
  * with server connection details and overall IDE context management. Quickfix suggests a user
  * to enable plugin and resolve the problem.
  */
-class TaskManagementDisabledException() :
+class TaskManagementDisabledException :
         YouTrackPluginException(
                 "Task Management plugin is disabled. This plugin is required for YouTrack to work properly") {
 

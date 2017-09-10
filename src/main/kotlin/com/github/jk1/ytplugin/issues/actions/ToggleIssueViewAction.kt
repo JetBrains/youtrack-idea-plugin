@@ -7,15 +7,15 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 
 
-class ToggleIssueViewAction(val project: Project, val issueList: IssueList) : IssueAction() {
+class ToggleIssueViewAction(val project: Project, private val issueList: IssueList) : IssueAction() {
 
     override val text = "Toggle issue list presentation"
     override val description = "Toggle issue list presentation detail level"
     override val icon = AllIcons.Actions.Collapseall!!
     override val shortcut = "control shift T"
 
-    val DATA_KEY = "ytplugin.issueListCompactView"
-    val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+    private val DATA_KEY = "ytplugin.issueListCompactView"
+    private val store: PropertiesComponent = PropertiesComponent.getInstance(project)
 
     init {
         val compactView = store.getBoolean(DATA_KEY)

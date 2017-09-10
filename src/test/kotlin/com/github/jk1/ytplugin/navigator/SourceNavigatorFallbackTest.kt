@@ -11,9 +11,9 @@ import java.net.ServerSocket
 class SourceNavigatorFallbackTest : IdeaProjectTrait {
 
     // heavy fixture delays component init until port layout is set by the test
-    val fixture: IdeaProjectTestFixture by lazy { getHeavyCodeInsightFixture() }
+    private val fixture: IdeaProjectTestFixture by lazy { getHeavyCodeInsightFixture() }
 
-    val firstFreePortFromRange: Int
+    private val firstFreePortFromRange: Int
         get() = (63330..63339).first {
             try {
                 ServerSocket(it).close()

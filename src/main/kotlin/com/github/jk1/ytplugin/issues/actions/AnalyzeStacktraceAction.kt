@@ -15,7 +15,7 @@ import java.awt.datatransfer.StringSelection
  *
  * todo: add configurable option to skip an unscramble dialog and analyze stacktrace right away
  */
-class AnalyzeStacktraceAction(val getSelectedIssue: () -> Issue?) : IssueAction() {
+class AnalyzeStacktraceAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
     override val text = "Analyze Stacktrace"
     override val description = "Open analyze stacktrace dialog for stacktrace from issue description"

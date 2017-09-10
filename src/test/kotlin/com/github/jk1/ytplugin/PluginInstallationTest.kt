@@ -9,7 +9,7 @@ import org.junit.Test
 
 class PluginInstallationTest : IdeaProjectTrait {
 
-    lateinit var fixture: IdeaProjectTestFixture
+    private lateinit var fixture: IdeaProjectTestFixture
 
     @Before
     fun setUp() {

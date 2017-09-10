@@ -47,7 +47,7 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
 
     fun getActiveYouTrackTask(): Task {
         val task = getTaskManager().activeTask
-        if (task.isIssue && task.repository?.isYouTrack() ?: false) {
+        if (task.isIssue && task.repository?.isYouTrack() == true) {
             return getTaskManager().activeTask
         } else {
             throw NoActiveYouTrackTaskException()

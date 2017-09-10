@@ -140,7 +140,7 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
     /**
      * Submits command for async execution and closes command dialog immediately
      */
-    inner class ExecuteCommandAction(name: String, val silent: Boolean = false) : AbstractAction(name) {
+    inner class ExecuteCommandAction(name: String, private val silent: Boolean = false) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             val group = visibilityGroupDropdown.selectedItem.toString()
             val execution = YouTrackCommandExecution(session, commandField.text, silent, commentArea.text, group)
@@ -164,6 +164,6 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
             return response
         }
 
-        fun CommandPreview.html() = if (error) "<span style='color:red'>$description</span>" else description
+        private fun CommandPreview.html() = if (error) "<span style='color:red'>$description</span>" else description
     }
 }

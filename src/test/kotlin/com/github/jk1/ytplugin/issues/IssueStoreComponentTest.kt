@@ -17,10 +17,10 @@ import java.util.*
 
 class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
-    lateinit var fixture: IdeaProjectTestFixture
-    lateinit var server: YouTrackServer
+    private lateinit var fixture: IdeaProjectTestFixture
+    private lateinit var server: YouTrackServer
     override val project: Project by lazy { fixture.project }
-    val issues = ArrayList<String>() //cleanup queue
+    private val issues = ArrayList<String>() //cleanup queue
 
     @Before
     fun setUp() {

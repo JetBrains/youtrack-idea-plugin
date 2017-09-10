@@ -14,7 +14,7 @@ import com.intellij.notification.NotificationType
  *
  * Embedded fix suggestion opens server configuration dialog provided by task management plugin.
  */
-class NoYouTrackRepositoryException() :
+class NoYouTrackRepositoryException :
         YouTrackPluginException("YouTrack server integration is not configured yet") {
 
     override val notification = Notification(

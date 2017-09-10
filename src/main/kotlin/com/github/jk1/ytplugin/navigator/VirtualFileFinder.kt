@@ -43,7 +43,7 @@ object VirtualFileFinder {
         }
     }
 
-    fun matchParents(candidate: VirtualFile, relativeFile: File): Int {
+    private fun matchParents(candidate: VirtualFile, relativeFile: File): Int {
         val fileParent: File? = relativeFile.parentFile
         val candidateParent: VirtualFile? = candidate.parent
         if (fileParent != null && candidateParent != null && candidateParent.name == fileParent.name) {

@@ -18,7 +18,7 @@ import java.util.concurrent.Future
 class CommandComponentImpl(override val project: Project) : AbstractProjectComponent(project), CommandComponent {
 
     val restClient = CommandRestClient(project)
-    val assistCache = CommandSuggestResponseCache(project)
+    private val assistCache = CommandSuggestResponseCache(project)
 
     override fun executeAsync(execution: YouTrackCommandExecution): Future<Unit> {
         val future = FutureResult<Unit>()

@@ -51,7 +51,7 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
         // todo: customizable "max" limit
         val params = "filter=${query.urlencoded}&wikifyDescription=true&max=30"
         val method = GetMethod("$url?$params")
-        return method.execute { it.asJsonArray.map { IssueJsonParser.parseIssue(it, repo.url) }.filterNotNull() }
+        return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repo.url) } }
     }
 
     private fun <T> HttpMethod.execute(responseParser: (json: JsonElement) -> T): T {

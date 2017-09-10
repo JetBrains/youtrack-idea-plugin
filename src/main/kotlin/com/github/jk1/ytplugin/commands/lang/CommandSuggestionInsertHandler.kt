@@ -45,7 +45,7 @@ object CommandSuggestionInsertHandler: InsertHandler<LookupElement> {
         editor.caretModel.moveToOffset(context.tailOffset)
     }
 
-    fun hasPrefixAt(text: String, offset: Int, prefix: String): Boolean {
+    private fun hasPrefixAt(text: String, offset: Int, prefix: String): Boolean {
         if (text.isEmpty() || offset < 0 || offset >= text.length) {
             return false
         }

@@ -14,9 +14,9 @@ import org.junit.Test
 
 class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
 
-    lateinit var fixture: IdeaProjectTestFixture
-    lateinit var server: YouTrackServer
-    lateinit var issue: String
+    private lateinit var fixture: IdeaProjectTestFixture
+    private lateinit var server: YouTrackServer
+    private lateinit var issue: String
     override val project: Project by lazy { fixture.project }
 
     @Before

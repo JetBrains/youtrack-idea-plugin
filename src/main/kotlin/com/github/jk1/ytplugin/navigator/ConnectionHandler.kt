@@ -7,10 +7,10 @@ import fi.iki.elonen.NanoHTTPD
 
 class ConnectionHandler(override val project: Project, port: Int) : NanoHTTPD("127.0.0.1", port), ComponentAware {
 
-    val resources = listOf(OpenFileResource(project))
+    private val resources = listOf(OpenFileResource(project))
 
     override fun serve(session: IHTTPSession): Response {
-        val handler = resources.filter { it.canHandle(session) }.firstOrNull()
+        val handler = resources.firstOrNull { it.canHandle(session) }
         return handler?.handle(session) ?: customResponse(Response.Status.NOT_IMPLEMENTED)
     }
 

@@ -23,8 +23,8 @@ import java.util.concurrent.TimeoutException
  */
 class CommandCompletionContributor : CompletionContributor() {
 
-    val LOG = Logger.getInstance(CommandCompletionContributor::class.java)
-    val TIMEOUT = 2000L // ms
+    private val LOG = Logger.getInstance(CommandCompletionContributor::class.java)
+    private val TIMEOUT = 2000L // ms
 
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (LOG.isDebugEnabled) {
@@ -53,7 +53,7 @@ class CommandCompletionContributor : CompletionContributor() {
     }
 
 
-    fun createLookupElements(suggestions: List<CommandSuggestion>): Iterable<LookupElement> {
+    private fun createLookupElements(suggestions: List<CommandSuggestion>): Iterable<LookupElement> {
         /**
          * |Bug             Type|     |Bug                  Type|
          * |Feature         Type|     |Feature              Type|
@@ -79,7 +79,7 @@ class CommandCompletionContributor : CompletionContributor() {
     /**
      * Find first word left boundary before cursor and strip leading braces and '#' signs
      */
-    fun extractPrefix(parameters: CompletionParameters): String {
+    private fun extractPrefix(parameters: CompletionParameters): String {
         val text = parameters.originalFile.text
         val caretOffset = parameters.offset
         if (text.isEmpty() || caretOffset == 0) {

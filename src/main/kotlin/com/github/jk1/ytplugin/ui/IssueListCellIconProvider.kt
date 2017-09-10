@@ -17,7 +17,7 @@ import javax.swing.SwingConstants
 class IssueListCellIconProvider(override val project: Project) : ComponentAware {
 
     // reference size to align all compact view icons with
-    val compactLabelDimension: Dimension
+    private val compactLabelDimension: Dimension
 
     init {
         val label = JLabel(" Z ")
@@ -27,7 +27,7 @@ class IssueListCellIconProvider(override val project: Project) : ComponentAware 
 
     fun createIcon(issue: Issue, compact: Boolean) = if (compact) createCompactIcon(issue) else createIcon(issue)
 
-    fun createIcon(issue: Issue): JComponent {
+    private fun createIcon(issue: Issue): JComponent {
         if (isActive(issue)) {
             val label = JLabel(AllIcons.Toolwindows.ToolWindowFavorites, SwingConstants.CENTER)
             label.border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
@@ -39,7 +39,7 @@ class IssueListCellIconProvider(override val project: Project) : ComponentAware 
         }
     }
 
-    fun createCompactIcon(issue: Issue): JComponent {
+    private fun createCompactIcon(issue: Issue): JComponent {
         val coloredField = getColoredField(issue)
         if (coloredField == null) {
             return createIcon(issue)

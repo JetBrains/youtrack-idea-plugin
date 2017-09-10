@@ -15,7 +15,10 @@ import com.intellij.ui.LanguageTextField
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
-import javax.swing.*
+import javax.swing.AbstractAction
+import javax.swing.BorderFactory
+import javax.swing.JPanel
+import javax.swing.KeyStroke
 
 class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
 
@@ -52,7 +55,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         }
     }
 
-    inner class SearchIssueAnAction() : AnAction(AllIcons.Actions.Find), DumbAware {
+    inner class SearchIssueAnAction : AnAction(AllIcons.Actions.Find), DumbAware {
         override fun actionPerformed(e: AnActionEvent?) {
             actionListener.invoke(searchField.text)
         }

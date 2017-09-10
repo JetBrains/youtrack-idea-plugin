@@ -6,9 +6,9 @@ import com.intellij.openapi.util.TextRange
 
 class CommandSuggestion(item: JsonElement) {
 
-    val matchRange: TextRange
-    val completionRange: TextRange
-    val caretPosition: Int
+    private val matchRange: TextRange
+    private val completionRange: TextRange
+    private val caretPosition: Int
     val description: String
     val suffix: String
     val prefix: String
@@ -32,7 +32,7 @@ class CommandSuggestion(item: JsonElement) {
         separator = item.asJsonObject.get("sep").asBoolean
     }
 
-    fun JsonElement.asStringNullSafe(default: String = ""): String = when (this) {
+    private fun JsonElement.asStringNullSafe(default: String = ""): String = when (this) {
         is JsonNull -> default
         else -> this.asString
     }

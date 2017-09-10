@@ -15,7 +15,7 @@ import org.junit.Test
 
 class NavigationLinksTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
 
-    lateinit var fixture: IdeaProjectTestFixture
+    private lateinit var fixture: IdeaProjectTestFixture
     override val project: Project by lazy { fixture.project }
 
     @Before

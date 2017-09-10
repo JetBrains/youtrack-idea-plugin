@@ -19,7 +19,7 @@ class CommandParserDefinition : ParserDefinition {
 
     val ANY_TEXT = IElementType("ANY_TEXT", CommandLanguage)
     val QUERY = IElementType("QUERY", CommandLanguage)
-    val FILE = IFileElementType(CommandLanguage)
+    private val FILE = IFileElementType(CommandLanguage)
 
     override fun getFileNodeType(): IFileElementType = FILE
 
@@ -48,9 +48,9 @@ class CommandParserDefinition : ParserDefinition {
      * Tokenize whole command as single {@code ANY_TEXT} token
      */
     inner class CommandLexer : LexerBase() {
-        var start: Int = 0
-        var end: Int = 0
-        lateinit var buffer: CharSequence
+        private var start: Int = 0
+        private var end: Int = 0
+        private lateinit var buffer: CharSequence
 
         override fun start(buffer: CharSequence , startOffset: Int, endOffset: Int, initialState: Int) {
             //LOG.debug(String.format("buffer: '%s', start: %d, end: %d", buffer, startOffset, endOffset))

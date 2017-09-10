@@ -13,7 +13,7 @@ import org.jdom.input.SAXBuilder
 
 class CommandRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
 
-    val client: HttpClient get() = createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
+    private val client: HttpClient get() = createHttpClient(taskManagerComponent.getActiveYouTrackRepository())
 
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)

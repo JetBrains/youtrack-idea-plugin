@@ -9,7 +9,7 @@ class CustomField(item: JsonElement) {
 
     val name: String
     val value: List<String>
-    val valueId: List<String>
+    private val valueId: List<String>
     var foregroundColor: Color? = null
     var backgroundColor: Color? = null
 
@@ -52,9 +52,9 @@ class CustomField(item: JsonElement) {
         else -> Color.decode(asString)
     }
 
-    fun formatValues() = " ${value.map { formatValue(it) }.joinToString()} "
+    fun formatValues() = " ${value.joinToString { formatValue(it) }} "
 
-    fun formatValue(value: String): String {
+    private fun formatValue(value: String): String {
         if (value.matches(Regex("^[1-9][0-9]{12}"))) { // looks like a timestamp
             return SimpleDateFormat().format(Date(value.toLong()))
         } else {

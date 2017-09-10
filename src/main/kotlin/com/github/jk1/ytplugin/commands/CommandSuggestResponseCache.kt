@@ -44,7 +44,7 @@ class CommandSuggestResponseCache(override val project: Project): ComponentAware
 
     inner class SuggestResponseCache : LinkedHashMap<CommandCacheKey, CommandAssistResponse>(10, true) {
 
-        val CACHE_ENTRY_TTL = TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES)
+        private val CACHE_ENTRY_TTL = TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES)
 
         override fun removeEldestEntry(
                 eldest: MutableMap.MutableEntry<CommandCacheKey, CommandAssistResponse>,

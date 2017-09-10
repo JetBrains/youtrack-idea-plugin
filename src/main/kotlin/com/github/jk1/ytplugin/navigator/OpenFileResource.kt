@@ -69,7 +69,7 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
         val line: Int? = requestParams["line"]?.toIntSilent()
         val offset: Int? = requestParams["offset"]?.toIntSilent()
 
-        fun String.toIntSilent(): Int? {
+        private fun String.toIntSilent(): Int? {
             try {
                 return this.toInt()
             } catch(e: NumberFormatException) {

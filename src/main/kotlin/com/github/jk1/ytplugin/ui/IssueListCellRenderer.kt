@@ -13,8 +13,8 @@ import java.awt.*
 import javax.swing.*
 
 class IssueListCellRenderer(
-        val viewportWidthProvider: () -> Int,
-        val iconProvider: IssueListCellIconProvider) : JPanel(BorderLayout()), ListCellRenderer<Issue> {
+        private val viewportWidthProvider: () -> Int,
+        private val iconProvider: IssueListCellIconProvider) : JPanel(BorderLayout()), ListCellRenderer<Issue> {
 
     private val topPanel = JPanel(BorderLayout())
     private val bottomPanel = JPanel(BorderLayout())

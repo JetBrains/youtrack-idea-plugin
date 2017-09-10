@@ -8,7 +8,7 @@ class IssueTag(item: JsonElement) {
     val text: String
     val foregroundColor: Color
     val backgroundColor: Color
-    val borderColor: Color
+    private val borderColor: Color
 
     init {
         val tagColor = IssueTag.Companion.cssClassToColor[item.asJsonObject.get("cssClass").asString]!!

@@ -16,10 +16,10 @@ import org.junit.Test
 
 class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait {
 
-    lateinit var fixture: IdeaProjectTestFixture
-    lateinit var server: YouTrackServer
-    lateinit var localTask: Task
-    lateinit var session: CommandSession
+    private lateinit var fixture: IdeaProjectTestFixture
+    private lateinit var server: YouTrackServer
+    private lateinit var localTask: Task
+    private lateinit var session: CommandSession
 
     override val project: Project by lazy { fixture.project }
 

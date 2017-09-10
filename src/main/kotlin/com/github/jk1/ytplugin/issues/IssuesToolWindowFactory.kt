@@ -1,12 +1,10 @@
 package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.runAction
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
-import com.github.jk1.ytplugin.ui.IssueViewer
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbAware

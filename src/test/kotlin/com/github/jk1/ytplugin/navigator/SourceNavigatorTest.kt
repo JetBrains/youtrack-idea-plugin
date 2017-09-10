@@ -16,9 +16,9 @@ import javax.imageio.ImageIO
 
 class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait {
 
-    lateinit var fixture: JavaCodeInsightTestFixture
+    private lateinit var fixture: JavaCodeInsightTestFixture
     override val project: Project by lazy { fixture.project }
-    val serverUrl: String by lazy { "http://127.0.0.1:${sourceNavigatorComponent.getActivePort()}" }
+    private val serverUrl: String by lazy { "http://127.0.0.1:${sourceNavigatorComponent.getActivePort()}" }
 
     @Before
     fun setUp() {

@@ -14,7 +14,7 @@ import com.intellij.notification.NotificationType
 class NoActiveYouTrackTaskException : YouTrackPluginException("No YouTrack issue selected as an active task") {
 
     // defined in task management plugin we depend on
-    val GOTO_TASK_ACTION_ID = "tasks.goto"
+    private val GOTO_TASK_ACTION_ID = "tasks.goto"
 
     override val notification = Notification(
             "YouTrack Integration Plugin",

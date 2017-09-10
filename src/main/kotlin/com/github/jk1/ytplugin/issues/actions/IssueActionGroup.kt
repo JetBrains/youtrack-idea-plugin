@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.*
 import javax.swing.JComponent
 
 
-class IssueActionGroup(val parent: JComponent) : DefaultActionGroup() {
+class IssueActionGroup(private val parent: JComponent) : DefaultActionGroup() {
 
     override fun isDumbAware() = true
 

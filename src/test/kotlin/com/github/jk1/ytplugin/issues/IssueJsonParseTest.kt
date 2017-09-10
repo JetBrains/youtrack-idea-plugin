@@ -11,7 +11,7 @@ import java.io.InputStreamReader
 
 class IssueJsonParseTest {
 
-    val serverUrl = "http://youtrack.com"
+    private val serverUrl = "http://youtrack.com"
 
     @Test
     fun testParseYouTrack52Issue() {
