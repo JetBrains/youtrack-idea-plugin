@@ -45,6 +45,14 @@ To enable debug logging proceed as follows:
 2. Add com.github.jk1 category to the list
 3. In 'Help' menu select 'Show Log in File Manager' to explore logged data
 
+## Plugin API
+
+One can use [YouTrack plugin API](https://github.com/jk1/youtrack-idea-plugin/blob/master/api/src/main/java/com/github/jk1/ytplugin/YouTrackPluginApi.java) in other plugins as follows:
+
+```project.getComponent(YouTrackPluginApi.class)```
+
+Separate plugin api jar file is included in the plugin to be used as a compile time dependency.
+
 ## Development
 
 Plugin requires JDK 8 installed for development.
