@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration Plugin</name>
-  <version>0.7.2</version>
+  <version>0.8</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
@@ -26,9 +26,8 @@
 
   <change-notes><![CDATA[
         <ul>
-            <li> Command window has been optimized to be faster and non-blocking </li>
-            <li> Issue viewer now displays issue attachments </li>
-            <li> A number of small bugs fixed </li>
+            <li> Pin action added to open issues in a separate tool window tab </li>
+            <li> Plugin API exposed to allow cross plugin integration features </li>
         </ul>
           ]]></change-notes>
 

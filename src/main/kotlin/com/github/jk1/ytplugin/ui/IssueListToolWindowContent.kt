@@ -42,7 +42,7 @@ class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout
         group.add(CopyIssueLinkAction(selectedIssue))
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
-        //group.add(PinIssueAction(selectedIssue))
+        group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issueList))
         group.addConfigureTaskServerAction()
         return group.createVerticalToolbarComponent()
