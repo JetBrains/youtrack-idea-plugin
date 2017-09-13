@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * YouTrack integration plugin API to be used by other plugins
  */
-interface YouTrackPluginApi {
+public interface YouTrackPluginApi {
 
     /**
      * Open issue preview in YouTrack tool window.
