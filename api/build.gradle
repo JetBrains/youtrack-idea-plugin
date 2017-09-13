@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 jar {
-    baseName = "youtrack-plugin-api-$version"
+    baseName = "youtrack-plugin-api"
 }
 
 dependencies {
