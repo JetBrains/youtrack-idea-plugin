@@ -17,7 +17,7 @@ import com.intellij.openapi.project.Project
  * Dumb aware actions can be executed when IDE is rebuilding indexes.
  */
 class OpenCommandWindowAction : AnAction(
-        "Execute YouTrack command",
+        "Open Command Dialog",
         "Apply YouTrack command to a current active task",
         AllIcons.Debugger.CommandLine), DumbAware {
 
