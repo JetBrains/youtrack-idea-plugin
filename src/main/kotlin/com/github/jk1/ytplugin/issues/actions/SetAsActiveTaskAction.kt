@@ -12,7 +12,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
  */
 class SetAsActiveTaskAction(private val getSelectedIssue: () -> Issue?, val repo: YouTrackServer) : IssueAction() {
 
-    override val text = "Set as active task"
+    override val text = "Open Task"
     override val description = "Create task manager task from a selected issue and switch to it"
     override val icon = AllIcons.Graph.Export!!
     override val shortcut = "control shift A"

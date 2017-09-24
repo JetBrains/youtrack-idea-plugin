@@ -5,13 +5,14 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import javax.swing.Icon
 
 
 class ToggleIssueViewAction(val project: Project, private val issueList: IssueList) : IssueAction() {
 
-    override val text = "Toggle issue list presentation"
+    override val text = "Toggle Presentation"
     override val description = "Toggle issue list presentation detail level"
-    override val icon = AllIcons.Actions.Collapseall!!
+    override val icon: Icon = AllIcons.Actions.Collapseall
     override val shortcut = "control shift T"
 
     private val DATA_KEY = "ytplugin.issueListCompactView"

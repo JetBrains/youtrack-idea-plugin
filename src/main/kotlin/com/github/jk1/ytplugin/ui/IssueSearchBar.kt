@@ -26,7 +26,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
     private val searchField = LanguageTextField(YouTrackLanguage.INSTANCE, project, server.defaultSearch)
     private val actionGroup = IssueActionGroup(searchField)
 
-    var actionListener = { search: String -> }
+    var actionListener = { _: String -> }
 
     init {
         searchField.border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
@@ -55,7 +55,14 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         }
     }
 
-    inner class SearchIssueAnAction : AnAction(AllIcons.Actions.Find), DumbAware {
+    inner class SearchIssueAnAction : AnAction(), DumbAware {
+
+        init {
+            templatePresentation.description = "Filter issues with YouTrack search query syntax"
+            templatePresentation.text = "Search"
+            templatePresentation.icon = AllIcons.Actions.Find
+        }
+
         override fun actionPerformed(e: AnActionEvent?) {
             actionListener.invoke(searchField.text)
         }
