@@ -79,7 +79,9 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
 
     private fun syncTaskManagerConfig() {
         synchronized(this) {
-            val newHash = getTaskManager().allRepositories.fold(0L, { sum, it -> sum + it.hashCode() })
+            val newHash = getTaskManager().allRepositories
+                    .filter { it.isYouTrack() }
+                    .fold(0L, { sum, it -> sum + it.hashCode() })
             if (configurationHash != newHash) {
                 configurationHash = newHash
                 listeners.forEach { it.invoke() }
