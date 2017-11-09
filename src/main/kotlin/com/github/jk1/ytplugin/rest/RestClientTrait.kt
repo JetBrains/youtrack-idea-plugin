@@ -6,6 +6,8 @@ import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
+import org.apache.http.params.CoreProtocolPNames
+import sun.net.www.protocol.http.HttpURLConnection.userAgent
 import java.net.URLEncoder
 
 
@@ -21,6 +23,7 @@ interface RestClientTrait : ComponentAware {
 
     fun <R> connect(closeable: HttpMethod, block: (HttpMethod) -> R): R {
         try {
+            closeable.addRequestHeader("User-Agent", "YouTrack IDE Plugin")
             return block(closeable)
         } finally {
             closeable.releaseConnection()

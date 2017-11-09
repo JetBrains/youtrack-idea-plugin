@@ -14,17 +14,17 @@ class AdminRestClient(override val project: Project) : RestClientTrait, Response
         return connect(method) {
             val status = createHttpClient(server).executeMethod(method)
             val defaultGroups = listOf("All Users")
-            if (status == 200) {
-                val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
-                val groupElements = root.rootElement.children
-                defaultGroups + groupElements.map {
-                    it.getAttribute("name").value
+            when (status) {
+                200 -> {
+                    val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
+                    val groupElements = root.rootElement.children
+                    defaultGroups + groupElements.map {
+                        it.getAttribute("name").value
+                    }
                 }
-            } else if (status == 404) {
-                // YouTrack 5.2 has no rest method to get visibility groups
-                defaultGroups
-            } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
+                404 -> // YouTrack 5.2 has no rest method to get visibility groups
+                    defaultGroups
+                else -> throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
     }
