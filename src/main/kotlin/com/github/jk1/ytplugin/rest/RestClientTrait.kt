@@ -6,8 +6,6 @@ import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
-import org.apache.http.params.CoreProtocolPNames
-import sun.net.www.protocol.http.HttpURLConnection.userAgent
 import java.net.URLEncoder
 
 

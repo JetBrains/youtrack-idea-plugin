@@ -24,17 +24,18 @@ import java.awt.event.WindowEvent
 import javax.swing.*
 
 
-class CommandDialog(override val project: Project, val session: CommandSession) : DialogWrapper(project, false), ComponentAware {
+open class CommandDialog(override val project: Project, val session: CommandSession) : DialogWrapper(project, false), ComponentAware {
 
-    private val commandField = createCommandField()
-    private val commentArea = JTextArea(6, 60)
-    private val visibilityGroupDropdown = JComboBox<String>()
-    private val previewLabel = JLabel()
+    protected val commandField = createCommandField()
+    protected val commentArea = JTextArea(6, 60)
+    protected val visibilityGroupDropdown = JComboBox<String>()
+    protected val previewLabel = JLabel()
+    protected open val focusRoot: JComponent = commandField
 
     private val applyAction = ExecuteCommandAction("Apply")
     private val silentApplyAction = ExecuteCommandAction("Silent Apply", true)
 
-    init {
+    override fun init() {
         title = "Apply Command"
         // put placeholder value while group list is loaded in background
         visibilityGroupDropdown.addItem(AdminComponent.ALL_USERS)
@@ -44,7 +45,17 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
                 groups.forEach { visibilityGroupDropdown.addItem(it) }
             }
         }
+        super.init()
+        peer.window.addWindowFocusListener(object : WindowAdapter() {
+            override fun windowGainedFocus(e: WindowEvent) {
+                focusRoot.requestFocusInWindow()
+            }
+        })
+    }
+
+    override fun show() {
         init()
+        super.show()
     }
 
     override fun createActions(): Array<out Action> = arrayOf(applyAction, silentApplyAction, cancelAction)
@@ -69,17 +80,14 @@ class CommandDialog(override val project: Project, val session: CommandSession) 
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
         file?.putUserData(CommandComponent.COMPONENT_KEY, CommandSuggestListener())
         file?.putUserData(CommandComponent.SESSION_KEY, session)
-        peer.window.addWindowFocusListener(object : WindowAdapter() {
-            override fun windowGainedFocus(e: WindowEvent) {
-                commandField.requestFocusInWindow()
-            }
-        })
         // todo: find a better way to attach onEnter handler to LanguageTextField
         commandField.addDocumentListener(object : DocumentAdapter() {
             override fun documentChanged(event: DocumentEvent) {
-                val component = commandField.editor!!.contentComponent
-                component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
-                component.actionMap.put("apply", applyAction)
+                val component = commandField.editor?.contentComponent
+                if (component != null) {
+                    component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
+                    component.actionMap.put("apply", applyAction)
+                }
             }
         })
         return commandField

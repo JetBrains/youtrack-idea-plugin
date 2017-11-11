@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ide.CopyPasteManager
 import org.apache.commons.lang.StringEscapeUtils
 import java.awt.datatransfer.StringSelection
+import javax.swing.Icon
 
 /**
  * Checks, if issue description contains an exception and enables analyze stack trace
@@ -19,7 +20,7 @@ class AnalyzeStacktraceAction(private val getSelectedIssue: () -> Issue?) : Issu
 
     override val text = "Analyze Stacktrace"
     override val description = "Open analyze stacktrace dialog for stacktrace from issue description"
-    override val icon = AllIcons.Debugger.ThreadStates.Exception!!
+    override val icon: Icon = AllIcons.Debugger.ThreadStates.Exception
     override val shortcut = "control shift S"
 
     override fun actionPerformed(event: AnActionEvent) {
