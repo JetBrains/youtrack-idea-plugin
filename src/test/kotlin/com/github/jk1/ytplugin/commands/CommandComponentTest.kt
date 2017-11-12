@@ -1,24 +1,25 @@
 package com.github.jk1.ytplugin.commands
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.Task
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait {
+class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var server: YouTrackServer
-    private lateinit var localTask: Task
+    private lateinit var issue: Issue
     private lateinit var session: CommandSession
 
     override val project: Project by lazy { fixture.project }
@@ -29,9 +30,10 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
         fixture.setUp()
         server = createYouTrackRepository()
         server.defaultSearch = "project: AT"
-        localTask = server.findTask(createIssue("summary"))!!
-        readAction { getTaskManagerComponent().activateTask(localTask, true) }
-        session = CommandSession(project)
+        createIssue()
+        issueStoreComponent[server].update(server).waitFor(5000)
+        issue = issueStoreComponent[server].getAllIssues().first()
+        session = CommandSession(issue)
     }
 
     @Test
@@ -47,7 +49,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
     @Test
     fun testCommandCompletionWithIssueInLocalStore() {
         issueStoreComponent[server].update(server).waitFor(5000)
-        val command = YouTrackCommand(CommandSession(project), "Fixed", 5)
+        val command = YouTrackCommand(CommandSession(issue), "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
         Assert.assertTrue(command.session.hasEntityId())
@@ -63,12 +65,12 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait 
         val future = commandComponent.executeAsync(execution)
         future.get() // wait for the command to complete
 
-        Assert.assertTrue(server.getTasks(localTask.id, 0, 1).first().isClosed)
+        Assert.assertTrue(server.getTasks(issue.id, 0, 1).first().isClosed)
     }
 
     @After
     fun tearDown() {
-        deleteIssue(localTask.id)
+        deleteIssue(issue.id)
         cleanUpTaskManager()
         fixture.tearDown()
     }

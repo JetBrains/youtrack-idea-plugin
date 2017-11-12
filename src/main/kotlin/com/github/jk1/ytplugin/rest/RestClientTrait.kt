@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
@@ -9,7 +8,7 @@ import org.apache.commons.httpclient.auth.AuthScope
 import java.net.URLEncoder
 
 
-interface RestClientTrait : ComponentAware {
+interface RestClientTrait {
 
     fun createHttpClient(repository: YouTrackServer): HttpClient {
         val client = repository.getRestClient()

@@ -39,7 +39,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
         title = "Apply Command"
         // put placeholder value while group list is loaded in background
         visibilityGroupDropdown.addItem(AdminComponent.ALL_USERS)
-        adminComponent.getActiveTaskVisibilityGroups { groups ->
+        adminComponent.getActiveTaskVisibilityGroups(session.issue) { groups ->
             SwingUtilities.invokeLater {
                 visibilityGroupDropdown.removeAllItems()
                 groups.forEach { visibilityGroupDropdown.addItem(it) }
@@ -104,7 +104,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
 
     private fun createCommandStringPanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        with(taskManagerComponent.getActiveYouTrackTask()) {
+        with(session.issue) {
             val adaptedSummary = if (summary.length > 40) "${summary.substring(0, 40)}..." else summary
             val label = JLabel("Command for: $id $adaptedSummary")
             label.border = BorderFactory.createEmptyBorder(0, 0, 2, 0)

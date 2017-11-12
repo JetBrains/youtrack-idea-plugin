@@ -2,7 +2,11 @@ package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackPluginException
+import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.sendNotification
+import com.github.jk1.ytplugin.tasks.IssueTask
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.ui.CommandDialog
 import com.intellij.icons.AllIcons
@@ -26,8 +30,9 @@ class OpenCommandWindowAction : AnAction(
         if (project != null && project.isInitialized) {
             try {
                 assertYouTrackRepositoryConfigured(project)
-                CommandDialog(project, CommandSession(project)).show()
-            } catch(exception: YouTrackPluginException) {
+                val issue = getIssueFromCurrentActiveTask(project)
+                CommandDialog(project, CommandSession(issue)).show()
+            } catch (exception: YouTrackPluginException) {
                 exception.showAsNotificationBalloon(project)
             }
         } else {
@@ -37,6 +42,10 @@ class OpenCommandWindowAction : AnAction(
         }
     }
 
+    override fun update(event: AnActionEvent) {
+        event.presentation.isEnabledAndVisible = event.project != null
+    }
+
     private fun assertYouTrackRepositoryConfigured(project: Project) {
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         if (repos.isEmpty()) {
@@ -44,7 +53,18 @@ class OpenCommandWindowAction : AnAction(
         }
     }
 
-    override fun update(event: AnActionEvent) {
-        event.presentation.isEnabledAndVisible = event.project != null
+    private fun getIssueFromCurrentActiveTask(project: Project): Issue {
+        return ComponentAware.of(project) {
+            val task = taskManagerComponent.getActiveYouTrackTask()
+            if (task is IssueTask) {
+                task.issue
+            } else {
+                // try local store first, fall back to rest api if not found
+                val repo = taskManagerComponent.getActiveYouTrackRepository()
+                issueStoreComponent[repo].firstOrNull { it.id == task.id }
+                        ?: IssuesRestClient(repo).getIssue(task.id)
+                        ?: throw NoActiveYouTrackTaskException()
+            }
+        }
     }
 }

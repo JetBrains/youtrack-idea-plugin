@@ -1,8 +1,10 @@
 package com.github.jk1.ytplugin.commands
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -12,11 +14,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
+class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var server: YouTrackServer
-    private lateinit var issue: String
+    private lateinit var issue: Issue
     override val project: Project by lazy { fixture.project }
 
     @Before
@@ -25,14 +27,14 @@ class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
         fixture.setUp()
         server = createYouTrackRepository()
         server.defaultSearch = "project: AT"
-        issue = createIssue()
-        val localTask = server.findTask(issue)!!
-        readAction { getTaskManagerComponent().activateTask(localTask, true) }
+        createIssue()
+        issueStoreComponent[server].update(server).waitFor(5000)
+        issue = issueStoreComponent[server].getAllIssues().first()
     }
 
     @Test
     fun getVisibilityGroups() {
-        adminComponent.getActiveTaskVisibilityGroups({ groups ->
+        adminComponent.getActiveTaskVisibilityGroups(issue, { groups ->
             assertEquals(3, groups.size)
             assertTrue(groups.contains("All Users"))
             assertTrue(groups.contains("Registered Users"))
@@ -42,7 +44,7 @@ class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
 
     @After
     fun tearDown() {
-        deleteIssue(issue)
+        deleteIssue(issue.id)
         cleanUpTaskManager()
         fixture.tearDown()
     }

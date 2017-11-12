@@ -1,35 +1,17 @@
 package com.github.jk1.ytplugin.commands
 
-import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.rest.IssuesRestClient
-import com.github.jk1.ytplugin.tasks.IssueTask
-import com.intellij.openapi.project.Project
+import com.github.jk1.ytplugin.issues.model.Issue
 
 /**
  * Resolves and encodes persistent issue id once per command dialog. Encoded database id is required
  * by the most effective command suggestion REST method in YouTrack. YouTrack 5.2 does not expose
  * persistent ids via rest, making this optimization impossible.
  */
-class CommandSession(override val project: Project) : ComponentAware {
+class CommandSession(val issue: Issue) {
 
-    val task = taskManagerComponent.getActiveYouTrackTask()
-    val compressedEntityId: String?
-
-    init {
-        val entityId: String?
-        if (task is IssueTask) {
-            entityId = task.issue.entityId
-        } else {
-            // try local store first, fall back to rest api if not found
-            val repo = taskManagerComponent.getActiveYouTrackRepository()
-            val issue = issueStoreComponent[repo].firstOrNull { it.id == task.id }
-                    ?: IssuesRestClient(repo).getIssue(task.id)
-            entityId = issue?.entityId
-        }
-        compressedEntityId = when (entityId) {
-            null -> null
-            else -> encodePersistentId(entityId.split("-")[1].toInt())
-        }
+    val compressedEntityId = when (issue.entityId) {
+        null -> null
+        else -> encodePersistentId(issue.entityId.split("-")[1].toInt())
     }
 
     fun hasEntityId() = compressedEntityId != null

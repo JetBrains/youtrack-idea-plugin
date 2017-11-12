@@ -13,7 +13,6 @@ import java.io.InputStreamReader
  */
 class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    override val project = repo.project
 
     fun getIssue(id: String): Issue? {
         val method = GetMethod("${repo.url}/rest/issue/$id?wikifyDescription=true")

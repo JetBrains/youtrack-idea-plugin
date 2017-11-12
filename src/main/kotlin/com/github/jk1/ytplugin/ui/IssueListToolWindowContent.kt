@@ -37,7 +37,9 @@ class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout
         val selectedIssue = { issueList.getSelectedIssue() }
         group.add(RefreshIssuesAction(repo))
         //group.add(CreateIssueAction()) todo: implement me
-        group.add(AddCommentAction())
+        // todo: grouping and separators for actions
+        group.add(AddCommentAction(selectedIssue))
+        group.add(OpenCommandWindowAction(selectedIssue))
         group.add(SetAsActiveTaskAction(selectedIssue, repo))
         group.add(CopyIssueLinkAction(selectedIssue))
         group.add(BrowseIssueAction(selectedIssue))

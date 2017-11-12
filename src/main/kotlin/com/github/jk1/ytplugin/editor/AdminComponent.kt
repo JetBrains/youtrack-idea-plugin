@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.YouTrackIssueNa
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.createdByYouTrackPlugin
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.pointsTo
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.setProjects
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -26,19 +27,17 @@ class AdminComponent(override val project: Project) : AbstractProjectComponent(p
         val ALL_USERS = "All Users"
     }
 
-    private val restClient = AdminRestClient(project)
     private lateinit var projectListRefreshTask: ScheduledFuture<*>
 
-    fun getActiveTaskVisibilityGroups(callback: (List<String>) -> Unit): Future<Unit> {
+    fun getActiveTaskVisibilityGroups(issue: Issue, callback: (List<String>) -> Unit): Future<Unit> {
         val future = FutureResult<Unit>()
         object : Task.Backgroundable(project, "Loading eligible visibility groups") {
             override fun run(indicator: ProgressIndicator) {
                 try {
                     indicator.text = title
-                    val repo = taskManagerComponent.getActiveYouTrackRepository()
-                    val taskId = taskManagerComponent.getActiveYouTrackTask().id
-                    callback.invoke(restClient.getVisibilityGroups(repo, taskId))
-                } catch(e: Throwable) {
+                    val repo = taskManagerComponent.getYouTrackRepository(issue)
+                    callback.invoke(AdminRestClient(repo).getVisibilityGroups(issue.id))
+                } catch (e: Throwable) {
                     logger.info("Failed to load eligible visibility groups for issue")
                     logger.debug(e)
                 } finally {
@@ -85,13 +84,13 @@ class AdminComponent(override val project: Project) : AbstractProjectComponent(p
     private fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
         try {
             repo.login()
-            val projects = restClient.getAccessibleProjects(repo)
+            val projects = AdminRestClient(repo).getAccessibleProjects()
             if (projects.isEmpty()) {
                 logger.debug("No accessible projects found for ${repo.url}")
             } else {
                 link.setProjects(projects)
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             logger.info(e)
         }
     }

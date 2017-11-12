@@ -14,9 +14,14 @@ interface ComponentAware {
     val project: Project
 
     companion object {
+
         fun of(aProject: Project): ComponentAware = object : ComponentAware {
             override val project: Project = aProject
         }
+
+        fun <T> of(aProject: Project, closure: ComponentAware.() -> T): T
+                = with(of(aProject)) { closure.invoke(this) }
+
     }
 
     val taskManagerComponent: TaskManagerProxyComponent

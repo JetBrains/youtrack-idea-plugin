@@ -14,10 +14,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.FutureResult
 import java.util.concurrent.Future
 
-
 class CommandComponentImpl(override val project: Project) : AbstractProjectComponent(project), CommandComponent {
 
-    val restClient = CommandRestClient(project)
     private val assistCache = CommandSuggestResponseCache(project)
 
     override fun executeAsync(execution: YouTrackCommandExecution): Future<Unit> {
@@ -26,7 +24,7 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
             override fun run(indicator: ProgressIndicator) {
                 try {
                     indicator.text = title
-                    val result = restClient.executeCommand(execution)
+                    val result = execution.session.restClient.executeCommand(execution)
                     result.errors.forEach {
                         sendNotification("Command execution error", it, NotificationType.ERROR)
                     }
@@ -45,8 +43,11 @@ class CommandComponentImpl(override val project: Project) : AbstractProjectCompo
     }
 
     override fun suggest(command: YouTrackCommand): CommandAssistResponse {
-        val response = assistCache[command] ?: restClient.assistCommand(command)
+        val response = assistCache[command] ?: command.session.restClient.assistCommand(command)
         assistCache[command] = response
         return response
     }
+
+    private val CommandSession.restClient: CommandRestClient
+        get() = CommandRestClient(taskManagerComponent.getYouTrackRepository(issue))
 }

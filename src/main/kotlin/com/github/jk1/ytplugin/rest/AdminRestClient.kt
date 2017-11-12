@@ -1,14 +1,13 @@
 package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.methods.GetMethod
 import org.jdom.input.SAXBuilder
 
 // todo: convert me to use json api
-class AdminRestClient(override val project: Project) : RestClientTrait, ResponseLoggerTrait {
+class AdminRestClient(val server: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun getVisibilityGroups(server: YouTrackServer, issueId: String): List<String> {
+    fun getVisibilityGroups(issueId: String): List<String> {
         val getGroupsUrl = "${server.url}/rest/issueInternal/visibilityGroups/$issueId"
         val method = GetMethod(getGroupsUrl)
         return connect(method) {
@@ -29,7 +28,7 @@ class AdminRestClient(override val project: Project) : RestClientTrait, Response
         }
     }
 
-    fun getAccessibleProjects(server: YouTrackServer): List<String> {
+    fun getAccessibleProjects(): List<String> {
         val method = GetMethod("${server.url}/rest/admin/project")
         return connect(method) {
             val status = createHttpClient(server).executeMethod(method)

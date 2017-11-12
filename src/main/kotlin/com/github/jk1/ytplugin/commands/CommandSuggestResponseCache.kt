@@ -13,15 +13,15 @@ import java.util.concurrent.TimeUnit
  * especially helpful for large YouTrack installations, where command backend is known to be slow to
  * respond from time to time.
  */
-class CommandSuggestResponseCache(override val project: Project): ComponentAware {
+class CommandSuggestResponseCache(override val project: Project) : ComponentAware {
 
     private val cache = SuggestResponseCache()
 
     operator fun get(command: YouTrackCommand): CommandAssistResponse? {
         synchronized(this) {
-            val key = CommandCacheKey(command.command, command.caret, getUrl())
+            val key = CommandCacheKey(command.command, command.caret, command.url())
             val result = cache[key]
-            if (result == null){
+            if (result == null) {
                 logger.debug("Command suggestion cache miss: $key")
             } else {
                 logger.debug("Command suggestion cache hit: $key")
@@ -32,13 +32,13 @@ class CommandSuggestResponseCache(override val project: Project): ComponentAware
 
     operator fun set(command: YouTrackCommand, value: CommandAssistResponse) {
         synchronized(this) {
-            val key = CommandCacheKey(command.command, command.caret, getUrl())
+            val key = CommandCacheKey(command.command, command.caret, command.url())
             logger.debug("New value added to command suggestion cache: $key")
             cache.put(key, value)
         }
     }
 
-    private fun getUrl(): String = taskManagerComponent.getActiveYouTrackRepository().url
+    private fun YouTrackCommand.url() = taskManagerComponent.getYouTrackRepository(session.issue).url
 
     data class CommandCacheKey(val command: String, val caret: Int, val serverUrl: String)
 

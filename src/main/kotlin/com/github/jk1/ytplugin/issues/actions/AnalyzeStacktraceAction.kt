@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -24,8 +25,7 @@ class AnalyzeStacktraceAction(private val getSelectedIssue: () -> Issue?) : Issu
     override val shortcut = "control shift S"
 
     override fun actionPerformed(event: AnActionEvent) {
-        val project = event.project
-        if (project != null && project.isInitialized) {
+        event.whenActive {
             val issue = getSelectedIssue.invoke()
             if (issue != null && issue.hasException()) {
                 openAnalyzeDialog(issue, event)

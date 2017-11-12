@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.navigator
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.intellij.openapi.project.Project
@@ -14,7 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import javax.imageio.ImageIO
 
-class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait {
+class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, ComponentAware {
 
     private lateinit var fixture: JavaCodeInsightTestFixture
     override val project: Project by lazy { fixture.project }

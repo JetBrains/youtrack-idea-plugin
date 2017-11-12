@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.tasks
 
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
@@ -76,6 +77,9 @@ class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent
             .filter { it.isYouTrack() }
             .map { YouTrackServer(it as YouTrackRepository, project) }
 
+    fun getYouTrackRepository(issue: Issue) =
+            getAllConfiguredYouTrackRepositories()
+                    .first { repo -> repo.url == issue.repoUrl }
 
     private fun syncTaskManagerConfig() {
         synchronized(this) {
