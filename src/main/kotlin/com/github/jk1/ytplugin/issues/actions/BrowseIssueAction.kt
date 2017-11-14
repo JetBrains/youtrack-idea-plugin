@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.issues.actions
 
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -19,8 +20,7 @@ class BrowseIssueAction(private val getSelectedIssue: () -> Issue?) : IssueActio
     override val shortcut = "control shift B"
 
     override fun actionPerformed(event: AnActionEvent) {
-        val project = event.project
-        if (project != null && project.isInitialized) {
+        event.whenActive {
             val issue = getSelectedIssue.invoke()
             // youtrack issues always have a url defined
             if (issue != null) {

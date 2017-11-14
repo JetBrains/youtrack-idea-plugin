@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.issues.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 
@@ -17,8 +18,7 @@ class RefreshIssuesAction(val repo: YouTrackServer) : IssueAction() {
     override val shortcut = "control shift U"
 
     override fun actionPerformed(event: AnActionEvent) {
-        val project = event.project
-        if (project != null && project.isInitialized) {
+        event.whenActive { project ->
             logger.debug("Issue store refresh requested for ${repo.url}")
             ComponentAware.of(project).issueStoreComponent[repo].update(repo)
         }

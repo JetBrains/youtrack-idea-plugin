@@ -28,6 +28,7 @@
         <ul>
             <li> Pin action added to open issues in a separate tool window tab </li>
             <li> Comment action added to quickly comment on a selected issue</li>
+            <li> Command execution is now possible from a tool window</li>
             <li> Plugin API exposed to allow cross plugin integration features </li>
         </ul>
           ]]></change-notes>

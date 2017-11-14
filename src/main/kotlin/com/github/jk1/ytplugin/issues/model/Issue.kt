@@ -8,10 +8,12 @@ import java.util.*
 
 class Issue(item: JsonElement, val repoUrl: String) {
 
-    private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
-            "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
-            "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
-            "sprint", "voterName", "permittedGroup")
+    companion object {
+        private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
+                "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
+                "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
+                "sprint", "voterName", "permittedGroup")
+    }
 
     val json: String
 

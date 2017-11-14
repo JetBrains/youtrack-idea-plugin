@@ -45,6 +45,7 @@ test {
     outputs.upToDateWhen { false }
 }
 
+// runs `./gradlew test` several times against all supported IDE versions
 task testAllSupportedIdes {
     dependsOn supportedVersions.collect { "runTestsWithIdea$it" }
     supportedVersions.forEach { version ->
@@ -56,6 +57,6 @@ task testAllSupportedIdes {
     }
 }
 
-// runs on travis CI
+// Travis CI
 check.dependsOn animalsnifferMain, testAllSupportedIdes
 
