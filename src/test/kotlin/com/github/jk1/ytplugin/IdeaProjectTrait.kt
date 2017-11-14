@@ -46,6 +46,6 @@ interface IdeaProjectTrait {
             application.runWriteAction {
                 callback.invoke()
             }
-        }, application.anyModalityState)
+        }, application.defaultModalityState)
     }
 }
