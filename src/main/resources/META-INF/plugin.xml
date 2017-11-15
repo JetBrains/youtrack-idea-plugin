@@ -33,8 +33,8 @@
         </ul>
           ]]></change-notes>
 
-  <!-- Compatible with Idea platform 2016.3 - 2017.3 -->
-  <idea-version since-build="145" until-build="173.*"/>
+  <!-- Compatible with Idea platform 2017.1 - 2018.1 -->
+  <idea-version since-build="171" until-build="181.*"/>
   <!-- Enable plugin in all products except MPS -->
   <depends>com.intellij.modules.lang</depends>
   <!-- We depend on bundled task management plugin -->

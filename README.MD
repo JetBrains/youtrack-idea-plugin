@@ -7,7 +7,7 @@ This plugin brings Jetbrains YouTrack bugtracker features to Intellij IDE family
 
 The latest released version can be found at [JetBrains IDE plugin repository](https://plugins.jetbrains.com/plugin/8215) or installed directly from an IDE itself.
 
-**Compatible IDEs:** IntelliJ IDEA 15+, WebStorm 11+, PyCharm 5+, PhpStorm 10+, RubyMine 8+, AppCode 3.3+, CLion 1.2+, DataGrip 1.0+
+**Compatible IDEs:** IntelliJ IDE family 2017.1+
 
 **Compatible YouTrack versions:** 5.2+
 
