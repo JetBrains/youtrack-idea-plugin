@@ -46,8 +46,8 @@ class PersistentIssueStoreComponent : ApplicationComponent, PersistentStateCompo
 
     class Memento constructor() {
 
-        // implementation should stay mutable as deserializer calls #clear() on it
-        private var persistentIssues: Map<String, String> = mutableMapOf()
+        // should stay mutable and public for serialization to work
+       var persistentIssues: Map<String, String> = mutableMapOf()
 
         // primary constructor is reserved for serializer
         constructor(stores: Map<String, IssueStore>) : this() {
