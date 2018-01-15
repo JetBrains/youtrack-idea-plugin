@@ -18,17 +18,18 @@ import java.util.*
 class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
-    private lateinit var server: YouTrackServer
-    override val project: Project by lazy { fixture.project }
     private val issues = ArrayList<String>() //cleanup queue
+
+    override lateinit var repository: YouTrackServer
+    override val project: Project by lazy { fixture.project }
 
     @Before
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
+        repository = createYouTrackRepository()
+        repository.defaultSearch = "project: AT"
         createIssue()
-        server = createYouTrackRepository()
-        server.defaultSearch = "project: AT"
     }
 
     override fun createIssue(summary: String): String {
@@ -39,20 +40,20 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @Test
     fun testStoreLoad() {
-        issueStoreComponent[server].update(server).waitFor(5000)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        val storedIssues = issueStoreComponent[server].getAllIssues()
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
         Assert.assertEquals(1, storedIssues.size)
         assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
 
     @Test
     fun testStoreUpdate() {
-        issueStoreComponent[server].update(server).waitFor(5000)
-        Assert.assertEquals(1, issueStoreComponent[server].getAllIssues().size)
-        server.defaultSearch = "#Resolved"
-        issueStoreComponent[server].update(server).waitFor(5000)
-        Assert.assertEquals(0, issueStoreComponent[server].getAllIssues().size)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
+        Assert.assertEquals(1, issueStoreComponent[repository].getAllIssues().size)
+        repository.defaultSearch = "#Resolved"
+        issueStoreComponent[repository].update(repository).waitFor(5000)
+        Assert.assertEquals(0, issueStoreComponent[repository].getAllIssues().size)
     }
 
     @Test
@@ -61,9 +62,9 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         withDefaultCharset("windows-1251") {
             val expectedSummary = "Ехал грека через реку"
             createIssue(expectedSummary)
-            issueStoreComponent[server].update(server).waitFor(5000)
+            issueStoreComponent[repository].update(repository).waitFor(5000)
 
-            assertTrue(issueStoreComponent[server].getAllIssues().any {
+            assertTrue(issueStoreComponent[repository].getAllIssues().any {
                 it.summary == expectedSummary
             })
         }
@@ -71,11 +72,11 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @Test
     fun testMultiProjectQuery() {
-        server.defaultSearch = "project: AT, MT"
+        repository.defaultSearch = "project: AT, MT"
 
-        issueStoreComponent[server].update(server).waitFor(5000)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        val storedIssues = issueStoreComponent[server].getAllIssues()
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
         assertTrue(storedIssues.isNotEmpty())
         assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
@@ -86,9 +87,9 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         val thirdIssue = createIssue()
         touchIssue(secondIssue)
 
-        issueStoreComponent[server].update(server).waitFor(5000)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        with(issueStoreComponent[server]){
+        with(issueStoreComponent[repository]){
             Assert.assertEquals(3, getAllIssues().size)
             Assert.assertEquals(secondIssue, getIssue(0).id)
             Assert.assertEquals(thirdIssue, getIssue(1).id)
@@ -98,14 +99,14 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @Test
     fun testExplicitSort() {
-        server.defaultSearch = "project: AT sort by: updated asc"
+        repository.defaultSearch = "project: AT sort by: updated asc"
         val secondIssue = createIssue()
         val thirdIssue = createIssue()
         touchIssue(secondIssue)
 
-        issueStoreComponent[server].update(server).waitFor(5000)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        with(issueStoreComponent[server]){
+        with(issueStoreComponent[repository]){
             Assert.assertEquals(3, getAllIssues().size)
             Assert.assertEquals(issues.first(), getIssue(0).id)
             Assert.assertEquals(thirdIssue, getIssue(1).id)
@@ -131,7 +132,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
 
     @After
     fun tearDown() {
-        issueStoreComponent.remove(server)
+        issueStoreComponent.remove(repository)
         issues.forEach { deleteIssue(it) }
         cleanUpTaskManager()
         fixture.tearDown()

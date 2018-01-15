@@ -10,26 +10,24 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
 
-class CommandRestClient(val server: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
-
-    private val client = createHttpClient(server)
+class CommandRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)
-        return connect(method, {
-            val status = client.executeMethod(method)
+        return method.connect {
+            val status = httpClient.executeMethod(method)
             if (status == 200) {
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
                 throw RuntimeException("HTTP $status: ${method.responseBodyAsLoggedString()}")
             }
-        })
+        }
     }
 
     fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val method = PostMethod(command.executeCommandUrl)
-        return connect(method, {
-            val status = client.executeMethod(method)
+        return method.connect {
+            val status = httpClient.executeMethod(method)
             if (status != 200) {
                 val string = method.responseBodyAsLoggedStream()
                 val element = SAXBuilder(false).build(string).rootElement
@@ -42,13 +40,13 @@ class CommandRestClient(val server: YouTrackServer) : RestClientTrait, ResponseL
                 method.responseBodyAsLoggedString()
                 CommandExecutionResponse()
             }
-        })
+        }
     }
 
     private val YouTrackCommandExecution.executeCommandUrl: String
         get () {
             with(command) {
-                val execUrl = "${server.url}/rest/issue/execute/${session.issue.id}"
+                val execUrl = "${repository.url}/rest/issue/execute/${session.issue.id}"
                 var params = "command=${command.urlencoded}&comment=${comment?.urlencoded}&disableNotifications=$silent"
                 if (commentVisibleGroup != "All Users") {
                     // 'All Users' shouldn't be passed as a parameter value. Localized YouTracks can't understand that.
@@ -60,7 +58,7 @@ class CommandRestClient(val server: YouTrackServer) : RestClientTrait, ResponseL
 
     private val YouTrackCommand.intellisenseCommandUrl: String
         get () {
-            val assistUrl = "${server.url}/rest/command/underlineAndSuggestAndCommands"
+            val assistUrl = "${repository.url}/rest/command/underlineAndSuggestAndCommands"
             val result = "$assistUrl?command=${command.urlencoded}&caret=$caret&noIssuesContext=false"
             return if (session.hasEntityId()) {
                 "$result&issueIds=${session.compressedEntityId?.urlencoded}"

@@ -11,12 +11,12 @@ import java.io.InputStreamReader
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
  */
-class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
 
     fun getIssue(id: String): Issue? {
-        val method = GetMethod("${repo.url}/rest/issue/$id?wikifyDescription=true")
-        return method.execute { IssueJsonParser.parseIssue(it, repo.url) }
+        val method = GetMethod("${repository.url}/rest/issue/$id?wikifyDescription=true")
+        return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
     /**
@@ -38,7 +38,7 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
     }
 
     private fun getIssueIds(query: String = ""): List<String> {
-        val method = GetMethod("${repo.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true")
+        val method = GetMethod("${repository.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true")
         return method.execute {
             val issues = it.asJsonObject.getAsJsonArray("issue")
             issues.map { it.asJsonObject.get("id").asString }
@@ -46,17 +46,17 @@ class IssuesRestClient(val repo: YouTrackServer) : RestClientTrait, ResponseLogg
     }
 
     private fun getWikifiedIssuesInProject(projectShortName: String, query: String = ""): List<Issue> {
-        val url = "${repo.url}/rest/issue/byproject/${projectShortName.urlencoded}"
+        val url = "${repository.url}/rest/issue/byproject/${projectShortName.urlencoded}"
         // todo: customizable "max" limit
         val params = "filter=${query.urlencoded}&wikifyDescription=true&max=30"
         val method = GetMethod("$url?$params")
-        return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repo.url) } }
+        return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repository.url) } }
     }
 
     private fun <T> HttpMethod.execute(responseParser: (json: JsonElement) -> T): T {
         this.setRequestHeader("Accept", "application/json")
-        return connect(this) {
-            val status = createHttpClient(repo).executeMethod(this)
+        return connect {
+            val status = httpClient.executeMethod(this)
             if (status == 200) {
                 val stream = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
                 responseParser.invoke(JsonParser().parse(stream))

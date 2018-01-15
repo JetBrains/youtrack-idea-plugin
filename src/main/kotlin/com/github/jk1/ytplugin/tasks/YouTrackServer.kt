@@ -29,10 +29,6 @@ class YouTrackServer(private val delegate: YouTrackRepository, val project: Proj
             }
         }
 
-    fun login() {
-        delegate.createCancellableConnection()?.call()
-    }
-
     fun getRestClient(): HttpClient {
         // dirty hack to get preconfigured http client from task management plugin
         // we don't want to handle all the connection/testing/proxy stuff ourselves
@@ -44,8 +40,6 @@ class YouTrackServer(private val delegate: YouTrackRepository, val project: Proj
     fun getSearchCompletionProvider() = YouTrackIntellisense(delegate)
 
     fun createTask(issue: Issue): Task = IssueTask(issue, delegate)
-
-    fun findTask(id: String) = delegate.findTask(id)
 
     fun getTasks(query: String?, offset: Int, limit: Int): Array<Task>
             = delegate.getIssues(query, offset, limit, true)

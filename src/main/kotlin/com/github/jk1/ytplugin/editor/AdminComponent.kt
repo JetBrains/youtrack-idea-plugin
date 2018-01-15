@@ -83,7 +83,6 @@ class AdminComponent(override val project: Project) : AbstractProjectComponent(p
 
     private fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
         try {
-            repo.login()
             val projects = AdminRestClient(repo).getAccessibleProjects()
             if (projects.isEmpty()) {
                 logger.debug("No accessible projects found for ${repo.url}")

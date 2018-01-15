@@ -17,19 +17,20 @@ import org.junit.Test
 class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
-    private lateinit var server: YouTrackServer
     private lateinit var issue: Issue
+
     override val project: Project by lazy { fixture.project }
+    override lateinit var repository: YouTrackServer
 
     @Before
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
-        server = createYouTrackRepository()
-        server.defaultSearch = "project: AT"
+        repository = createYouTrackRepository()
+        repository.defaultSearch = "project: AT"
         createIssue()
-        issueStoreComponent[server].update(server).waitFor(5000)
-        issue = issueStoreComponent[server].getAllIssues().first()
+        issueStoreComponent[repository].update(repository).waitFor(5000)
+        issue = issueStoreComponent[repository].getAllIssues().first()
     }
 
     @Test

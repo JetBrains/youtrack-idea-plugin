@@ -5,13 +5,13 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.jdom.input.SAXBuilder
 
 // todo: convert me to use json api
-class AdminRestClient(val server: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+class AdminRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
     fun getVisibilityGroups(issueId: String): List<String> {
-        val getGroupsUrl = "${server.url}/rest/issueInternal/visibilityGroups/$issueId"
+        val getGroupsUrl = "${repository.url}/rest/issueInternal/visibilityGroups/$issueId"
         val method = GetMethod(getGroupsUrl)
-        return connect(method) {
-            val status = createHttpClient(server).executeMethod(method)
+        return method.connect {
+            val status = httpClient.executeMethod(method)
             val defaultGroups = listOf("All Users")
             when (status) {
                 200 -> {
@@ -29,9 +29,9 @@ class AdminRestClient(val server: YouTrackServer) : RestClientTrait, ResponseLog
     }
 
     fun getAccessibleProjects(): List<String> {
-        val method = GetMethod("${server.url}/rest/admin/project")
-        return connect(method) {
-            val status = createHttpClient(server).executeMethod(method)
+        val method = GetMethod("${repository.url}/rest/admin/project")
+        return method.connect {
+            val status = httpClient.executeMethod(method)
             if (status == 200) {
                 val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
                 val projectElements = root.rootElement.children

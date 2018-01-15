@@ -2,7 +2,9 @@ package com.github.jk1.ytplugin.navigator
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
+import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.rest.RestClientTrait
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture
 import org.apache.commons.httpclient.HttpClient
@@ -15,17 +17,20 @@ import org.junit.Before
 import org.junit.Test
 import javax.imageio.ImageIO
 
-class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, ComponentAware {
+class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: JavaCodeInsightTestFixture
+    private val ideaUrl: String by lazy { "http://127.0.0.1:${sourceNavigatorComponent.getActivePort()}" }
+
+    override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
-    private val serverUrl: String by lazy { "http://127.0.0.1:${sourceNavigatorComponent.getActivePort()}" }
 
     @Before
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.testDataPath = "src/test/resources"
         fixture.setUp()
+        repository = createYouTrackRepository()
         writeAction {
             fixture.configureByFile("testData/SourceNavigationTarget.kt")
         }
@@ -40,8 +45,8 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, ComponentAware {
                 BasicNameValuePair("line", "${expectedLine + 1}"),
                 BasicNameValuePair("offset", "$expectedColumn")
         )
-        val method = GetMethod("$serverUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        connect(method) {
+        val method = GetMethod("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
+        method.connect {
             HttpClient().executeMethod(method)
         }
 
@@ -58,8 +63,8 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, ComponentAware {
                 BasicNameValuePair("line", "3"),
                 BasicNameValuePair("offset", "5")
         )
-        val method = GetMethod("$serverUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        connect(method) {
+        val method = GetMethod("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
+        method.connect {
             val responseStatus = HttpClient().executeMethod(method)
             val image = ImageIO.read(method.responseBodyAsStream)
 
@@ -74,8 +79,8 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, ComponentAware {
         val params = listOf(
                 BasicNameValuePair("file", "testData/Whatever.kt")
         )
-        val method = GetMethod("$serverUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        connect(method) {
+        val method = GetMethod("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
+        method.connect {
             HttpClient().executeMethod(method)
         }
 

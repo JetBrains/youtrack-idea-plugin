@@ -1,7 +1,6 @@
 package com.github.jk1.ytplugin.editor
 
 import com.github.jk1.ytplugin.IdeaProjectTrait
-import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
@@ -13,9 +12,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class NavigationLinksTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait {
+class NavigationLinksTest : IdeaProjectTrait, TaskManagerTrait {
 
     private lateinit var fixture: IdeaProjectTestFixture
+
     override val project: Project by lazy { fixture.project }
 
     @Before

@@ -18,21 +18,21 @@ import org.junit.Test
 class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
-    private lateinit var server: YouTrackServer
     private lateinit var issue: Issue
     private lateinit var session: CommandSession
 
+    override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
 
     @Before
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
-        server = createYouTrackRepository()
-        server.defaultSearch = "project: AT"
+        repository = createYouTrackRepository()
+        repository.defaultSearch = "project: AT"
         createIssue()
-        issueStoreComponent[server].update(server).waitFor(5000)
-        issue = issueStoreComponent[server].getAllIssues().first()
+        issueStoreComponent[repository].update(repository).waitFor(5000)
+        issue = issueStoreComponent[repository].getAllIssues().first()
         session = CommandSession(issue)
     }
 
@@ -48,7 +48,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
 
     @Test
     fun testCommandCompletionWithIssueInLocalStore() {
-        issueStoreComponent[server].update(server).waitFor(5000)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
         val command = YouTrackCommand(CommandSession(issue), "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
@@ -65,7 +65,7 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
         val future = commandComponent.executeAsync(execution)
         future.get() // wait for the command to complete
 
-        Assert.assertTrue(server.getTasks(issue.id, 0, 1).first().isClosed)
+        Assert.assertTrue(repository.getTasks(issue.id, 0, 1).first().isClosed)
     }
 
     @After

@@ -36,7 +36,6 @@ class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterabl
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issues for search query: ${repo.defaultSearch}")
-                repo.login()
                 issues = IssuesRestClient(repo).getIssues(repo.defaultSearch)
             } catch (e: Exception) {
                 logger.info("YouTrack issues refresh failed: ${e.message}")
