@@ -22,7 +22,6 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
         val data = OpenFileData(session.parms)
         if (data.file != null) {
             readAction {
-                // todo: vcs-based lookup
                 val virtualFile = VirtualFileFinder.findFile(data.file, project)
                 if (virtualFile != null) {
                     if (project.isInitialized && navigateTo(virtualFile, data)) {
@@ -40,7 +39,7 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
             application.runReadAction {
                 callback.invoke()
             }
-        }, application.anyModalityState)
+        }, application.noneModalityState)
     }
 
     private fun navigateTo(virtualFile: VirtualFile, data: OpenFileData): Boolean {
@@ -70,11 +69,11 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
         val offset: Int? = requestParams["offset"]?.toIntSilent()
 
         private fun String.toIntSilent(): Int? {
-            try {
-                return this.toInt()
+            return try {
+                this.toInt()
             } catch(e: NumberFormatException) {
                 this@OpenFileData.logger.warn("Failed to parse $this parameter: ${e.message}")
-                return null
+                null
             }
         }
     }
