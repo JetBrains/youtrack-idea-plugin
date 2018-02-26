@@ -19,7 +19,7 @@ interface RestClientTrait {
             val client = repository.getRestClient()
             val credentials = UsernamePasswordCredentials(repository.username, repository.password)
             client.state.setCredentials(AuthScope.ANY, credentials)
-            client.params.soTimeout = 10000
+            client.params.soTimeout = 15000
             return client
         }
 
