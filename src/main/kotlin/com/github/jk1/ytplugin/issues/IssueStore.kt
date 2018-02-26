@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.ActionCallback
+import java.net.SocketTimeoutException
 
 class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterable<Issue> {
 
@@ -37,12 +38,18 @@ class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterabl
             try {
                 logger.debug("Fetching issues for search query: ${repo.defaultSearch}")
                 issues = IssuesRestClient(repo).getIssues(repo.defaultSearch)
+            } catch (e: SocketTimeoutException) {
+                displayErrorMessage("Failed to updated issues from YouTrack server. Request timed out.", e)
             } catch (e: Exception) {
-                logger.info("YouTrack issues refresh failed: ${e.message}")
-                logger.debug(e)
-                title = " Can't connect to YouTrack server. Are you offline?"
-                Thread.sleep(5000) // display error message for a while
+                displayErrorMessage("Can't connect to YouTrack server. Are you offline?", e)
             }
+        }
+
+        private fun displayErrorMessage(message: String, exception: Exception){
+            logger.info("YouTrack issues refresh failed: ${exception.message}")
+            logger.debug(exception)
+            title = " $message"
+            Thread.sleep(15000) // display error message for a while
         }
 
         override fun onCancel() {
