@@ -12,7 +12,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
         private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
                 "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
                 "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
-                "sprint", "voterName", "permittedGroup")
+                "sprint", "voterName", "permittedGroup", "markdown")
     }
 
     val json: String
