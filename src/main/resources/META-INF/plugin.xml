@@ -1,17 +1,18 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration Plugin</name>
-  <version>0.8.1</version>
+  <version>0.9</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
         <ul>
-            <li>Adds command window to execute YouTrack commands from IDE</li>
-            <li>Supports code navigation when clicking on Java stack traces in issue tracker</li>
-            <li>Provides issue browser</li>
-            <li>Renders YouTrack wiki markup</li>
-            <li>Recognizes YouTrack issue ids in Java code comments and VCS history</li>
+            <li> Adds command window to execute YouTrack commands from IDE </li>
+            <li> Supports code navigation when clicking on Java stack traces in issue tracker </li>
+            <li> Provides issue browser </li>
+            <li> Renders YouTrack wiki markup< /li>
+            <li> Recognizes YouTrack issue ids in Java code comments and VCS history </li>
+            <li> Displays issue tracker notifications in IDE </li>
         </ul>
         <p>Compatibility: YouTrack 5.2+<p/>
         <br>
@@ -26,10 +27,7 @@
 
   <change-notes><![CDATA[
         <ul>
-            <li> Pin action added to open issues in a separate tool window tab </li>
-            <li> Comment action added to quickly comment on a selected issue</li>
-            <li> Command execution is now possible from a tool window</li>
-            <li> Plugin API exposed to allow cross plugin integration features </li>
+            <li> YouTrack notifications are now displaeyd in IDE (YouTrack 2018.1+) </li>
         </ul>
           ]]></change-notes>
 
