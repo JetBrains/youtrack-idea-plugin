@@ -2,16 +2,12 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.google.gson.JsonElement
-import com.google.gson.JsonParser
-import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.methods.GetMethod
-import java.io.InputStreamReader
 
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
  */
-class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrait{
 
 
     fun getIssue(id: String): Issue? {
@@ -51,18 +47,5 @@ class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrai
         val params = "filter=${query.urlencoded}&wikifyDescription=true&max=30"
         val method = GetMethod("$url?$params")
         return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repository.url) } }
-    }
-
-    private fun <T> HttpMethod.execute(responseParser: (json: JsonElement) -> T): T {
-        this.setRequestHeader("Accept", "application/json")
-        return connect {
-            val status = httpClient.executeMethod(this)
-            if (status == 200) {
-                val stream = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
-                responseParser.invoke(JsonParser().parse(stream))
-            } else {
-                throw RuntimeException(this.responseBodyAsLoggedString())
-            }
-        }
     }
 }

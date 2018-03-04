@@ -17,6 +17,10 @@ class CommandSuggestResponseCache(override val project: Project) : ComponentAwar
 
     private val cache = SuggestResponseCache()
 
+    companion object {
+        private val CACHE_ENTRY_TTL = TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES)
+    }
+
     operator fun get(command: YouTrackCommand): CommandAssistResponse? {
         synchronized(this) {
             val key = CommandCacheKey(command.command, command.caret, command.url())
@@ -43,8 +47,6 @@ class CommandSuggestResponseCache(override val project: Project) : ComponentAwar
     data class CommandCacheKey(val command: String, val caret: Int, val serverUrl: String)
 
     inner class SuggestResponseCache : LinkedHashMap<CommandCacheKey, CommandAssistResponse>(10, true) {
-
-        private val CACHE_ENTRY_TTL = TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES)
 
         override fun removeEldestEntry(
                 eldest: MutableMap.MutableEntry<CommandCacheKey, CommandAssistResponse>,

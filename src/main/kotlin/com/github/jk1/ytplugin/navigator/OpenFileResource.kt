@@ -72,7 +72,7 @@ class OpenFileResource(val project: Project) : ConnectionHandler.Resource {
             return try {
                 this.toInt()
             } catch(e: NumberFormatException) {
-                this@OpenFileData.logger.warn("Failed to parse $this parameter: ${e.message}")
+                logger.warn("Failed to parse $this parameter: ${e.message}")
                 null
             }
         }

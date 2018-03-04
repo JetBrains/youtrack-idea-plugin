@@ -2,7 +2,7 @@ package com.github.jk1.ytplugin.navigator
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.sendNotification
+import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
@@ -16,7 +16,8 @@ import java.io.IOException
  *
  * TeamCity plugin listens on the same ports as well and both plugins can coexists within the port range.
  */
-class SourceNavigatorComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
+class SourceNavigatorComponent(override val project: Project) :
+        AbstractProjectComponent(project), ComponentAware, IdeNotificationsTrait {
 
     private val eligiblePorts = 63330..63339
     private var httpServer: NanoHTTPD? = null
@@ -34,7 +35,7 @@ class SourceNavigatorComponent(override val project: Project) : AbstractProjectC
             }
         }
         if (port == null) {
-            sendNotification(
+            showErrorNotification(
                     text = "Can't listen on ports 63330 to 63339. 'Open in IDE' feature will be disabled",
                     type = NotificationType.WARNING)
         }

@@ -3,8 +3,8 @@ package com.github.jk1.ytplugin.commands
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.rest.IssuesRestClient
-import com.github.jk1.ytplugin.sendNotification
 import com.github.jk1.ytplugin.tasks.IssueTask
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
@@ -23,7 +23,7 @@ import com.intellij.openapi.project.Project
 class OpenCommandWindowAction : AnAction(
         "Open Command Dialog",
         "Apply YouTrack command to a current active task",
-        AllIcons.Debugger.CommandLine), DumbAware {
+        AllIcons.Debugger.CommandLine), DumbAware, IdeNotificationsTrait {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
@@ -36,7 +36,7 @@ class OpenCommandWindowAction : AnAction(
                 exception.showAsNotificationBalloon(project)
             }
         } else {
-            sendNotification(
+            showErrorNotification(
                     "Can't open YouTrack command window",
                     "No open project found", NotificationType.ERROR)
         }
