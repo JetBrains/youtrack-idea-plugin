@@ -5,7 +5,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.editor.event.DocumentAdapter
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiDocumentManager
@@ -39,7 +39,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         file?.putUserData(INTELLISENSE_KEY, server.getSearchCompletionProvider())
         // key bindings
         // todo: find a better way to attach onEnter handler to LanguageTextField
-        searchField.addDocumentListener(object : DocumentAdapter() {
+        searchField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(e: DocumentEvent?) {
                 val component = searchField.editor!!.contentComponent
                 component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
