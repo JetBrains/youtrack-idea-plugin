@@ -6,7 +6,6 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.rest.CommandRestClient
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -27,13 +26,13 @@ class CommandComponentImpl(override val project: Project) :
                     indicator.text = title
                     val result = execution.session.restClient.executeCommand(execution)
                     result.errors.forEach {
-                        showErrorNotification("Command execution error", it, NotificationType.ERROR)
+                        showError("Command execution error", it)
                     }
                     result.messages.forEach {
-                        showErrorNotification("YouTrack server message", it, NotificationType.INFORMATION)
+                        showNotification("YouTrack server message", it)
                     }
                 } catch(e: Throwable) {
-                    showErrorNotification("Command execution error", e.message, NotificationType.ERROR)
+                    showError("Command execution error", e.message ?: "")
                     logger.error("Command execution error", e)
                 } finally {
                     future.set(Unit)

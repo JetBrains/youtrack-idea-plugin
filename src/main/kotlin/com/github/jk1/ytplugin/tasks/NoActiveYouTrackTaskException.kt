@@ -24,7 +24,7 @@ class NoActiveYouTrackTaskException : YouTrackPluginException("No YouTrack issue
             <b><a href="#open">Select Issue</a></b>""",
             NotificationType.ERROR,
             // notification hyperlink click handler
-            NotificationListener { notification, notificationEvent ->
+            NotificationListener { notification, _ ->
                 notification.hideBalloon()
                 GOTO_TASK_ACTION_ID.runAction()
             }

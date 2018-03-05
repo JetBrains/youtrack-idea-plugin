@@ -27,7 +27,7 @@
 
   <change-notes><![CDATA[
         <ul>
-            <li> YouTrack notifications are now displaeyd in IDE (YouTrack 2018.1+) </li>
+            <li> YouTrack notifications are now displayed in IDE (YouTrack 2018.1+) </li>
         </ul>
           ]]></change-notes>
 
@@ -73,6 +73,10 @@
     </component>
     <component>
       <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent</implementation-class>
+      <skipForDefaultProject/>
+    </component>
+    <component>
+      <implementation-class>com.github.jk1.ytplugin.notifications.NotificationsComponent</implementation-class>
       <skipForDefaultProject/>
     </component>
     <component>

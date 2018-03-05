@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.navigator
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD
@@ -35,9 +34,7 @@ class SourceNavigatorComponent(override val project: Project) :
             }
         }
         if (port == null) {
-            showErrorNotification(
-                    text = "Can't listen on ports 63330 to 63339. 'Open in IDE' feature will be disabled",
-                    type = NotificationType.WARNING)
+            showWarning(text = "Can't listen on ports 63330 to 63339. 'Open in IDE' feature will be disabled")
         }
     }
 

@@ -23,7 +23,7 @@ class TaskManagementDisabledException :
             <b><a href="#open">Enable Plugin</a></b>""",
             NotificationType.ERROR,
             // notification hyperlink click handler
-            NotificationListener { notification, event ->
+            NotificationListener { notification, _ ->
                 notification.hideBalloon()
                 PluginManager.enablePlugin("com.intellij.tasks")
             }

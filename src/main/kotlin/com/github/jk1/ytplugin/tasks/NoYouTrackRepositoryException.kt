@@ -25,7 +25,7 @@ class NoYouTrackRepositoryException :
             <b><a href="#open">Set up YouTrack server connection</a></b>""",
             NotificationType.ERROR,
             // notification hyperlink click handler
-            NotificationListener { notification, notificationEvent ->
+            NotificationListener { notification, _ ->
                 notification.hideBalloon()
                 CONFIGURE_SERVERS_ACTION_ID.runAction()
             }

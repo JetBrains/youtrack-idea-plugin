@@ -42,7 +42,7 @@ interface ResponseLoggerTrait {
     private fun logXml(xml: String) {
         if (logger.isDebugEnabled) {
             try {
-                logger.debug("\n" + JDOMUtil.createOutputter("\n").outputString(JDOMUtil.loadDocument(xml)))
+                logger.debug("\n" + JDOMUtil.createOutputter("\n").outputString(JDOMUtil.load(xml)))
             } catch (e: Exception) {
                 logger.debug(e)
             }

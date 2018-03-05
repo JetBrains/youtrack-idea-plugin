@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Application-scoped persistent issue data cache. Issue data is persisted in a home folder instead of
  * a project directory. This comes in handy for projects with /.idea under VCS control.
  */
-@State(name = "YouTrack Issues", storages = arrayOf(Storage(value = "issues.xml")))
+@State(name = "YouTrack Issues", storages = [(Storage(value = "issues.xml"))])
 class PersistentIssueStoreComponent : ApplicationComponent, PersistentStateComponent<Memento> {
 
     private var loadedMemento: Memento = Memento()

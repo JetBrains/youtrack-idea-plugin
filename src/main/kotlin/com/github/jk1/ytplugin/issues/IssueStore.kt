@@ -16,7 +16,7 @@ class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterabl
 
     fun update(repo: YouTrackServer): ActionCallback {
         if (!isUpdating()) {
-            logger.debug("Issue store refresh started for project ${repo.project.name} and YouTrack server ${repo.url}")
+            logger.debug("Issue store refresh scheduled for project ${repo.project.name} and YouTrack server ${repo.url}")
             currentCallback = ActionCallback()
             RefreshIssuesTask(currentCallback, repo).queue()
         }

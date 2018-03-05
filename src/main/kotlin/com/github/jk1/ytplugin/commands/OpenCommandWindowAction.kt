@@ -10,7 +10,6 @@ import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.ui.CommandDialog
 import com.intellij.icons.AllIcons
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
@@ -36,9 +35,7 @@ class OpenCommandWindowAction : AnAction(
                 exception.showAsNotificationBalloon(project)
             }
         } else {
-            showErrorNotification(
-                    "Can't open YouTrack command window",
-                    "No open project found", NotificationType.ERROR)
+            showError("Can't open YouTrack command window", "No open project found")
         }
     }
 

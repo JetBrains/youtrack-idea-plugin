@@ -5,12 +5,19 @@ import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import javax.swing.SwingUtilities
 
-interface IdeNotificationsTrait
-{
-    fun showErrorNotification(
-            title: String = "YouTrack plugin error",
-            text: String?,
-            type: NotificationType) = SwingUtilities.invokeLater {
-        Notifications.Bus.notify(Notification("YouTrack Integration Plugin", title, text ?: "null", type))
+interface IdeNotificationsTrait {
+
+    private val groupId get() = "YouTrack Integration Plugin"
+
+    fun showNotification(title: String, text: String) = SwingUtilities.invokeLater {
+        Notifications.Bus.notify(Notification(groupId, title, text, NotificationType.INFORMATION))
+    }
+
+    fun showWarning(title: String = "YouTrack plugin error", text: String) = SwingUtilities.invokeLater {
+        Notifications.Bus.notify(Notification(groupId, title, text, NotificationType.WARNING))
+    }
+
+    fun showError(title: String = "YouTrack plugin error", text: String) = SwingUtilities.invokeLater {
+        Notifications.Bus.notify(Notification(groupId, title, text, NotificationType.ERROR))
     }
 }

@@ -19,6 +19,7 @@ class IssueStoreUpdaterComponent(override val project: Project) : AbstractProjec
 
     override fun initComponent() {
         //  todo: customizable update interval
+
         timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             SwingUtilities.invokeLater {
                 if (!project.isDisposed) {
@@ -34,7 +35,7 @@ class IssueStoreUpdaterComponent(override val project: Project) : AbstractProjec
         timedRefreshTask.cancel(true)
     }
 
-    fun addUpdateListener(listener: () -> Unit) {
+    fun subscribe(listener: () -> Unit) {
         listeners.add(listener)
     }
 
