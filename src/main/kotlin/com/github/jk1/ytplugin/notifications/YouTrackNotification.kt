@@ -17,7 +17,7 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
 
     init {
         val root = item.asJsonObject
-        content = decode(root.get("content").asString)
+        content = prettifyContent(decode(root.get("content").asString))
         metadata = decode(root.get("metadata").asString)
         val metadataElement = JsonParser().parse(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
@@ -33,5 +33,9 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
             it.copyTo(out)
         }
         return out.toString("UTF-8")
+    }
+
+    private fun prettifyContent(content: String): String {
+        return content.lines().filterIndexed { index, _ -> index != 4  }.joinToString("\n")
     }
 }

@@ -41,6 +41,9 @@ class NotificationsComponent(override val project: Project) :
                     val diff = remote.drop(local.size)
                     notifications[it.id] = remote
                     diff.forEach { handleNotification(it) }
+                } catch (e: UnsupportedOperationException) {
+                    logger.info(e.message)
+                    timedRefreshTask.cancel(false)
                 } catch (e: Exception) {
                     logger.warn(e)
                 }
