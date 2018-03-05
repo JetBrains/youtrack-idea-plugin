@@ -28,6 +28,14 @@ intellij {
     println "This build uses IDEA $version"
 }
 
+idea {
+    module {
+        downloadSources = true
+        outputDir file("$buildDir/idea/main")
+        testOutputDir file("$buildDir/idea/test")
+    }
+}
+
 dependencies {
     compile project(':api')
     compile 'org.nanohttpd:nanohttpd:2.3.0'
