@@ -9,21 +9,24 @@ import java.util.zip.GZIPInputStream
 
 class YouTrackNotification(item: JsonElement, val repoUrl: String) {
 
+    val id: String
+
     val content: String
     val metadata: String
-    val id: String
+    val issueId: String
     val summary: String
     val url: String
 
     init {
         val root = item.asJsonObject
+        id = root.get("id").asString
         content = prettifyContent(decode(root.get("content").asString))
         metadata = decode(root.get("metadata").asString)
         val metadataElement = JsonParser().parse(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
-        id = issueElement.get("id").asString
+        issueId = issueElement.get("id").asString
         summary = issueElement.get("summary").asString
-        url = "$repoUrl/issues/$id"
+        url = "$repoUrl/issues/$issueId"
     }
 
     private fun decode(content: String): String {
