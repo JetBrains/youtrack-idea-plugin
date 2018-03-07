@@ -47,6 +47,7 @@ class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issueList))
         group.addConfigureTaskServerAction()
+        group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }
 
