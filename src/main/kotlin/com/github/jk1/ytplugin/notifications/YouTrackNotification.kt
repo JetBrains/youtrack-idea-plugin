@@ -20,13 +20,13 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
     init {
         val root = item.asJsonObject
         id = root.get("id").asString
-        content = prettifyContent(decode(root.get("content").asString))
         metadata = decode(root.get("metadata").asString)
         val metadataElement = JsonParser().parse(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
         issueId = issueElement.get("id").asString
         summary = issueElement.get("summary").asString
-        url = "$repoUrl/issues/$issueId"
+        url = "$repoUrl/issue/$issueId"
+        content = prettifyContent(decode(root.get("content").asString))
     }
 
     private fun decode(content: String): String {
@@ -39,6 +39,6 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
     }
 
     private fun prettifyContent(content: String): String {
-        return content.lines().filterIndexed { index, _ -> index != 4  }.joinToString("\n")
+        return content.replace("<p>$url</p>\n" ,"")
     }
 }
