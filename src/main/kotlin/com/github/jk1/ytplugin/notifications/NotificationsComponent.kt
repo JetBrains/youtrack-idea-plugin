@@ -33,9 +33,12 @@ class NotificationsComponent(override val project: Project) : AbstractProjectCom
     fun update() {
         if (!project.isDisposed) {
             taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
+                logger.debug("Fetching notifications from YouTrack server ${it.url}")
                 try {
                     val notifications = NotificationsRestClient(it).getNotifications()
-                    notifications.filterUnseen().forEach { handleNotification(it) }
+                    val unseen = notifications.filterUnseen()
+                    logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
+                    unseen.forEach { handleNotification(it) }
                     saveAsSeen(notifications)
                 } catch (e: UnsupportedOperationException) {
                     logger.info(e.message)
@@ -59,11 +62,11 @@ class NotificationsComponent(override val project: Project) : AbstractProjectCom
         }
     }
 
-    private fun saveAsSeen(notifications: List<YouTrackNotification>){
+    private fun saveAsSeen(notifications: List<YouTrackNotification>) {
         PropertiesComponent.getInstance().setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
     }
 
-    private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification>{
+    private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification> {
         val ids = PropertiesComponent.getInstance().getValue(PERSISTENT_KEY, "").split(" ").toSet()
         return this.filter { !ids.contains(it.id) }
     }
