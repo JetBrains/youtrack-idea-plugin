@@ -30,7 +30,7 @@ class NotificationsComponent(override val project: Project) : AbstractProjectCom
         timedRefreshTask.cancel(true)
     }
 
-    private fun update() {
+    fun update() {
         if (!project.isDisposed) {
             taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
                 try {

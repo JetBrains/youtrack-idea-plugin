@@ -20,7 +20,7 @@ allprojects {
 def supportedVersions = ['IC-2017.1', 'IC-2017.2', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2017.2'
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'LATEST-TRUNK-SNAPSHOT'
     plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false

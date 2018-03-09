@@ -26,11 +26,14 @@ class PluginInstallationTest : IdeaProjectTrait {
     fun testPluginCanBeInstalled() {
         // fails on inconsistent plugin.xml, incomplete classpath and so on
         with (ComponentAware.of(fixture.project)){
-            Assert.assertNotNull(adminComponent)
-            Assert.assertNotNull(commandComponent)
-            Assert.assertNotNull(sourceNavigatorComponent)
             Assert.assertNotNull(taskManagerComponent)
+            Assert.assertNotNull(commandComponent)
+            Assert.assertNotNull(adminComponent)
+            Assert.assertNotNull(sourceNavigatorComponent)
             Assert.assertNotNull(issueStoreComponent)
+            Assert.assertNotNull(issueUpdaterComponent)
+            Assert.assertNotNull(notificationsComponent)
+            Assert.assertNotNull(pluginApiComponent)
         }
     }
 

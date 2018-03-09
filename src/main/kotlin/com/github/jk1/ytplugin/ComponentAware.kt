@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.editor.AdminComponent
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent
 import com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent
 import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
+import com.github.jk1.ytplugin.notifications.NotificationsComponent
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
 import com.intellij.openapi.project.Project
 
@@ -41,6 +42,9 @@ interface ComponentAware {
 
     val issueUpdaterComponent: IssueStoreUpdaterComponent
         get() = project.getComponent(IssueStoreUpdaterComponent::class.java)!!
+
+    val notificationsComponent: NotificationsComponent
+        get() = project.getComponent(NotificationsComponent::class.java)!!
 
     val pluginApiComponent: YouTrackPluginApiComponent
         get() = project.getComponent(YouTrackPluginApi::class.java) as YouTrackPluginApiComponent
