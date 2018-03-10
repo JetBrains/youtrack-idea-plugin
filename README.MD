@@ -37,6 +37,15 @@ This feature requires local ports to be opened, so you may want to configure you
 
 Plugin displays issue list matching the query set in server settings. When an issue is selected, issue preview appears with wiki markup rendered.
 
+#### Notifications
+
+With YouTrack 2018.1+ plugin can show issue tracker notifications in IDE. To enable notifications server wide one should have 'REST API' notification channel enabled on Global Settings page in YouTrack.
+To disable notifications in IDE navigate to File > Appearance & Behavior > Notifications and switch the corresponding category to 'No Balloon'.
+
+#### Autolinks
+
+Issue IDs are turned into navigable links in VCS history and Java code comments.
+
 ## Plugin logs
 
 If you think there's something wrong going on with the plugin try checking plugin logs.
