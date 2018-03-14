@@ -23,7 +23,7 @@ class NotificationsComponent(override val project: Project) : AbstractProjectCom
 
     override fun initComponent() {
         //  todo: customizable update interval
-        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({ update() }, 0, 5, TimeUnit.MINUTES)
+        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({ update() }, 15, 300, TimeUnit.SECONDS)
     }
 
     override fun disposeComponent() {
