@@ -12,7 +12,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
         private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
                 "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
                 "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
-                "sprint", "voterName", "permittedGroup", "markdown")
+                "sprint", "voterName", "permittedGroup", "markdown", "wikified")
     }
 
     val json: String
@@ -30,6 +30,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
     val tags: List<IssueTag>
     val attachments: List<Attachment>
     val url: String
+    val wikified: Boolean
 
     init {
         val root = item.asJsonObject
@@ -38,6 +39,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
         entityId = root.get("entityId")?.asString
         summary = root.getFieldValue("summary")?.asString ?: ""
         description = root.getFieldValue("description")?.asString ?: ""
+        wikified = root.getFieldValue("wikified")?.asBoolean ?: false
         createDate = Date(root.getFieldValue("created")?.asLong ?: 0)
         updateDate = Date(root.getFieldValue("updated")?.asLong ?: 0)
         resolved = root.getFieldValue("resolved") != null
