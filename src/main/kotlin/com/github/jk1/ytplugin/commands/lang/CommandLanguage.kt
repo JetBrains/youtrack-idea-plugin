@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.commands.lang
 
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.lang.DependentLanguage
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.FileTypeConsumer
 import com.intellij.openapi.fileTypes.FileTypeFactory
@@ -9,7 +10,7 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.psi.FileViewProvider
 import javax.swing.Icon
 
-object CommandLanguage : Language("YouTrack Commands") {
+object CommandLanguage : Language("YouTrack Commands"), DependentLanguage {
 
     override fun isCaseSensitive() = false
 }
