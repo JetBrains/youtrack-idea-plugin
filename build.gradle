@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij' version '0.2.18'
+    id 'org.jetbrains.intellij' version '0.3.12'
     id 'org.jetbrains.kotlin.jvm' version '1.2.30'
     id 'idea'
 }
@@ -16,10 +16,10 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IC-2017.1', 'IC-2017.2', 'IC-2018.1', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IC-2018.1', 'IC-2018.2', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2018.1'
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2018.2'
     plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false
