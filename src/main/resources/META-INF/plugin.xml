@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration Plugin</name>
-  <version>0.9.2</version>
+  <version>0.9.3</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
@@ -10,11 +10,12 @@
             <li> Adds command window to execute YouTrack commands from IDE </li>
             <li> Supports code navigation when clicking on Java stack traces in issue tracker </li>
             <li> Provides issue browser </li>
-            <li> Renders YouTrack wiki markup< /li>
+            <li> Renders YouTrack wiki markup </li>
             <li> Recognizes YouTrack issue ids in Java code comments and VCS history </li>
             <li> Displays issue tracker notifications in IDE </li>
         </ul>
         <p>Compatibility: YouTrack 5.2+<p/>
+        <p>Four minute plugin demo <a href="https://www.youtube.com/watch?v=gGVEwlZpvj8">on YouTube</a></p>
         <br>
         <p>If you like this plugin, you can support it:<p/>
         <ul>
