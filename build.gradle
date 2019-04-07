@@ -16,10 +16,10 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IC-2018.1', 'IC-2018.2', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IC-2018.1', 'IC-2018.2', 'IC-2018.3', 'IC-2019.1', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2018.2'
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2019.1'
     plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false
