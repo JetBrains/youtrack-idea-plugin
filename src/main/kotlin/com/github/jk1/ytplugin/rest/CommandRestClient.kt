@@ -15,6 +15,7 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)
         return method.connect {
+            it.addRequestHeader("Accept", "application/json")
             val status = httpClient.executeMethod(method)
             if (status == 200) {
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
@@ -27,6 +28,7 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
     fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val method = PostMethod(command.executeCommandUrl)
         return method.connect {
+            it.addRequestHeader("Accept", "application/json")
             val status = httpClient.executeMethod(method)
             if (status != 200) {
                 val string = method.responseBodyAsLoggedStream()
