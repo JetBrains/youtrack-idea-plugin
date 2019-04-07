@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration Plugin</name>
-  <version>0.9.3</version>
+  <version>0.9.4</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[

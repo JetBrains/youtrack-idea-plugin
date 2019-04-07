@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij' version '0.3.12'
+    id 'org.jetbrains.intellij' version '0.4.7'
     id 'org.jetbrains.kotlin.jvm' version '1.2.30'
     id 'idea'
 }
@@ -9,7 +9,7 @@ allprojects {
     targetCompatibility = 1.8
 
     group 'com.github.jk1'
-    version '0.9.3'
+    version '0.9.4'
 
     repositories {
         mavenCentral()
