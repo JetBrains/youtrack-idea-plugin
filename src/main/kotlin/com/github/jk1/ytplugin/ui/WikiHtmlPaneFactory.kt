@@ -28,7 +28,6 @@ object WikiHtmlPaneFactory {
         htmlPane.contentType = "text/html"
         htmlPane.isEditable = false
         htmlPane.addHyperlinkListener(EventListener(issue))
-        htmlPane.isFocusable = false
         return htmlPane
     }
 
