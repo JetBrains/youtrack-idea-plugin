@@ -12,11 +12,11 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
-class IssueListToolWindowContent(val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
+class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
 
-    private val splitter = EditorSplitter()
+    private val splitter = EditorSplitter(vertical)
     private val viewer = IssueViewer()
     private val issueList = IssueList(repo)
     private val searchBar = IssueSearchBar(repo)

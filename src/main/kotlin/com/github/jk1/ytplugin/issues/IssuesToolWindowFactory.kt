@@ -19,6 +19,8 @@ import com.intellij.ui.content.ContentManager
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Cursor
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
@@ -38,13 +40,25 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         createContent(project, toolWindow)
+        // listen to task management plugin configuration changes and update tool window accordingly
         ComponentAware.of(project).taskManagerComponent.addConfigurationChangeListener {
-            // listen to task management plugin configuration changes and update tool window accordingly
             SwingUtilities.invokeLater {
                 logger.debug("Server configuration change detected, reloading tool window contents")
                 createContent(project, toolWindow)
             }
         }
+        // listen to resize events and convert from horizontal to vertical layout and back
+        toolWindow.component.addComponentListener(object: ComponentAdapter(){
+
+            private var horizontal = toolWindow.anchor.isHorizontal
+
+            override fun componentResized(e: ComponentEvent) {
+                if ((e.component.width > e.component.height).xor(horizontal)) {
+                    horizontal = !horizontal
+                    createContent(project, toolWindow)
+                }
+            }
+        })
     }
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {
@@ -56,7 +70,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel())
             else -> {
                 repos.forEach {
-                    val panel = IssueListToolWindowContent(it)
+                    val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                 }
                 Disposer.register(project, Disposable {
@@ -77,7 +91,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure", { CONFIGURE_SERVERS_ACTION_ID.runAction() })
+        val configureLabel = createLink("Configure") { CONFIGURE_SERVERS_ACTION_ID.runAction() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)
