@@ -17,8 +17,11 @@ import javax.swing.SwingUtilities
 
 class NotificationsComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
 
-    private val PERSISTENT_KEY = "com.jetbrains.youtrack.notifications"
-    private val group = NotificationGroup("YouTrack Notifications", STICKY_BALLOON, true, null, YouTrackPluginIcons.YOUTRACK)
+    companion object {
+        private val PERSISTENT_KEY = "com.jetbrains.youtrack.notifications"
+        private val group = NotificationGroup("YouTrack Notifications", STICKY_BALLOON, true, null, YouTrackPluginIcons.YOUTRACK)
+    }
+
     private lateinit var timedRefreshTask: ScheduledFuture<*>
 
     override fun initComponent() {
