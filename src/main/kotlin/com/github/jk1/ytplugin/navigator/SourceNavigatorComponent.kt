@@ -3,9 +3,13 @@ package com.github.jk1.ytplugin.navigator
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
+import com.intellij.openapi.application.Application
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.impl.ApplicationImpl
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD
+import sun.net.www.ApplicationLaunchException
 import java.io.IOException
 
 /**
@@ -28,7 +32,7 @@ class SourceNavigatorComponent(override val project: Project) :
                 server.start()
                 httpServer = server
                 true
-            } catch(e: IOException) {
+            } catch (e: IOException) {
                 logger.debug("Can't use port $it to listen for YouTrack connections: ${e.message}")
                 false
             }
@@ -39,10 +43,12 @@ class SourceNavigatorComponent(override val project: Project) :
     }
 
     override fun projectClosed() {
-        try {
-            httpServer?.stop()
-        } catch(e: Exception) {
-            logger.warn("Failed to stop embedded http server for project ${project.name}", e)
+        ApplicationManager.getApplication().executeOnPooledThread {
+            try {
+                httpServer?.stop()
+            } catch (e: Exception) {
+                logger.warn("Failed to stop embedded http server for project ${project.name}", e)
+            }
         }
     }
 
