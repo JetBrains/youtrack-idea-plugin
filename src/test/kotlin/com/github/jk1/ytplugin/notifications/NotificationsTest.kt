@@ -30,7 +30,7 @@ class NotificationsTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Co
 
     @Test
     fun testNotificationFetch(){
-        Thread.sleep(60000) // let notification analyzer generate notification
+        Thread.sleep(120000) // let notification analyzer generate notification
         val notifications = NotificationsRestClient(repository).getNotifications()
         assertTrue(notifications.any { it.issueId == issueId })
     }
