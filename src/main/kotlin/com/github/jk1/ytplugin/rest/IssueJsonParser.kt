@@ -6,17 +6,17 @@ import com.google.gson.JsonElement
 
 object IssueJsonParser {
 
-    fun parseIssue(element: JsonElement, url: String) = parseSafe(element, { Issue(element, url) })
+    fun parseIssue(element: JsonElement, url: String) = parseSafe(element) { Issue(element, url) }
 
-    fun parseCustomField(element: JsonElement) = parseSafe(element, { CustomField(element) })
+    fun parseCustomField(element: JsonElement) = parseSafe(element) { CustomField(element) }
 
-    fun parseComment(element: JsonElement) = parseSafe(element, { IssueComment(element) })
+    fun parseComment(element: JsonElement) = parseSafe(element) { IssueComment(element) }
 
-    fun parseTag(element: JsonElement) = parseSafe(element, { IssueTag(element) })
+    fun parseTag(element: JsonElement) = parseSafe(element) { IssueTag(element) }
 
-    fun parseLink(element: JsonElement, url: String) = parseSafe(element, { IssueLink(element, url) })
+    fun parseLink(element: JsonElement, url: String) = parseSafe(element) { IssueLink(element, url) }
 
-    fun parseAttachment(element: JsonElement) = parseSafe(element, { Attachment(element) })
+    fun parseAttachment(element: JsonElement) = parseSafe(element) { Attachment(element) }
 
     private fun <T> parseSafe(element: JsonElement, parser: () -> T): T? {
         try {

@@ -6,9 +6,11 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.google.gson.JsonParser
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
+import java.io.InputStreamReader
 
 class CommandRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
@@ -31,12 +33,23 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
             it.addRequestHeader("Accept", "application/json")
             val status = httpClient.executeMethod(method)
             if (status != 200) {
-                val string = method.responseBodyAsLoggedStream()
-                val element = SAXBuilder(false).build(string).rootElement
-                if ("error" == element.name) {
-                    CommandExecutionResponse(errors = listOf(element.text))
-                } else {
-                    CommandExecutionResponse(messages = listOf(element.text))
+                val body = method.responseBodyAsLoggedStream()
+                when (method.getResponseHeader("Content-Type")?.value?.split(";")?.first()) {
+                    "application/xml" -> {
+                        val element = SAXBuilder(false).build(body).rootElement
+                        if ("error" == element.name) {
+                            CommandExecutionResponse(errors = listOf(element.text))
+                        } else {
+                            CommandExecutionResponse(messages = listOf(element.text))
+                        }
+                    }
+                    "application/json" -> {
+                        val stream = InputStreamReader(body, "UTF-8")
+                        val error = JsonParser().parse(stream).asJsonObject.get("value").asString
+                        CommandExecutionResponse(errors = listOf("Workflow: $error"))
+                    }
+                    else ->
+                        CommandExecutionResponse(errors = listOf("Unexpected command response from YouTrack server"))
                 }
             } else {
                 method.responseBodyAsLoggedString()
@@ -47,15 +60,13 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
 
     private val YouTrackCommandExecution.executeCommandUrl: String
         get () {
-            with(command) {
-                val execUrl = "${repository.url}/rest/issue/execute/${session.issue.id}"
-                var params = "command=${command.urlencoded}&comment=${comment?.urlencoded}&disableNotifications=$silent"
-                if (commentVisibleGroup != "All Users") {
-                    // 'All Users' shouldn't be passed as a parameter value. Localized YouTracks can't understand that.
-                    params = "$params&group=${commentVisibleGroup.urlencoded}"
-                }
-                return "$execUrl?$params"
+            val execUrl = "${repository.url}/rest/issue/execute/${session.issue.id}"
+            var params = "command=${command.urlencoded}&comment=${comment?.urlencoded}&disableNotifications=$silent"
+            if (commentVisibleGroup != "All Users") {
+                // 'All Users' shouldn't be passed as a parameter value. Localized YouTracks can't understand that.
+                params = "$params&group=${commentVisibleGroup.urlencoded}"
             }
+            return "$execUrl?$params"
         }
 
     private val YouTrackCommand.intellisenseCommandUrl: String
