@@ -9,7 +9,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.*
-import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 
 class NotificationsTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
@@ -30,9 +30,15 @@ class NotificationsTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Co
 
     @Test
     fun testNotificationFetch(){
-        Thread.sleep(120000) // let notification analyzer generate notification
-        val notifications = NotificationsRestClient(repository).getNotifications()
-        assertTrue(notifications.any { it.issueId == issueId })
+        var limit = 0
+        var notifications = listOf<YouTrackNotification>()
+        while (notifications.none { it.issueId == issueId }) {
+            Thread.sleep(10000) // let notification analyzer generate notification
+            notifications = NotificationsRestClient(repository).getNotifications()
+            if (limit++ > 60){
+               fail("No notifications were generated in YouTrack within 10 minutes, aborting")
+            }
+        }
     }
 
     @After
