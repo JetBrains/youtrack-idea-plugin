@@ -3,6 +3,8 @@ package com.github.jk1.ytplugin;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 /**
  * YouTrack integration plugin API to be used by other plugins
  */
@@ -16,4 +18,10 @@ public interface YouTrackPluginApi {
      * @throws IllegalArgumentException if target issue is nowhere to be found
      */
     void openIssueInToolWidow(@NotNull String issueId);
+
+    @NotNull
+    List<YouTrackIssue> search(@NotNull String query);
+
+    @NotNull
+    YouTrackCommandExecutionResult executeCommand(YouTrackIssue issue, String command);
 }

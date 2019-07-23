@@ -1,10 +1,14 @@
 package com.github.jk1.ytplugin.commands.model
 
-class CommandExecutionResponse(val messages: List<String> = listOf(), val errors: List<String> = listOf()) {
+import com.github.jk1.ytplugin.YouTrackCommandExecutionResult
 
-    fun isSuccessful() = errors.isEmpty()
+class CommandExecutionResponse(
+        val messages: List<String> = listOf(),
+        val errors: List<String> = listOf()): YouTrackCommandExecutionResult {
 
-    fun hasMessages() = messages.isNotEmpty()
+    override fun isSuccessful() = errors.isEmpty()
 
-    fun hasErrors() = errors.isNotEmpty()
+    override fun getExecutionMessages() = messages
+
+    override fun getExecutionErrors() = errors
 }

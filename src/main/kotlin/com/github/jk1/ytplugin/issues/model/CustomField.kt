@@ -1,11 +1,12 @@
 package com.github.jk1.ytplugin.issues.model
 
+import com.github.jk1.ytplugin.YouTrackIssueField
 import com.google.gson.JsonElement
 import java.awt.Color
 import java.text.SimpleDateFormat
 import java.util.*
 
-class CustomField(item: JsonElement) {
+class CustomField(item: JsonElement): YouTrackIssueField {
 
     val name: String
     val value: List<String>
@@ -45,6 +46,10 @@ class CustomField(item: JsonElement) {
             backgroundColor = color.asJsonObject.get("bg").asColor()
         }
     }
+
+    override fun getFieldName() = name
+
+    override fun getFieldValues() = value
 
     private fun JsonElement.asColor() = when {
     // #F0A -> #FF00AA

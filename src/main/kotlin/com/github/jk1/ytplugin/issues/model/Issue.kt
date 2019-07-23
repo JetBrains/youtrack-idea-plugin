@@ -1,12 +1,13 @@
 package com.github.jk1.ytplugin.issues.model
 
+import com.github.jk1.ytplugin.YouTrackIssue
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import java.util.*
 
-class Issue(item: JsonElement, val repoUrl: String) {
+class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
     companion object {
         private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
@@ -16,7 +17,6 @@ class Issue(item: JsonElement, val repoUrl: String) {
     }
 
     val json: String
-
     val id: String
     val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
     val summary: String
@@ -37,7 +37,7 @@ class Issue(item: JsonElement, val repoUrl: String) {
         json = item.toString()
         id = root.get("id").asString
         entityId = root.get("entityId")?.asString
-        summary = root.getFieldValue("summary")?.asString ?: ""
+        summary = root.getFieldValue("summary")?.asString  ?: ""
         description = root.getFieldValue("description")?.asString ?: ""
         wikified = root.getFieldValue("wikified")?.asBoolean ?: false
         createDate = Date(root.getFieldValue("created")?.asLong ?: 0)
@@ -66,6 +66,14 @@ class Issue(item: JsonElement, val repoUrl: String) {
                 .requireNoNulls()
         url = "$repoUrl/issue/$id"
     }
+
+    override fun getIssueId() = id
+
+    override fun getIssueSummary() = summary
+
+    override fun getIssueDescription() = description
+
+    override fun getIssueFields() = customFields
 
     override fun toString() = "$id $summary" // Quick search in issue list relies on that
 

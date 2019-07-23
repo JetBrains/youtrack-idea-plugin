@@ -1,6 +1,9 @@
 package com.github.jk1.ytplugin
 
+import com.github.jk1.ytplugin.commands.CommandSession
+import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.rest.CommandRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.IssueViewer
 import com.intellij.openapi.components.AbstractProjectComponent
@@ -13,6 +16,19 @@ class YouTrackPluginApiComponent(override val project: Project) :
 
     override fun openIssueInToolWidow(issueId: String) {
         openIssueInToolWidow(findIssue(issueId))
+    }
+
+    override fun search(query: String): List<YouTrackIssue> {
+        val client = IssuesRestClient(taskManagerComponent.getActiveYouTrackRepository())
+        return client.getIssues(query)
+    }
+
+    override fun executeCommand(issue: YouTrackIssue, command: String): YouTrackCommandExecutionResult {
+        if (issue !is Issue) {
+            throw IllegalArgumentException("Can't handle issue that was not loaded from the plugin API")
+        }
+        val client = CommandRestClient(taskManagerComponent.getYouTrackRepository(issue))
+        return client.executeCommand(YouTrackCommandExecution(CommandSession(issue), command, commentVisibleGroup = "All Users"))
     }
 
     fun openIssueInToolWidow(issue: Issue) {
