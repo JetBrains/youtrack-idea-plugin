@@ -19,9 +19,25 @@ public interface YouTrackPluginApi {
      */
     void openIssueInToolWidow(@NotNull String issueId);
 
+
+    /**
+     * Search for issues in Youtrack.
+     * This method makes synchronous network calls and shouldn't be called on EDT.
+     *
+     * @param query https://www.jetbrains.com/help/youtrack/incloud/Search-and-Command-Attributes.html
+     * @return list of issues, maybe empty
+     */
     @NotNull
     List<YouTrackIssue> search(@NotNull String query);
 
+    /**
+     * Tries to execute a command against an issue in YouTrack.
+     * This method makes synchronous network calls and shouldn't be called on EDT.
+     *
+     * @param issue an issue to apply command to
+     * @param command https://www.jetbrains.com/help/youtrack/incloud/Command-Reference.html
+     * @return command execution result with all errors occurred in process
+     */
     @NotNull
     YouTrackCommandExecutionResult executeCommand(YouTrackIssue issue, String command);
 }
