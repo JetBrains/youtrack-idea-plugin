@@ -1,26 +1,22 @@
-package com.github.jk1.ytplugin.commands
+package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.IdeaProjectTrait
-import com.github.jk1.ytplugin.IssueRestTrait
-import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertEquals
 
-class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
+class PluginApiTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var issue: Issue
 
-    override val project: Project by lazy { fixture.project }
     override lateinit var repository: YouTrackServer
+    override val project: Project by lazy { fixture.project }
 
     @Before
     fun setUp() {
@@ -34,13 +30,18 @@ class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, C
     }
 
     @Test
-    fun getVisibilityGroups() {
-        adminComponent.getActiveTaskVisibilityGroups(issue) { groups ->
-            assertEquals(3, groups.size)
-            assertTrue(groups.contains("All Users"))
-            assertTrue(groups.contains("Registered Users"))
-            assertTrue(groups.contains("Automated Test-team"))
-        }.get()
+    fun testIssueSearch() {
+        val issues = pluginApiComponent.search(issue.id)
+
+        assertEquals(1, issues.size)
+        assertEquals(issue.id, issues.first().issueId)
+    }
+
+    @Test
+    fun testCommandExecution() {
+        pluginApiComponent.executeCommand(issue, "Fixed")
+
+        assertTrue(repository.getTasks(issue.id, 0, 1).first().isClosed)
     }
 
     @After

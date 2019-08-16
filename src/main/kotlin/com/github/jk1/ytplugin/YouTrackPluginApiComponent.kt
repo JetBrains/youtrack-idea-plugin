@@ -19,8 +19,9 @@ class YouTrackPluginApiComponent(override val project: Project) :
     }
 
     override fun search(query: String): List<YouTrackIssue> {
-        val client = IssuesRestClient(taskManagerComponent.getActiveYouTrackRepository())
-        return client.getIssues(query)
+        return taskManagerComponent.getAllConfiguredYouTrackRepositories().flatMap {
+            IssuesRestClient(it).getIssues(query)
+        }
     }
 
     override fun executeCommand(issue: YouTrackIssue, command: String): YouTrackCommandExecutionResult {
