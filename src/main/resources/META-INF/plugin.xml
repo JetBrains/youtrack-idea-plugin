@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration</name>
-  <version>0.9.7</version>
+  <version>0.10</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
@@ -28,8 +28,7 @@
 
   <change-notes><![CDATA[
         <ul>
-            <li> YouTrack notifications are now displayed in IDE (YouTrack 2018.1+) </li>
-            <li> Help action added to provide quick plugin reference </li>
+            <li> Extended plugin API with issue search and command execution facilities </li>
         </ul>
           ]]></change-notes>
 
