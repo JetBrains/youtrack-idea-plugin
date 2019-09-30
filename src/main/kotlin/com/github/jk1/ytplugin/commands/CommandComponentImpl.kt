@@ -6,15 +6,14 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.rest.CommandRestClient
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.FutureResult
 import java.util.concurrent.Future
 
-class CommandComponentImpl(override val project: Project) :
-        AbstractProjectComponent(project), CommandComponent, IdeNotificationsTrait {
+class CommandComponentImpl(override val project: Project): ProjectComponent, CommandComponent, IdeNotificationsTrait {
 
     private val assistCache = CommandSuggestResponseCache(project)
 

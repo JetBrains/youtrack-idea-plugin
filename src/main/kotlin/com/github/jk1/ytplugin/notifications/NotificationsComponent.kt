@@ -9,13 +9,13 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationDisplayType.*
 import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
-class NotificationsComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
+class NotificationsComponent(override val project: Project) : ProjectComponent, ComponentAware {
 
     companion object {
         private val PERSISTENT_KEY = "com.jetbrains.youtrack.notifications"

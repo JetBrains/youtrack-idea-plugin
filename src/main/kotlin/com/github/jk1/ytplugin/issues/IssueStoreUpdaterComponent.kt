@@ -2,7 +2,7 @@ package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.concurrency.JobScheduler
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -12,7 +12,7 @@ import javax.swing.SwingUtilities
  * Project-scoped issue store maintenance component.
  * Manages timed issue store updates for active projects
  */
-class IssueStoreUpdaterComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
+class IssueStoreUpdaterComponent(override val project: Project) : ProjectComponent, ComponentAware {
 
     private lateinit var timedRefreshTask: ScheduledFuture<*>
     private val listeners: MutableSet<() -> Unit> = mutableSetOf()

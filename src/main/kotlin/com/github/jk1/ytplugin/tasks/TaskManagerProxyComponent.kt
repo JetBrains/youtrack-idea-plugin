@@ -2,7 +2,7 @@ package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.concurrency.JobScheduler
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskManager
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  * Provides integration with task management plugin.
  * Encapsulates task management api details to decouple the rest of our plugin from them.
  */
-class TaskManagerProxyComponent(val project: Project) : AbstractProjectComponent(project) {
+class TaskManagerProxyComponent(val project: Project) : ProjectComponent {
 
     companion object {
         const val CONFIGURE_SERVERS_ACTION_ID = "tasks.configure.servers"

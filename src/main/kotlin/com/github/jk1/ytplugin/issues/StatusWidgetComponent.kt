@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.issues
 
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.StatusBar
@@ -13,7 +13,7 @@ import javax.swing.SwingUtilities
  * Status widget is not used yet, we just have nothing meaningful to display.
  * todo: plug it in when notification support will be implemented
  */
-class StatusWidgetComponent(val project: Project) : AbstractProjectComponent(project) {
+class StatusWidgetComponent(val project: Project) : ProjectComponent {
 
     @Volatile var offline = false
     set(value) {

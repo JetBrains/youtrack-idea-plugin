@@ -10,7 +10,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.concurrency.JobScheduler
-import com.intellij.openapi.components.AbstractProjectComponent
+import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -21,7 +21,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class AdminComponent(override val project: Project) : AbstractProjectComponent(project), ComponentAware {
+class AdminComponent(override val project: Project) : ProjectComponent, ComponentAware {
 
     companion object {
         val ALL_USERS = "All Users"
