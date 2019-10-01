@@ -26,7 +26,7 @@ class NotificationsComponent(override val project: Project) : ProjectComponent, 
 
     override fun initComponent() {
         //  todo: customizable update interval
-        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({ update() }, 15, 300, TimeUnit.SECONDS)
+        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({ update() }, 15, 60, TimeUnit.SECONDS)
     }
 
     override fun disposeComponent() {
@@ -41,7 +41,7 @@ class NotificationsComponent(override val project: Project) : ProjectComponent, 
                     val notifications = NotificationsRestClient(it).getNotifications()
                     val unseen = notifications.filterUnseen()
                     logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
-                    unseen.forEach { handleNotification(it) }
+                    unseen.forEach { notification -> handleNotification(notification) }
                     saveAsSeen(notifications)
                 } catch (e: UnsupportedOperationException) {
                     logger.info(e.message)
@@ -60,17 +60,17 @@ class NotificationsComponent(override val project: Project) : ProjectComponent, 
                 notification.addAction(BrowseNotificationAction(incoming))
                 notification.addAction(DismissNotificationAction(notification))
                 notification.addAction(ConfigureNotificationsAction(incoming))
-                notification.notify(null)
+                notification.notify(project)
             }
         }
     }
 
     private fun saveAsSeen(notifications: List<YouTrackNotification>) {
-        PropertiesComponent.getInstance().setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
+        PropertiesComponent.getInstance(project).setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
     }
 
     private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification> {
-        val ids = PropertiesComponent.getInstance().getValue(PERSISTENT_KEY, "").split(" ").toSet()
+        val ids = PropertiesComponent.getInstance(project).getValue(PERSISTENT_KEY, "").split(" ").toSet()
         return this.filter { !ids.contains(it.id) }
     }
 }

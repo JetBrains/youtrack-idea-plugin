@@ -10,11 +10,11 @@ import com.intellij.openapi.project.DumbAware
 
 
 class ConfigureNotificationsAction(private val notification: YouTrackNotification) :
-        AnAction("Configure Notifications", "", AllIcons.General.Settings), DumbAware {
+        AnAction("Configure", "", AllIcons.General.Settings), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
-            // todo: user loginor id instad of 'me'
+            // todo: user login or id instead of 'me'
             val url = "${notification.repoUrl}/users/me?tab=notifications"
             ServiceManager.getService(BrowserLauncher::class.java).open(url)
         }
