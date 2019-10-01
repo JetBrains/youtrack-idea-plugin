@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.jk1.ytplugin</id>
   <name>YouTrack Integration</name>
-  <version>0.10</version>
+  <version>0.11</version>
   <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
   <description><![CDATA[
@@ -28,13 +28,14 @@
 
   <change-notes><![CDATA[
         <ul>
-            <li> Extended plugin API with issue search and command execution facilities </li>
+            <li> Fixed bug with same notifications shown repeatedly over and over again </li>
+            <li> Action icons updated to meet 2019.X IDE defaults </li>
         </ul>
           ]]></change-notes>
 
   <!-- Compatible with Idea platform 2018.1 - 2019.1 -->
   <idea-version since-build="181" until-build="192.*"/>
-  <!-- Enable plugin in all products except MPS -->
+  <!-- Enable plugin in all products except  MPS -->
   <depends>com.intellij.modules.lang</depends>
   <!-- We depend on bundled task management plugin -->
   <depends>com.intellij.tasks</depends>
