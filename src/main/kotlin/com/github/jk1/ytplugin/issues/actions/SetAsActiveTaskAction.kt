@@ -15,7 +15,7 @@ class SetAsActiveTaskAction(private val getSelectedIssue: () -> Issue?, val repo
 
     override val text = "Open Task"
     override val description = "Create task manager task from a selected issue and switch to it"
-    override val icon = AllIcons.Graph.Export!!
+    override val icon = AllIcons.ToolbarDecorator.Export
     override val shortcut = "control shift A"
 
     override fun actionPerformed(event: AnActionEvent) {

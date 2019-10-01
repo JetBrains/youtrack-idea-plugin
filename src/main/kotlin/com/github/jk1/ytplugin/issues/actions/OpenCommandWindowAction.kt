@@ -12,7 +12,7 @@ class OpenCommandWindowAction(private val getSelectedIssue: () -> Issue?): Issue
 
     override val text = "Open Command Window"
     override val description = "Apply command to a currently selected issue in a tool window"
-    override val icon: Icon = AllIcons.Debugger.CommandLine
+    override val icon: Icon = AllIcons.Debugger.Console
     override val shortcut = "control shift Y"
 
     override fun actionPerformed(event: AnActionEvent) {

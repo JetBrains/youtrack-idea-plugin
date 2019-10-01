@@ -5,10 +5,10 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class PluginApiTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 

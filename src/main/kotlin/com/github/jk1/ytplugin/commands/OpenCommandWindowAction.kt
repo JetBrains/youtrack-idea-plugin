@@ -22,7 +22,7 @@ import com.intellij.openapi.project.Project
 class OpenCommandWindowAction : AnAction(
         "Open Command Dialog",
         "Apply YouTrack command to a current active task",
-        AllIcons.Debugger.CommandLine), DumbAware, IdeNotificationsTrait {
+        AllIcons.Debugger.Console), DumbAware, IdeNotificationsTrait {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project

@@ -21,7 +21,7 @@ class AnalyzeStacktraceAction(private val getSelectedIssue: () -> Issue?) : Issu
 
     override val text = "Analyze Stacktrace"
     override val description = "Open analyze stacktrace dialog for stacktrace from issue description"
-    override val icon: Icon = AllIcons.Debugger.ThreadStates.Exception
+    override val icon: Icon = AllIcons.Actions.Lightning
     override val shortcut = "control shift S"
 
     override fun actionPerformed(event: AnActionEvent) {

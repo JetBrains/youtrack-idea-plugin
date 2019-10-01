@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
-import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -16,16 +15,10 @@ import java.util.concurrent.ConcurrentHashMap
  * a project directory. This comes in handy for projects with /.idea under VCS control.
  */
 @State(name = "YouTrack Issues", storages = [(Storage(value = "issues.xml"))])
-class PersistentIssueStoreComponent : ApplicationComponent, PersistentStateComponent<Memento> {
+class PersistentIssueStoreComponent : PersistentStateComponent<Memento> {
 
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()
-
-    override fun getComponentName(): String = javaClass.name
-
-    override fun disposeComponent() {}
-
-    override fun initComponent() {}
 
     override fun getState() = Memento(stores)
 
