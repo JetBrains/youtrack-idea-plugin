@@ -1,9 +1,9 @@
 package com.github.jk1.ytplugin
 
+import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import java.text.SimpleDateFormat
@@ -14,8 +14,10 @@ val logger: Logger
 
 fun String.runAction() {
     val action = ActionManager.getInstance().getAction(this)
-    val event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, DataContext.EMPTY_CONTEXT)
-    action.actionPerformed(event)
+    DataManager.getInstance().dataContextFromFocusAsync.onSuccess { context ->
+        val event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, context)
+        action.actionPerformed(event)
+    }
 }
 
 fun AnActionEvent.whenActive(closure: (project: Project) -> Unit) {
