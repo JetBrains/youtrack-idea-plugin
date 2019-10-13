@@ -1,5 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
+import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,8 +18,17 @@ class CreateIssueAction : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         val text = getSelectedText(event)
         if (!text.isNullOrBlank()){
-            // POST /admin/users/me/drafts
-            // BrowserUtil.browse("...")
+            val project = event.project
+            if (project?.isDisposed == false) {
+                val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().firstOrNull()
+                if (repo != null) {
+                    // todo: fenced code block
+                    val id = IssuesRestClient(repo).createDraft(text)
+                    BrowserUtil.browse("${repo.url}/newIssue?draftId=$id")
+                } else {
+                    // todo: notification
+                }
+            }
         }
     }
 
