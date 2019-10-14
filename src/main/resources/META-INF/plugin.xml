@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>0.12</version>
+    <version>0.13</version>
     <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
@@ -28,7 +28,8 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li> Fixed broken "Configure" link in the plugin tool window </li>
+            <li> Create issue action has been added to the editor context menu </li>
+            <li> IDEA 2019.3 support </li>
         </ul>
           ]]></change-notes>
 
