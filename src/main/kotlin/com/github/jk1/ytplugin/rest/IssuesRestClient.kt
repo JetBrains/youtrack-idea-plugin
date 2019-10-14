@@ -3,13 +3,11 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
+import net.minidev.json.JSONObject
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
-import org.apache.http.entity.StringEntity
-import org.jdom.input.SAXBuilder
 import java.io.InputStreamReader
-import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 /**
@@ -18,10 +16,9 @@ import java.nio.charset.StandardCharsets
 class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrait {
 
     fun createDraft(summary: String): String {
-        val encodedSummary = URLEncoder.encode(summary, StandardCharsets.UTF_8.name())
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
         //todo: force markdown
-        method.requestEntity = StringRequestEntity("""{"summary": "$encodedSummary"}""", "application/json", StandardCharsets.UTF_8.name())
+        method.requestEntity = StringRequestEntity(summary.asMarkdownIssueDraft(), "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
@@ -72,4 +69,9 @@ class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrai
         val method = GetMethod("$url?$params")
         return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repository.url) } }
     }
+
+    private fun String.asMarkdownIssueDraft() = JSONObject().also {
+        it["description"] = this
+        it["usesMarkdown"] = true
+    }.toJSONString()
 }

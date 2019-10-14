@@ -22,7 +22,7 @@ fun String.runAction() {
 
 fun AnActionEvent.whenActive(closure: (project: Project) -> Unit) {
     val project = project
-    if (project != null && project.isInitialized) {
+    if (project != null && project.isInitialized && !project.isDisposed) {
         closure.invoke(project)
     }
 }

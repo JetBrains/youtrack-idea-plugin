@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.issues.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
+import com.github.jk1.ytplugin.whenActive
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -18,22 +19,22 @@ class CreateIssueAction : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         val text = getSelectedText(event)
         if (!text.isNullOrBlank()){
-            val project = event.project
-            if (project?.isDisposed == false) {
+            event.whenActive { project ->
                 val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().firstOrNull()
                 if (repo != null) {
-                    // todo: fenced code block
-                    val id = IssuesRestClient(repo).createDraft(text)
+                    val id = IssuesRestClient(repo).createDraft(text.asCodeBlock())
                     BrowserUtil.browse("${repo.url}/newIssue?draftId=$id")
-                } else {
-                    // todo: notification
                 }
             }
         }
     }
 
+    private fun String.asCodeBlock() = "```\n$this\n```"
+
     override fun update(event: AnActionEvent) {
-        event.presentation.isVisible = !getSelectedText(event).isNullOrBlank()
+        val project = event.project ?: return
+        event.presentation.isVisible = !getSelectedText(event).isNullOrBlank() &&
+                ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().isNotEmpty()
     }
 
     private fun getSelectedText(event: AnActionEvent): String? {
