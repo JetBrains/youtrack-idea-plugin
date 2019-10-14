@@ -9,7 +9,7 @@ allprojects {
     targetCompatibility = 1.8
 
     group 'com.github.jk1'
-    version '0.12'
+    version '0.13'
 
     repositories {
         mavenCentral()
