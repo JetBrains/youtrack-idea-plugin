@@ -33,7 +33,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
     protected open val focusRoot: JComponent = commandField
 
     private val applyAction = ExecuteCommandAction("Apply")
-    private val silentApplyAction = ExecuteCommandAction("Silent Apply", true)
+    private val silentApplyAction = ExecuteCommandAction("Apply without notification", true)
 
     override fun init() {
         title = "Apply Command"
