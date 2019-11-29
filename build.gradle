@@ -9,7 +9,7 @@ allprojects {
     targetCompatibility = 1.8
 
     group 'com.github.jk1'
-    version '0.13'
+    version '0.14'
 
     repositories {
         mavenCentral()
@@ -33,6 +33,11 @@ idea {
         outputDir file("$buildDir/idea/main")
         testOutputDir file("$buildDir/idea/test")
     }
+}
+
+publishPlugin {
+    token "$marketplaceToken"
+    channels 'stable'
 }
 
 dependencies {
