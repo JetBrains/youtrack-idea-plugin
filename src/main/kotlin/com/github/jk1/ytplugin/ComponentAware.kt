@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent
 import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
 import com.github.jk1.ytplugin.notifications.NotificationsComponent
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 
 
@@ -38,7 +39,7 @@ interface ComponentAware {
         get() = project.getComponent(SourceNavigatorComponent::class.java)!!
 
     val issueStoreComponent: PersistentIssueStoreComponent
-        get() = project.getComponent(PersistentIssueStoreComponent::class.java)!!
+        get() = ApplicationManager.getApplication().getComponent(PersistentIssueStoreComponent::class.java)!!
 
     val issueUpdaterComponent: IssueStoreUpdaterComponent
         get() = project.getComponent(IssueStoreUpdaterComponent::class.java)!!
