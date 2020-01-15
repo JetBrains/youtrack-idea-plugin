@@ -36,7 +36,7 @@ idea {
 }
 
 publishPlugin {
-    token "$marketplaceToken"
+    token project.findProperty("marketplaceToken") ?: ""
     channels 'stable'
 }
 
