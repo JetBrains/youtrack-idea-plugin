@@ -1,13 +1,10 @@
 plugins {
-    id 'org.jetbrains.intellij' version '0.4.9'
+    id 'org.jetbrains.intellij' version '0.4.15'
     id 'org.jetbrains.kotlin.jvm' version '1.3.41'
     id 'idea'
 }
 
 allprojects {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     group 'com.github.jk1'
     version '0.14'
 
@@ -16,10 +13,13 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IC-2018.2', 'IC-2018.3', 'IC-2019.1', 'IC-2019.2', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+def supportedVersions = ['IC-2018.2', 'IC-2018.3', 'IC-2019.1', 'IC-2019.2', 'IC-2019.3']
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2019.1'
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2019.3'
     plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false
@@ -57,9 +57,14 @@ test {
 
 // runs `./gradlew test` several times against all supported IDE versions
 task testAllSupportedIdes {
-    dependsOn supportedVersions.collect { "runTestsWithIdea$it" }
-    supportedVersions.forEach { version ->
+    def taskNames = supportedVersions.collect { "runTestsWithIdea$it" }
+    dependsOn taskNames.first()
+    supportedVersions.eachWithIndex { version, index ->
         task "runTestsWithIdea$version"(type: GradleBuild) {
+            if (index != supportedVersions.size() - 1) {
+                dependsOn taskNames.get(index + 1)
+            }
+            buildName = "runTestsWithIdea$version"
             buildFile = 'build.gradle'
             tasks = ['test']
             startParameter.projectProperties = [ideaVersion: version]

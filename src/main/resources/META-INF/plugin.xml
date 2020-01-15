@@ -36,6 +36,7 @@
     <!-- Compatible with Idea platform 2018.2 - 2019.3 -->
     <idea-version since-build="182.711" until-build="193.*"/>
     <!-- Enable plugin in all products except  MPS -->
+    <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->
     <depends>com.intellij.tasks</depends>

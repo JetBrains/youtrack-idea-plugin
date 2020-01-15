@@ -6,7 +6,7 @@ import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
-import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.http.client.utils.URLEncodedUtils
@@ -19,7 +19,7 @@ import javax.imageio.ImageIO
 
 class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
-    private lateinit var fixture: JavaCodeInsightTestFixture
+    private lateinit var fixture: CodeInsightTestFixture
     private val ideaUrl: String by lazy { "http://127.0.0.1:${sourceNavigatorComponent.getActivePort()}" }
 
     override lateinit var repository: YouTrackServer

@@ -150,7 +150,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
      */
     inner class ExecuteCommandAction(name: String, private val silent: Boolean = false) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
-            val group = visibilityGroupDropdown.selectedItem.toString()
+            val group = visibilityGroupDropdown.selectedItem?.toString() ?: "All Users"
             val execution = YouTrackCommandExecution(session, commandField.text, silent, commentArea.text, group)
             commandComponent.executeAsync(execution)
             this@CommandDialog.close(0)
