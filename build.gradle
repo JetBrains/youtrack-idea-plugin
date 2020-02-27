@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group 'com.github.jk1'
-    version '0.14'
+    version '0.15'
 
     repositories {
         mavenCentral()
@@ -16,7 +16,7 @@ allprojects {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-def supportedVersions = ['IC-2018.2', 'IC-2018.3', 'IC-2019.1', 'IC-2019.2', 'IC-2019.3']
+def supportedVersions = ['IC-2019.1', 'IC-2019.2', 'IC-2019.3', 'LATEST-EAP-SNAPSHOT','LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2019.3'

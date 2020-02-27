@@ -32,7 +32,7 @@ class YouTrackPluginApiComponent(override val project: Project): ProjectComponen
     }
 
     fun openIssueInToolWidow(issue: Issue) {
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("YouTrack")
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("YouTrack")!!
         val viewer = IssueViewer()
         val contentManager = toolWindow.contentManager
         val contentFactory = ContentFactory.SERVICE.getInstance()

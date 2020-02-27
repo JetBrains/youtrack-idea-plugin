@@ -46,11 +46,9 @@ class EditorSplitter(vertical: Boolean) : Splitter(vertical) {
 
             override fun setOrientation(ignored: Boolean) {
                 removeAll()
-                val collapseLabel = createLabel(AllIcons.General.ComboArrowRight)
-                val fillLabel = createLabel(AllIcons.General.SplitGlueH)
-                val expandLabel = createLabel(AllIcons.General.ComboArrowLeft)
+                val collapseLabel = createLabel(AllIcons.General.ArrowRight)
+                val expandLabel = createLabel(AllIcons.General.ArrowLeft)
                 add(collapseLabel, GridBagConstraints(0, 5, 1, 1, .0, .0, CENTER, NONE, Insets(0, 0, 0, 0), 0, 0))
-                add(fillLabel, GridBagConstraints(0, 4, 1, 1, .0, .0, CENTER, HORIZONTAL, Insets(0, 1, 0, 0), 0, 0))
                 add(expandLabel, GridBagConstraints(0, 1, 1, 1, .0, .0, CENTER, NONE, Insets(0, 0, 0, 0), 0, 0))
                 revalidate()
                 repaint()

@@ -131,7 +131,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         val topPanel = JPanel(BorderLayout())
         val commentPanel = JPanel(BorderLayout())
         val header = SimpleColoredComponent()
-        header.icon = AllIcons.Modules.Types.UserDefined
+        header.icon = AllIcons.General.User
         header.append(comment.authorName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         header.append(" at ")
         header.append(comment.created.format())

@@ -35,7 +35,7 @@ import javax.swing.SwingUtilities
 class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun init(toolWindow: ToolWindow) {
-        toolWindow.icon = YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW // loaded via IconLoader, thus adaptive
+        toolWindow.setIcon(YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
