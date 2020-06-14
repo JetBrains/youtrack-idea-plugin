@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group 'com.github.jk1'
-    version '0.15'
+    version '0.16'
 
     repositories {
         mavenCentral()
@@ -16,10 +16,10 @@ allprojects {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-def supportedVersions = ['IC-2019.1', 'IC-2019.2', 'IC-2019.3', 'LATEST-EAP-SNAPSHOT','LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IC-2020.1', 'LATEST-EAP-SNAPSHOT'/*,'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2019.3'
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2020.1'
     plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false

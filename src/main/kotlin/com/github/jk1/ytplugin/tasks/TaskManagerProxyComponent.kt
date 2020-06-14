@@ -94,7 +94,7 @@ class TaskManagerProxyComponent(val project: Project) : ProjectComponent {
     }
 
     private fun getTaskManager(): TaskManager {
-        return project.getComponent(TaskManager::class.java)
+        return TaskManager.getManager(project)
                 ?: throw TaskManagementDisabledException()
     }
 

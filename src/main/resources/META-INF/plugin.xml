@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>0.15</version>
+    <version>0.16</version>
     <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
 
     <description><![CDATA[
@@ -28,13 +28,13 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li> IDEA Platform 2020.1 support </li>
+            <li> IDEA Platform 2020.2 support </li>
         </ul>
           ]]>
     </change-notes>
 
-    <!-- Compatible with Idea platform 2019.1 - 2020.1 -->
-    <idea-version since-build="191" until-build="201.*"/>
+    <!-- Compatible with Idea platform 2020.1 - 2020.3 -->
+    <idea-version since-build="201" until-build="203.*"/>
     <!-- Enable plugin in all products except  MPS -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>

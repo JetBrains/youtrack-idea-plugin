@@ -19,7 +19,7 @@ class PluginInstallationTest : IdeaProjectTrait {
 
     @Test
     fun testTaskManagementPluginDependency() {
-        Assert.assertNotNull(fixture.project?.getComponent(TaskManager::class.java))
+        Assert.assertNotNull(TaskManager.getManager(fixture.project))
     }
 
     @Test
