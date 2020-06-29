@@ -1,8 +1,8 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>0.16</version>
-    <vendor url="https://github.com/jk1/youtrack-idea-plugin"/>
+    <version>0.17</version>
+    <vendor>JetBrains</vendor>
 
     <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>

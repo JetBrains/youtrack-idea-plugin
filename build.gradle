@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group 'com.github.jk1'
-    version '0.16'
+    version '0.17'
 
     repositories {
         mavenCentral()
