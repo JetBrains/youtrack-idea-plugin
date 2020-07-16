@@ -31,7 +31,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private var testConnectButton = JButton("Test connection")
     private var proxySettingsButton = JButton("Proxy settings...")
     private var inputUrl = JTextArea("")
-    private var inputToken = JTextArea("")
+    private var inputToken = JPasswordField("")
 
 
     init {
@@ -48,19 +48,23 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
     private fun prepareDialogWindow() {
         serverUrl = JLabel("Server Url:")
-        serverUrl.setBounds(60, 60, 100, 17);
-        inputUrl.setBounds(150, 60, 380, 17)
+        serverUrl.setBounds(65, 60, 100, 17);
+        inputUrl.setBounds(150, 60, 375, 17)
 
         tokenField = JLabel("Permanent token:")
-        tokenField.setBounds(10, 120, 150, 17)
-        inputToken.setBounds(150, 120, 380, 17)
+        tokenField.setBounds(15, 120, 150, 17)
+        inputToken.apply {
+            setEchoChar('\u25CF')
+            setBounds(150, 120, 380, 25)
+        }
+
 
         val myAdvertiser = getAdvertiser()
         advertiserField = JLabel(myAdvertiser)
         advertiserField.setBounds(240, 30, 300, 17)
 
         getTokenField = JLabel(getTokenHelp())
-        getTokenField.setBounds(150, 140, 100, 17)
+        getTokenField.setBounds(150, 150, 100, 17)
 
         shareUrl = JCheckBox("Share Url", true)
         shareUrl.setBounds(400, 90, 100, 17)
@@ -69,10 +73,10 @@ class SetupWindow(val project: Project) : ProjectComponent {
         loginAnon.setBounds(150, 90, 170, 17)
 
         useHTTP = JCheckBox("Use HTTP", false)
-        useHTTP.setBounds(440, 170, 100, 17);
+        useHTTP.setBounds(440, 180, 100, 17);
 
         useProxy = JCheckBox("Use Proxy", false)
-        useProxy.setBounds(300, 170, 100, 17)
+        useProxy.setBounds(300, 180, 100, 17)
 
         proxySettingsButton.apply {
             actionCommand = "Proxy"
@@ -110,7 +114,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         proxyPanel = JPanel().apply {
             add(proxySettingsButton)
-            setBounds(150, 155, 120, 40)
+            setBounds(150, 165, 120, 40)
         }
 
         controlPanel = JPanel().apply { layout = null }
