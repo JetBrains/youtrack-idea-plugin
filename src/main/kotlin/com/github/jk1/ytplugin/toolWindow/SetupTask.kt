@@ -19,6 +19,7 @@ import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.PostMethod
+import org.apache.http.HttpHeaders
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -89,7 +90,9 @@ class SetupTask() {
     fun createCancellableConnection(repository: YouTrackRepository): TaskRepository.CancellableConnection? {
         val method = PostMethod(getRepositoryUrl(repository) + "/rest/user/login")
 //        val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
-
+//        System.out.println("Token: " + repository.password)
+//        method.addRequestHeader(HttpHeaders.AUTHORIZATION, "Bearer token")
+        method.addRequestHeader("Authorization","Bearer "+ repository.password);
         return object : BaseRepositoryImpl.HttpTestConnection<PostMethod?>(method) {
             @Throws(java.lang.Exception::class)
             override fun doTest(method: PostMethod?) {

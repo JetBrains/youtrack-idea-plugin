@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.toolWindow
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.util.net.HttpConfigurable
 import java.awt.Dimension
 import java.awt.event.ActionEvent
@@ -107,15 +108,25 @@ class SetupWindow(val project: Project) : ProjectComponent {
             val setup = SetupTask()
 
             val myRepository = YouTrackRepository()
+            val myRepositoryType = YouTrackRepositoryType()
 
-            myRepository.url = inputUrl.getText()
-            myRepository.password = inputToken.getText()
-            myRepository.username = "random"
-//            myRepository.storeCredentials()
+            myRepository.url = inputUrl.text
+            myRepository.password = inputToken.text
+            myRepository.username = "random" // could be anything
+            myRepository.repositoryType = myRepositoryType
+            System.out.println("Url " + myRepository.url )
+            System.out.println("Type " + myRepository.repositoryType)
+            System.out.println("Name " + myRepository.repositoryType.name)
+            System.out.println("Token " + myRepository.password )
+
+
+            myRepository.storeCredentials()
+
             myRepository.isShared = shareUrl.isSelected()
             myRepository.isUseProxy = useProxy.isSelected()
             myRepository.isUseHttpAuthentication = useHTTP.isSelected()
             myRepository.isLoginAnonymously = loginAnon.isSelected()
+
 
             setup.testConnection(myRepository, project)
         })
