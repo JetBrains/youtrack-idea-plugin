@@ -3,17 +3,23 @@ package com.github.jk1.ytplugin.toolWindow
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.util.net.HttpConfigurable
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.awt.event.ItemEvent
+import java.awt.event.KeyEvent
 import javax.swing.*
+
 
 /**
  * Class for window for initial Setup of YouTrack
  * @author Akina Boshchenko
  */
 class SetupWindow(val project: Project) : ProjectComponent {
+
+    private lateinit var tabFrame: JFrame
+    private lateinit var tab2Frame: JFrame
+    private lateinit var bigTabFrame: JTabbedPane
 
     private lateinit var mainFrame: JFrame
     private lateinit var serverUrl: JLabel
@@ -27,7 +33,11 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private lateinit var loginAnon: JCheckBox
     private lateinit var testConnectPanel: JPanel
     private lateinit var proxyPanel: JPanel
+    private lateinit var okPanel:JPanel
+    private lateinit var cancelPanel:JPanel
 
+    private var okButton = JButton("OK")
+    private var cancelButton = JButton("Cancel")
     private var testConnectButton = JButton("Test connection")
     private var proxySettingsButton = JButton("Proxy settings...")
     private var inputUrl = JTextArea("")
@@ -49,15 +59,14 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private fun prepareDialogWindow() {
         serverUrl = JLabel("Server Url:")
         serverUrl.setBounds(65, 60, 100, 17);
-        inputUrl.setBounds(150, 60, 375, 17)
+        inputUrl.setBounds(152, 60, 375, 19)
 
         tokenField = JLabel("Permanent token:")
         tokenField.setBounds(15, 120, 150, 17)
         inputToken.apply {
             setEchoChar('\u25CF')
-            setBounds(150, 120, 380, 25)
+            setBounds(150, 120, 378, 25)
         }
-
 
         val myAdvertiser = getAdvertiser()
         advertiserField = JLabel(myAdvertiser)
@@ -66,60 +75,74 @@ class SetupWindow(val project: Project) : ProjectComponent {
         getTokenField = JLabel(getTokenHelp())
         getTokenField.setBounds(150, 150, 100, 17)
 
-        shareUrl = JCheckBox("Share Url", true)
-        shareUrl.setBounds(400, 90, 100, 17)
+        shareUrl = JCheckBox("Share Url", false)
+        shareUrl.setBounds(440, 90, 100, 17)
 
         loginAnon = JCheckBox("Login Anonymously", false)
         loginAnon.setBounds(150, 90, 170, 17)
 
         useHTTP = JCheckBox("Use HTTP", false)
-        useHTTP.setBounds(440, 180, 100, 17);
+        useHTTP.setBounds(440, 220, 100, 17);
 
         useProxy = JCheckBox("Use Proxy", false)
-        useProxy.setBounds(300, 180, 100, 17)
+        useProxy.setBounds(300, 220, 100, 17)
 
-        proxySettingsButton.apply {
-            actionCommand = "Proxy"
-            addActionListener(ButtonClickListener())
-            setPreferredSize(Dimension(140, 40))
-        }
+        proxySettingsButton.addActionListener(ActionListener {
+            HttpConfigurable.editConfigurable(controlPanel)
+        })
 
         testConnectButton.apply {
             setPreferredSize(Dimension(150, 40))
         }
 
+        fun loginAnonymouslyChanged(enabled: Boolean) {
+            inputToken.setEnabled(enabled)
+            tokenField.setEnabled(enabled)
+            useHTTP.setEnabled(enabled)
+        }
+
+        loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
         testConnectButton.addActionListener(ActionListener {
 
             val setup = SetupTask()
 
             val myRepository = YouTrackRepository()
+
             myRepository.url = inputUrl.getText()
             myRepository.password = inputToken.getText()
             myRepository.username = "random"
+//            myRepository.storeCredentials()
+            myRepository.isShared = shareUrl.isSelected()
+            myRepository.isUseProxy = useProxy.isSelected()
+            myRepository.isUseHttpAuthentication = useHTTP.isSelected()
+            myRepository.isLoginAnonymously = loginAnon.isSelected()
 
             setup.testConnection(myRepository, project)
         })
 
-        loginAnon.addItemListener { e ->
-            val sel: Int = e.stateChange
-            if (sel == ItemEvent.SELECTED) {
-                System.out.println("login")
-            }
-        }
-
         testConnectPanel = JPanel().apply {
             add(testConnectButton)
-            setBounds(400, 200, 200, 40)
+            setBounds(140, 195, 130, 40)
+        }
+
+        cancelPanel = JPanel().apply {
+            add(cancelButton)
+            setBounds(440, 205, 100, 40)
+        }
+
+        okPanel = JPanel().apply {
+            add(okButton)
+            setBounds(350, 205, 100, 40)
         }
 
         proxyPanel = JPanel().apply {
             add(proxySettingsButton)
-            setBounds(150, 165, 120, 40)
+            setBounds(150, 205, 120, 40)
         }
 
         controlPanel = JPanel().apply { layout = null }
-        mainFrame = JFrame("General").apply {
-            setBounds(100, 100, 580, 280);
+        tabFrame = JFrame("").apply {
+            setBounds(100, 100, 580, 300);
             layout = null
             add(shareUrl)
             add(advertiserField)
@@ -128,25 +151,52 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(inputUrl)
             add(tokenField)
             add(inputToken)
-            add(useProxy)
-            add(useHTTP)
             add(getTokenField)
             add(testConnectPanel)
+            add(okPanel)
+            add(cancelPanel)
+//            isVisible = true
+        }
+
+        tab2Frame = JFrame("").apply {
+            setBounds(100, 100, 580, 300);
+            layout = null
+            add(useProxy)
+            add(useHTTP)
             add(proxyPanel)
+//            isVisible = true
+        }
+//        mainFrame = JFrame().apply {
+//            setBounds(100, 100, 560, 300)
+//            layout = null
+//            add(shareUrl)
+//            add(advertiserField)
+//            add(loginAnon)
+//            add(serverUrl)
+//            add(inputUrl)
+//            add(tokenField)
+//            add(inputToken)
+//            add(getTokenField)
+//            add(testConnectPanel)
+//            add(okPanel)
+//            add(cancelPanel)
+//            isVisible = true
+//        }
+
+        bigTabFrame = JTabbedPane().apply {
+            tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
+            addTab("General", null, tabFrame.contentPane, null);
+            setMnemonicAt(0, KeyEvent.VK_1)
+            addTab("Proxy settings", null, tab2Frame.contentPane, null);
+            setMnemonicAt(1, KeyEvent.VK_2)
+
+        }
+
+        mainFrame = JFrame("YouTrack").apply {
+            setBounds(100, 100, 560, 320)
+            add(bigTabFrame)
             isVisible = true
         }
     }
 
-    private inner class ButtonClickListener : ActionListener {
-        override fun actionPerformed(e: ActionEvent) {
-            if (e.actionCommand == "Proxy") {
-                System.out.println(inputUrl.text)
-            }
-//            myField.text = when (e.actionCommand) {
-//                "Proxy" -> "Turn on Proxy settings."
-//                "Test" -> "Test connection."
-//                else -> "Cancel Button clicked."
-//            }
-        }
-    }
 }
