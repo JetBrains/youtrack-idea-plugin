@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.toolWindow.Actions.SetupAction
 import com.intellij.openapi.actionSystem.*
 import javax.swing.JComponent
 

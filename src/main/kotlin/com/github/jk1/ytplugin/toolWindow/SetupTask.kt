@@ -14,12 +14,12 @@ import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
+import org.apache.commons.httpclient.Header
 import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.HttpMethod
+import org.apache.commons.httpclient.URI
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.http.HttpHeaders
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -58,15 +58,31 @@ class SetupTask() {
 
     @Throws(java.lang.Exception::class)
     private fun login(method: PostMethod, repository: YouTrackRepository): HttpClient? {
-        val client: HttpClient = repository.getHttpClient()
+        val client: HttpClient = repository.httpClient
         client.state.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(getRepositoryUsername(repository), getRepositoryPassword(repository)))
         method.addParameter("login", getRepositoryUsername(repository))
         method.addParameter("password", getRepositoryPassword(repository))
+//        method.followRedirects = true
+
         client.params.contentCharset = "UTF-8"
         client.executeMethod(method)
         var response: String?
+        System.out.println("Code: " + method.statusCode + " Redir: " + method.followRedirects)
+
+
         response = try {
-            if (method.statusCode != 200) {
+            System.out.println("Code2: " + method.statusCode + " Redir2: " + method.followRedirects)
+            if(method.statusCode == 301 || method.statusCode == 302){
+                val location: String = method.getResponseHeader("Location").toString()
+                System.out.println(location)
+                val newUri = location.substring(9, location.length)
+                System.out.println("New: " + newUri)
+                method.uri = URI(newUri, false)
+//                client.executeMethod(method)
+                repository.url = newUri
+                login(method, repository)
+            }
+            else if (method.statusCode != 200) {
                 throw HttpRequests.HttpStatusException("Cannot login", method.statusCode, method.path)
             }
             method.getResponseBodyAsString(1000)
@@ -89,10 +105,10 @@ class SetupTask() {
 
     fun createCancellableConnection(repository: YouTrackRepository): TaskRepository.CancellableConnection? {
         val method = PostMethod(getRepositoryUrl(repository) + "/rest/user/login")
+
 //        val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
-//        System.out.println("Token: " + repository.password)
-//        method.addRequestHeader(HttpHeaders.AUTHORIZATION, "Bearer token")
-        method.addRequestHeader("Authorization","Bearer "+ repository.password);
+//        method.setRequestHeader("Authorization","Bearer "+ repository.password)
+
         return object : BaseRepositoryImpl.HttpTestConnection<PostMethod?>(method) {
             @Throws(java.lang.Exception::class)
             override fun doTest(method: PostMethod?) {

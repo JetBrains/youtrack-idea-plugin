@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.toolWindow
 
+//import com.github.jk1.ytplugin.toolWindow.config.SetupRepositoriesConfigurable
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.ui.SimpleColoredComponent
@@ -25,6 +26,7 @@ class SetUpDialog(val project: Project) : ProjectComponent {
         val messageLabel = JLabel("No YouTrack server found")
         val configureLabel = createLink("Configure") {
             SetupWindow(project)
+//            SetupRepositoriesConfigurable(project)
         }
 
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT

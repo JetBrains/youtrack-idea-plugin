@@ -2,11 +2,16 @@ package com.github.jk1.ytplugin.toolWindow
 
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.TaskManager
+import com.intellij.tasks.TaskRepository
+import com.intellij.tasks.config.RecentTaskRepositories
+import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
+import com.intellij.util.Function
+import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.net.HttpConfigurable
 import java.awt.Dimension
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -57,6 +62,44 @@ class SetupWindow(val project: Project) : ProjectComponent {
         return "<html><a href='https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html'>Get token</a></html>"
     }
 
+    fun showIssues(repository: YouTrackRepository) {
+        val myManager:TaskManagerImpl = TaskManager.getManager(project) as TaskManagerImpl
+        lateinit var myRepositories: List<YouTrackRepository>
+        myRepositories = ArrayList()
+        myRepositories.add(repository)
+        val newRepositories: List<TaskRepository> = ContainerUtil.map<TaskRepository, TaskRepository>(myRepositories, Function { obj: TaskRepository -> obj.clone() })
+        myManager.setRepositories(newRepositories)
+        myManager.updateIssues(null)
+        RecentTaskRepositories.getInstance().addRepositories(myRepositories)
+    }
+
+    fun loginAnonymouslyChanged(enabled: Boolean) {
+        inputToken.setEnabled(enabled)
+        tokenField.setEnabled(enabled)
+        useHTTP.setEnabled(enabled)
+    }
+
+    fun testConnectionAction(){
+        val setup = SetupTask()
+
+        val myRepository = YouTrackRepository()
+        val myRepositoryType = YouTrackRepositoryType()
+
+        myRepository.url = inputUrl.text
+        myRepository.password = inputToken.text
+        myRepository.username = "random" // could be anything
+        myRepository.repositoryType = myRepositoryType
+        myRepository.storeCredentials()
+
+        myRepository.isShared = shareUrl.isSelected()
+        myRepository.isUseProxy = useProxy.isSelected()
+        myRepository.isUseHttpAuthentication = useHTTP.isSelected()
+        myRepository.isLoginAnonymously = loginAnon.isSelected()
+
+        setup.testConnection(myRepository, project)
+        showIssues(myRepository)
+    }
+
     private fun prepareDialogWindow() {
         serverUrl = JLabel("Server Url:")
         serverUrl.setBounds(65, 60, 100, 17);
@@ -96,44 +139,24 @@ class SetupWindow(val project: Project) : ProjectComponent {
             setPreferredSize(Dimension(150, 40))
         }
 
-        fun loginAnonymouslyChanged(enabled: Boolean) {
-            inputToken.setEnabled(enabled)
-            tokenField.setEnabled(enabled)
-            useHTTP.setEnabled(enabled)
-        }
-
         loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
+
         testConnectButton.addActionListener(ActionListener {
-
-            val setup = SetupTask()
-
-            val myRepository = YouTrackRepository()
-            val myRepositoryType = YouTrackRepositoryType()
-
-            myRepository.url = inputUrl.text
-            myRepository.password = inputToken.text
-            myRepository.username = "random" // could be anything
-            myRepository.repositoryType = myRepositoryType
-            System.out.println("Url " + myRepository.url )
-            System.out.println("Type " + myRepository.repositoryType)
-            System.out.println("Name " + myRepository.repositoryType.name)
-            System.out.println("Token " + myRepository.password )
-
-
-            myRepository.storeCredentials()
-
-            myRepository.isShared = shareUrl.isSelected()
-            myRepository.isUseProxy = useProxy.isSelected()
-            myRepository.isUseHttpAuthentication = useHTTP.isSelected()
-            myRepository.isLoginAnonymously = loginAnon.isSelected()
-
-
-            setup.testConnection(myRepository, project)
+            testConnectionAction()
         })
 
         testConnectPanel = JPanel().apply {
             add(testConnectButton)
             setBounds(140, 195, 130, 40)
+        }
+
+        cancelButton.addActionListener {
+            mainFrame.dispose()
+        }
+
+        okButton.addActionListener {
+            testConnectionAction()
+            mainFrame.dispose()
         }
 
         cancelPanel = JPanel().apply {
@@ -166,7 +189,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(testConnectPanel)
             add(okPanel)
             add(cancelPanel)
-//            isVisible = true
         }
 
         tab2Frame = JFrame("").apply {
@@ -175,24 +197,8 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(useProxy)
             add(useHTTP)
             add(proxyPanel)
-//            isVisible = true
         }
-//        mainFrame = JFrame().apply {
-//            setBounds(100, 100, 560, 300)
-//            layout = null
-//            add(shareUrl)
-//            add(advertiserField)
-//            add(loginAnon)
-//            add(serverUrl)
-//            add(inputUrl)
-//            add(tokenField)
-//            add(inputToken)
-//            add(getTokenField)
-//            add(testConnectPanel)
-//            add(okPanel)
-//            add(cancelPanel)
-//            isVisible = true
-//        }
+
 
         bigTabFrame = JTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
