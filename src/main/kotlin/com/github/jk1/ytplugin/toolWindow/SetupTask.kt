@@ -60,17 +60,17 @@ class SetupTask() {
     }
 
     private fun fixURI(method: PostMethod){
-//        if (!method.uri.toString().contains("https")){
-//            val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
-//            method.uri = URI(newUri, false)
-//            System.out.println("new url:" + method.uri)
-//        }
+        if (!method.uri.toString().contains("https")){
+            val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
+            method.uri = URI(newUri, false)
+            System.out.println("new url:" + method.uri)
+        }
         if(!method.uri.toString().contains("com/youtrack") && correctUrl.contains("com/youtrack")){
             val newUri = method.uri.toString() + "/youtrack"
             method.uri = URI(newUri, false)
         }
         else{
-            throw HttpRequests.HttpStatusException("Cannot login: incorrect URI or token", method.statusCode, method.path)
+            throw HttpRequests.HttpStatusException("Cannot login: incorrect URL or token", method.statusCode, method.path)
         }
     }
 
@@ -89,11 +89,11 @@ class SetupTask() {
             if(method.statusCode > 300 && method.statusCode < 400){
                 val location: String = method.getResponseHeader("Location").toString()
                 val newUri = location.substring(10, location.length)
-                System.out.println("New:" + newUri)
                 method.uri = URI(newUri, false)
+
+                /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
                 repository.url = method.uri.toString().substring(0,  newUri.length - 12)
                 correctUrl = repository.url
-                System.out.println("corrected" + correctUrl)
                 createCancellableConnection(repository)
             }
             else if (method.statusCode == 403) {
@@ -111,14 +111,6 @@ class SetupTask() {
         if (response == null) {
             throw NullPointerException()
         }
-//        if (!response.contains("<login>ok</login>")) {
-//            val pos = response.indexOf("</error>")
-//            val length = "<error>".length
-//            if (pos > length) {
-//                response = response.substring(length, pos)
-//            }
-//            throw java.lang.Exception("Cannot login: $response")
-//        }
         return client
     }
 
@@ -156,7 +148,7 @@ class SetupTask() {
                         while (true) {
                             try {
                                 myException = future[100, TimeUnit.MILLISECONDS]
-                                notifier.text = "Cannot login"
+                                notifier.text = "Cannot login: incorrect URL or token"
                                 return
                             } catch (ignore: TimeoutException) {
                                 try {

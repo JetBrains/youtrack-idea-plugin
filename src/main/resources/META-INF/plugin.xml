@@ -98,8 +98,8 @@
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
-        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
-                    factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
+<!--        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"-->
+<!--                    factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>-->
         <toolWindow id="You Track" anchor="bottom" icon="/icons/logo-setup-resized.png"
                     factoryClass="com.github.jk1.ytplugin.toolWindow.SetUpDialogFactory" canCloseContents="true"/>
         <search.optionContributor implementation="com.github.jk1.ytplugin.toolWindow.config.SetupSearchableOptionContributor"/>
