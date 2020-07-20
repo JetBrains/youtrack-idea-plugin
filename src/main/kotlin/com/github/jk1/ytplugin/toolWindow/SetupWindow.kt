@@ -14,11 +14,13 @@ import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.net.HttpConfigurable
 import java.awt.Color
 import java.awt.Dimension
-import java.awt.LayoutManager
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import javax.swing.*
-
+import javax.swing.text.*
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 /**
  * Class for window for initial Setup of YouTrack
@@ -30,10 +32,12 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private lateinit var tab2Frame: JFrame
     private lateinit var bigTabFrame: JTabbedPane
 
+    private lateinit var topPanel: JPanel
+
+
     private lateinit var mainFrame: JFrame
     private lateinit var serverUrl: JLabel
     private lateinit var notifyField: JLabel
-
     private lateinit var proxyDescription: JLabel
 
     private lateinit var tokenField: JLabel
@@ -53,7 +57,8 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private var cancelButton = JButton("Cancel")
     private var testConnectButton = JButton("Test connection")
     private var proxySettingsButton = JButton("Proxy settings...")
-    private var inputUrl = JTextArea("")
+    private var inputUrl = JTextPane()
+
     private var inputToken = JPasswordField("")
 
 
@@ -96,30 +101,64 @@ class SetupWindow(val project: Project) : ProjectComponent {
         myRepository.isLoginAnonymously = loginAnon.isSelected()
 
         setup.testConnection(myRepository, project, notifyField)
+
+        val oldUrl = inputUrl.text
+        inputUrl.text = ""
+
+        if (oldUrl == setup.correctUrl){
+            inputUrl.text = oldUrl
+        }
+        else{
+            if(!oldUrl.contains("com/youtrack") && setup.correctUrl.contains("com/youtrack")){
+                inputUrl.text = oldUrl
+                appendToPane(inputUrl, "/youtrack", Color.GREEN)
+//                appendToPane(inputUrl, oldUrl.substring(10, oldUrl.length), Color.WHITE)
+            }
+            if(!oldUrl.contains("https") && setup.correctUrl.contains("https")){
+                appendToPane(inputUrl, "https", Color.GREEN)
+                appendToPane(inputUrl, oldUrl.substring(4,oldUrl.length), Color.WHITE)
+            }
+            else{
+                inputUrl.text = setup.correctUrl
+            }
+        }
         showIssues(myRepository)
     }
 
+    private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
+        val sc = StyleContext.getDefaultStyleContext()
+        var aset: AttributeSet? = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c)
+        aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console")
+        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED)
+        val len = tp.document.length
+        tp.caretPosition = len
+        tp.setCharacterAttributes(aset, false)
+        tp.replaceSelection(msg)
+    }
     private fun prepareDialogWindow() {
         serverUrl = JLabel("Server Url:")
-        serverUrl.setBounds(65, 60, 100, 17);
-        inputUrl.setBounds(152, 60, 375, 19)
+        serverUrl.setBounds(65, 60, 100, 22)
+        inputUrl.setBounds(152, 60, 375, 24)
+        topPanel = JPanel()
+        topPanel.add(inputUrl);
+
 
         tokenField = JLabel("Permanent token:")
-        tokenField.setBounds(15, 120, 150, 17)
+        tokenField.setBounds(15, 120, 150, 22)
         inputToken.apply {
             setEchoChar('\u25CF')
-            setBounds(150, 120, 378, 25)
+            setBounds(150, 120, 378, 30)
         }
 
         advertiserField = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack", "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
         advertiserField.setBounds(240, 30, 300, 17)
 
         getTokenField = HyperlinkLabel("Get token", "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
-        getTokenField.setBounds(457, 150, 100, 17)
+        getTokenField.setBounds(457, 155, 100, 17)
 
         notifyField= JLabel("").apply{
             foreground = Color.red;
-            setBounds(150,153, 200, 17)
+            setBounds(150,158, 200, 17)
         }
         shareUrl = JCheckBox("Share Url", false)
         shareUrl.setBounds(440, 90, 100, 17)
@@ -132,6 +171,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         useProxy = JCheckBox("Use Proxy", false)
         useProxy.setBounds(300, 220, 100, 17)
+
 
         proxyDescription = JLabel("You can configure the HTTP Proxy to:" )
         proxyDescription.setBounds(20, 20, 370, 20)
@@ -148,19 +188,20 @@ class SetupWindow(val project: Project) : ProjectComponent {
             HttpConfigurable.editConfigurable(controlPanel)
         })
 
-        testConnectButton.apply {
-            setPreferredSize(Dimension(150, 40))
-        }
-
         loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
 
         testConnectButton.addActionListener(ActionListener {
             testConnectionAction()
         })
 
+        testConnectButton.apply {
+            setBounds(140, 205, 130, 40)
+//            setPreferredSize(Dimension(150, 40))
+        }
+
         testConnectPanel = JPanel().apply {
             add(testConnectButton)
-            setBounds(140, 195, 130, 40)
+            setBounds(140, 205, 130, 40)
         }
 
         cancelButton.addActionListener {

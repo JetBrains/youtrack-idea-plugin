@@ -32,6 +32,7 @@ import javax.swing.JLabel
  */
 class SetupTask() {
 
+    var correctUrl:String = ""
 
     @Tag("username")
     fun getRepositoryUsername(repository: YouTrackRepository): String? {
@@ -58,17 +59,31 @@ class SetupTask() {
         return trimTrailingSlashes(repository.url)
     }
 
+    private fun fixURI(method: PostMethod){
+//        if (!method.uri.toString().contains("https")){
+//            val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
+//            method.uri = URI(newUri, false)
+//            System.out.println("new url:" + method.uri)
+//        }
+        if(!method.uri.toString().contains("com/youtrack") && correctUrl.contains("com/youtrack")){
+            val newUri = method.uri.toString() + "/youtrack"
+            method.uri = URI(newUri, false)
+        }
+        else{
+            throw HttpRequests.HttpStatusException("Cannot login: incorrect URI or token", method.statusCode, method.path)
+        }
+    }
+
     @Throws(java.lang.Exception::class)
     private fun login(method: PostMethod, repository: YouTrackRepository): HttpClient? {
         val client: HttpClient = repository.httpClient
         client.state.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(getRepositoryUsername(repository), getRepositoryPassword(repository)))
         method.addParameter("login", getRepositoryUsername(repository))
         method.addParameter("password", getRepositoryPassword(repository))
-//        method.followRedirects = true
 
         client.params.contentCharset = "UTF-8"
         client.executeMethod(method)
-        var response: String?
+        val response: String?
         System.out.println("Code: " + method.statusCode + " Url: " + repository.url)
         response = try {
             if(method.statusCode > 300 && method.statusCode < 400){
@@ -76,16 +91,18 @@ class SetupTask() {
                 val newUri = location.substring(10, location.length)
                 System.out.println("New:" + newUri)
                 method.uri = URI(newUri, false)
-                System.out.println("method.uri" + method.uri)
-//                client.executeMethod(method)
-                repository.url = URI(newUri, false).toString()
-                login(method, repository)
+                repository.url = method.uri.toString().substring(0,  newUri.length - 12)
+                correctUrl = repository.url
+                System.out.println("corrected" + correctUrl)
+                createCancellableConnection(repository)
             }
             else if (method.statusCode == 403) {
                 throw java.lang.Exception("Cannot login: token error occurred or user was banned")
             }
             else if (method.statusCode != 200) {
-                throw HttpRequests.HttpStatusException("Cannot login", method.statusCode, method.path)
+                fixURI(method)
+                repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
+                createCancellableConnection(repository)
             }
             method.getResponseBodyAsString(1000)
         } finally {
@@ -104,6 +121,7 @@ class SetupTask() {
 //        }
         return client
     }
+
 
     fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
 //        val method = PostMethod(getRepositoryUrl(repository) + "/rest/user/login")
@@ -130,6 +148,7 @@ class SetupTask() {
                 indicator.text = "Connecting to " + repository.url + "..."
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
+                correctUrl = repository.url
                 try {
                     myConnection = createCancellableConnection(repository)
                     if (myConnection != null) {
@@ -151,7 +170,6 @@ class SetupTask() {
                             } catch (e: Exception) {
                                 myException = e
                                 notifier.text = "Error: " + e.message
-
                                 return
                             }
                         }
@@ -171,20 +189,17 @@ class SetupTask() {
         val e = task.myException
         if (e == null) {
             myBadRepositories.remove(repository)
+            correctUrl = repository.url
             notifier.foreground = Color.green;
             notifier.text = "Successfully connected"
-//            Messages.showMessageDialog(myProject, "Connection is successful", "Connection", Messages.getInformationIcon())
         } else if (e !is ProcessCanceledException) {
             val message = e.message
             if (e is UnknownHostException) {
                 notifier.text = "Unknown host: $message"
-//                message = "Unknown host: $message"
             }
             if (message == null) {
                 notifier.text = "Unknown error"
-//                message = "Unknown error"
             }
-//            Messages.showErrorDialog(myProject, StringUtil.capitalize(message), "Error")
         }
         return e == null
     }
