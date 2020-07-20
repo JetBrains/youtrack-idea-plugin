@@ -2,10 +2,8 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
-import com.github.jk1.ytplugin.runAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.toolWindow.SetupWindow
+import com.github.jk1.ytplugin.setupWindow.SetupWindow
 import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList

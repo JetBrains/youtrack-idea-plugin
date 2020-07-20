@@ -1,6 +1,5 @@
-package com.github.jk1.ytplugin.toolWindow.Actions
+package com.github.jk1.ytplugin.setupWindow.Actions
 
-import com.github.jk1.ytplugin.ui.IssueList
 import com.github.jk1.ytplugin.ui.SetupList
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent

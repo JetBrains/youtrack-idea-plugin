@@ -1,6 +1,5 @@
-package com.github.jk1.ytplugin.toolWindow.Connection
+package com.github.jk1.ytplugin.setupWindow.Connection
 
-import com.github.jk1.ytplugin.toolWindow.Connection.CancellableConnection
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 

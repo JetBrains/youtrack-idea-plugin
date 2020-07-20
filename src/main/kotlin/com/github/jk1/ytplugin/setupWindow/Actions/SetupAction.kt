@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.toolWindow.Actions
+package com.github.jk1.ytplugin.setupWindow.Actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CustomShortcutSet

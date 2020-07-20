@@ -3,7 +3,7 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.toolWindow.Actions.ToggleSetupViewAction
+import com.github.jk1.ytplugin.setupWindow.Actions.ToggleSetupViewAction
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*

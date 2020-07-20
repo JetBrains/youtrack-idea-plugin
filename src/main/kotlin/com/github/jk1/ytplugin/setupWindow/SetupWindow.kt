@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.toolWindow
+package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.openapi.components.ProjectComponent
@@ -12,15 +12,12 @@ import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.util.Function
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.net.HttpConfigurable
-import java.awt.Color
-import java.awt.Dimension
+import java.awt.*
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.text.*
-import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 
 /**
  * Class for window for initial Setup of YouTrack
@@ -35,7 +32,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private lateinit var topPanel: JPanel
 
 
-    private lateinit var mainFrame: JFrame
+    private lateinit var mainFrame: JDialog
     private lateinit var serverUrl: JLabel
     private lateinit var notifyField: JLabel
     private lateinit var proxyDescription: JLabel
@@ -114,7 +111,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
                 appendToPane(inputUrl, "/youtrack", Color.GREEN)
 //                appendToPane(inputUrl, oldUrl.substring(10, oldUrl.length), Color.WHITE)
             }
-            if(!oldUrl.contains("https") && setup.correctUrl.contains("https")){
+            if(!oldUrl.contains("https") && oldUrl.contains("http") &&setup.correctUrl.contains("https")){
                 appendToPane(inputUrl, "https", Color.GREEN)
                 appendToPane(inputUrl, oldUrl.substring(4,oldUrl.length), Color.WHITE)
             }
@@ -225,7 +222,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         proxyPanel = JPanel().apply {
             add(proxySettingsButton)
-            setBounds(150, 205, 120, 40)
+            setBounds(140, 205, 120, 40)
         }
 
         controlPanel = JPanel().apply { layout = null }
@@ -263,11 +260,17 @@ class SetupWindow(val project: Project) : ProjectComponent {
             setMnemonicAt(1, KeyEvent.VK_2)
 
         }
+        val toolkit: Toolkit = Toolkit.getDefaultToolkit()
+        val screenSize: Dimension = toolkit.getScreenSize()
 
-        mainFrame = JFrame("YouTrack").apply {
-            setBounds(100, 100, 560, 320)
+        mainFrame = JDialog().apply {
+            modalityType = Dialog.ModalityType.APPLICATION_MODAL;
+//            setBounds(100, 100, 560, 320)
             add(bigTabFrame)
-            isVisible = true
+            title = "YouTrack"
+            setSize(550, 320)
+            setLocation((screenSize.width - width) / 2, (screenSize.height - height) / 2);
+            isVisible = true;
         }
 
     }

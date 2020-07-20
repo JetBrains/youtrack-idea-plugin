@@ -1,10 +1,7 @@
-package com.github.jk1.ytplugin.toolWindow
+package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.runAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.SetupListToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable

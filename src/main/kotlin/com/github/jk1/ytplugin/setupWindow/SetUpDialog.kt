@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.toolWindow
+package com.github.jk1.ytplugin.setupWindow
 
 //import com.github.jk1.ytplugin.toolWindow.config.SetupRepositoriesConfigurable
 import com.intellij.openapi.components.ProjectComponent

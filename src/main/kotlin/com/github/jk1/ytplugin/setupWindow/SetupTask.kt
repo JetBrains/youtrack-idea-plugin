@@ -1,15 +1,13 @@
-package com.github.jk1.ytplugin.toolWindow
+package com.github.jk1.ytplugin.setupWindow
 
-import com.github.jk1.ytplugin.toolWindow.Connection.CancellableConnection
-import com.github.jk1.ytplugin.toolWindow.Connection.HttpTestConnection
-import com.github.jk1.ytplugin.toolWindow.Connection.TestConnectionTask
+import com.github.jk1.ytplugin.setupWindow.Connection.CancellableConnection
+import com.github.jk1.ytplugin.setupWindow.Connection.HttpTestConnection
+import com.github.jk1.ytplugin.setupWindow.Connection.TestConnectionTask
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
