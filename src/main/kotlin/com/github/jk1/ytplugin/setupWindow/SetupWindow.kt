@@ -164,14 +164,13 @@ class SetupWindow(val project: Project) : ProjectComponent {
         loginAnon.setBounds(150, 90, 170, 17)
 
         useHTTP = JCheckBox("Use HTTP", false)
-        useHTTP.setBounds(440, 220, 100, 17);
+        useHTTP.setBounds(20, 50, 100, 17);
 
         useProxy = JCheckBox("Use Proxy", false)
-        useProxy.setBounds(300, 220, 100, 17)
-
+        useProxy.setBounds(20, 100, 100, 17)
 
         proxyDescription = JLabel("You can configure the HTTP Proxy to:" )
-        proxyDescription.setBounds(20, 20, 370, 20)
+        proxyDescription.setBounds(220, 20, 370, 20)
 
 //        You can configure the HTTP Proxy to:
 //
@@ -191,16 +190,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
             testConnectionAction()
         })
 
-        testConnectButton.apply {
-            setBounds(140, 205, 130, 40)
-//            setPreferredSize(Dimension(150, 40))
-        }
-
-        testConnectPanel = JPanel().apply {
-            add(testConnectButton)
-            setBounds(140, 205, 130, 40)
-        }
-
         cancelButton.addActionListener {
             mainFrame.dispose()
         }
@@ -212,17 +201,22 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         cancelPanel = JPanel().apply {
             add(cancelButton)
-            setBounds(440, 205, 100, 40)
+            setBounds(440, 245, 100, 45)
         }
 
         okPanel = JPanel().apply {
             add(okButton)
-            setBounds(350, 205, 100, 40)
+            setBounds(350, 245, 100, 45)
+        }
+
+        testConnectPanel = JPanel().apply {
+            add(testConnectButton)
+            setBounds(15, 245, 140, 45)
         }
 
         proxyPanel = JPanel().apply {
             add(proxySettingsButton)
-            setBounds(140, 205, 120, 40)
+            setBounds(15, 155, 140, 40)
         }
 
         controlPanel = JPanel().apply { layout = null }
@@ -238,9 +232,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(inputToken)
             add(getTokenField)
             add(notifyField)
-            add(testConnectPanel)
-            add(okPanel)
-            add(cancelPanel)
         }
 
         tab2Frame = JFrame("").apply {
@@ -264,12 +255,15 @@ class SetupWindow(val project: Project) : ProjectComponent {
         val screenSize: Dimension = toolkit.getScreenSize()
 
         mainFrame = JDialog().apply {
-            modalityType = Dialog.ModalityType.APPLICATION_MODAL;
+            modalityType = Dialog.ModalityType.APPLICATION_MODAL
+            add(okPanel)
+            add(cancelPanel)
+            add(testConnectPanel)
 //            setBounds(100, 100, 560, 320)
             add(bigTabFrame)
             title = "YouTrack"
-            setSize(550, 320)
-            setLocation((screenSize.width - width) / 2, (screenSize.height - height) / 2);
+            setSize(550, 330)
+            setLocation((screenSize.width - width) / 2, (screenSize.height - height) / 2)
             isVisible = true;
         }
 
