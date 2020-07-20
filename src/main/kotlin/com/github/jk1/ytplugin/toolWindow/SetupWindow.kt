@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.toolWindow
 
+import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
@@ -11,7 +12,9 @@ import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.util.Function
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.net.HttpConfigurable
+import java.awt.Color
 import java.awt.Dimension
+import java.awt.LayoutManager
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -29,9 +32,13 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
     private lateinit var mainFrame: JFrame
     private lateinit var serverUrl: JLabel
+    private lateinit var notifyField: JLabel
+
+    private lateinit var proxyDescription: JLabel
+
     private lateinit var tokenField: JLabel
     private lateinit var getTokenField: JLabel
-    private lateinit var advertiserField: JLabel
+    private lateinit var advertiserField: HyperlinkLabel
     private lateinit var controlPanel: JPanel
     private lateinit var shareUrl: JCheckBox
     private lateinit var useProxy: JCheckBox
@@ -52,14 +59,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
     init {
         prepareDialogWindow()
-    }
-
-    fun getAdvertiser(): String? {
-        return "<html>Not YouTrack customer yet? Get <a href='https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration'>YouTrack</a></html>"
-    }
-
-    fun getTokenHelp(): String? {
-        return "<html><a href='https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html'>Get token</a></html>"
     }
 
     fun showIssues(repository: YouTrackRepository) {
@@ -96,7 +95,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
         myRepository.isUseHttpAuthentication = useHTTP.isSelected()
         myRepository.isLoginAnonymously = loginAnon.isSelected()
 
-        setup.testConnection(myRepository, project)
+        setup.testConnection(myRepository, project, notifyField)
         showIssues(myRepository)
     }
 
@@ -112,13 +111,16 @@ class SetupWindow(val project: Project) : ProjectComponent {
             setBounds(150, 120, 378, 25)
         }
 
-        val myAdvertiser = getAdvertiser()
-        advertiserField = JLabel(myAdvertiser)
+        advertiserField = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack", "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
         advertiserField.setBounds(240, 30, 300, 17)
 
-        getTokenField = JLabel(getTokenHelp())
-        getTokenField.setBounds(150, 150, 100, 17)
+        getTokenField = HyperlinkLabel("Get token", "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
+        getTokenField.setBounds(457, 150, 100, 17)
 
+        notifyField= JLabel("").apply{
+            foreground = Color.red;
+            setBounds(150,153, 200, 17)
+        }
         shareUrl = JCheckBox("Share Url", false)
         shareUrl.setBounds(440, 90, 100, 17)
 
@@ -130,6 +132,17 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         useProxy = JCheckBox("Use Proxy", false)
         useProxy.setBounds(300, 220, 100, 17)
+
+        proxyDescription = JLabel("You can configure the HTTP Proxy to:" )
+        proxyDescription.setBounds(20, 20, 370, 20)
+
+//        You can configure the HTTP Proxy to:
+//
+//        Only allow content that matches RFC specifications for Web server and clients
+//                Restrict the content the Firebox allows into your network, based upon fully a qualified domain name, path name, file name or extension as it appears in the URL.
+//        Restrict the content the Firebox allows into your network based upon MIME type.
+//        Block downloads of any unique file type, including client-side executable files like Java and ActiveX, by file header (hexadecimal signature) pattern match.
+//        Examine the HTTP header to make sure it is not from a known source of suspicious content
 
         proxySettingsButton.addActionListener(ActionListener {
             HttpConfigurable.editConfigurable(controlPanel)
@@ -186,6 +199,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(tokenField)
             add(inputToken)
             add(getTokenField)
+            add(notifyField)
             add(testConnectPanel)
             add(okPanel)
             add(cancelPanel)
@@ -194,11 +208,11 @@ class SetupWindow(val project: Project) : ProjectComponent {
         tab2Frame = JFrame("").apply {
             setBounds(100, 100, 580, 300);
             layout = null
+            add(proxyDescription)
             add(useProxy)
             add(useHTTP)
             add(proxyPanel)
         }
-
 
         bigTabFrame = JTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
@@ -214,6 +228,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(bigTabFrame)
             isVisible = true
         }
+
     }
 
 }

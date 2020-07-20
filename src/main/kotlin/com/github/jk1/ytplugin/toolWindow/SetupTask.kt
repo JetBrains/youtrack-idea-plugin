@@ -1,5 +1,8 @@
 package com.github.jk1.ytplugin.toolWindow
 
+import com.github.jk1.ytplugin.toolWindow.Connection.CancellableConnection
+import com.github.jk1.ytplugin.toolWindow.Connection.HttpTestConnection
+import com.github.jk1.ytplugin.toolWindow.Connection.TestConnectionTask
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
@@ -7,22 +10,21 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.tasks.TaskRepository
-import com.intellij.tasks.impl.BaseRepositoryImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
-import org.apache.commons.httpclient.Header
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.URI
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.PostMethod
+import java.awt.Color
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import javax.swing.JLabel
 
 
 /**
@@ -67,20 +69,20 @@ class SetupTask() {
         client.params.contentCharset = "UTF-8"
         client.executeMethod(method)
         var response: String?
-        System.out.println("Code: " + method.statusCode + " Redir: " + method.followRedirects)
-
-
+        System.out.println("Code: " + method.statusCode + " Url: " + repository.url)
         response = try {
-            System.out.println("Code2: " + method.statusCode + " Redir2: " + method.followRedirects)
-            if(method.statusCode == 301 || method.statusCode == 302){
+            if(method.statusCode > 300 && method.statusCode < 400){
                 val location: String = method.getResponseHeader("Location").toString()
-                System.out.println(location)
-                val newUri = location.substring(9, location.length)
-                System.out.println("New: " + newUri)
+                val newUri = location.substring(10, location.length)
+                System.out.println("New:" + newUri)
                 method.uri = URI(newUri, false)
+                System.out.println("method.uri" + method.uri)
 //                client.executeMethod(method)
-                repository.url = newUri
+                repository.url = URI(newUri, false).toString()
                 login(method, repository)
+            }
+            else if (method.statusCode == 403) {
+                throw java.lang.Exception("Cannot login: token error occurred or user was banned")
             }
             else if (method.statusCode != 200) {
                 throw HttpRequests.HttpStatusException("Cannot login", method.statusCode, method.path)
@@ -92,24 +94,24 @@ class SetupTask() {
         if (response == null) {
             throw NullPointerException()
         }
-        if (!response.contains("<login>ok</login>")) {
-            val pos = response.indexOf("</error>")
-            val length = "<error>".length
-            if (pos > length) {
-                response = response.substring(length, pos)
-            }
-            throw java.lang.Exception("Cannot login: $response")
-        }
+//        if (!response.contains("<login>ok</login>")) {
+//            val pos = response.indexOf("</error>")
+//            val length = "<error>".length
+//            if (pos > length) {
+//                response = response.substring(length, pos)
+//            }
+//            throw java.lang.Exception("Cannot login: $response")
+//        }
         return client
     }
 
-    fun createCancellableConnection(repository: YouTrackRepository): TaskRepository.CancellableConnection? {
-        val method = PostMethod(getRepositoryUrl(repository) + "/rest/user/login")
+    fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
+//        val method = PostMethod(getRepositoryUrl(repository) + "/rest/user/login")
 
-//        val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
-//        method.setRequestHeader("Authorization","Bearer "+ repository.password)
+        val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
+        method.setRequestHeader("Authorization","Bearer "+ repository.password)
 
-        return object : BaseRepositoryImpl.HttpTestConnection<PostMethod?>(method) {
+        return object : HttpTestConnection<PostMethod?>(method) {
             @Throws(java.lang.Exception::class)
             override fun doTest(method: PostMethod?) {
                 if (method != null) {
@@ -119,7 +121,8 @@ class SetupTask() {
         }
     }
 
-    fun testConnection(repository: YouTrackRepository, myProject: Project): Boolean {
+
+    fun testConnection(repository: YouTrackRepository, myProject: Project, notifier: JLabel): Boolean {
         val myBadRepositories = ContainerUtil.newConcurrentSet<YouTrackRepository>()
 
         val task: TestConnectionTask = object : TestConnectionTask("Test connection", myProject) {
@@ -134,17 +137,21 @@ class SetupTask() {
                         while (true) {
                             try {
                                 myException = future[100, TimeUnit.MILLISECONDS]
+                                notifier.text = "Cannot login"
                                 return
                             } catch (ignore: TimeoutException) {
                                 try {
                                     indicator.checkCanceled()
                                 } catch (e: ProcessCanceledException) {
                                     myException = e
+                                    notifier.text = "Error: " + e.message
                                     myConnection!!.cancel()
                                     return
                                 }
                             } catch (e: Exception) {
                                 myException = e
+                                notifier.text = "Error: " + e.message
+
                                 return
                             }
                         }
@@ -164,16 +171,20 @@ class SetupTask() {
         val e = task.myException
         if (e == null) {
             myBadRepositories.remove(repository)
-            Messages.showMessageDialog(myProject, "Connection is successful", "Connection", Messages.getInformationIcon())
+            notifier.foreground = Color.green;
+            notifier.text = "Successfully connected"
+//            Messages.showMessageDialog(myProject, "Connection is successful", "Connection", Messages.getInformationIcon())
         } else if (e !is ProcessCanceledException) {
-            var message = e.message
+            val message = e.message
             if (e is UnknownHostException) {
-                message = "Unknown host: $message"
+                notifier.text = "Unknown host: $message"
+//                message = "Unknown host: $message"
             }
             if (message == null) {
-                message = "Unknown error"
+                notifier.text = "Unknown error"
+//                message = "Unknown error"
             }
-            Messages.showErrorDialog(myProject, StringUtil.capitalize(message), "Error")
+//            Messages.showErrorDialog(myProject, StringUtil.capitalize(message), "Error")
         }
         return e == null
     }
