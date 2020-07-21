@@ -57,6 +57,11 @@ class SetupTask() {
         return trimTrailingSlashes(repository.url)
     }
 
+    fun isValidToken(token: String) : Boolean{
+        val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
+        return token.matches(tokenPattern)
+    }
+
     private fun fixURI(method: PostMethod){
         if (!method.uri.toString().contains("https")){
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
@@ -88,7 +93,6 @@ class SetupTask() {
                 val location: String = method.getResponseHeader("Location").toString()
                 val newUri = location.substring(10, location.length)
                 method.uri = URI(newUri, false)
-
                 /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
                 repository.url = method.uri.toString().substring(0,  newUri.length - 12)
                 correctUrl = repository.url
