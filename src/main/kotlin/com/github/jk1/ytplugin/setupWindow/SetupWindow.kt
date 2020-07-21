@@ -259,7 +259,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
             add(okPanel)
             add(cancelPanel)
             add(testConnectPanel)
-//            setBounds(100, 100, 560, 320)
             add(bigTabFrame)
             title = "YouTrack"
             setSize(550, 330)

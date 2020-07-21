@@ -55,16 +55,6 @@ class SetUpDialogFactory : ToolWindowFactory {
         })
     }
 
-//    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-//        val myToolWindow = SetUpDialog(project)
-//        val contentFactory = ContentFactory.SERVICE.getInstance()
-//        val content = contentFactory.createContent(myToolWindow.content, "", false)
-//        toolWindow.contentManager.addContent(content)
-//
-//    }
-
-
-    //ok
     override fun init(toolWindow: ToolWindow) {
         toolWindow.setIcon(YouTrackPluginIcons.MY_YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
     }
@@ -88,7 +78,6 @@ class SetUpDialogFactory : ToolWindowFactory {
         }
     }
 
-    //ok
     private fun ContentManager.addContent(title: String, component: JComponent){
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(component, title, false)
@@ -96,7 +85,6 @@ class SetUpDialogFactory : ToolWindowFactory {
         addContent(content)
     }
 
-    //ok
     private fun createPlaceholderPanel(project: Project): JComponent {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
@@ -110,7 +98,6 @@ class SetUpDialogFactory : ToolWindowFactory {
         return panel
     }
 
-    //ok
     private fun createLink(text: String, onClick: () -> Unit): JComponent {
         val label = SimpleColoredComponent()
         label.append(text, SimpleTextAttributes.LINK_ATTRIBUTES)
@@ -122,7 +109,5 @@ class SetUpDialogFactory : ToolWindowFactory {
         })
         return label
     }
-
-
 
 }
