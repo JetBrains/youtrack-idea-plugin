@@ -136,7 +136,7 @@ class SetupTask() {
 
     fun testConnection(repository: YouTrackRepository, myProject: Project, notifier: JLabel): Boolean {
         val myBadRepositories = ContainerUtil.newConcurrentSet<YouTrackRepository>()
-
+/**/
         val task: TestConnectionTask = object : TestConnectionTask("Test connection", myProject) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.text = "Connecting to " + repository.url + "..."

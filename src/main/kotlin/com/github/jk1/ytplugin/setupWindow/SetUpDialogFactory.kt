@@ -1,7 +1,13 @@
 package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.commands.CommandSession
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.tasks.IssueTask
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
+import com.github.jk1.ytplugin.ui.CommandDialog
 import com.github.jk1.ytplugin.ui.SetupListToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable
@@ -42,7 +48,7 @@ class SetUpDialogFactory : ToolWindowFactory {
             }
         }
         // listen to resize events and convert from horizontal to vertical layout and back
-        toolWindow.component.addComponentListener(object: ComponentAdapter(){
+        toolWindow.component.addComponentListener(object : ComponentAdapter() {
 
             private var horizontal = toolWindow.anchor.isHorizontal
 
@@ -78,18 +84,35 @@ class SetUpDialogFactory : ToolWindowFactory {
         }
     }
 
-    private fun ContentManager.addContent(title: String, component: JComponent){
+    private fun ContentManager.addContent(title: String, component: JComponent) {
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(component, title, false)
         content.isCloseable = false
         addContent(content)
     }
 
+    private fun getIssueFromCurrentActiveTask(project: Project): Issue {
+        return ComponentAware.of(project) {
+            val task = taskManagerComponent.getActiveYouTrackTask()
+            if (task is IssueTask) {
+                task.issue
+            } else {
+                // try local store first, fall back to rest api if not found
+                val repo = taskManagerComponent.getActiveYouTrackRepository()
+                issueStoreComponent[repo].firstOrNull { it.id == task.id }
+                        ?: IssuesRestClient(repo).getIssue(task.id)
+                        ?: throw NoActiveYouTrackTaskException()
+            }
+        }
+    }
+
     private fun createPlaceholderPanel(project: Project): JComponent {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { SetupWindow(project) }
+//        val configureLabel = createLink("Configure") { SetupWindow(project) }
+        val configureLabel = createLink("Configure") { SetupDialog(project).show() }
+
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)

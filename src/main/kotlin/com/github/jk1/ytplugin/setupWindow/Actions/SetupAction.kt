@@ -6,14 +6,14 @@ import com.intellij.openapi.project.DumbAware
 import javax.swing.Icon
 import javax.swing.JComponent
 
-abstract class SetupAction: AnAction(), DumbAware {
+abstract class SetupAction : AnAction(), DumbAware {
 
     abstract val text: String
     abstract val description: String
     abstract val icon: Icon
     abstract val shortcut: String
 
-    fun register(parent: JComponent){
+    fun register(parent: JComponent) {
         templatePresentation.text = text
         templatePresentation.description = description
         templatePresentation.icon = icon
