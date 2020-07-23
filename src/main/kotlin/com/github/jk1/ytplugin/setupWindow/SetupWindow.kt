@@ -104,7 +104,8 @@ class SetupWindow(val project: Project) : ProjectComponent {
                 text = "Invalid token"
             }
         } else {
-            setup.testConnection(myRepository, project, notifyField)
+            setup.testConnection(myRepository, project)
+            setup.setNotifier(notifyField)
         }
 
         val oldUrl = inputUrl.text

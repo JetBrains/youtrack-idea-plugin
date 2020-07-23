@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.*
+import com.github.jk1.ytplugin.setupWindow.NotifierState
 import com.github.jk1.ytplugin.setupWindow.SetupTask
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
@@ -35,10 +36,9 @@ class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrai
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
-        val notifier = JLabel()
-        setupTask.testConnection(repo, project, notifier)
+        setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        Assert.assertEquals("Successfully connected", notifier.text)
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(302, setupTask.statusCode)
     }
 
@@ -50,10 +50,9 @@ class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrai
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
-        val notifier = JLabel()
-        setupTask.testConnection(repo, project, notifier)
+        setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        Assert.assertEquals("Successfully connected", notifier.text)
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(302, setupTask.statusCode)
     }
 
@@ -64,10 +63,9 @@ class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrai
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
-        val notifier = JLabel()
-        setupTask.testConnection(repo, project, notifier)
+        setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        Assert.assertEquals("Successfully connected", notifier.text)
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(200, setupTask.statusCode)
     }
 
@@ -78,9 +76,8 @@ class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrai
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
-        val notifier = JLabel()
-        setupTask.testConnection(repo, project, notifier)
-        Assert.assertEquals("Cannot login: incorrect URL or token", notifier.text)
+        setupTask.testConnection(repo, project)
+        Assert.assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
         Assert.assertEquals(401, setupTask.statusCode)
     }
 
@@ -91,10 +88,9 @@ class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrai
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
-        val notifier = JLabel()
-        setupTask.testConnection(repo, project, notifier)
+        setupTask.testConnection(repo, project)
         Assert.assertEquals("https://lug", setupTask.correctUrl)
-        Assert.assertEquals("Unknown host: lug", notifier.text)
+        Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
         Assert.assertEquals(200, setupTask.statusCode)
     }
 

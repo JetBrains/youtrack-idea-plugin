@@ -26,12 +26,18 @@ import java.util.concurrent.TimeoutException
 import javax.swing.JLabel
 
 
+
+enum class NotifierState{
+    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST
+}
 /**
  * Class for the task management
  */
 class SetupTask() {
 
     var correctUrl:String = ""
+    var noteState = NotifierState.SUCCESS
+
     @TestOnly
     var statusCode = 200
 
@@ -63,6 +69,19 @@ class SetupTask() {
     fun isValidToken(token: String) : Boolean{
         val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
         return token.matches(tokenPattern)
+    }
+
+    fun setNotifier(note: JLabel){
+        if (noteState == NotifierState.SUCCESS){
+            note.foreground = Color.green;
+            note.text = "Successfully connected"
+        }
+        else if (noteState == NotifierState.LOGIN_ERROR)
+            note.text = "Cannot login: incorrect URL or token"
+        else if (noteState == NotifierState.UNKNOWN_ERROR)
+            note.text = "Unknown error"
+        else if (noteState == NotifierState.UNKNOWN_HOST)
+            note.text = "Unknown host"
     }
 
     fun fixURI(method: PostMethod){
@@ -138,7 +157,7 @@ class SetupTask() {
     }
 
 
-    fun testConnection(repository: YouTrackRepository, myProject: Project, notifier: JLabel): Boolean {
+    fun testConnection(repository: YouTrackRepository, myProject: Project): Boolean {
         val myBadRepositories = ContainerUtil.newConcurrentSet<YouTrackRepository>()
 /**/
         val task: TestConnectionTask = object : TestConnectionTask("Test connection", myProject) {
@@ -154,20 +173,20 @@ class SetupTask() {
                         while (true) {
                             try {
                                 myException = future[100, TimeUnit.MILLISECONDS]
-                                notifier.text = "Cannot login: incorrect URL or token"
+                                noteState = NotifierState.LOGIN_ERROR
                                 return
                             } catch (ignore: TimeoutException) {
                                 try {
                                     indicator.checkCanceled()
                                 } catch (e: ProcessCanceledException) {
                                     myException = e
-                                    notifier.text = "Error: " + e.message
+                                    noteState = NotifierState.LOGIN_ERROR
                                     myConnection!!.cancel()
                                     return
                                 }
                             } catch (e: Exception) {
                                 myException = e
-                                notifier.text = "Error: " + e.message
+                                noteState = NotifierState.LOGIN_ERROR
                                 return
                             }
                         }
@@ -188,17 +207,17 @@ class SetupTask() {
         if (e == null) {
             myBadRepositories.remove(repository)
             correctUrl = repository.url
-            notifier.foreground = Color.green;
-            notifier.text = "Successfully connected"
+            noteState = NotifierState.SUCCESS
         } else if (e !is ProcessCanceledException) {
             val message = e.message
             if (e is UnknownHostException) {
-                notifier.text = "Unknown host: $message"
+                noteState = NotifierState.UNKNOWN_HOST
             }
             if (message == null) {
-                notifier.text = "Unknown error"
+                noteState = NotifierState.UNKNOWN_ERROR
             }
         }
         return e == null
     }
 }
+
