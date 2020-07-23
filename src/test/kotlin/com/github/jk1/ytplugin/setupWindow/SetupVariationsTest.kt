@@ -17,7 +17,7 @@ import java.nio.charset.Charset
 import java.util.*
 import javax.swing.JLabel
 
-class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
+class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     override lateinit var repository: YouTrackServer
@@ -30,67 +30,50 @@ class SetupWindowTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrai
     }
 
     @Test
-    fun testHTTPErrorUrl() {
-        val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
+    fun testShareUrl() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token)
+        repository = createYouTrackRepository(serverUrl, token, true, false, false, false)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(302, setupTask.statusCode)
-    }
-
-    // TODO: FIX ME
-    @Test
-    fun testEndingErrorUrl() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com"
-        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token)
-        val repo = repository.getRepo()
-        val setupTask = SetupTask()
-        setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(302, setupTask.statusCode)
-    }
-
-    @Test
-    fun testTrSlashErrorUrl() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
-        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token)
-        val repo = repository.getRepo()
-        val setupTask = SetupTask()
-        setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(200, setupTask.statusCode)
     }
 
     @Test
-    fun testErrorToken() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
-        val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token)
+    fun testUseProxy() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
+        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
+        repository = createYouTrackRepository(serverUrl, token, false, true, false, false)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
-        Assert.assertEquals(401, setupTask.statusCode)
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+        Assert.assertEquals(200, setupTask.statusCode)
     }
 
     @Test
-    fun testNonExisUrl() {
-        val serverUrl = "lug"
+    fun testUseHTTP() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token)
+        repository = createYouTrackRepository(serverUrl, token, false, false, true, false)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://lug", setupTask.correctUrl)
-        Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+        Assert.assertEquals(200, setupTask.statusCode)
+    }
+
+    @Test
+    fun testLoginAnon() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
+//        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
+        repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
+        val repo = repository.getRepo()
+        val setupTask = SetupTask()
+        setupTask.testConnection(repo, project)
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(200, setupTask.statusCode)
     }
 

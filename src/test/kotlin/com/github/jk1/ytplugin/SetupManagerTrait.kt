@@ -22,24 +22,4 @@ interface SetupManagerTrait : RestClientTrait, YouTrackConnectionTrait {
             client.state.setCredentials(AuthScope.ANY, credentials)
             return client
         }
-
-
-    fun testTestConnection(): String {
-
-        val method = PostMethod("$serverUrl/api/token")
-        method.setRequestHeader("Authorization", "Bearer $password")
-
-        val setupTask = SetupTask()
-        setupTask.fixURI(method)
-
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status != 403) {
-                method.getResponseHeader("Location").toExternalForm().split("/").last().trim()
-            } else {
-                throw IllegalStateException("Unable to login: user banned")
-            }
-        }
-    }
-
 }

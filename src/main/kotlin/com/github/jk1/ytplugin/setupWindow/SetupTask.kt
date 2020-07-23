@@ -39,7 +39,7 @@ class SetupTask() {
     var noteState = NotifierState.SUCCESS
 
     @TestOnly
-    var statusCode = 200
+    var statusCode = 404
 
     @Tag("username")
     fun getRepositoryUsername(repository: YouTrackRepository): String? {
@@ -88,7 +88,6 @@ class SetupTask() {
         if (!method.uri.toString().contains("https")){
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
             method.uri = URI(newUri, false)
-            System.out.println("new url:" + method.uri)
         }
         if(!method.uri.toString().contains("com/youtrack") && correctUrl.contains("com/youtrack")){
             val newUri = method.uri.toString() + "/youtrack"
@@ -97,6 +96,17 @@ class SetupTask() {
         else{
             throw HttpRequests.HttpStatusException("Cannot login: incorrect URL or token", method.statusCode, method.path)
         }
+    }
+
+    private fun fixURI(uri: String): String{
+        var newUri = uri
+        if (!uri.contains("https")){
+            newUri = "https" + uri.substring(4, uri.length)
+        }
+        if(!uri.contains("com/youtrack") && correctUrl.contains("com/youtrack")){
+            newUri = "$newUri/youtrack"
+        }
+        return newUri
     }
 
     @Throws(java.lang.Exception::class)
@@ -116,8 +126,8 @@ class SetupTask() {
                 val location: String = method.getResponseHeader("Location").toString()
                 val newUri = location.substring(10, location.length)
                 method.uri = URI(newUri, false)
-                /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
-                repository.url = method.uri.toString().substring(0,  newUri.length - 12)
+                repository.url = method.uri.toString()
+
                 correctUrl = repository.url
                 createCancellableConnection(repository)
             }
@@ -126,6 +136,7 @@ class SetupTask() {
             }
             else if (method.statusCode != 200) {
                 fixURI(method)
+                /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
                 repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
                 createCancellableConnection(repository)
             }
@@ -141,8 +152,10 @@ class SetupTask() {
 
 
     fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
-//        val method = PostMethod(getRepositoryUrl(repository) + "/rest/user/login")
 
+        val newUri = fixURI(repository.url)
+        repository.url = newUri
+        correctUrl = repository.url
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
         method.setRequestHeader("Authorization","Bearer "+ repository.password)
 
