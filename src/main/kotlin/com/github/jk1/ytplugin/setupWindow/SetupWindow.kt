@@ -52,14 +52,15 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private lateinit var proxyPanel: JPanel
     private lateinit var okPanel: JPanel
     private lateinit var cancelPanel: JPanel
+    lateinit var myRepository: YouTrackRepository
 
-    private var okButton = JButton("OK")
+    var okButton = JButton("OK")
     private var cancelButton = JButton("Cancel")
     private var testConnectButton = JButton("Test connection")
     private var proxySettingsButton = JButton("Proxy settings...")
-    private var inputUrl = JTextPane()
+    var inputUrl = JTextPane()
 
-    private var inputToken = JPasswordField("")
+    var inputToken = JPasswordField("")
 
     fun showIssues(repository: YouTrackRepository) {
         val myManager: TaskManagerImpl = TaskManager.getManager(project) as TaskManagerImpl
@@ -83,7 +84,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
         setup.correctUrl = inputUrl.text
 
 
-        val myRepository = YouTrackRepository()
+        myRepository = YouTrackRepository()
         val myRepositoryType = YouTrackRepositoryType()
 
         myRepository.url = inputUrl.text

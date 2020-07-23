@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.URI
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.PostMethod
+import org.jetbrains.annotations.TestOnly
 import java.awt.Color
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -31,6 +32,8 @@ import javax.swing.JLabel
 class SetupTask() {
 
     var correctUrl:String = ""
+    @TestOnly
+    var statusCode = 200
 
     @Tag("username")
     fun getRepositoryUsername(repository: YouTrackRepository): String? {
@@ -62,7 +65,7 @@ class SetupTask() {
         return token.matches(tokenPattern)
     }
 
-    private fun fixURI(method: PostMethod){
+    fun fixURI(method: PostMethod){
         if (!method.uri.toString().contains("https")){
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
             method.uri = URI(newUri, false)
@@ -89,7 +92,8 @@ class SetupTask() {
         val response: String?
         System.out.println("Code: " + method.statusCode + " Url: " + repository.url)
         response = try {
-            if(method.statusCode > 300 && method.statusCode < 400){
+            statusCode = method.statusCode
+            if(method.statusCode in 301..399){
                 val location: String = method.getResponseHeader("Location").toString()
                 val newUri = location.substring(10, location.length)
                 method.uri = URI(newUri, false)
@@ -198,4 +202,3 @@ class SetupTask() {
         return e == null
     }
 }
-

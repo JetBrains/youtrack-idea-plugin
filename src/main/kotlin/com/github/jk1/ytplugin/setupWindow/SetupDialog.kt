@@ -31,11 +31,12 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
     protected val visibilityGroupDropdown = JComboBox<String>()
     protected val previewLabel = JLabel()
 
+    lateinit var setup: SetupWindow
     private val applyAction = ExecuteCommandAction("Apply")
     private val silentApplyAction = ExecuteCommandAction("Apply without notification", true)
 
     override fun init() {
-        val setup = SetupWindow(project)
+        setup = SetupWindow(project)
         setup.prepareDialogWindow()
     }
 

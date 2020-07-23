@@ -13,4 +13,8 @@ interface YouTrackConnectionTrait {
 
     val password: String
         get() = "ideplugin"
+
+    val token: String
+        get() = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
+
 }
