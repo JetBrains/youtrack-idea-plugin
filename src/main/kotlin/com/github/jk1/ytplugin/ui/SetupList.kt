@@ -52,8 +52,8 @@ class SetupList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
                 val placeholder = issueList.emptyText
                 placeholder.clear()
                 if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-                    placeholder.appendText("No issues found ")
-                    placeholder.appendText("Edit configuration", SimpleTextAttributes.LINK_ATTRIBUTES,
+                    placeholder.appendText("No issues found. Edit search request or ")
+                    placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES,
                             { SetupDialog(project).show() })
                 }
                 issueListModel.update()

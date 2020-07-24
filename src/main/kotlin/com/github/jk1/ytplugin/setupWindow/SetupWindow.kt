@@ -54,12 +54,11 @@ class SetupWindow(val project: Project) : ProjectComponent {
     private lateinit var cancelPanel: JPanel
     lateinit var myRepository: YouTrackRepository
 
-    var okButton = JButton("OK")
     private var cancelButton = JButton("Cancel")
     private var testConnectButton = JButton("Test connection")
     private var proxySettingsButton = JButton("Proxy settings...")
+    var okButton = JButton("OK")
     var inputUrl = JTextPane()
-
     var inputToken = JPasswordField("")
 
     private fun showIssues(repository: YouTrackRepository) {
@@ -99,13 +98,19 @@ class SetupWindow(val project: Project) : ProjectComponent {
         myRepository.isLoginAnonymously = loginAnon.isSelected()
 
         setup.testConnection(myRepository, project)
-        setup.setNotifier(notifyField)
+        if (myRepository.isLoginAnonymously && setup.noteState != NotifierState.UNKNOWN_HOST){
+            notifyField.foreground = Color.green;
+            notifyField.text = "Login as a guest"
+        }
+        else
+            setup.setNotifier(notifyField)
+
         val oldUrl = inputUrl.text
         inputUrl.text = ""
-
         if (oldUrl == setup.correctUrl) {
             inputUrl.text = oldUrl
-        } else {
+        }
+        else {
             if (!oldUrl.contains("com/youtrack") && setup.correctUrl.contains("com/youtrack")) {
                 inputUrl.text = oldUrl
                 appendToPane(inputUrl, "/youtrack", Color.GREEN)
@@ -113,12 +118,13 @@ class SetupWindow(val project: Project) : ProjectComponent {
             if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
                 appendToPane(inputUrl, "https", Color.GREEN)
                 appendToPane(inputUrl, oldUrl.substring(4, oldUrl.length), fontColor)
-            } else {
+            }
+            else {
                 inputUrl.text = setup.correctUrl
             }
         }
 
-        if (setup.noteState == NotifierState.SUCCESS)
+        if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously)
              showIssues(myRepository)
     }
 
@@ -185,7 +191,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         okButton.addActionListener {
             testConnectionAction()
-//            mainFrame.isVisible = false
             mainFrame.dispose()
         }
 
@@ -249,7 +254,6 @@ class SetupWindow(val project: Project) : ProjectComponent {
         val screenSize: Dimension = toolkit.getScreenSize()
 
         mainFrame.apply {
-//            isModal = true
             modalityType = Dialog.ModalityType.APPLICATION_MODAL
             add(okPanel)
             add(cancelPanel)

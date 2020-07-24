@@ -48,6 +48,27 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
+    fun testLoginAnon() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
+        repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
+        val repo = repository.getRepo()
+        val setupTask = SetupTask()
+        setupTask.testConnection(repo, project)
+        Assert.assertEquals(200, setupTask.statusCode)
+    }
+
+    @Test
+    fun testLoginAnonErrorUrl() {
+        val serverUrl = "https://ytplugintest"
+        repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
+        val repo = repository.getRepo()
+        val setupTask = SetupTask()
+        setupTask.testConnection(repo, project)
+        Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
+        Assert.assertEquals(401, setupTask.statusCode)
+    }
+
+    @Test
     fun testShareUrl() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
@@ -76,18 +97,6 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, true, false)
-        val repo = repository.getRepo()
-        val setupTask = SetupTask()
-        setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(200, setupTask.statusCode)
-    }
-
-    @Test
-    fun testLoginAnon() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-//        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)

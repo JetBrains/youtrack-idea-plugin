@@ -177,7 +177,7 @@ class SetupTask() {
 
     fun testConnection(repository: YouTrackRepository, myProject: Project): Boolean {
 
-        if (!isValidToken(repository.password)){
+        if (!repository.isLoginAnonymously && !isValidToken(repository.password)){
             noteState = NotifierState.INVALID_TOKEN
             return false
         }
