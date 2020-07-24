@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.*
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.setupWindow.NotifierState
 import com.github.jk1.ytplugin.setupWindow.SetupTask
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -16,6 +17,7 @@ import org.junit.Test
 import java.nio.charset.Charset
 import java.util.*
 import javax.swing.JLabel
+import kotlin.collections.ArrayList
 
 class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
 
@@ -27,6 +29,22 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
+    }
+
+    @Test
+    fun hasIssues() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
+        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
+        repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
+        repository.defaultSearch = "Assignee:Unassigned"
+        val repo = repository.getRepo()
+        val setupTask = SetupTask()
+        setupTask.testConnection(repo, project)
+        issueStoreComponent[repository].update(repository).waitFor(5000)
+
+        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+        /* should contain on task (AT-10825 Test Task) */
+        Assert.assertEquals(issueStoreComponent[repository].getAllIssues().lastIndex, 0)
     }
 
     @Test

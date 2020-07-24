@@ -62,7 +62,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
     var inputToken = JPasswordField("")
 
-    fun showIssues(repository: YouTrackRepository) {
+    private fun showIssues(repository: YouTrackRepository) {
         val myManager: TaskManagerImpl = TaskManager.getManager(project) as TaskManagerImpl
         lateinit var myRepositories: List<YouTrackRepository>
         myRepositories = ArrayList()
@@ -82,7 +82,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
     fun testConnectionAction() {
         val setup = SetupTask()
         setup.correctUrl = inputUrl.text
-
+        val fontColor = inputToken.foreground
 
         myRepository = YouTrackRepository()
         val myRepositoryType = YouTrackRepositoryType()
@@ -98,35 +98,28 @@ class SetupWindow(val project: Project) : ProjectComponent {
         myRepository.isUseHttpAuthentication = useHTTP.isSelected()
         myRepository.isLoginAnonymously = loginAnon.isSelected()
 
-
-        if (!setup.isValidToken(myRepository.password)) {
-            notifyField.apply {
-                text = "Invalid token"
-            }
-        } else {
-            setup.testConnection(myRepository, project)
-            setup.setNotifier(notifyField)
-        }
-
+        setup.testConnection(myRepository, project)
+        setup.setNotifier(notifyField)
         val oldUrl = inputUrl.text
         inputUrl.text = ""
 
         if (oldUrl == setup.correctUrl) {
             inputUrl.text = oldUrl
-        }
-        else {
+        } else {
             if (!oldUrl.contains("com/youtrack") && setup.correctUrl.contains("com/youtrack")) {
                 inputUrl.text = oldUrl
                 appendToPane(inputUrl, "/youtrack", Color.GREEN)
             }
             if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
                 appendToPane(inputUrl, "https", Color.GREEN)
-                appendToPane(inputUrl, oldUrl.substring(4, oldUrl.length), inputToken.foreground)
+                appendToPane(inputUrl, oldUrl.substring(4, oldUrl.length), fontColor)
             } else {
                 inputUrl.text = setup.correctUrl
             }
         }
-        showIssues(myRepository)
+
+        if (setup.noteState == NotifierState.SUCCESS)
+             showIssues(myRepository)
     }
 
 

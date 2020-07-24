@@ -89,7 +89,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
+        Assert.assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
         Assert.assertEquals(401, setupTask.statusCode)
     }
 
@@ -103,7 +103,20 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://lug", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
-        Assert.assertEquals(404, setupTask.statusCode)
+        Assert.assertEquals(401, setupTask.statusCode)
+    }
+
+    @Test
+    fun emptyForm() {
+        val serverUrl = ""
+        val token = ""
+        repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
+        val repo = repository.getRepo()
+        val setupTask = SetupTask()
+        setupTask.testConnection(repo, project)
+        Assert.assertEquals("", setupTask.correctUrl)
+        Assert.assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
+        Assert.assertEquals(401, setupTask.statusCode)
     }
 
     @After

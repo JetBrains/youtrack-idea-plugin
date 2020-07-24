@@ -8,6 +8,10 @@ import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.TaskManager
+import com.intellij.tasks.TaskRepository
+import com.intellij.tasks.config.RecentTaskRepositories
+import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
@@ -28,7 +32,7 @@ import javax.swing.JLabel
 
 
 enum class NotifierState{
-    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST
+    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN
 }
 /**
  * Class for the task management
@@ -36,10 +40,9 @@ enum class NotifierState{
 class SetupTask() {
 
     var correctUrl:String = ""
-    var noteState = NotifierState.SUCCESS
-
+    var noteState = NotifierState.INVALID_TOKEN
     @TestOnly
-    var statusCode = 404
+    var statusCode = 401
 
     @Tag("username")
     fun getRepositoryUsername(repository: YouTrackRepository): String? {
@@ -82,6 +85,8 @@ class SetupTask() {
             note.text = "Unknown error"
         else if (noteState == NotifierState.UNKNOWN_HOST)
             note.text = "Unknown host"
+        else if (noteState == NotifierState.INVALID_TOKEN)
+            note.text = "Invalid token"
     }
 
     fun fixURI(method: PostMethod){
@@ -171,8 +176,14 @@ class SetupTask() {
 
 
     fun testConnection(repository: YouTrackRepository, myProject: Project): Boolean {
+
+        if (!isValidToken(repository.password)){
+            noteState = NotifierState.INVALID_TOKEN
+            return false
+        }
+
         val myBadRepositories = ContainerUtil.newConcurrentSet<YouTrackRepository>()
-/**/
+
         val task: TestConnectionTask = object : TestConnectionTask("Test connection", myProject) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.text = "Connecting to " + repository.url + "..."
@@ -215,6 +226,7 @@ class SetupTask() {
                 }
             }
         }
+
         ProgressManager.getInstance().run(task)
         val e = task.myException
         if (e == null) {
