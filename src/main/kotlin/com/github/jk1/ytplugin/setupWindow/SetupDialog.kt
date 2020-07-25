@@ -1,3 +1,4 @@
+// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ComponentAware
@@ -23,7 +24,9 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.*
 
-
+/**
+ * Wrapper class for the SetupWindow dialog form
+ */
 open class SetupDialog(override val project: Project) : DialogWrapper(project, false), ComponentAware {
 
     protected val commandField = createCommandField()

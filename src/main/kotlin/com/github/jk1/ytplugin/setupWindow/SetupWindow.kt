@@ -1,3 +1,4 @@
+// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
@@ -26,7 +27,7 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 /**
- * Class for window for initial Setup of YouTrack
+ * Create window for initial configuration of YouTrack
  * @author Akina Boshchenko
  */
 class SetupWindow(val project: Project) : ProjectComponent {
@@ -72,13 +73,13 @@ class SetupWindow(val project: Project) : ProjectComponent {
         RecentTaskRepositories.getInstance().addRepositories(myRepositories)
     }
 
-    fun loginAnonymouslyChanged(enabled: Boolean) {
+    private fun loginAnonymouslyChanged(enabled: Boolean) {
         inputToken.setEnabled(enabled)
         tokenField.setEnabled(enabled)
         useHTTP.setEnabled(enabled)
     }
 
-    fun testConnectionAction() {
+    private fun testConnectionAction() {
         val setup = SetupTask()
         setup.correctUrl = inputUrl.text
         val fontColor = inputToken.foreground
@@ -185,18 +186,14 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
 
-        testConnectButton.addActionListener(ActionListener {
-            testConnectionAction()
-        })
+        testConnectButton.addActionListener(ActionListener { testConnectionAction() })
 
         okButton.addActionListener {
             testConnectionAction()
             mainFrame.dispose()
         }
 
-        cancelButton.addActionListener {
-            mainFrame.dispose()
-        }
+        cancelButton.addActionListener { mainFrame.dispose() }
 
         cancelPanel = JPanel().apply {
             add(cancelButton)
@@ -250,8 +247,9 @@ class SetupWindow(val project: Project) : ProjectComponent {
             setMnemonicAt(1, KeyEvent.VK_2)
 
         }
+
         val toolkit: Toolkit = Toolkit.getDefaultToolkit()
-        val screenSize: Dimension = toolkit.getScreenSize()
+        val screenSize: Dimension = toolkit.screenSize
 
         mainFrame.apply {
             modalityType = Dialog.ModalityType.APPLICATION_MODAL

@@ -1,3 +1,4 @@
+// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.setupWindow.Connection.CancellableConnection
@@ -30,10 +31,13 @@ import java.util.concurrent.TimeoutException
 import javax.swing.JLabel
 
 
-
+/**
+ * Login errors classification
+ */
 enum class NotifierState{
     SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN
 }
+
 /**
  * Class for the task management
  */
@@ -69,7 +73,7 @@ class SetupTask() {
         return trimTrailingSlashes(repository.url)
     }
 
-    fun isValidToken(token: String) : Boolean{
+    private fun isValidToken(token: String) : Boolean{
         val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
         return token.matches(tokenPattern)
     }
@@ -89,7 +93,7 @@ class SetupTask() {
             note.text = "Invalid token"
     }
 
-    fun fixURI(method: PostMethod){
+    private fun fixURI(method: PostMethod){
         if (!method.uri.toString().contains("https")){
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
             method.uri = URI(newUri, false)
@@ -120,9 +124,9 @@ class SetupTask() {
         client.state.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(getRepositoryUsername(repository), getRepositoryPassword(repository)))
         method.addParameter("login", getRepositoryUsername(repository))
         method.addParameter("password", getRepositoryPassword(repository))
-
         client.params.contentCharset = "UTF-8"
         client.executeMethod(method)
+
         val response: String?
         System.out.println("Code: " + method.statusCode + " Url: " + repository.url)
         response = try {
@@ -141,7 +145,7 @@ class SetupTask() {
             }
             else if (method.statusCode != 200) {
                 fixURI(method)
-                /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
+                // substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending
                 repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
                 createCancellableConnection(repository)
             }
@@ -157,7 +161,6 @@ class SetupTask() {
 
 
     fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
-
         val newUri = fixURI(repository.url)
         repository.url = newUri
         correctUrl = repository.url
