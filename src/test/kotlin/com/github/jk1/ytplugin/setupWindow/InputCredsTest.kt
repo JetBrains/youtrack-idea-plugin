@@ -30,7 +30,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun testHTTPErrorUrl() {
+    fun `test connection with HTTP error in url`() {
         val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -43,7 +43,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun testEndingErrorUrl() {
+    fun `test connection with ending error in url`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -56,7 +56,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun testEndingAndHTTPErrorUrl() {
+    fun `test connection with HTTP and ending error in url`() {
         val serverUrl = "http://ytplugintest.myjetbrains.com"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -69,7 +69,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun testTrSlashErrorUrl() {
+    fun `test connection with trailing slash error in url`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -82,7 +82,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun testErrorToken() {
+    fun `test connection with invalid token `() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -94,7 +94,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun testNonExistingUrl() {
+    fun `test connection with non-existing url`() {
         val serverUrl = "lug"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -107,7 +107,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
     }
 
     @Test
-    fun emptyForm() {
+    fun `test connection with empty form`() {
         val serverUrl = ""
         val token = ""
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)

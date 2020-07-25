@@ -32,7 +32,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun hasIssues() {
+    fun `test if connected repository has issues that can be displayed`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
@@ -48,7 +48,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun testLoginAnon() {
+    fun `test login anonymously feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
         val repo = repository.getRepo()
@@ -58,7 +58,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun testLoginAnonErrorUrl() {
+    fun `test login anonymously feature with invalid url`() {
         val serverUrl = "https://ytplugintest"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
         val repo = repository.getRepo()
@@ -69,7 +69,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun testShareUrl() {
+    fun `test share url feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, true, false, false, false)
@@ -81,10 +81,10 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun testUseProxy() {
+    fun `test use HTTP feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, false, true, false, false)
+        repository = createYouTrackRepository(serverUrl, token, false, false, true, false)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
@@ -93,10 +93,10 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun testUseHTTP() {
+    fun `test use proxy feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, false, false, true, false)
+        repository = createYouTrackRepository(serverUrl, token, false, true, false, false)
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
