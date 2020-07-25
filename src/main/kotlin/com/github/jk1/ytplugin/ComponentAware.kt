@@ -4,14 +4,18 @@ import com.github.jk1.ytplugin.commands.CommandComponent
 import com.github.jk1.ytplugin.editor.AdminComponent
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent
 import com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent
+import com.github.jk1.ytplugin.issues.actions.ToggleIssueViewAction
 import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
 import com.github.jk1.ytplugin.notifications.NotificationsComponent
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
+import com.github.jk1.ytplugin.ui.SetupList
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 
 
 interface ComponentAware {
+
+//    fun toggleIssueViewAction(project: Project, issueList: SetupList): ToggleIssueViewAction
 
     val project: Project
 
