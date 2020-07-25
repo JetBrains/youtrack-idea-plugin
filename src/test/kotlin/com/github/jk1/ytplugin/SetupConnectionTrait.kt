@@ -7,7 +7,6 @@ import com.intellij.tasks.TaskManager
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
-import com.sun.org.apache.xpath.internal.operations.Bool
 
 
 interface SetupConnectionTrait: IdeaProjectTrait, YouTrackConnectionTrait {

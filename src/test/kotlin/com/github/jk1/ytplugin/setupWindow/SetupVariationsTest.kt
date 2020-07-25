@@ -93,18 +93,6 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         Assert.assertEquals(200, setupTask.statusCode)
     }
 
-    @Test
-    fun `test use proxy feature`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, false, true, false, false)
-        val repo = repository.getRepo()
-        val setupTask = SetupTask()
-        setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(200, setupTask.statusCode)
-    }
-
     @After
     fun tearDown() {
         issueStoreComponent.remove(repository)

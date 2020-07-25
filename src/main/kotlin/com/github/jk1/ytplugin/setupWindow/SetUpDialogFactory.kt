@@ -63,7 +63,7 @@ class SetUpDialogFactory : ToolWindowFactory {
     }
 
     override fun init(toolWindow: ToolWindow) {
-        toolWindow.setIcon(YouTrackPluginIcons.MY_YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
+        toolWindow.setIcon(YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
     }
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {

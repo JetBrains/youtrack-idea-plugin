@@ -19,7 +19,6 @@ import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
-import java.awt.event.WindowEvent
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -140,6 +139,13 @@ class SetupWindow(val project: Project) : ProjectComponent {
         tp.replaceSelection(msg)
     }
 
+    private fun enableButtons() {
+        this.useProxy.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
+        if (!HttpConfigurable.getInstance().USE_HTTP_PROXY) {
+            this.useProxy.isSelected = false
+        }
+    }
+
     fun prepareDialogWindow() {
         serverUrl = JLabel("Server Url:")
         serverUrl.setBounds(65, 60, 100, 22)
@@ -182,6 +188,7 @@ class SetupWindow(val project: Project) : ProjectComponent {
 
         proxySettingsButton.addActionListener(ActionListener {
             HttpConfigurable.editConfigurable(controlPanel)
+            enableButtons()
         })
 
         loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
