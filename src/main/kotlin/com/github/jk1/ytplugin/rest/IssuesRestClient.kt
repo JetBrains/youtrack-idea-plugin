@@ -32,6 +32,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : RestClientTrai
 
     fun getIssue(id: String): Issue? {
         val method = GetMethod("${repository.url}/rest/issue/$id?wikifyDescription=true")
+//       val method = GetMethod(${repository.url}/api/issues/$id?fields=id,idReadable,summary,description,customFields(id,name,value(id,name)))
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
