@@ -4,11 +4,12 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import net.minidev.json.JSONArray
+import net.minidev.json.JSONObject
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
-import org.jdom.input.SAXBuilder
 import java.nio.charset.StandardCharsets
 
 
@@ -57,17 +58,26 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
     }
 
     override fun getAccessibleProjects(): List<String> {
-//        val method = GetMethod("${repository.url}/rest/admin/project")
-        val method = GetMethod("${repository.url}/api/admin/project")
+        val method = GetMethod("${repository.url}/api/admin/projects")
+        val fields = NameValuePair("fields", "shortName")
+        method.setQueryString(arrayOf(fields))
 
         return method.connect {
             val status = httpClient.executeMethod(method)
+            val shortNamesList: MutableList<String>  = mutableListOf()
+
+            val json: JsonArray = JsonParser().parse(method.responseBodyAsString) as JsonArray
+            for (i in 0 until json.size()) {
+                val e: JsonObject = json.get(i) as JsonObject
+                shortNamesList.add(e.get("shortName").asString)
+            }
+
+//            println(status)
+//            for (i in 0 until shortNamesList.size)
+//                println("name: " + shortNamesList[i])
+
             if (status == 200) {
-                val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
-                val projectElements = root.rootElement.children
-                projectElements.map {
-                    it.getAttribute("id").value
-                }
+                shortNamesList
             }  else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }

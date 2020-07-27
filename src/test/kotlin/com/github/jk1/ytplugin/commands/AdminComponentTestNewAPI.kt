@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.externalSystem.EMPTY_STATE
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.IssueNavigationLink
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
@@ -50,6 +51,14 @@ class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTr
         assertTrue(group.contains("Registered Users"))
         assertTrue(group.contains("All Users"))
         assertEquals(size, 5)
+    }
+
+    @Test
+    fun `get accessible projects using new API`() {
+        val link = IssueNavigationLink()
+        adminComponent.updateIssueLinkProjects(link, repository)
+//        assertTrue(projects.contains("MT"))
+//        assertTrue(projects.contains("AT"))
     }
 
     @After

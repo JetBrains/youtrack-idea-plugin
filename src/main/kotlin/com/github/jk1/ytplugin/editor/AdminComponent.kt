@@ -81,7 +81,7 @@ class AdminComponent(override val project: Project) : ProjectComponent, Componen
         }
     }
 
-    private fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
+    fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
         try {
             val projects = AdminRestClient(repo).getAccessibleProjects()
             if (projects.isEmpty()) {

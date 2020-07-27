@@ -19,7 +19,6 @@ class AdminOldRestClient(override val repository: YouTrackServer) : AdminRestCli
         return method.connect {
             val status = httpClient.executeMethod(method)
             val defaultGroups = listOf("All Users")
-            System.out.println("Res " + defaultGroups)
             when (status) {
                 200 -> {
                     val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
@@ -36,9 +35,7 @@ class AdminOldRestClient(override val repository: YouTrackServer) : AdminRestCli
     }
 
     override fun getAccessibleProjects(): List<String> {
-//        val method = GetMethod("${repository.url}/rest/admin/project")
-        val method = GetMethod("${repository.url}/api/admin/project")
-
+        val method = GetMethod("${repository.url}/rest/admin/project")
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
