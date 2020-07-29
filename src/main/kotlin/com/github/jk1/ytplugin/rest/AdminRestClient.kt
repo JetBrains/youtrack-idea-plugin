@@ -10,6 +10,7 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
+import java.io.FileReader
 import java.nio.charset.StandardCharsets
 
 
@@ -25,6 +26,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         method.setQueryString(arrayOf(top, fields))
         val jsonBody = "{\"issues\":[{\"type\":\"Issue\",\"id\":\"${issueId}\"}],\"prefix\":\"\",\"top\":20}"
+//        val jsonBody = FileReader("../../resources/com.github.jk1.ytplugin.ui/admin_body.json")
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
 
         return method.connect {

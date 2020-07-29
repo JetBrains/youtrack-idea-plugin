@@ -2,7 +2,10 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import net.minidev.json.JSONArray
 import net.minidev.json.JSONObject
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
@@ -10,6 +13,8 @@ import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
+import java.util.*
+
 
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
@@ -38,15 +43,116 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
-    override fun getIssues(query: String): List<Issue> {
-//        println("hey")
-        // todo: customizable "max" limit
-        val url = "${repository.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true&wikifyDescription=true"
-//        val url = "${repository.url}/api/issues?query=${query.urlencoded}&fields=id,summary,description,reporter(login)"
+//    [
+//        {
+//            description: "test task",
+//            comments: [
+//                {
+//                    $type: "IssueComment"
+//                },
+//                {
+//                    $type: "IssueComment"
+//                }
+//            ],
+//            attachments: [
+//                {
+//                    $type: "IssueAttachment"
+//                },
+//                {
+//                    $type: "IssueAttachment"
+//                }
+//            ],
+//            resolved: null,
+//            summary: "Test Task",
+//            reporter: {
+//                login: "ideplugin",
+//                $type: "User"
+//            },
+//            idReadable: "MT-18",
+//            customFields: [
+//                {
+//                    $type: "SingleEnumIssueCustomField"
+//                },
+//                {
+//                    $type: "SingleEnumIssueCustomField"
+//                }
+//            ],
+//            id: "87-10861",
+//            $type: "Issue"
+//        }
+//    ]
 
-        val issues = GetMethod(url).execute {
-            it.asJsonObject.getAsJsonArray("issue").mapNotNull { IssueJsonParser.parseIssue(it, repository.url) }
+//    val json: String
+//    val id: String
+//    val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
+//    val summary: String
+//    val description: String
+//    val createDate: Date
+//    val updateDate: Date
+//    val resolved: Boolean
+//    val customFields: List<CustomField>
+//    val comments: List<IssueComment>
+//    val links: List<IssueLink>
+//    val tags: List<IssueTag>
+//    val attachments: List<Attachment>
+//    val url: String
+//    val wikified: Boolean
+
+    private fun parseIssues(method: GetMethod): MutableList<Issue>{
+        val list: MutableList<Issue> = mutableListOf()
+        println("hey1")
+        println(method.responseBodyAsString)
+
+        val issues = JsonParser().parse(method.responseBodyAsString) as JsonArray
+        println("i1 " + issues[0].asString)
+        println("i2" + issues[1].asString)
+        for (i in 0 until issues.size()) {
+            val e: JsonObject = issues.get(i) as JsonObject
+            val currentIssue = Issue(e, method.uri.toString())
+            list.add(currentIssue)
+            println("hey2 $i")
+            println("id" + currentIssue.id)
+            println("entityId" + currentIssue.entityId)
+//            println("summary " + currentIssue.summary)
+//            println("desc " + currentIssue.description)
+//            println( "crDate " + currentIssue.createDate)
+//            println("upDate" + currentIssue.updateDate)
+//            println("reso " + currentIssue.resolved)
+//            println( "cf " + currentIssue.customFields)
+//            println( "comm" + currentIssue.comments[0])
+//            println( "link" + currentIssue.links[0])
+//            println( "tag" + currentIssue.tags[0])
+//            println("att " + currentIssue.attachments)
+//            println( "url " + currentIssue.url)
+//            println("wiki" + currentIssue.wikified)
+
         }
+        return list
+    }
+
+    override fun getIssues(query: String): List<Issue> {
+        // todo: customizable "max" limit
+        val url = "${repository.url}/api/issues?query=${query.urlencoded}&fields=id,idReadable,comments,summary,customFields,resolved,attachments,description,reporter(login)"
+        val method = GetMethod(url)
+        var status =  httpClient.executeMethod(method)
+
+        val issues: MutableList<Issue>  = mutableListOf()
+        println("hey")
+        val json: JsonArray = JsonParser().parse(method.responseBodyAsString) as JsonArray
+        println("hey33")
+
+        println(json[0].asString)
+        for (i in 0 until json.size()) {
+                val e: JsonObject = json.get(i) as JsonObject
+//                issues.add(Issue(e, url))
+                println("hey2 $i")
+//                println("id" + currentIssue.id)
+//                println("entityId" + currentIssue.entityId)
+        }
+
+//        val issues = GetMethod(url).execute {
+//            it.asJsonObject.getAsJsonArray("issue").mapNotNull { IssueJsonParser.parseIssue(it, repository.url) }
+//        }
         if (issues.any { it.wikified }) {
             // this is YouTrack 2018.1+, so we can return wikified issues right away
             return issues

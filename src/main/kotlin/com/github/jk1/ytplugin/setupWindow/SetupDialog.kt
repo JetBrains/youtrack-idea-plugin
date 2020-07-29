@@ -200,7 +200,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
-        tabPanel = JBPanel<JBPanelWithEmptyText>().apply {
+        tabPanel = JBPanel<JBPanelWithEmptyText>().apply{
             setBounds(100, 100, 580, 300);
             layout = null
             add(shareUrl)
@@ -213,7 +213,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             add(getTokenField)
             add(notifyField)
             pack()
-        }
+    }
 
         tab2Panel = JBPanel<JBPanelWithEmptyText>().apply {
             setBounds(100, 100, 580, 300);
