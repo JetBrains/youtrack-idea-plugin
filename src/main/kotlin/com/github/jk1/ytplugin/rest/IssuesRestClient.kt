@@ -39,7 +39,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun getIssues(query: String): List<Issue> {
-        println("hey")
+//        println("hey")
         // todo: customizable "max" limit
         val url = "${repository.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true&wikifyDescription=true"
 //        val url = "${repository.url}/api/issues?query=${query.urlencoded}&fields=id,summary,description,reporter(login)"

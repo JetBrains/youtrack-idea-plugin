@@ -86,30 +86,31 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
         myRepository.isLoginAnonymously = loginAnon.isSelected()
 
         setup.testConnection(myRepository, project)
-        if (myRepository.url.isBlank() || myRepository.password.isBlank()) {
-            notifyField.text = "Url and token fields are mandatory"
-        } else if (myRepository.isLoginAnonymously && setup.noteState != NotifierState.UNKNOWN_HOST) {
-            notifyField.foreground = Color.green;
-            notifyField.text = "Login as a guest"
-        } else
-            setup.setNotifier(notifyField)
 
         val oldUrl = inputUrl.text
         inputUrl.text = ""
         if (oldUrl == setup.correctUrl) {
             inputUrl.text = oldUrl
         } else {
-            if (!oldUrl.contains("com/youtrack") && setup.correctUrl.contains("com/youtrack")) {
-                inputUrl.text = oldUrl
+            if (!oldUrl.contains("/youtrack") && setup.correctUrl.contains("/youtrack")) {
+                println("true")
+                appendToPane(inputUrl, oldUrl, fontColor)
                 appendToPane(inputUrl, "/youtrack", Color.GREEN)
             }
             if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
                 appendToPane(inputUrl, "https", Color.GREEN)
                 appendToPane(inputUrl, oldUrl.substring(4, oldUrl.length), fontColor)
-            } else {
-                inputUrl.text = setup.correctUrl
             }
         }
+
+        if (myRepository.url.isBlank() || myRepository.password.isBlank()) {
+            notifyField.foreground = Color.red
+            notifyField.text = "Url and token fields are mandatory"
+        } else if (myRepository.isLoginAnonymously && setup.noteState != NotifierState.UNKNOWN_HOST) {
+            notifyField.foreground = Color.green
+            notifyField.text = "Login as a guest"
+        } else
+            setup.setNotifier(notifyField)
 
         if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
             val setupWindow = SetupWindowManager(project)
