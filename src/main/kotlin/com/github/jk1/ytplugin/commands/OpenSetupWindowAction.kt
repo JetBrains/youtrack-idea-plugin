@@ -8,8 +8,11 @@ import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import javax.swing.Icon
+import javax.swing.JComponent
 
 /**
  *
@@ -18,7 +21,13 @@ import com.intellij.openapi.project.Project
 class OpenSetupWindowAction : AnAction(
         "Open Setup Dialog",
         "Open configuration settings",
-        AllIcons.Debugger.Console), DumbAware, IdeNotificationsTrait {
+        AllIcons.General.Settings), DumbAware, IdeNotificationsTrait {
+
+    val shortcut = "control shift Q"
+
+    fun register(parent: JComponent) {
+        registerCustomShortcutSet(CustomShortcutSet.fromString(shortcut), parent)
+    }
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
@@ -36,12 +45,5 @@ class OpenSetupWindowAction : AnAction(
 
     override fun update(event: AnActionEvent) {
         event.presentation.isEnabledAndVisible = event.project != null
-    }
-
-    private fun assertYouTrackRepositoryConfigured(project: Project) {
-        val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
-        if (repos.isEmpty()) {
-            throw NoYouTrackRepositoryException()
-        }
     }
 }

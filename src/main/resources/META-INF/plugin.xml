@@ -49,13 +49,6 @@
             <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
         </action>
 
-        <action id="com.github.jk1.ytplugin.commands.OpenSetupWindowAction"
-                class="com.github.jk1.ytplugin.commands.OpenSetupWindowAction">
-            <keyboard-shortcut first-keystroke="control alt shift Q" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
-        </action>
-
         <action id="com.github.jk1.ytplugin.issues.actions.CreateIssueAction"
                 class="com.github.jk1.ytplugin.issues.actions.CreateIssueAction">
             <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>

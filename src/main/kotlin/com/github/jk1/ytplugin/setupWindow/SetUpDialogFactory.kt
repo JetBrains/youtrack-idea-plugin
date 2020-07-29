@@ -7,7 +7,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.IssueTask
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
-import com.github.jk1.ytplugin.ui.SetupListToolWindowContent
+import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
@@ -73,7 +73,7 @@ class SetUpDialogFactory : ToolWindowFactory {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel(project))
             else -> {
                 repos.forEach {
-                    val panel = SetupListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
+                    val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                 }
                 Disposer.register(project, Disposable {

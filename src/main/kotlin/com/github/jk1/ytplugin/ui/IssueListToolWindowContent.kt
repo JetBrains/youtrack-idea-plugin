@@ -1,8 +1,11 @@
+
+// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.setupWindow.Actions.ToggleSetupViewAction
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
@@ -18,13 +21,13 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
 
     private val splitter = EditorSplitter(vertical)
     private val viewer = IssueViewer()
-    private val issueList = IssueList(repo)
+    private val setupList = SetupList(repo)
     private val searchBar = IssueSearchBar(repo)
 
     init {
         val leftPanel = JPanel(BorderLayout())
         leftPanel.add(searchBar, BorderLayout.NORTH)
-        leftPanel.add(issueList, BorderLayout.CENTER)
+        leftPanel.add(setupList, BorderLayout.CENTER)
         splitter.firstComponent = leftPanel
         splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
@@ -34,7 +37,7 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
-        val selectedIssue = { issueList.getSelectedIssue() }
+        val selectedIssue = { setupList.getSelectedIssue() }
         group.add(RefreshIssuesAction(repo))
         group.add(CreateIssueAction())
         // todo: grouping and separators for actions
@@ -45,16 +48,16 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         group.add(BrowseIssueAction(selectedIssue))
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
-        group.add(ToggleIssueViewAction(project, issueList))
-//        group.addConfigureTaskServerAction()
+        group.add(ToggleSetupViewAction(project, setupList))
+        group.addConfigureTaskServerAction()
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }
 
     private fun setupIssueListActionListeners() {
         // update preview contents upon selection
-        issueList.addListSelectionListener {
-            val selectedIssue = issueList.getSelectedIssue()
+        setupList.addListSelectionListener {
+            val selectedIssue = setupList.getSelectedIssue()
             if (selectedIssue == null) {
                 splitter.collapse()
             } else if (selectedIssue != viewer.currentIssue) {
@@ -63,20 +66,20 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         }
 
         // keystrokes to expand/collapse issue preview
-        issueList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
-        issueList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
-        issueList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
+        setupList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
+        setupList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
+        setupList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
         // expand issue preview on click
-        issueList.addMouseListener(object : MouseAdapter() {
+        setupList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
-                if (issueList.getIssueCount() > 0) {
+                if (setupList.getIssueCount() > 0) {
                     splitter.expand()
                 }
             }
         })
         // apply issue search
         searchBar.actionListener = { search ->
-            issueList.startLoading()
+            setupList.startLoading()
             repo.defaultSearch = search
             issueStoreComponent[repo].update(repo)
         }

@@ -70,6 +70,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel())
             else -> {
                 repos.forEach {
+//                    val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                 }
