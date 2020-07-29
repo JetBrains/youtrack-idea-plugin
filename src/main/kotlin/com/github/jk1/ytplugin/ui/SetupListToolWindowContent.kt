@@ -1,3 +1,4 @@
+
 // Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.ui
 
@@ -38,7 +39,7 @@ class SetupListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         val group = IssueActionGroup(this)
         val selectedIssue = { setupList.getSelectedIssue() }
         group.add(RefreshIssuesAction(repo))
-        //group.add(CreateIssueAction()) todo: implement me
+        group.add(CreateIssueAction())
         // todo: grouping and separators for actions
         group.add(AddCommentAction(selectedIssue))
         group.add(OpenCommandWindowAction(selectedIssue))
@@ -48,7 +49,7 @@ class SetupListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleSetupViewAction(project, setupList))
-        group.addConfigureTaskServerAction()
+//        group.addConfigureTaskServerAction()
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

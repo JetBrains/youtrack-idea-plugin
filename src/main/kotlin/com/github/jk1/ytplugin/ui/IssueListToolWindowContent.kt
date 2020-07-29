@@ -36,7 +36,7 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         val group = IssueActionGroup(this)
         val selectedIssue = { issueList.getSelectedIssue() }
         group.add(RefreshIssuesAction(repo))
-        //group.add(CreateIssueAction()) todo: implement me
+        group.add(CreateIssueAction())
         // todo: grouping and separators for actions
         group.add(AddCommentAction(selectedIssue))
         group.add(OpenCommandWindowAction(selectedIssue))
@@ -46,7 +46,7 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issueList))
-        group.addConfigureTaskServerAction()
+//        group.addConfigureTaskServerAction()
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

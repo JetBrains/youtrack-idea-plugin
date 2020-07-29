@@ -36,6 +36,7 @@ class AdminComponent(override val project: Project) : ProjectComponent, Componen
                 try {
                     indicator.text = title
                     val repo = taskManagerComponent.getYouTrackRepository(issue)
+                    // replaced issueId with entityId
                     issue.entityId?.let { AdminRestClient(repo).getVisibilityGroups(it) }?.let { callback.invoke(it) }
                 } catch (e: Throwable) {
                     logger.info("Failed to load eligible visibility groups for issue")

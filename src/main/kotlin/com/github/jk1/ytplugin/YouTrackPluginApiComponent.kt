@@ -6,12 +6,11 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.rest.CommandRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.IssueViewer
-import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 
-class YouTrackPluginApiComponent(override val project: Project): ProjectComponent, YouTrackPluginApi, ComponentAware {
+class YouTrackPluginApiComponent(override val project: Project): YouTrackPluginApi, ComponentAware {
 
     override fun openIssueInToolWidow(issueId: String) {
         openIssueInToolWidow(findIssue(issueId))

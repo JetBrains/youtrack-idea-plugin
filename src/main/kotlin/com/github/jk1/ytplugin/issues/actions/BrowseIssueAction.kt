@@ -16,7 +16,7 @@ class BrowseIssueAction(private val getSelectedIssue: () -> Issue?) : IssueActio
 
     override val text = "Open in Browser"
     override val description = "Opens selected YouTrack issue in your favorite browser"
-    override val icon = AllIcons.General.Web!!
+    override val icon = AllIcons.General.Web
     override val shortcut = "control shift B"
 
     override fun actionPerformed(event: AnActionEvent) {

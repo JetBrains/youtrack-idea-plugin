@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import net.minidev.json.JSONObject
-import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
@@ -14,7 +13,7 @@ import java.nio.charset.StandardCharsets
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
  */
-class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClientBase, RestClientTrait {
+class IssuesOldRestClient(override val repository: YouTrackServer) : IssuesRestClientBase, RestClientTrait {
 
     override fun createDraft(summary: String): String {
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
@@ -32,18 +31,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun getIssue(id: String): Issue? {
-        val method = GetMethod("${repository.url}/api/issues/$id")
-        val fields = NameValuePair("fields", "id,idReadable,summary,description,customFields(id,name,value(id,name)))")
-        method.setQueryString(arrayOf(fields))
+        val method = GetMethod("${repository.url}/rest/issue/$id?wikifyDescription=true")
+//       val method = GetMethod(${repository.url}/api/issues/$id?fields=id,idReadable,summary,description,customFields(id,name,value(id,name)))
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
     override fun getIssues(query: String): List<Issue> {
-        println("hey")
         // todo: customizable "max" limit
         val url = "${repository.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true&wikifyDescription=true"
-//        val url = "${repository.url}/api/issues?query=${query.urlencoded}&fields=id,summary,description,reporter(login)"
-
         val issues = GetMethod(url).execute {
             it.asJsonObject.getAsJsonArray("issue").mapNotNull { IssueJsonParser.parseIssue(it, repository.url) }
         }

@@ -1,53 +1,242 @@
-// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.commands.CommandComponent
-import com.github.jk1.ytplugin.commands.CommandSession
-import com.github.jk1.ytplugin.commands.lang.CommandLanguage
-import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
-import com.github.jk1.ytplugin.commands.model.CommandPreview
-import com.github.jk1.ytplugin.commands.model.YouTrackCommand
-import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.editor.AdminComponent
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
+import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.ui.LanguageTextField
-import java.awt.BorderLayout
-import java.awt.KeyboardFocusManager
+import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.tasks.youtrack.YouTrackRepositoryType
+import com.intellij.ui.components.*
+import com.intellij.util.net.HttpConfigurable
+import java.awt.*
 import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import javax.swing.*
+import javax.swing.text.AttributeSet
+import javax.swing.text.SimpleAttributeSet
+import javax.swing.text.StyleConstants
+import javax.swing.text.StyleContext
 
-/**
- * Wrapper class for the SetupWindow dialog form
- */
+
 open class SetupDialog(override val project: Project) : DialogWrapper(project, false), ComponentAware {
 
-    protected val commandField = createCommandField()
-    protected val commentArea = JTextArea(6, 60)
-    protected val visibilityGroupDropdown = JComboBox<String>()
-    protected val previewLabel = JLabel()
+    private val testConnectionAction = TestConnectionCommandAction("Test Connection")
+    private val okAction = OkCommandAction("Ok")
 
-    lateinit var setup: SetupWindow
-    private val applyAction = ExecuteCommandAction("Apply")
-    private val silentApplyAction = ExecuteCommandAction("Apply without notification", true)
+    private lateinit var bigTabFrame: JBTabbedPane
+    private lateinit var tabPanel: JBPanel<JBPanelWithEmptyText>
+    private lateinit var tab2Panel: JBPanel<JBPanelWithEmptyText>
+
+    private lateinit var serverUrl: JBLabel
+    private lateinit var notifyField: JBLabel
+    private lateinit var proxyDescription: JBLabel
+
+    private lateinit var tokenField: JBLabel
+    private lateinit var getTokenField: HyperlinkLabel
+    private lateinit var advertiserField: HyperlinkLabel
+    private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
+    private lateinit var shareUrl: JBCheckBox
+    private lateinit var useProxy: JBCheckBox
+    private lateinit var useHTTP: JBCheckBox
+    private lateinit var loginAnon: JBCheckBox
+    private lateinit var testConnectPanel: JBPanel<JBPanelWithEmptyText>
+    private lateinit var proxyPanel: JBPanel<JBPanelWithEmptyText>
+    private lateinit var okPanel: JBPanel<JBPanelWithEmptyText>
+    private lateinit var cancelPanel: JBPanel<JBPanelWithEmptyText>
+    lateinit var myRepository: YouTrackRepository
+
+    private var proxySettingsButton = JButton("Proxy settings...")
+    var inputUrl = JTextPane()
+    var inputToken = JBPasswordField()
 
     override fun init() {
-        setup = SetupWindow(project)
-        setup.prepareDialogWindow()
+        title = "YouTrack"
+        super.init()
     }
 
     override fun show() {
         init()
+        super.show()
     }
 
-    override fun createActions(): Array<out Action> = arrayOf(applyAction, silentApplyAction, cancelAction)
+    private fun loginAnonymouslyChanged(enabled: Boolean) {
+        inputToken.isEnabled = enabled
+        tokenField.isEnabled = enabled
+        useHTTP.isEnabled = enabled
+    }
+
+    private fun testConnectionAction() {
+        val setup = SetupTask()
+        setup.correctUrl = inputUrl.text
+        val fontColor = inputToken.foreground
+
+        myRepository = YouTrackRepository()
+        val myRepositoryType = YouTrackRepositoryType()
+
+        myRepository.url = inputUrl.text
+        myRepository.password = inputToken.text
+        myRepository.username = "random" // could be anything
+        myRepository.repositoryType = myRepositoryType
+        myRepository.storeCredentials()
+
+        myRepository.isShared = shareUrl.isSelected()
+        myRepository.isUseProxy = useProxy.isSelected()
+        myRepository.isUseHttpAuthentication = useHTTP.isSelected()
+        myRepository.isLoginAnonymously = loginAnon.isSelected()
+
+        setup.testConnection(myRepository, project)
+        if (myRepository.url.isBlank() || myRepository.password.isBlank()) {
+            notifyField.text = "Url and token fields are mandatory"
+        } else if (myRepository.isLoginAnonymously && setup.noteState != NotifierState.UNKNOWN_HOST) {
+            notifyField.foreground = Color.green;
+            notifyField.text = "Login as a guest"
+        } else
+            setup.setNotifier(notifyField)
+
+        val oldUrl = inputUrl.text
+        inputUrl.text = ""
+        if (oldUrl == setup.correctUrl) {
+            inputUrl.text = oldUrl
+        } else {
+            if (!oldUrl.contains("com/youtrack") && setup.correctUrl.contains("com/youtrack")) {
+                inputUrl.text = oldUrl
+                appendToPane(inputUrl, "/youtrack", Color.GREEN)
+            }
+            if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
+                appendToPane(inputUrl, "https", Color.GREEN)
+                appendToPane(inputUrl, oldUrl.substring(4, oldUrl.length), fontColor)
+            } else {
+                inputUrl.text = setup.correctUrl
+            }
+        }
+
+        if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
+            val setupWindow = SetupWindowManager(project)
+            setupWindow.showIssues(myRepository)
+
+        }
+    }
+
+    private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
+        val sc = StyleContext.getDefaultStyleContext()
+        var aset: AttributeSet? = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c)
+        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED)
+        val len = tp.document.length
+        tp.caretPosition = len
+        tp.setCharacterAttributes(aset, false)
+        tp.replaceSelection(msg)
+    }
+
+    private fun enableButtons() {
+        this.useProxy.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
+        if (!HttpConfigurable.getInstance().USE_HTTP_PROXY) {
+            this.useProxy.isSelected = false
+        }
+    }
+
+    private fun prepareTabbedPane(): JTabbedPane {
+
+//        val color = (inputToken.border as LineBorder?)?.lineColor
+//        val size = (inputToken.border as LineBorder?)?.thickness
+        serverUrl = JBLabel("Server Url:")
+        serverUrl.setBounds(65, 60, 100, 22)
+        inputUrl.apply {
+            layout = BorderLayout()
+
+            border = inputToken.border
+//            border = MatteBorder(size!!, size, size, size, Color.red)
+            background = inputToken.background
+            setBounds(152, 60, 374, 24)
+
+        }
+
+
+        tokenField = JBLabel("Permanent token:")
+        tokenField.setBounds(15, 120, 150, 22)
+        inputToken.apply {
+            echoChar = '\u25CF'
+            setBounds(150, 120, 378, 31)
+        }
+
+        advertiserField = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack", "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
+        advertiserField.setBounds(240, 30, 300, 17)
+
+        getTokenField = HyperlinkLabel("Get token", "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
+        getTokenField.setBounds(457, 155, 100, 17)
+
+        notifyField = JBLabel("").apply {
+            foreground = Color.red;
+            setBounds(150, 158, 250, 17)
+        }
+        shareUrl = JBCheckBox("Share Url", false)
+        shareUrl.setBounds(440, 95, 100, 17)
+
+        loginAnon = JBCheckBox("Login Anonymously", false)
+        loginAnon.setBounds(150, 95, 170, 17)
+
+        useHTTP = JBCheckBox("Use HTTP", false)
+        useHTTP.setBounds(20, 50, 100, 17);
+
+        useProxy = JBCheckBox("Use Proxy", false)
+        useProxy.setBounds(20, 100, 100, 17)
+
+        proxyDescription = JBLabel("You can configure the HTTP Proxy to:")
+        proxyDescription.setBounds(220, 20, 370, 20)
+
+
+        proxySettingsButton.addActionListener(ActionListener {
+            HttpConfigurable.editConfigurable(controlPanel)
+            enableButtons()
+        })
+
+        loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
+
+        proxyPanel = JBPanel<JBPanelWithEmptyText>().apply {
+            add(proxySettingsButton)
+            setBounds(15, 155, 140, 40)
+        }
+
+        controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
+
+        tabPanel = JBPanel<JBPanelWithEmptyText>().apply {
+            setBounds(100, 100, 580, 300);
+            layout = null
+            add(shareUrl)
+            add(advertiserField)
+            add(loginAnon)
+            add(serverUrl)
+            add(inputUrl)
+            add(tokenField)
+            add(inputToken)
+            add(getTokenField)
+            add(notifyField)
+            pack()
+        }
+
+        tab2Panel = JBPanel<JBPanelWithEmptyText>().apply {
+            setBounds(100, 100, 580, 300);
+            layout = null
+            add(proxyDescription)
+            add(useProxy)
+            add(useHTTP)
+            add(proxyPanel)
+            pack()
+        }
+
+        bigTabFrame = JBTabbedPane().apply {
+            tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
+            addTab("General", null, tabPanel, null);
+            setMnemonicAt(0, KeyEvent.VK_1)
+            addTab("Proxy settings", null, tab2Panel, null);
+            setMnemonicAt(1, KeyEvent.VK_2)
+            pack()
+
+        }
+        return bigTabFrame
+    }
+
+    override fun createActions(): Array<out Action> = arrayOf(testConnectionAction, okAction, cancelAction)
 
     override fun createJButtonForAction(action: Action): JButton {
         val button = super.createJButtonForAction(action)
@@ -57,101 +246,39 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
     }
 
     override fun createCenterPanel(): JComponent {
-        val contextPane = JPanel(BorderLayout())
-        contextPane.add(createLeftPane(), BorderLayout.WEST)
-        contextPane.add(createPreviewPanel(), BorderLayout.EAST)
+
+        val contextPane = JPanel(GridLayout())
+        val tabbedPane = prepareTabbedPane()
+        val toolkit: Toolkit = Toolkit.getDefaultToolkit()
+        val screenSize: Dimension = toolkit.screenSize
+        contextPane.apply{
+            add(tabbedPane)
+            title = "YouTrack"
+            preferredSize = Dimension(540, 230)
+            minimumSize = Dimension(540, 230)
+            setLocation((screenSize.width - width) / 2, (screenSize.height - height) / 2)
+            pack()
+        }
         return contextPane
-    }
-
-    private fun createCommandField(): LanguageTextField {
-        val commandField = LanguageTextField(CommandLanguage, project, "")
-        // Setup document for completion and highlighting
-        val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
-        file?.putUserData(CommandComponent.COMPONENT_KEY, CommandSuggestListener())
-        // todo: find a better way to attach onEnter handler to LanguageTextField
-        commandField.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(event: DocumentEvent) {
-                val component = commandField.editor?.contentComponent
-                if (component != null) {
-                    component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
-                    component.actionMap.put("apply", applyAction)
-                }
-            }
-        })
-        return commandField
-    }
-
-    private fun createLeftPane(): JPanel {
-        val panel = JPanel(BorderLayout())
-        panel.add(createCommandStringPanel(), BorderLayout.NORTH)
-        panel.add(createCommentPanel(), BorderLayout.CENTER)
-        panel.add(createVisibilityGroupPanel(), BorderLayout.SOUTH)
-        panel.border = BorderFactory.createEmptyBorder(0, 0, 0, 20)
-        return panel
-    }
-
-    private fun createCommandStringPanel(): JPanel {
-        val panel = JPanel(BorderLayout())
-        panel.add(commandField, BorderLayout.CENTER)
-        return panel
-    }
-
-    private fun createCommentPanel(): JPanel {
-        // reset Tab key behavior to transfer focus from the text area instead of adding tab symbols
-        commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null)
-        commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null)
-        val panel = JPanel(BorderLayout())
-        val scrollPane = JScrollPane(commentArea)
-        val label = JLabel("Comment: ")
-        panel.add(label, BorderLayout.NORTH)
-        panel.add(scrollPane, BorderLayout.CENTER)
-        label.border = BorderFactory.createEmptyBorder(0, 0, 2, 0)
-        panel.border = BorderFactory.createEmptyBorder(10, 0, 10, 0)
-        return panel
-    }
-
-    private fun createVisibilityGroupPanel(): JPanel {
-        val panel = JPanel(BorderLayout())
-        panel.add(JLabel("Visible for Group: "), BorderLayout.WEST)
-        panel.add(visibilityGroupDropdown, BorderLayout.CENTER)
-        return panel
-    }
-
-    private fun createPreviewPanel(): JPanel {
-        val panel = JPanel(BorderLayout())
-        val previewContainer = JPanel(BorderLayout())
-        previewContainer.add(previewLabel, BorderLayout.NORTH)
-        previewContainer.border = BorderFactory.createEmptyBorder(10, 0, 0, 0)
-        panel.add(JLabel("Command Preview:                                               "), BorderLayout.NORTH)
-        panel.add(previewContainer, BorderLayout.WEST)
-        return panel
     }
 
     /**
      * Submits command for async execution and closes command dialog immediately
      */
-    inner class ExecuteCommandAction(name: String, private val silent: Boolean = false) : AbstractAction(name) {
+    inner class OkCommandAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
-            val group = visibilityGroupDropdown.selectedItem?.toString() ?: "All Users"
+            testConnectionAction()
             this@SetupDialog.close(0)
         }
     }
 
     /**
-     * Formats parsed command preview as html and displays it in command window
+     * Submits command for async execution
      */
-    inner class CommandSuggestListener : CommandComponent by commandComponent {
-        override fun suggest(command: YouTrackCommand): CommandAssistResponse {
-            val response = commandComponent.suggest(command)
-            SwingUtilities.invokeLater {
-                val previewList = response.previews.mapIndexed { i, preview ->
-                    "${i + 1}. ${preview.html()}"
-                }.joinToString("<br/>")
-                previewLabel.text = "<html><body style='width:180px'>$previewList"
-            }
-            return response
+    inner class TestConnectionCommandAction(name: String) : AbstractAction(name) {
+        override fun actionPerformed(e: ActionEvent) {
+            testConnectionAction()
         }
-
-        private fun CommandPreview.html() = if (error) "<span style='color:red'>$description</span>" else description
     }
 }
+
