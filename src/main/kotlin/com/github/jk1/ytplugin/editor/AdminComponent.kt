@@ -36,7 +36,8 @@ class AdminComponent(override val project: Project) : ProjectComponent, Componen
                 try {
                     indicator.text = title
                     val repo = taskManagerComponent.getYouTrackRepository(issue)
-                    callback.invoke(AdminRestClient(repo).getVisibilityGroups(issue.id))
+                    // replaced issueId with entityId
+                    issue.entityId?.let { AdminRestClient(repo).getVisibilityGroups(it) }?.let { callback.invoke(it) }
                 } catch (e: Throwable) {
                     logger.info("Failed to load eligible visibility groups for issue")
                     logger.debug(e)
@@ -81,7 +82,7 @@ class AdminComponent(override val project: Project) : ProjectComponent, Componen
         }
     }
 
-    private fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
+    fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
         try {
             val projects = AdminRestClient(repo).getAccessibleProjects()
             if (projects.isEmpty()) {

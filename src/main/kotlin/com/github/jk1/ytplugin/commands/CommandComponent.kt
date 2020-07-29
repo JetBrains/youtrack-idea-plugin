@@ -4,12 +4,11 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.util.Key
 import java.util.concurrent.Future
 
 
-interface CommandComponent : ProjectComponent, ComponentAware {
+interface CommandComponent : ComponentAware {
 
     companion object {
         val COMPONENT_KEY: Key<CommandComponent> = Key.create(CommandComponentImpl::class.toString())

@@ -12,7 +12,7 @@ class CopyIssueLinkAction(private val getSelectedIssue: () -> Issue?) : IssueAct
 
     override val text = "Copy Issue Link"
     override val description = "Copy issue URL to a clipboard"
-    override val icon = AllIcons.Actions.Copy!!
+    override val icon = AllIcons.Actions.Copy
     override val shortcut = "control shift C"
 
     override fun actionPerformed(event: AnActionEvent) {

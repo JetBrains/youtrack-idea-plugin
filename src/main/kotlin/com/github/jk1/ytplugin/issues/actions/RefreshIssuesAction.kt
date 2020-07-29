@@ -14,7 +14,7 @@ class RefreshIssuesAction(val repo: YouTrackServer) : IssueAction() {
 
     override val text = "Refresh"
     override val description = "Update issue list from YouTrack server"
-    override val icon = AllIcons.Actions.Refresh!!
+    override val icon = AllIcons.Actions.Refresh
     override val shortcut = "control shift U"
 
     override fun actionPerformed(event: AnActionEvent) {

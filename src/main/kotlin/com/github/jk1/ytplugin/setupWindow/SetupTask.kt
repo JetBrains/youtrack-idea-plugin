@@ -79,6 +79,7 @@ class SetupTask() {
     }
 
     fun setNotifier(note: JLabel){
+        note.foreground = Color.red
         if (noteState == NotifierState.SUCCESS){
             note.foreground = Color.green;
             note.text = "Successfully connected"
@@ -98,7 +99,7 @@ class SetupTask() {
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
             method.uri = URI(newUri, false)
         }
-        if(!method.uri.toString().contains("com/youtrack") && correctUrl.contains("com/youtrack")){
+        if(!method.uri.toString().contains("/youtrack")){
             val newUri = method.uri.toString() + "/youtrack"
             method.uri = URI(newUri, false)
         }
@@ -112,7 +113,7 @@ class SetupTask() {
         if (!uri.contains("https")){
             newUri = "https" + uri.substring(4, uri.length)
         }
-        if(!uri.contains("com/youtrack") && correctUrl.contains("com/youtrack")){
+        if(!uri.contains("/youtrack")){
             newUri = "$newUri/youtrack"
         }
         return newUri
@@ -136,7 +137,6 @@ class SetupTask() {
                 val newUri = location.substring(10, location.length)
                 method.uri = URI(newUri, false)
                 repository.url = method.uri.toString()
-
                 correctUrl = repository.url
                 createCancellableConnection(repository)
             }
@@ -161,8 +161,10 @@ class SetupTask() {
 
 
     fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
+        println("old url: " + repository.url)
         val newUri = fixURI(repository.url)
         repository.url = newUri
+        println("new url: " + repository.url)
         correctUrl = repository.url
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
         method.setRequestHeader("Authorization","Bearer "+ repository.password)

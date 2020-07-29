@@ -71,7 +71,9 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
 
     private val YouTrackCommand.intellisenseCommandUrl: String
         get () {
-            val assistUrl = "${repository.url}/rest/command/underlineAndSuggestAndCommands"
+//            val assistUrl = "${repository.url}/rest/command/underlineAndSuggestAndCommands"
+            val assistUrl = "${repository.url}/api/command/underlineAndSuggestAndCommands"
+
             val result = "$assistUrl?command=${command.urlencoded}&caret=$caret&noIssuesContext=false"
             return if (session.hasEntityId()) {
                 "$result&issueIds=${session.compressedEntityId?.urlencoded}"
