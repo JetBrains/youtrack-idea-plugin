@@ -15,35 +15,21 @@ class CustomField(item: JsonElement): YouTrackIssueField {
     var backgroundColor: Color? = null
 
     init {
+
         name = item.asJsonObject.get("name").asString
-        val valueIdItem = item.asJsonObject.get("valueId")
+        valueId = mutableListOf()
+        valueId.add(item.asJsonObject.get("id").asString)
         val valueItem = item.asJsonObject.get("value")
-        if (valueIdItem == null || valueIdItem.isJsonNull) {
+
+        if (valueItem == null || (valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
             value = valueItem.asJsonArray.map {
-                if (it.isJsonObject) {
-                    // User type field uses a different presentation
-                    it.asJsonObject["fullName"].asString
-                } else {
                     // 5.2 does not return value id
                     it.asString
-                }
             }
-            valueId = valueItem.asJsonArray.map {
-                if (it.isJsonObject) {
-                    it.asJsonObject["value"].asString
-                } else {
-                    // 5.2 does not return value id
-                    it.asString
-                }
-            }
-        } else {
-            value = valueItem.asJsonArray.map { it.asString }
-            valueId = valueIdItem.asJsonArray.map { it.asString }
         }
-        val color = item.asJsonObject.get("color")
-        if (color != null && !color.isJsonNull) {
-            foregroundColor = color.asJsonObject.get("fg").asColor()
-            backgroundColor = color.asJsonObject.get("bg").asColor()
+        else {
+            value = mutableListOf()
+            value.add(valueItem.asJsonObject.get("name").asString)
         }
     }
 

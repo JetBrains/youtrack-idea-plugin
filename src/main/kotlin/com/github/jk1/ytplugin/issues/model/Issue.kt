@@ -71,15 +71,17 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
                 .map { IssueJsonParser.parseCustomField(it) }
                 .filter { it != null }
                 .requireNoNulls()
-//         println( "cf " + customFields[0].name)
+        if (customFields.isNotEmpty())
+            for (i in 0 until customFields.size)
+                println( "cf " + customFields[i].name)
 //
         comments = root.getAsJsonArray("comments")
                 .map { IssueJsonParser.parseComment(it) }
                 .filter { it != null }
                 .requireNoNulls()
         if (comments.isNotEmpty())
-            println( "comm" + comments[0].text + " " + comments[0].authorName)
-        
+            println( "comm " + comments[0].text + " " + comments[0].authorName)
+
 //        links = root.getAsJsonArray("links")
 //                .map { IssueJsonParser.parseLink(it, repoUrl) }
 //                .filter { it != null }
@@ -91,7 +93,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
                 .filter { it != null }
                 .requireNoNulls()
         if (tags.isNotEmpty())
-            println( "link" + tags[0].backgroundColor + tags[0].foregroundColor + " " + tags[0].text)
+            println( "tags" + tags[0].backgroundColor + tags[0].foregroundColor + " " + tags[0].text)
 
 //        attachments = root.getAsJsonArray(("attachments"))
 //                .map { IssueJsonParser.parseAttachment(it) }

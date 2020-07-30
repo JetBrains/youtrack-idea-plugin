@@ -101,7 +101,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val url = "${repository.url}/api/issues?query=${query.urlencoded}"
         val method = GetMethod(url)
 
-        val fields = NameValuePair("fields", "id,idReadable,updated,created,tags(color(foreground,background),name),project,links,comments(id,text,created,updated,author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields,resolved,attachments,description,reporter(login)")
+        val fields = NameValuePair("fields", "id,idReadable,updated,created," +
+                "tags(color(foreground,background),name),project,links,comments(id,text,created,updated," +
+                "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name)," +
+                "id,projectCustomField),resolved,attachments,description,reporter(login)")
+
         method.setQueryString(arrayOf(fields))
         val issues: MutableList<Issue>  = parseIssues(method)
 
