@@ -4,15 +4,14 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import net.minidev.json.JSONArray
-import net.minidev.json.JSONObject
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
-import java.io.FileReader
+import java.net.URL
 import java.nio.charset.StandardCharsets
-
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class AdminRestClient(override val repository: YouTrackServer) : AdminRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
@@ -23,10 +22,13 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         val top = NameValuePair("top", "-1")
         val fields = NameValuePair("fields", "groupsWithoutRecommended(name),recommendedGroups(name)")
-
         method.setQueryString(arrayOf(top, fields))
-        val jsonBody = "{\"issues\":[{\"type\":\"Issue\",\"id\":\"${issueId}\"}],\"prefix\":\"\",\"top\":20}"
-//        val jsonBody = FileReader("../../resources/com.github.jk1.ytplugin.ui/admin_body.json")
+
+        val res: URL? = javaClass.classLoader.getResource("admin_body.json")
+        val absolutePath= Paths.get(res!!.toURI()).toFile().absolutePath
+        val jsonBody = String(Files.readAllBytes(
+                Paths.get(absolutePath))).replace("{issueId}", issueId, true)
+
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
 
         return method.connect {
