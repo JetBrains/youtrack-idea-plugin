@@ -89,17 +89,29 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
 
         val oldUrl = inputUrl.text
         inputUrl.text = ""
+
         if (oldUrl == setup.correctUrl) {
+            println("here")
             inputUrl.text = oldUrl
         } else {
             if (!oldUrl.contains("/youtrack") && setup.correctUrl.contains("/youtrack")) {
-                println("true")
-                appendToPane(inputUrl, oldUrl, fontColor)
-                appendToPane(inputUrl, "/youtrack", Color.GREEN)
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
+                    appendToPane(inputUrl, "https", Color.GREEN)
+                    appendToPane(inputUrl, setup.correctUrl.substring(5, setup.correctUrl.length - 9), fontColor)
+                    appendToPane(inputUrl, "/youtrack", Color.GREEN)
+                }
+                else{
+                    appendToPane(inputUrl, setup.correctUrl.substring(0, setup.correctUrl.length - 9), fontColor)
+                    appendToPane(inputUrl, "/youtrack", Color.GREEN)
+                }
             }
-            if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
-                appendToPane(inputUrl, "https", Color.GREEN)
-                appendToPane(inputUrl, oldUrl.substring(4, oldUrl.length), fontColor)
+            else {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
+                    appendToPane(inputUrl, "https", Color.GREEN)
+                    appendToPane(inputUrl, setup.correctUrl.substring(5, setup.correctUrl.length), fontColor)
+                } else {
+                    inputUrl.text = oldUrl
+                }
             }
         }
 

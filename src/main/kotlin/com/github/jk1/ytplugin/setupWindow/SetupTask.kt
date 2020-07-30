@@ -58,7 +58,7 @@ class SetupTask() {
         return repository.password
     }
 
-    private fun trimTrailingSlashes(url: String?): String? {
+    fun trimTrailingSlashes(url: String?): String? {
         if (url == null) return ""
         for (i in url.length - 1 downTo 0) {
             if (url[i] != '/') {
