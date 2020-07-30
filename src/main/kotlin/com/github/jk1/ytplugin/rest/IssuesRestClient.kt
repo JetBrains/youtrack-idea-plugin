@@ -46,6 +46,16 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 //    [
 //        {
 //            description: "test task",
+//            project: {
+// !!!!           $type: "Project"
+//            },
+//            links: [
+//            {
+//                $type: "IssueLink"
+//            }
+//            ],
+//            comments: [ ],
+//            tags: [ ],
 //            comments: [
 //                {
 //                    $type: "IssueComment"
@@ -64,7 +74,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 //            ],
 //            resolved: null,
 //            summary: "Test Task",
-//            reporter: {
+//      !!!   reporter: {
 //                login: "ideplugin",
 //                $type: "User"
 //            },
@@ -110,16 +120,16 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             println("hey3")
             for (i in 0 until json.size()) {
                 val e: JsonObject = json.get(i) as JsonObject
-                println("hey4" + e.toString())
-                val currentIssue = Issue(e, method.uri.toString())
-                println("id" + currentIssue.id)
-                println("entityId" + currentIssue.entityId)
+                println("hey4$e")
+                println(e.get("idReadable").asString)
+                println(e.get("description").asString)
+
+                val currentIssue = IssueParser().parseIssue(e, method.uri.toString())
+                println("id: " + currentIssue.id)
+                println("entityId: " + currentIssue.entityId)
                 list.add(currentIssue)
             }
-            println("status: " + status)
-//            for (i in 0 until shortNamesList.size)
-//                println("name: " + shortNamesList[i])
-
+            println("status: $status")
             if (status == 200) {
                 list
             }  else {

@@ -10,61 +10,94 @@ import java.util.*
 class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
     companion object {
-        private val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
+        val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
                 "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
                 "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
                 "sprint", "voterName", "permittedGroup", "markdown", "wikified")
     }
 
-    val json: String
-    val id: String
+    var json: String
+    var id: String
     val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
-    val summary: String
-    val description: String
-    val createDate: Date
-    val updateDate: Date
-    val resolved: Boolean
-    val customFields: List<CustomField>
-    val comments: List<IssueComment>
-    val links: List<IssueLink>
-    val tags: List<IssueTag>
-    val attachments: List<Attachment>
-    val url: String
-    val wikified: Boolean
+    var summary: String
+    var description: String
+    var createDate: Date
+    var updateDate: Date
+    var resolved: Boolean
+    var customFields: List<CustomField> = emptyList()
+    var comments: List<IssueComment> = emptyList()
+    var links: List<IssueLink> = emptyList()
+    var tags: List<IssueTag> = emptyList()
+    var attachments: List<Attachment> = emptyList()
+    var url: String
+    var wikified: Boolean
 
     init {
         val root = item.asJsonObject
         json = item.toString()
-        id = root.get("id").asString
-        entityId = root.get("entityId")?.asString
-        summary = root.getFieldValue("summary")?.asString  ?: ""
-        description = root.getFieldValue("description")?.asString ?: ""
-        wikified = root.getFieldValue("wikified")?.asBoolean ?: false
-        createDate = Date(root.getFieldValue("created")?.asLong ?: 0)
-        updateDate = Date(root.getFieldValue("updated")?.asLong ?: 0)
-        resolved = root.getFieldValue("resolved") != null
-        customFields = root.getAsJsonArray("field")
-                .filter { it.isCustomField() }
-                .map { IssueJsonParser.parseCustomField(it) }
-                .filter { it != null }
-                .requireNoNulls()
-        comments = root.getAsJsonArray("comment")
-                .map { IssueJsonParser.parseComment(it) }
-                .filter { it != null }
-                .requireNoNulls()
-        links = (root.getFieldValue("links")?.asJsonArray ?: JsonArray())
-                .map { IssueJsonParser.parseLink(it, repoUrl) }
-                .filter { it != null }
-                .requireNoNulls()
-        tags = root.getAsJsonArray(("tag"))
-                .map { IssueJsonParser.parseTag(it) }
-                .filter { it != null }
-                .requireNoNulls()
-        attachments = (root.getFieldValue("attachments")?.asJsonArray ?: JsonArray())
-                .map { IssueJsonParser.parseAttachment(it) }
-                .filter { it != null }
-                .requireNoNulls()
+        id = root.get("idReadable").asString
+        println("id $id")
+
+//            println( "link" + currentIssue.links[0])
+//            println( "tag" + currentIssue.tags[0])
+//            println("att " + currentIssue.attachments)
+//            println( "url " + currentIssue.url)
+//            println("wiki" + currentIssue.wikified)
+//
+
+        entityId = root.get("id")?.asString
+        println("entityId $entityId")
+
+        summary = root.get("summary")?.asString  ?: ""
+        println("summary $summary")
+
+        description = root.get("description")?.asString ?: ""
+        println("desc $description")
+
+        wikified = true
+        println("wiki $wikified")
+
+        createDate = Date(root.get("created")?.asLong ?: 0)
+        println("crDate $createDate")
+
+        updateDate = Date(root.get("updated")?.asLong ?: 0)
+        println("upDate$updateDate")
+
+        resolved = root.get("resolved") != null
+        println("reso $resolved")
+
+//        customFields = root.getAsJsonArray("customFields")
+//                .filter { it.isCustomField() }
+//                .map { IssueJsonParser.parseCustomField(it) }
+//                .filter { it != null }
+//                .requireNoNulls()
+//         println( "cf " + customFields[0])
+//
+//        comments = root.getAsJsonArray("comments")
+//                .map { IssueJsonParser.parseComment(it) }
+//                .filter { it != null }
+//                .requireNoNulls()
+//        println( "comm" + comments[0])
+
+
+//        links = root.getAsJsonArray("links")
+//                .map { IssueJsonParser.parseLink(it, repoUrl) }
+//                .filter { it != null }
+//                .requireNoNulls()
+//
+//        println("i am in issue ik3")
+//
+//        tags = root.getAsJsonArray(("tags"))
+//                .map { IssueJsonParser.parseTag(it) }
+//                .filter { it != null }
+//                .requireNoNulls()
+//
+//        attachments = root.getAsJsonArray(("attachments"))
+//                .map { IssueJsonParser.parseAttachment(it) }
+//                .filter { it != null }
+//                .requireNoNulls()
         url = "$repoUrl/issue/$id"
+        println("url " + url)
     }
 
     override fun getIssueId() = id

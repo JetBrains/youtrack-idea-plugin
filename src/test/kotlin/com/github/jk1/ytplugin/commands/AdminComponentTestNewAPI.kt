@@ -16,7 +16,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import sun.invoke.empty.Empty
+import kotlin.test.assertEquals
 
 class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
 
