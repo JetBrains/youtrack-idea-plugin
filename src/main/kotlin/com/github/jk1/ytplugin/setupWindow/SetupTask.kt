@@ -58,7 +58,7 @@ class SetupTask() {
         return repository.password
     }
 
-    private fun trimTrailingSlashes(url: String?): String? {
+    fun trimTrailingSlashes(url: String?): String? {
         if (url == null) return ""
         for (i in url.length - 1 downTo 0) {
             if (url[i] != '/') {
@@ -129,7 +129,6 @@ class SetupTask() {
         client.executeMethod(method)
 
         val response: String?
-        System.out.println("Code: " + method.statusCode + " Url: " + repository.url)
         response = try {
             statusCode = method.statusCode
             if(method.statusCode in 301..399){
@@ -161,10 +160,8 @@ class SetupTask() {
 
 
     fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
-        println("old url: " + repository.url)
         val newUri = fixURI(repository.url)
         repository.url = newUri
-        println("new url: " + repository.url)
         correctUrl = repository.url
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
         method.setRequestHeader("Authorization","Bearer "+ repository.password)
@@ -250,4 +247,3 @@ class SetupTask() {
         return e == null
     }
 }
-
