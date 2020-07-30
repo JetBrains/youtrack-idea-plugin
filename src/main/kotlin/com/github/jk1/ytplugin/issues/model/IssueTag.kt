@@ -11,11 +11,13 @@ class IssueTag(item: JsonElement) {
     private val borderColor: Color
 
     init {
-        val tagColor = IssueTag.Companion.cssClassToColor[item.asJsonObject.get("cssClass").asString]!!
+        val fgColor = item.asJsonObject.get("color").asJsonObject.get("foreground").asString
+        val bgColor = item.asJsonObject.get("color").asJsonObject.get("background").asString
+        val tagColor = TagColor(fgColor, bgColor)
         foregroundColor = tagColor.foreground
         backgroundColor = tagColor.background
         borderColor = tagColor.foreground
-        text = item.asJsonObject.get("value").asString
+        text = item.asJsonObject.get("name").asString
     }
 
     companion object {

@@ -43,71 +43,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
-//    [
-//        {
-//            description: "test task",
-//            project: {
-// !!!!           $type: "Project"
-//            },
-//            links: [
-//            {
-//                $type: "IssueLink"
-//            }
-//            ],
-//            comments: [ ],
-//            tags: [ ],
-//            comments: [
-//                {
-//                    $type: "IssueComment"
-//                },
-//                {
-//                    $type: "IssueComment"
-//                }
-//            ],
-//            attachments: [
-//                {
-//                    $type: "IssueAttachment"
-//                },
-//                {
-//                    $type: "IssueAttachment"
-//                }
-//            ],
-//            resolved: null,
-//            summary: "Test Task",
-//      !!!   reporter: {
-//                login: "ideplugin",
-//                $type: "User"
-//            },
-//            idReadable: "MT-18",
-//            customFields: [
-//                {
-//                    $type: "SingleEnumIssueCustomField"
-//                },
-//                {
-//                    $type: "SingleEnumIssueCustomField"
-//                }
-//            ],
-//            id: "87-10861",
-//            $type: "Issue"
-//        }
-//    ]
-
-//    val json: String
-//    val id: String
-//    val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
-//    val summary: String
-//    val description: String
-//    val createDate: Date
-//    val updateDate: Date
-//    val resolved: Boolean
-//    val customFields: List<CustomField>
-//    val comments: List<IssueComment>
-//    val links: List<IssueLink>
-//    val tags: List<IssueTag>
-//    val attachments: List<Attachment>
-//    val url: String
-//    val wikified: Boolean
-
     private fun parseIssues(method: GetMethod): MutableList<Issue>{
         println("hey1")
 
@@ -165,14 +100,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         // todo: customizable "max" limit
         val url = "${repository.url}/api/issues?query=${query.urlencoded}"
         val method = GetMethod(url)
-        val fields = NameValuePair("fields", "id,idReadable,comments,summary,customFields,resolved,attachments,description,reporter(login)")
+
+        val fields = NameValuePair("fields", "id,idReadable,updated,created,tags(color(foreground,background),name),project,links,comments(id,text,created,updated,author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields,resolved,attachments,description,reporter(login)")
         method.setQueryString(arrayOf(fields))
         val issues: MutableList<Issue>  = parseIssues(method)
 
 //        val issues = GetMethod(url).execute {
 //            it.asJsonObject.getAsJsonArray("issue").mapNotNull { IssueJsonParser.parseIssue(it, repository.url) }
 //        }
-
 
         if (issues.any { it.wikified }) {
             // this is YouTrack 2018.1+, so we can return wikified issues right away

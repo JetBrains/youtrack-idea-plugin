@@ -66,32 +66,33 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         resolved = root.get("resolved") != null
         println("reso $resolved")
 
-//        customFields = root.getAsJsonArray("customFields")
-//                .filter { it.isCustomField() }
-//                .map { IssueJsonParser.parseCustomField(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//         println( "cf " + customFields[0])
+        customFields = root.getAsJsonArray("customFields")
+                .filter { it.isCustomField() }
+                .map { IssueJsonParser.parseCustomField(it) }
+                .filter { it != null }
+                .requireNoNulls()
+//         println( "cf " + customFields[0].name)
 //
-//        comments = root.getAsJsonArray("comments")
-//                .map { IssueJsonParser.parseComment(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        println( "comm" + comments[0])
-
-
+        comments = root.getAsJsonArray("comments")
+                .map { IssueJsonParser.parseComment(it) }
+                .filter { it != null }
+                .requireNoNulls()
+        if (comments.isNotEmpty())
+            println( "comm" + comments[0].text + " " + comments[0].authorName)
+        
 //        links = root.getAsJsonArray("links")
 //                .map { IssueJsonParser.parseLink(it, repoUrl) }
 //                .filter { it != null }
 //                .requireNoNulls()
+//        println( "link" + links[0].role + " " + link[0].authorName)
 //
-//        println("i am in issue ik3")
-//
-//        tags = root.getAsJsonArray(("tags"))
-//                .map { IssueJsonParser.parseTag(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//
+        tags = root.getAsJsonArray(("tags"))
+                .map { IssueJsonParser.parseTag(it) }
+                .filter { it != null }
+                .requireNoNulls()
+        if (tags.isNotEmpty())
+            println( "link" + tags[0].backgroundColor + tags[0].foregroundColor + " " + tags[0].text)
+
 //        attachments = root.getAsJsonArray(("attachments"))
 //                .map { IssueJsonParser.parseAttachment(it) }
 //                .filter { it != null }

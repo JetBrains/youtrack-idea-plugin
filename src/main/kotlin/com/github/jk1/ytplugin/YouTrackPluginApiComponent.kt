@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.commands.CommandSession
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.rest.CommandRestClient
+import com.github.jk1.ytplugin.rest.IssuesOldRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.IssueViewer
 import com.intellij.openapi.project.Project

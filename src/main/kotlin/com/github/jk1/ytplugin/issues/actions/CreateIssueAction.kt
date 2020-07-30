@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.rest.IssuesOldRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
