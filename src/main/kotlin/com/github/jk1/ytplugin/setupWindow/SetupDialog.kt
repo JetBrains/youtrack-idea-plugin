@@ -30,6 +30,8 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
 
     private lateinit var serverUrl: JBLabel
     private lateinit var notifyField: JBLabel
+    private lateinit var notifyFieldTab2: JBLabel
+
     private lateinit var proxyDescription: JBLabel
 
     private lateinit var tokenField: JBLabel
@@ -124,6 +126,9 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
         } else
             setup.setNotifier(notifyField)
 
+        notifyFieldTab2.text = notifyField.text
+        notifyFieldTab2.foreground = notifyField.foreground
+
         if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
             val setupWindow = SetupWindowManager(project)
             setupWindow.showIssues(myRepository)
@@ -182,6 +187,12 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             foreground = Color.red;
             setBounds(150, 158, 250, 17)
         }
+
+        notifyFieldTab2 = JBLabel("").apply {
+            foreground = Color.red;
+            setBounds(220, 170, 250, 17)
+        }
+
         shareUrl = JBCheckBox("Share Url", false)
         shareUrl.setBounds(440, 95, 100, 17)
 
@@ -234,6 +245,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             add(useProxy)
             add(useHTTP)
             add(proxyPanel)
+            add(notifyFieldTab2)
             pack()
         }
 
