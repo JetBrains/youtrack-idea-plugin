@@ -4,9 +4,11 @@ package com.github.jk1.ytplugin.setupWindow
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssuesOldRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.IssueTask
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable
@@ -14,6 +16,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.content.ContentFactory
@@ -35,7 +39,7 @@ import javax.swing.SwingUtilities
  * Create the tool window content
  * @author Alina Boshchenko
  */
-class SetUpDialogFactory : ToolWindowFactory {
+class SetUpDialogFactory() : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         createContent(project, toolWindow)
@@ -66,11 +70,13 @@ class SetUpDialogFactory : ToolWindowFactory {
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {
         val contentManager = toolWindow.contentManager
+        val repository = YouTrackRepository(YouTrackRepositoryType())
+        val repo = YouTrackServer(repository, project)
         contentManager.removeAllContents(true)
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         logger.debug("${repos.size} YouTrack repositories discovered")
         when {
-            repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel(project))
+            repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel(project, repo))
             else -> {
                 repos.forEach {
                     val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
@@ -105,11 +111,11 @@ class SetUpDialogFactory : ToolWindowFactory {
         }
     }
 
-    private fun createPlaceholderPanel(project: Project): JComponent {
+    private fun createPlaceholderPanel(project: Project, repo: YouTrackServer): JComponent {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { SetupDialog(project).show() }
+        val configureLabel = createLink("Configure") { SetupDialog(project, repo).show() }
 
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
