@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.setupWindow.SetupDialog
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -18,12 +19,13 @@ import javax.swing.JComponent
  *
  * Dumb aware actions can be executed when IDE is rebuilding indexes.
  */
-class OpenSetupWindowAction : AnAction(
+class OpenSetupWindowAction(repo: YouTrackServer) : AnAction(
         "Open Setup Dialog",
         "Open configuration settings",
         AllIcons.General.Settings), DumbAware, IdeNotificationsTrait {
 
     val shortcut = "control shift Q"
+    val repository = repo
 
     fun register(parent: JComponent) {
         registerCustomShortcutSet(CustomShortcutSet.fromString(shortcut), parent)
@@ -33,7 +35,7 @@ class OpenSetupWindowAction : AnAction(
         val project = event.project
         if (project != null && project.isInitialized) {
             try {
-                SetupDialog(project).show()
+                SetupDialog(project, repository).show()
 
             } catch (exception: YouTrackPluginException) {
                 exception.showAsNotificationBalloon(project)

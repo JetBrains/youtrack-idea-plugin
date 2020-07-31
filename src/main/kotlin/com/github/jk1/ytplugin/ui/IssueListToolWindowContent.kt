@@ -49,7 +49,7 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleSetupViewAction(project, setupList))
-        group.addConfigureTaskServerAction()
+        group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

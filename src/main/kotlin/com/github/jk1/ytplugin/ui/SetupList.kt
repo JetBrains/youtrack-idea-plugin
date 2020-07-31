@@ -54,7 +54,7 @@ class SetupList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
                 if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
                     placeholder.appendText("No issues found. Edit search request or ")
                     placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES,
-                            { SetupDialog(project).show() })
+                            { SetupDialog(project, repo).show() })
                 }
                 issueListModel.update()
                 val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())
