@@ -9,6 +9,7 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
+import com.jetbrains.rd.swing.textProperty
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -94,7 +95,7 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
         setup.testConnection(myRepository, project)
 
         val oldUrl = inputUrl.text
-        inputUrl.text = repo.url
+        inputUrl.text = ""
 
         if (oldUrl == setup.correctUrl) {
             println("here")
@@ -138,6 +139,8 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
             setupWindow.showIssues(myRepository)
 
         }
+        myRepository.url = setup.correctUrl
+        myRepository.password = inputToken.text
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -170,9 +173,7 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
 //            border = MatteBorder(size!!, size, size, size, Color.red)
             background = inputToken.background
             setBounds(152, 60, 374, 24)
-
         }
-
 
         tokenField = JBLabel("Permanent token:")
         tokenField.setBounds(15, 120, 150, 22)
