@@ -94,7 +94,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             println("here")
             inputUrl.text = oldUrl
         } else {
-            if (!oldUrl.contains("/youtrack") && setup.correctUrl.contains("/youtrack")) {
+            if (!oldUrl.contains("/youtrack") && setup.noteState == NotifierState.SUCCESS) {
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
                     appendToPane(inputUrl, "https", Color.GREEN)
                     appendToPane(inputUrl, setup.correctUrl.substring(5, setup.correctUrl.length - 9), fontColor)
