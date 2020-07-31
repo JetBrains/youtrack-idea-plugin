@@ -99,7 +99,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
             println( "tags" + tags[0].backgroundColor + tags[0].foregroundColor + " " + tags[0].text)
 
         attachments = root.getAsJsonArray(("attachments"))
-                .map { IssueJsonParser.parseAttachment(it) }
+                .map { IssueJsonParser.parseAttachment(it, repoUrl) }
                 .filter { it != null }
                 .requireNoNulls()
         if (attachments.isNotEmpty())

@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.issues.model
 
 import com.github.jk1.ytplugin.YouTrackIssueField
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import java.awt.Color
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,8 +25,16 @@ class CustomField(item: JsonElement): YouTrackIssueField {
             value = emptyList()
         }
         else {
-            value = mutableListOf()
-            value.add(valueItem.asJsonObject.get("name").asString)
+            if (valueItem.isJsonArray){
+                value = mutableListOf()
+                for (currValue in valueItem.asJsonArray)
+                      value.add(currValue.asJsonObject.get("name").asString)
+            }
+            else{
+                value = mutableListOf()
+                value.add(valueItem.asJsonObject.get("name").asString)
+            }
+
         }
     }
 
