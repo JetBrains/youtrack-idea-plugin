@@ -51,9 +51,9 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://ytplugintest.myjetbrains.com/starting/waitInstanceStartup/ytplugintest", setupTask.correctUrl)
+        Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(302, setupTask.statusCode)
+        Assert.assertEquals(200, setupTask.statusCode)
     }
 
     @Test
@@ -64,9 +64,9 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://ytplugintest.myjetbrains.com/starting/waitInstanceStartup/ytplugintest", setupTask.correctUrl)
+        Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(302, setupTask.statusCode)
+        Assert.assertEquals(200, setupTask.statusCode)
     }
 
     @Test
@@ -102,8 +102,21 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val repo = repository.getRepo()
         val setupTask = SetupTask()
         setupTask.testConnection(repo, project)
-        Assert.assertEquals("https://lug", setupTask.correctUrl)
+        Assert.assertEquals("https://lug/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
+        Assert.assertEquals(401, setupTask.statusCode)
+    }
+
+    @Test
+    fun `test connection with non-existing url looking like existing`() {
+        val serverUrl = "https://tains.com"
+        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
+        repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
+        val repo = repository.getRepo()
+        val setupTask = SetupTask()
+        setupTask.testConnection(repo, project)
+        Assert.assertEquals("https://tains.com/youtrack", setupTask.correctUrl)
+        Assert.assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
         Assert.assertEquals(401, setupTask.statusCode)
     }
 
