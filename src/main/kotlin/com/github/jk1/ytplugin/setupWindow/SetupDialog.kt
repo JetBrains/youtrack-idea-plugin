@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -8,6 +9,7 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
+import com.jetbrains.rd.swing.textProperty
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -19,7 +21,8 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 
-open class SetupDialog(override val project: Project) : DialogWrapper(project, false), ComponentAware {
+open class SetupDialog(override val project: Project, inputRepo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+
 
     private val testConnectionAction = TestConnectionCommandAction("Test Connection")
     private val okAction = OkCommandAction("Ok")
@@ -30,6 +33,8 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
 
     private lateinit var serverUrl: JBLabel
     private lateinit var notifyField: JBLabel
+    private lateinit var notifyFieldTab2: JBLabel
+
     private lateinit var proxyDescription: JBLabel
 
     private lateinit var tokenField: JBLabel
@@ -44,7 +49,9 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
     private lateinit var proxyPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var okPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var cancelPanel: JBPanel<JBPanelWithEmptyText>
-    lateinit var myRepository: YouTrackRepository
+
+    private val repo: YouTrackServer = inputRepo
+    private var myRepository: YouTrackRepository = repo.getRepo()
 
     private var proxySettingsButton = JButton("Proxy settings...")
     var inputUrl = JTextPane()
@@ -71,7 +78,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
         setup.correctUrl = inputUrl.text
         val fontColor = inputToken.foreground
 
-        myRepository = YouTrackRepository()
+
         val myRepositoryType = YouTrackRepositoryType()
 
         myRepository.url = inputUrl.text
@@ -94,7 +101,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             println("here")
             inputUrl.text = oldUrl
         } else {
-            if (!oldUrl.contains("/youtrack") && setup.correctUrl.contains("/youtrack")) {
+            if (!oldUrl.contains("/youtrack") && setup.noteState == NotifierState.SUCCESS) {
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
                     appendToPane(inputUrl, "https", Color.GREEN)
                     appendToPane(inputUrl, setup.correctUrl.substring(5, setup.correctUrl.length - 9), fontColor)
@@ -124,11 +131,16 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
         } else
             setup.setNotifier(notifyField)
 
+        notifyFieldTab2.text = notifyField.text
+        notifyFieldTab2.foreground = notifyField.foreground
+
         if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
             val setupWindow = SetupWindowManager(project)
             setupWindow.showIssues(myRepository)
 
         }
+        myRepository.url = setup.correctUrl
+        myRepository.password = inputToken.text
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -156,18 +168,17 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
         serverUrl.setBounds(65, 60, 100, 22)
         inputUrl.apply {
             layout = BorderLayout()
-
             border = inputToken.border
+            text = repo.url
 //            border = MatteBorder(size!!, size, size, size, Color.red)
             background = inputToken.background
             setBounds(152, 60, 374, 24)
-
         }
-
 
         tokenField = JBLabel("Permanent token:")
         tokenField.setBounds(15, 120, 150, 22)
         inputToken.apply {
+            text = repo.password
             echoChar = '\u25CF'
             setBounds(150, 120, 378, 31)
         }
@@ -182,6 +193,12 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             foreground = Color.red;
             setBounds(150, 158, 250, 17)
         }
+
+        notifyFieldTab2 = JBLabel("").apply {
+            foreground = Color.red;
+            setBounds(220, 170, 250, 17)
+        }
+
         shareUrl = JBCheckBox("Share Url", false)
         shareUrl.setBounds(440, 95, 100, 17)
 
@@ -234,6 +251,7 @@ open class SetupDialog(override val project: Project) : DialogWrapper(project, f
             add(useProxy)
             add(useHTTP)
             add(proxyPanel)
+            add(notifyFieldTab2)
             pack()
         }
 
