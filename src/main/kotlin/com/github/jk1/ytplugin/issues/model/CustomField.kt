@@ -14,18 +14,14 @@ class CustomField(item: JsonElement): YouTrackIssueField {
     var foregroundColor: Color? = null
     var backgroundColor: Color? = null
 
-    init {
 
+    init {
         name = item.asJsonObject.get("name").asString
         valueId = mutableListOf()
         valueId.add(item.asJsonObject.get("id").asString)
         val valueItem = item.asJsonObject.get("value")
-
-        if (valueItem == null || (valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
-            value = valueItem.asJsonArray.map {
-                    // 5.2 does not return value id
-                    it.asString
-            }
+        if (valueItem == null || valueItem.isJsonNull ||(valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
+            value = emptyList()
         }
         else {
             value = mutableListOf()

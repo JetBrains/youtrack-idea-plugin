@@ -55,9 +55,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             println("hey3")
             for (i in 0 until json.size()) {
                 val e: JsonObject = json.get(i) as JsonObject
-                println("hey4$e")
-                println(e.get("idReadable").asString)
-                println(e.get("description").asString)
+                println("hey4 $e")
+                println("my id " + e.get("idReadable").asString)
 
                 val currentIssue = IssueParser().parseIssue(e, method.uri.toString())
                 println("id: " + currentIssue.id)
@@ -102,9 +101,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val method = GetMethod(url)
 
         val fields = NameValuePair("fields", "id,idReadable,updated,created," +
-                "tags(color(foreground,background),name),project,links,comments(id,text,created,updated," +
+                "tags(color(foreground,background),name),project,links(value,direction,trimmedIssues(idReadable)," +
+                "linkType(name,sourceToTarget,targetToSource),id),comments(id,text,created,updated," +
                 "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name)," +
-                "id,projectCustomField),resolved,attachments,description,reporter(login)")
+                "id,projectCustomField),resolved,attachments(name,url),description,reporter(login)")
 
         method.setQueryString(arrayOf(fields))
         val issues: MutableList<Issue>  = parseIssues(method)

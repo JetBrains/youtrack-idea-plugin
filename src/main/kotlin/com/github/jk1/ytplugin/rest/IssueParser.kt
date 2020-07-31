@@ -20,35 +20,6 @@ class IssueParser(){
         issue.id = root.get("idReadable").asString
         println("i am in parser" + issue.id)
 
-////        issue.entityId = root.get("id")?.asString
-//        issue.summary = root.getFieldValue("summary")?.asString  ?: ""
-//        issue.description = root.getFieldValue("description")?.asString ?: ""
-//        issue.wikified = true
-//        issue.createDate = Date(root.getFieldValue("created")?.asLong ?: 0)
-//        issue.updateDate = Date(root.getFieldValue("updated")?.asLong ?: 0)
-//        issue.resolved = root.getFieldValue("resolved") != null
-//        issue.customFields = root.getAsJsonArray("customFields")
-//                .filter { it.isCustomField() }
-//                .map { IssueJsonParser.parseCustomField(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        issue.comments = root.getAsJsonArray("comments")
-//                .map { IssueJsonParser.parseComment(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        issue.links = (root.getFieldValue("links")?.asJsonArray ?: JsonArray())
-//                .map { IssueJsonParser.parseLink(it, repoUrl) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        issue.tags = root.getAsJsonArray(("tags"))
-//                .map { IssueJsonParser.parseTag(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        issue.attachments = (root.getFieldValue("attachments")?.asJsonArray ?: JsonArray())
-//                .map { IssueJsonParser.parseAttachment(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        issue.url = "$repoUrl/issue/$issue.id"
         return issue
     }
 

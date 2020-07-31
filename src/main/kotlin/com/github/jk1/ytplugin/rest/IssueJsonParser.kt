@@ -14,7 +14,7 @@ object IssueJsonParser {
 
     fun parseTag(element: JsonElement) = parseSafe(element) { IssueTag(element) }
 
-    fun parseLink(element: JsonElement, url: String) = parseSafe(element) { IssueLink(element, url) }
+    fun parseLink(element: JsonElement, url: String) = parseSafe(element) { IssueLink(element, url, 0) }
 
     fun parseAttachment(element: JsonElement) = parseSafe(element) { Attachment(element) }
 

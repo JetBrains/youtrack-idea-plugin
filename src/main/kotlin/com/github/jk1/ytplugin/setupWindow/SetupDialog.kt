@@ -98,7 +98,6 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
         inputUrl.text = ""
 
         if (oldUrl == setup.correctUrl) {
-            println("here")
             inputUrl.text = oldUrl
         } else {
             if (!oldUrl.contains("/youtrack") && setup.noteState == NotifierState.SUCCESS) {

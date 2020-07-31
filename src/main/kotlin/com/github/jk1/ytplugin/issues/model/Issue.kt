@@ -20,7 +20,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
     var id: String
     val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
     var summary: String
-    var description: String
+    var description: String = "none"
     var createDate: Date
     var updateDate: Date
     var resolved: Boolean
@@ -51,7 +51,9 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         summary = root.get("summary")?.asString  ?: ""
         println("summary $summary")
 
-        description = root.get("description")?.asString ?: ""
+        description = if (root.get("description")== null || root.get("description").isJsonNull) ""
+            else root.get("description").asString
+
         println("desc $description")
 
         wikified = true
@@ -74,7 +76,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         if (customFields.isNotEmpty())
             for (i in 0 until customFields.size)
                 println( "cf " + customFields[i].name)
-//
+
         comments = root.getAsJsonArray("comments")
                 .map { IssueJsonParser.parseComment(it) }
                 .filter { it != null }
@@ -86,8 +88,9 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 //                .map { IssueJsonParser.parseLink(it, repoUrl) }
 //                .filter { it != null }
 //                .requireNoNulls()
-//        println( "link" + links[0].role + " " + link[0].authorName)
-//
+//        if (links.size > 0)
+//            println( "link" + links[0].role + " " + links[0].type + " " + links[0].value)
+
         tags = root.getAsJsonArray(("tags"))
                 .map { IssueJsonParser.parseTag(it) }
                 .filter { it != null }
@@ -95,10 +98,14 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         if (tags.isNotEmpty())
             println( "tags" + tags[0].backgroundColor + tags[0].foregroundColor + " " + tags[0].text)
 
-//        attachments = root.getAsJsonArray(("attachments"))
-//                .map { IssueJsonParser.parseAttachment(it) }
-//                .filter { it != null }
-//                .requireNoNulls()
+        attachments = root.getAsJsonArray(("attachments"))
+                .map { IssueJsonParser.parseAttachment(it) }
+                .filter { it != null }
+                .requireNoNulls()
+        if (attachments.isNotEmpty())
+            for (i in 0 until attachments.size)
+            println( "attachments " + attachments[i].url + " " + attachments[i].fileName)
+
         url = "$repoUrl/issue/$id"
         println("url " + url)
     }
