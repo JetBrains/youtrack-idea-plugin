@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import org.apache.commons.lang3.mutable.Mutable
 import java.util.*
 
 class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
@@ -84,9 +85,14 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         if (comments.isNotEmpty())
             println( "comm " + comments[0].text + " " + comments[0].authorName)
 
-        links = root.getAsJsonArray("links")
-                .map { IssueJsonParser.parseLink(it, repoUrl) }
-                .filter { it != null  && it.value != "" }
+
+        val wrapper =  IssueLinkWrapper()
+        val result: MutableList<IssueLink> = mutableListOf()
+        val myLinks = root.getAsJsonArray("links")
+        for (element in myLinks)
+            result.addAll(wrapper.reformatIssues(element, repoUrl))
+
+        links = result.filter { it.value != "" }
                 .requireNoNulls()
 
         if (links.isNotEmpty())
