@@ -6,7 +6,6 @@ class Attachment(item: JsonElement, repoUrl: String) {
    init{
        println("LINK TO URL HERE: " + repoUrl)
    }
-
     val fileName: String = item.asJsonObject.get("name").asString
-    val url: String = repoUrl.substring(0, repoUrl.length - 9) + item.asJsonObject.get("url").asString
+    val url: String = repoUrl.substring(0, repoUrl.indexOf("api") - 10) + item.asJsonObject.get("url").asString
 }

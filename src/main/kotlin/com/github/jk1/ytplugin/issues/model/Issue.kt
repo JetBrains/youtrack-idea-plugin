@@ -84,12 +84,14 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         if (comments.isNotEmpty())
             println( "comm " + comments[0].text + " " + comments[0].authorName)
 
-//        links = root.getAsJsonArray("links")
-//                .map { IssueJsonParser.parseLink(it, repoUrl) }
-//                .filter { it != null }
-//                .requireNoNulls()
-//        if (links.size > 0)
-//            println( "link" + links[0].role + " " + links[0].type + " " + links[0].value)
+        links = root.getAsJsonArray("links")
+                .map { IssueJsonParser.parseLink(it, repoUrl) }
+                .filter { it != null }
+                .requireNoNulls()
+
+        if (links.isNotEmpty())
+            for (element in links)
+                println( "link " + element.role + " " + element.type)
 
         tags = root.getAsJsonArray(("tags"))
                 .map { IssueJsonParser.parseTag(it) }

@@ -36,7 +36,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     override fun getIssue(id: String): Issue? {
         val method = GetMethod("${repository.url}/api/issues/$id")
-        val fields = NameValuePair("fields", "id,idReadable,summary,description,customFields(id,name,value(id,name)))")
+        val fields = NameValuePair("fields", "id,idReadable,updated,created," +
+                "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
+                "linkType(name,sourceToTarget,targetToSource),id),comments(id,text,created,updated," +
+                "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name)," +
+                "id,projectCustomField),resolved,attachments(name,url),description,reporter(login)")
+//        val fields = NameValuePair("fields", "id,idReadable,summary,description,customFields(id,name,value(id,name)))")
         method.setQueryString(arrayOf(fields))
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
@@ -83,13 +88,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
         method.setQueryString(arrayOf(myQuery, myFields))
         return parseIssues(method)
-    }
-
-    override fun getWikifiedIssuesInProject(projectShortName: String, query: String): List<Issue> {
-        val url = "${repository.url}/rest/issue/byproject/${projectShortName.urlencoded}"
-        val params = "filter=${query.urlencoded}&wikifyDescription=true&max=30"
-        val method = GetMethod("$url?$params")
-        return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repository.url) } }
     }
 
     fun String.asMarkdownIssueDraft() = JSONObject().also {

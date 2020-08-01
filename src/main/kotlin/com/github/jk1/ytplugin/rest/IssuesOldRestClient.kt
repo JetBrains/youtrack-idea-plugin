@@ -63,7 +63,7 @@ class IssuesOldRestClient(override val repository: YouTrackServer) : IssuesRestC
         }
     }
 
-    override fun getWikifiedIssuesInProject(projectShortName: String, query: String): List<Issue> {
+    fun getWikifiedIssuesInProject(projectShortName: String, query: String): List<Issue> {
         val url = "${repository.url}/rest/issue/byproject/${projectShortName.urlencoded}"
         val params = "filter=${query.urlencoded}&wikifyDescription=true&max=30"
         val method = GetMethod("$url?$params")

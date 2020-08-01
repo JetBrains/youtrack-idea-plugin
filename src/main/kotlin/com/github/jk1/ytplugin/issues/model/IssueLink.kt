@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.issues.model
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 
 class IssueLink(item: JsonElement, repoUrl: String, index: Int) {
 
@@ -12,9 +13,9 @@ class IssueLink(item: JsonElement, repoUrl: String, index: Int) {
 
     init {
         var i = index
-        val issues: JsonArray? = item.asJsonObject.get("trimmedIssues").asJsonArray
-        if (issues != null) {
-            if (index < issues.size()){
+        val issues: JsonElement = item.asJsonObject.get("issues")
+        if ((issues.isJsonArray && issues.asJsonArray.size() != 0)) {
+            if (index < issues.asJsonArray.size()){
                 type = item.asJsonObject.get("linkType").asJsonObject.get("name").asString
                 value = getValue(item, index)
                 val direction = item.asJsonObject.get("direction").asString
@@ -30,7 +31,7 @@ class IssueLink(item: JsonElement, repoUrl: String, index: Int) {
     }
 
     fun getValue(item: JsonElement,index: Int): String {
-            return item.asJsonObject.get("trimmedIssues").asJsonArray[index].asString
+            return item.asJsonObject.get("issues").asJsonArray[index].asJsonObject.get("idReadable").asString
     }
 
 }
