@@ -126,12 +126,6 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
     override fun hashCode(): Int = toString().hashCode()
 
-    private fun JsonObject.getFieldValue(name: String): JsonElement? {
-        return this.getAsJsonArray("field").firstOrNull {
-            name == it.asJsonObject.get("name")?.asString
-        }?.asJsonObject?.get("value")
-    }
-
     private fun JsonElement.isCustomField(): Boolean {
         val name = asJsonObject.get("name")
         return name != null && !PREDEFINED_FIELDS.contains(name.asString)

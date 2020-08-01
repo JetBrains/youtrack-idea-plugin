@@ -61,7 +61,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 println("hey4 $e")
                 println("my id " + e.get("idReadable").asString)
 
-                val currentIssue = IssueParser().parseIssue(e, method.uri.toString())
+                val currentIssue = IssueParser().parseIssue(e, repository.url)
                 println("id: " + currentIssue.id)
                 println("entityId: " + currentIssue.entityId)
                 list.add(currentIssue)
