@@ -41,14 +41,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,text,created,updated," +
                 "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name)," +
                 "id,projectCustomField),resolved,attachments(name,url),description,reporter(login)")
-//        val fields = NameValuePair("fields", "id,idReadable,summary,description,customFields(id,name,value(id,name)))")
         method.setQueryString(arrayOf(fields))
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
     private fun parseIssues(method: GetMethod): MutableList<Issue>{
         println("hey1")
-
         return method.connect {
             val list: MutableList<Issue> = mutableListOf()
 

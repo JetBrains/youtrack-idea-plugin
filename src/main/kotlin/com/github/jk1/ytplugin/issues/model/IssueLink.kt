@@ -6,10 +6,10 @@ import com.google.gson.JsonObject
 
 class IssueLink(item: JsonElement, repoUrl: String, index: Int) {
 
-    var type: String = ""
-    var value: String = ""
-    var role: String = ""
-    var url: String  = ""
+    var type: String = String()
+    var value: String = String()
+    var role: String = String()
+    var url: String  = String()
 
     init {
         var i = index
@@ -26,8 +26,8 @@ class IssueLink(item: JsonElement, repoUrl: String, index: Int) {
                 i++
                 IssueLink(item, repoUrl, i)
             }
+            url = "$repoUrl/issue/$value"
         }
-        url = "$repoUrl/issue/$value"
     }
 
     fun getValue(item: JsonElement,index: Int): String {

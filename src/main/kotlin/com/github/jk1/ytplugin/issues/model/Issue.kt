@@ -86,7 +86,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
         links = root.getAsJsonArray("links")
                 .map { IssueJsonParser.parseLink(it, repoUrl) }
-                .filter { it != null }
+                .filter { it != null  && it.value != "" }
                 .requireNoNulls()
 
         if (links.isNotEmpty())
