@@ -4,24 +4,24 @@ package com.github.jk1.ytplugin.setupWindow
 import com.github.jk1.ytplugin.setupWindow.Connection.CancellableConnection
 import com.github.jk1.ytplugin.setupWindow.Connection.HttpTestConnection
 import com.github.jk1.ytplugin.setupWindow.Connection.TestConnectionTask
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.TaskManager
-import com.intellij.tasks.TaskRepository
-import com.intellij.tasks.config.RecentTaskRepositories
-import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.URI
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
+import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jetbrains.annotations.TestOnly
 import java.awt.Color
@@ -30,12 +30,11 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.swing.JLabel
 
-
 /**
  * Login errors classification
  */
 enum class NotifierState{
-    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN
+    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION
 }
 
 /**
@@ -78,20 +77,19 @@ class SetupTask() {
         return token.matches(tokenPattern)
     }
 
-    fun setNotifier(note: JLabel){
+    fun setNotifier(note: JLabel) {
         note.foreground = Color.red
-        if (noteState == NotifierState.SUCCESS){
-            note.foreground = Color.green;
-            note.text = "Successfully connected"
+        when (noteState) {
+            NotifierState.SUCCESS -> {
+                note.foreground = Color.green;
+                note.text = "Successfully connected"
+            }
+            NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
+            NotifierState.UNKNOWN_ERROR -> note.text = "Unknown error"
+            NotifierState.UNKNOWN_HOST -> note.text = "Unknown host"
+            NotifierState.INVALID_TOKEN -> note.text = "Invalid token"
+            NotifierState.INVALID_VERSION -> note.text = "Incompatible YouTrack version, please update"
         }
-        else if (noteState == NotifierState.LOGIN_ERROR)
-            note.text = "Cannot login: incorrect URL or token"
-        else if (noteState == NotifierState.UNKNOWN_ERROR)
-            note.text = "Unknown error"
-        else if (noteState == NotifierState.UNKNOWN_HOST)
-            note.text = "Unknown host"
-        else if (noteState == NotifierState.INVALID_TOKEN)
-            note.text = "Invalid token"
     }
 
     private fun fixURI(method: PostMethod){
@@ -184,6 +182,11 @@ class SetupTask() {
             return false
         }
 
+        if (!isValidVersion(repository)){
+            noteState = NotifierState.INVALID_VERSION
+            return false
+        }
+
         val myBadRepositories = ContainerUtil.newConcurrentSet<YouTrackRepository>()
 
         val task: TestConnectionTask = object : TestConnectionTask("Test connection", myProject) {
@@ -245,6 +248,27 @@ class SetupTask() {
             }
         }
         return e == null
+    }
+
+    private fun isValidVersion(repository: YouTrackRepository): Boolean {
+        val client = HttpClient()
+        val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
+        val fields = NameValuePair("fields", "version")
+        method.setQueryString(arrayOf(fields))
+        println("version url: " + method.uri)
+        method.setRequestHeader("Authorization", "Bearer " + repository.password)
+        val status = client.executeMethod(method)
+
+        val json: JsonObject = JsonParser().parse(method.responseBodyAsString) as JsonObject
+        if (json.get("version") == null || json.get("version").isJsonNull){
+            noteState = NotifierState.LOGIN_ERROR
+            return false
+        }
+        else{
+            val version:Float = json.get("version").asString.toFloat()
+            return (version >= 2017.1)
+
+        }
     }
 }
 
