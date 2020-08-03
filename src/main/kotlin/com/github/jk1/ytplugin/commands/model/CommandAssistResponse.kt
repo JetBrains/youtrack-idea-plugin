@@ -17,9 +17,9 @@ class CommandAssistResponse(stream: InputStream) {
 
     init {
         val root = JsonParser().parse(InputStreamReader(stream, "UTF-8")).asJsonObject
-        val ranges = root.getAsJsonObject("underline").getAsJsonArray("ranges")
-        val suggests = root.getAsJsonObject("suggest").getAsJsonArray("items")
-        val commands = root.getAsJsonObject("commands").getAsJsonArray("command")
+        val ranges = root.asJsonObject.getAsJsonArray("styleRanges")
+        val suggests = root.asJsonObject.getAsJsonArray("suggestions")
+        val commands = root.asJsonObject.getAsJsonArray("commands")
         highlightRanges = ranges.map { CommandHighlightRange(it) }
         suggestions = suggests.map { CommandSuggestion(it) }
         previews = commands.map { CommandPreview(it) }

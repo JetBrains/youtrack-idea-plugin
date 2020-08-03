@@ -1,0 +1,9 @@
+{
+  "query": "sta",
+  "caret": 3,
+  "issues": [
+    {
+      "idReadable": "{id}"
+    }
+  ]
+}

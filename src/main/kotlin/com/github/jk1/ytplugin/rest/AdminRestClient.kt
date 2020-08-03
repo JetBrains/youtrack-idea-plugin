@@ -26,6 +26,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         val res: URL? = javaClass.classLoader.getResource("admin_body.json")
         val absolutePath= Paths.get(res!!.toURI()).toFile().absolutePath
+
         val jsonBody = String(Files.readAllBytes(
                 Paths.get(absolutePath))).replace("{issueId}", issueId, true)
 
