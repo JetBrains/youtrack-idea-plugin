@@ -9,7 +9,7 @@ class CommandPreview(commandElement: JsonElement) {
     val error: Boolean
 
     init {
-        description = commandElement.asJsonObject.get("desc").asString
+        description = commandElement.asJsonObject.get("description").asString
         error = commandElement.asJsonObject.get("error").asBoolean
     }
 }

@@ -7,19 +7,14 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.UsernamePasswordCredentials
-import org.apache.commons.httpclient.auth.AuthScope
-import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import org.jdom.input.SAXBuilder
-import java.io.File
 import java.io.InputStreamReader
-import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
+
 
 class CommandRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
@@ -84,43 +79,30 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
 
 
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
-        println("assistCommand HELLO")
 
         val client = HttpClient()
-        val method = PostMethod("${repository.url}/api/commands/assist")
-        val fields = NameValuePair("fields", "caret,commands%28delete,description,error%29,query,styleRanges%28end,length,start,style%29,suggestions%28caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix%29")
-        method.setQueryString(arrayOf(fields))
+        val method = PostMethod("${repository.url}/api/commands/assist?fields=caret,commands%28delete,description,error%29,query,styleRanges%28end,length,start,style%29,suggestions%28caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix%29")
+        val caret = command.caret - 1
+
         val jsonBody = "{\n" +
-                "  \"query\": \"sta\",\n" +
-                "  \"caret\": 3,\n" +
+                "  \"query\": \"${command.command}\",\n" +
+                "  \"caret\": ${caret},\n" +
                 "  \"issues\": [\n" +
                 "    {\n" +
                 "      \"idReadable\": \"TP-2\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}\n"
-        println("assistCommand HELLO: " + method.uri)
         method.setRequestHeader("Authorization", "Bearer " + repository.password)
-        method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
-
+        method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
         val status = client.executeMethod(method)
 
+//        val responseBody = method.responseBody
+//        println(String(responseBody, StandardCharsets.UTF_8))
 
-//        val method = PostMethod("https://alinaboshchenko.myjetbrains.com/youtrack/api/commands")
-//        val jsonBody = "{\n" +
-//                "  \"query\": \"sta\",\n" +
-//                "  \"caret\": 3,\n" +
-//                "  \"issues\": [\n" +
-//                "    {\n" +
-//                "      \"idReadable\": \"TP-2\"\n" +
-//                "    }\n" +
-//                "  ]\n" +
-//                "}\n"
-//        method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
-//        method.setRequestHeader("Authorization","Bearer "+ repository.password)
 
         return method.connect {
-            println("assistCommand HELLO2")
+//            println("assistCommand HELLO2")
             if (status == 200) {
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
