@@ -1,0 +1,241 @@
+{
+  description: "more tests to the god of tests",
+  links: [
+    {
+      direction: "BOTH",
+      linkType: {
+        sourceToTarget: "relates to",
+        targetToSource: "",
+        name: "Relates",
+        $type: "IssueLinkType"
+      },
+      issues: [
+        {
+          idReadable: "TP-1",
+          $type: "Issue"
+        }
+      ],
+      id: "104-0",
+      $type: "IssueLink"
+    },
+    {
+      direction: "OUTWARD",
+      linkType: {
+        sourceToTarget: "is required for",
+        targetToSource: "depends on",
+        name: "Depend",
+        $type: "IssueLinkType"
+      },
+      issues: [],
+      id: "104-1s",
+      $type: "IssueLink"
+    },
+    {
+      direction: "INWARD",
+      linkType: {
+        sourceToTarget: "is required for",
+        targetToSource: "depends on",
+        name: "Depend",
+        $type: "IssueLinkType"
+      },
+      issues: [
+        {
+          idReadable: "TP-1",
+          $type: "Issue"
+        },
+        {
+          idReadable: "TP-4",
+          $type: "Issue"
+        }
+      ],
+      id: "104-1t",
+      $type: "IssueLink"
+    },
+    {
+      direction: "OUTWARD",
+      linkType: {
+        sourceToTarget: "is duplicated by",
+        targetToSource: "duplicates",
+        name: "Duplicate",
+        $type: "IssueLinkType"
+      },
+      issues: [],
+      id: "104-2s",
+      $type: "IssueLink"
+    },
+    {
+      direction: "INWARD",
+      linkType: {
+        sourceToTarget: "is duplicated by",
+        targetToSource: "duplicates",
+        name: "Duplicate",
+        $type: "IssueLinkType"
+      },
+      issues: [],
+      id: "104-2t",
+      $type: "IssueLink"
+    },
+    {
+      direction: "OUTWARD",
+      linkType: {
+        sourceToTarget: "parent for",
+        targetToSource: "subtask of",
+        name: "Subtask",
+        $type: "IssueLinkType"
+      },
+      issues: [],
+      id: "104-3s",
+      $type: "IssueLink"
+    },
+    {
+      direction: "INWARD",
+      linkType: {
+        sourceToTarget: "parent for",
+        targetToSource: "subtask of",
+        name: "Subtask",
+        $type: "IssueLinkType"
+      },
+      issues: [
+        {
+          idReadable: "TP-4",
+          $type: "Issue"
+        }
+      ],
+      id: "104-3t",
+      $type: "IssueLink"
+    }
+  ],
+  project: {
+    $type: "Project"
+  },
+  created: 1596047376175,
+  updated: 1596273083917,
+  idReadable: "TP-2",
+  resolved: null,
+  summary: "tester 2",
+  reporter: {
+    login: "root",
+    $type: "User"
+  },
+  attachments: [
+    {
+      $type: "IssueAttachment"
+    }
+  ],
+  comments: [
+    {
+      author: {
+        login: "root",
+        name: "root",
+        $type: "User"
+      },
+      text: "hello",
+      created: 1596129050513,
+      updated: null,
+      id: "4-0",
+      $type: "IssueComment"
+    }
+  ],
+  tags: [
+    {
+      color: {
+        foreground: "#444",
+        background: "#92e1d5",
+        $type: "FieldStyle"
+      },
+      name: "myTag",
+      $type: "IssueTag"
+    }
+  ],
+  customFields: [
+    {
+      projectCustomField: {
+        $type: "EnumProjectCustomField"
+      },
+      value: {
+        name: "Normal",
+        $type: "EnumBundleElement"
+      },
+      name: "Priority",
+      id: "110-0",
+      $type: "SingleEnumIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "EnumProjectCustomField"
+      },
+      value: {
+        name: "Bug",
+        $type: "EnumBundleElement"
+      },
+      name: "Type",
+      id: "110-1",
+      $type: "SingleEnumIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "StateProjectCustomField"
+      },
+      value: {
+        name: "Reopened",
+        $type: "StateBundleElement"
+      },
+      name: "State",
+      id: "110-2",
+      $type: "StateIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "UserProjectCustomField"
+      },
+      value: {
+        name: "root",
+        $type: "User"
+      },
+      name: "Assignee",
+      id: "111-0",
+      $type: "SingleUserIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "OwnedProjectCustomField"
+      },
+      value: {
+        name: "subsystem1",
+        $type: "OwnedBundleElement"
+      },
+      name: "Subsystem",
+      id: "110-3",
+      $type: "SingleOwnedIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "VersionProjectCustomField"
+      },
+      value: [],
+      name: "Fix versions",
+      id: "110-4",
+      $type: "MultiVersionIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "VersionProjectCustomField"
+      },
+      value: [],
+      name: "Affected versions",
+      id: "110-5",
+      $type: "MultiVersionIssueCustomField"
+    },
+    {
+      projectCustomField: {
+        $type: "BuildProjectCustomField"
+      },
+      value: null,
+      name: "Fixed in build",
+      id: "110-6",
+      $type: "SingleBuildIssueCustomField"
+    }
+  ],
+  id: "2-3",
+  $type: "Issue"
+}
