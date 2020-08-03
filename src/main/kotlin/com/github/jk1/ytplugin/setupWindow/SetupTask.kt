@@ -88,7 +88,7 @@ class SetupTask() {
             NotifierState.UNKNOWN_ERROR -> note.text = "Unknown error"
             NotifierState.UNKNOWN_HOST -> note.text = "Unknown host"
             NotifierState.INVALID_TOKEN -> note.text = "Invalid token"
-            NotifierState.INVALID_VERSION -> note.text = "Incompatible YouTrack version, please update"
+            NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1</html>"
         }
     }
 

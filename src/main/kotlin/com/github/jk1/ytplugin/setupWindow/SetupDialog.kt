@@ -190,12 +190,12 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
 
         notifyField = JBLabel("").apply {
             foreground = Color.red;
-            setBounds(150, 158, 250, 17)
+            setBounds(150, 158, 250, 36)
         }
 
         notifyFieldTab2 = JBLabel("").apply {
             foreground = Color.red;
-            setBounds(220, 170, 250, 17)
+            setBounds(220, 160, 250, 36)
         }
 
         shareUrl = JBCheckBox("Share Url", false)
