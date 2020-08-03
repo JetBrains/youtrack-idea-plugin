@@ -6,6 +6,7 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
+import com.intellij.javascript.debugger.execution.startSession
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
@@ -112,12 +113,42 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
     }
 
     fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
-        val method = PostMethod(command.executeCommandUrl)
+        val myField = "issues(id,idReadable),query,visibility(permittedGroups(id,name),permittedUsers(id,login))".urlencoded
+//        val method = PostMethod("${repository.url}/api/commands?fields=issues%28id%2CidReadable%29%2Cquery%2Cvisibility%28permittedGroups%28id%2Cname%29%2CpermittedUsers%28id%2Clogin%29%29%0D%0A")
+        val method = PostMethod("${repository.url}/api/commands?fields=${myField}")
 
-        println("HELLO HEERE")
+
+        println("vis: " + command.session.issue.entityId)
+        println("url: " + method.uri)
+        println("id: " + command.session.issue.id)
+
+
+        val jsonBody = "{\n" +
+                "  \"query\": \"${command.command} \",\n" +
+                "  \"issues\": [\n" +
+                "    {\n" +
+                "      \"idReadable\": \"${command.session.issue.id}\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"silent\": ${command.silent},\n" +
+                "  \"comment\": \"${command.comment}\",\n" +
+                "  \"visibility\": {\n" +
+                "    \"\$type\": \"CommandLimitedVisibility\",\n" +
+                "    \"permittedGroups\": [\n" +
+                "      {\n" +
+                "        \"id\": \"${command.session.issue.entityId}\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}"
+
+        method.setRequestHeader("Authorization", "Bearer " + repository.password)
+        method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
+
+        println("HELLO HEERE" )
         return method.connect {
-            it.addRequestHeader("Accept", "application/json")
             val status = httpClient.executeMethod(method)
+
             if (status != 200) {
                 val body = method.responseBodyAsLoggedStream()
                 when (method.getResponseHeader("Content-Type")?.value?.split(";")?.first()) {
@@ -169,19 +200,4 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
             return jsonBody
         }
 
-
-    private val YouTrackCommand.intellisenseCommandUrl: String
-        get () {
-            val assistUrl = "${repository.url}/api/commands/assist"
-            val result = "$assistUrl?fields=caret,commands%28delete,description,error%29,query,styleRanges%28end,length,start,style%29,suggestions%28caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix%29"
-            println ("RESULRING URL:  " + result)
-            return result
-//
-//            return if (session.hasEntityId()) {
-//                "$result&issueIds=${session.compressedEntityId?.urlencoded}"
-//            } else {
-//                logger.debug("No persistent id found for ${session.issue.id}, command suggests may be imprecise and slow")
-//                "$result&query=${session.issue.id}"
-//            }
-        }
 }
