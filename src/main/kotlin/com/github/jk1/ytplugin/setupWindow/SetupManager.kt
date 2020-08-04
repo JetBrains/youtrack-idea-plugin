@@ -233,7 +233,8 @@ class SetupManager() {
                 noteState = NotifierState.SUCCESS
             }
             else
-                noteState = NotifierState.INVALID_VERSION
+                if (noteState != NotifierState.LOGIN_ERROR)
+                    noteState = NotifierState.INVALID_VERSION
         } else if (e !is ProcessCanceledException) {
             val message = e.message
             if (e is UnknownHostException) {
