@@ -9,7 +9,6 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
-import com.jetbrains.rd.swing.textProperty
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener

@@ -2,12 +2,7 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import org.apache.commons.httpclient.methods.GetMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
-import org.apache.http.HttpEntity
-import org.apache.http.entity.StringEntity
 import org.jdom.input.SAXBuilder
-import java.nio.charset.StandardCharsets
 
 
 // todo: convert me to use json api

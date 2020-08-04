@@ -4,7 +4,6 @@ package com.github.jk1.ytplugin.setupWindow
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.IssuesOldRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.IssueTask
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException

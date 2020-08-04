@@ -2,13 +2,9 @@
 package com.github.jk1.ytplugin
 
 import com.github.jk1.ytplugin.rest.RestClientTrait
-import com.github.jk1.ytplugin.setupWindow.SetupTask
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
-import org.apache.commons.httpclient.methods.DeleteMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.PutMethod
 
 interface SetupManagerTrait : RestClientTrait, YouTrackConnectionTrait {
 
