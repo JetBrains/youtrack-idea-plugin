@@ -30,9 +30,8 @@ class IssueLinkWrapper() {
 
             val myLinks =item.asJsonObject.get("issues").asJsonArray
              for (element in myLinks){
-                 value = element.asJsonObject.get("idReadable").toString()
+                 value = element.asJsonObject.get("idReadable").asString
                  url = "$repoUrl/issue/$value"
-
                  result.add(IssueLink(value, type, role, url))
              }
         }
