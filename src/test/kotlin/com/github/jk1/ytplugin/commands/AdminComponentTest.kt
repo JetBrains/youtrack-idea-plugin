@@ -35,7 +35,6 @@ class AdminComponentTest : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, C
 
     @Test
     fun getVisibilityGroups() {
-        System.out.println(issue.id)
         adminComponent.getActiveTaskVisibilityGroups(issue) { groups ->
             assertEquals(3, groups.size)
             assertTrue(groups.contains("All Users"))

@@ -21,7 +21,7 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
         val root = item.asJsonObject
         id = root.get("id").asString
         metadata = decode(root.get("metadata").asString)
-        val metadataElement = JsonParser().parse(metadata).asJsonObject
+        val metadataElement = JsonParser.parseString(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
         issueId = issueElement.get("id").asString
         summary = issueElement.get("summary").asString

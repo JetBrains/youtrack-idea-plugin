@@ -17,13 +17,12 @@ class IssuesOldRestClient(override val repository: YouTrackServer) : IssuesRestC
 
     override fun createDraft(summary: String): String {
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
-        //todo: force markdown
         method.requestEntity = StringRequestEntity(summary.asMarkdownIssueDraft(), "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
-                val stream = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
-                JsonParser().parse(stream).asJsonObject.get("id").asString
+                val streamReader = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
+                JsonParser.parseReader(streamReader).asJsonObject.get("id").asString
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
@@ -32,7 +31,6 @@ class IssuesOldRestClient(override val repository: YouTrackServer) : IssuesRestC
 
     override fun getIssue(id: String): Issue? {
         val method = GetMethod("${repository.url}/rest/issue/$id?wikifyDescription=true")
-//       val method = GetMethod(${repository.url}/api/issues/$id?fields=id,idReadable,summary,description,customFields(id,name,value(id,name)))
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
@@ -71,7 +69,7 @@ class IssuesOldRestClient(override val repository: YouTrackServer) : IssuesRestC
         return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repository.url) } }
     }
 
-    fun String.asMarkdownIssueDraft() = JSONObject().also {
+    private fun String.asMarkdownIssueDraft(): String = JSONObject().also {
         it["description"] = this
         it["usesMarkdown"] = true
     }.toJSONString()

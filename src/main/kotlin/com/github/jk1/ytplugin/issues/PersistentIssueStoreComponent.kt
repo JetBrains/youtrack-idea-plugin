@@ -50,7 +50,7 @@ class PersistentIssueStoreComponent : PersistentStateComponent<Memento> {
         fun getStore(repo: YouTrackServer): IssueStore {
             try {
                 val issuesJson = persistentIssues[repo.id] ?: return IssueStore()
-                val issues = JsonParser().parse(issuesJson).asJsonArray
+                val issues = JsonParser.parseString(issuesJson).asJsonArray
                         .mapNotNull { IssueJsonParser.parseIssue(it, repo.url) }
                 logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
                 return IssueStore(issues)

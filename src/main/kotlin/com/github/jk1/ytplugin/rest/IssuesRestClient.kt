@@ -23,8 +23,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
-                val stream = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
-                JsonParser().parse(stream).asJsonObject.get("id").asString
+                val streamReader = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
+                JsonParser.parseReader(streamReader).asJsonObject.get("id").asString
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
@@ -39,11 +39,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun getIssues(query: String): List<Issue> {
-//        println("hey")
         // todo: customizable "max" limit
         val url = "${repository.url}/rest/issue?filter=${query.urlencoded}&max=30&useImplicitSort=true&wikifyDescription=true"
-//        val url = "${repository.url}/api/issues?query=${query.urlencoded}&fields=id,summary,description,reporter(login)"
-
         val issues = GetMethod(url).execute {
             it.asJsonObject.getAsJsonArray("issue").mapNotNull { IssueJsonParser.parseIssue(it, repository.url) }
         }

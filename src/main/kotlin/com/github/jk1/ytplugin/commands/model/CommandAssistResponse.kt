@@ -16,7 +16,7 @@ class CommandAssistResponse(stream: InputStream) {
     val timestamp = System.currentTimeMillis()
 
     init {
-        val root = JsonParser().parse(InputStreamReader(stream, "UTF-8")).asJsonObject
+        val root = JsonParser.parseReader(InputStreamReader(stream, "UTF-8")).asJsonObject
         val ranges = root.getAsJsonObject("underline").getAsJsonArray("ranges")
         val suggests = root.getAsJsonObject("suggest").getAsJsonArray("items")
         val commands = root.getAsJsonObject("commands").getAsJsonArray("command")

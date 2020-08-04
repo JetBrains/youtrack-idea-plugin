@@ -44,8 +44,8 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
                         }
                     }
                     "application/json" -> {
-                        val stream = InputStreamReader(body, "UTF-8")
-                        val error = JsonParser().parse(stream).asJsonObject.get("value").asString
+                        val streamReader = InputStreamReader(body, "UTF-8")
+                        val error = JsonParser.parseReader(streamReader).asJsonObject.get("value").asString
                         CommandExecutionResponse(errors = listOf("Workflow: $error"))
                     }
                     else ->

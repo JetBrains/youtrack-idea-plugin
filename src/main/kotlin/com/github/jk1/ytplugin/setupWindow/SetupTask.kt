@@ -33,17 +33,18 @@ import javax.swing.JLabel
 /**
  * Login errors classification
  */
-enum class NotifierState{
+enum class NotifierState {
     SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION
 }
 
 /**
  * Class for the task management
  */
-class SetupTask() {
+class SetupTask {
 
-    var correctUrl:String = ""
+    var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
+
     @TestOnly
     var statusCode = 401
 
@@ -57,7 +58,7 @@ class SetupTask() {
         return repository.password
     }
 
-    fun trimTrailingSlashes(url: String?): String? {
+    private fun trimTrailingSlashes(url: String?): String? {
         if (url == null) return ""
         for (i in url.length - 1 downTo 0) {
             if (url[i] != '/') {
@@ -72,7 +73,7 @@ class SetupTask() {
         return trimTrailingSlashes(repository.url)
     }
 
-    private fun isValidToken(token: String) : Boolean{
+    private fun isValidToken(token: String): Boolean {
         val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
         return token.matches(tokenPattern)
     }
@@ -81,7 +82,7 @@ class SetupTask() {
         note.foreground = Color.red
         when (noteState) {
             NotifierState.SUCCESS -> {
-                note.foreground = Color.green;
+                note.foreground = Color.green
                 note.text = "Successfully connected"
             }
             NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
@@ -92,26 +93,25 @@ class SetupTask() {
         }
     }
 
-    private fun fixURI(method: PostMethod){
-        if (!method.uri.toString().contains("https")){
+    private fun fixURI(method: PostMethod) {
+        if (!method.uri.toString().contains("https")) {
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
             method.uri = URI(newUri, false)
         }
-        if(!method.uri.toString().contains("/youtrack")){
+        if (!method.uri.toString().contains("/youtrack")) {
             val newUri = method.uri.toString() + "/youtrack"
             method.uri = URI(newUri, false)
-        }
-        else{
+        } else {
             throw HttpRequests.HttpStatusException("Cannot login: incorrect URL or token", method.statusCode, method.path)
         }
     }
 
-    private fun fixURI(uri: String): String{
+    private fun fixURI(uri: String): String {
         var newUri = uri
-        if (!uri.contains("https")){
+        if (!uri.contains("https")) {
             newUri = "https" + uri.substring(4, uri.length)
         }
-        if(!uri.contains("/youtrack")){
+        if (!uri.contains("/youtrack")) {
             newUri = "$newUri/youtrack"
         }
         return newUri
@@ -129,22 +129,24 @@ class SetupTask() {
         val response: String?
         response = try {
             statusCode = method.statusCode
-            if(method.statusCode in 301..399){
-                val location: String = method.getResponseHeader("Location").toString()
-                val newUri = location.substring(10, location.length)
-                method.uri = URI(newUri, false)
-                repository.url = method.uri.toString()
-                correctUrl = repository.url
-                createCancellableConnection(repository)
-            }
-            else if (method.statusCode == 403) {
-                throw java.lang.Exception("Cannot login: token error occurred or user was banned")
-            }
-            else if (method.statusCode != 200) {
-                fixURI(method)
-                // substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending
-                repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
-                createCancellableConnection(repository)
+            when {
+                statusCode in 301..399 -> {
+                    val location: String = method.getResponseHeader("Location").toString()
+                    val newUri = location.substring(10, location.length)
+                    method.uri = URI(newUri, false)
+                    repository.url = method.uri.toString()
+                    correctUrl = repository.url
+                    createCancellableConnection(repository)
+                }
+                statusCode == 403 -> {
+                    throw java.lang.Exception("Cannot login: token error occurred or user was banned")
+                }
+                statusCode != 200 -> {
+                    fixURI(method)
+                    // substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending
+                    repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
+                    createCancellableConnection(repository)
+                }
             }
             method.getResponseBodyAsString(1000)
         } finally {
@@ -162,7 +164,7 @@ class SetupTask() {
         repository.url = newUri
         correctUrl = repository.url
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
-        method.setRequestHeader("Authorization","Bearer "+ repository.password)
+        method.setRequestHeader("Authorization", "Bearer " + repository.password)
 
         return object : HttpTestConnection<PostMethod?>(method) {
             @Throws(java.lang.Exception::class)
@@ -177,12 +179,12 @@ class SetupTask() {
 
     fun testConnection(repository: YouTrackRepository, myProject: Project): Boolean {
 
-        if (!repository.isLoginAnonymously && !isValidToken(repository.password)){
+        if (!repository.isLoginAnonymously && !isValidToken(repository.password)) {
             noteState = NotifierState.INVALID_TOKEN
             return false
         }
 
-        if (!isValidVersion(repository)){
+        if (!isValidVersion(repository)) {
             noteState = NotifierState.INVALID_VERSION
             return false
         }
@@ -251,22 +253,17 @@ class SetupTask() {
     }
 
     private fun isValidVersion(repository: YouTrackRepository): Boolean {
-        val client = HttpClient()
         val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
         val fields = NameValuePair("fields", "version")
         method.setQueryString(arrayOf(fields))
-        println("version url: " + method.uri)
         method.setRequestHeader("Authorization", "Bearer " + repository.password)
-        val status = client.executeMethod(method)
-
-        val json: JsonObject = JsonParser().parse(method.responseBodyAsString) as JsonObject
-        if (json.get("version") == null || json.get("version").isJsonNull){
+        val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+        return if (json.get("version") == null || json.get("version").isJsonNull) {
             noteState = NotifierState.LOGIN_ERROR
-            return false
-        }
-        else{
-            val version:Float = json.get("version").asString.toFloat()
-            return (version >= 2017.1)
+            false
+        } else {
+            val version: Float = json.get("version").asString.toFloat()
+            (version >= 2017.1)
 
         }
     }

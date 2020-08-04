@@ -42,8 +42,8 @@ interface RestClientTrait: ResponseLoggerTrait {
         return connect {
             val status = httpClient.executeMethod(this)
             if (status == 200) {
-                val stream = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
-                responseParser.invoke(JsonParser().parse(stream))
+                val streamReader = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
+                responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
                 throw RuntimeException(this.responseBodyAsLoggedString())
             }

@@ -34,7 +34,7 @@ class IssueJsonParseTest {
     }
 
     private fun getJsonElement(resourceName: String): JsonElement {
-        val reader = InputStreamReader(this.javaClass.getResourceAsStream(resourceName))
-        return JsonParser().parse(reader)
+        val reader = InputStreamReader(this.javaClass.getResourceAsStream(resourceName), "UTF-8")
+        return JsonParser.parseReader(reader)
     }
 }

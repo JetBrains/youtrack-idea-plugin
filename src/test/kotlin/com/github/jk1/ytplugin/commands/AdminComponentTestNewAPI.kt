@@ -34,7 +34,6 @@ class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTr
 
     @Test
     fun `get visibility groups using new API`() {
-//        println(issue.id)
         var size = 0
         var group: List<String> = mutableListOf()
         adminComponent.getActiveTaskVisibilityGroups(issue) { groups ->
