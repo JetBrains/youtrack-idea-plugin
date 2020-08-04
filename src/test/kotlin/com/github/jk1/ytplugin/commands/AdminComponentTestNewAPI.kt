@@ -42,7 +42,6 @@ class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTr
         }.get()
 
         assertTrue(group.contains("Manual Test-team"))
-        assertTrue(group.contains("Manual Test Team"))
         assertTrue(group.contains("Automated Test-team"))
         assertTrue(group.contains("Registered Users"))
         assertTrue(group.contains("All Users"))

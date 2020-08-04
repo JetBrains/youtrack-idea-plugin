@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import net.minidev.json.JSONObject
-import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
@@ -18,7 +17,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     override fun createDraft(summary: String): String {
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
-        //todo: force markdown
         method.requestEntity = StringRequestEntity(summary.asMarkdownIssueDraft(), "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
             val status = httpClient.executeMethod(method)
@@ -32,9 +30,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun getIssue(id: String): Issue? {
-        val method = GetMethod("${repository.url}/api/issues/$id")
-        val fields = NameValuePair("fields", "id,idReadable,summary,description,customFields(id,name,value(id,name)))")
-        method.setQueryString(arrayOf(fields))
+        val method = GetMethod("${repository.url}/rest/issue/$id?wikifyDescription=true")
         return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
     }
 
@@ -73,7 +69,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.execute { it.asJsonArray.mapNotNull { IssueJsonParser.parseIssue(it, repository.url) } }
     }
 
-    fun String.asMarkdownIssueDraft() = JSONObject().also {
+    private fun String.asMarkdownIssueDraft(): String = JSONObject().also {
         it["description"] = this
         it["usesMarkdown"] = true
     }.toJSONString()

@@ -1,6 +1,6 @@
 // Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
-
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setupWindow.Connection.CancellableConnection
 import com.github.jk1.ytplugin.setupWindow.Connection.HttpTestConnection
 import com.github.jk1.ytplugin.setupWindow.Connection.TestConnectionTask
@@ -33,14 +33,14 @@ import javax.swing.JLabel
 /**
  * Login errors classification
  */
-enum class NotifierState {
+enum class NotifierState{
     SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION
 }
 
 /**
  * Class for the task management
  */
-class SetupTask {
+class SetupTask() {
 
     var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
@@ -58,7 +58,7 @@ class SetupTask {
         return repository.password
     }
 
-    private fun trimTrailingSlashes(url: String?): String? {
+    fun trimTrailingSlashes(url: String?): String? {
         if (url == null) return ""
         for (i in url.length - 1 downTo 0) {
             if (url[i] != '/') {
@@ -82,7 +82,7 @@ class SetupTask {
         note.foreground = Color.red
         when (noteState) {
             NotifierState.SUCCESS -> {
-                note.foreground = Color.green
+                note.foreground = Color.green;
                 note.text = "Successfully connected"
             }
             NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
@@ -143,7 +143,7 @@ class SetupTask {
                 }
                 statusCode != 200 -> {
                     fixURI(method)
-                    // substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending
+                    /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
                     repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
                     createCancellableConnection(repository)
                 }
@@ -163,6 +163,7 @@ class SetupTask {
         val newUri = fixURI(repository.url)
         repository.url = newUri
         correctUrl = repository.url
+
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
         method.setRequestHeader("Authorization", "Bearer " + repository.password)
 
@@ -181,11 +182,6 @@ class SetupTask {
 
         if (!repository.isLoginAnonymously && !isValidToken(repository.password)) {
             noteState = NotifierState.INVALID_TOKEN
-            return false
-        }
-
-        if (!isValidVersion(repository)) {
-            noteState = NotifierState.INVALID_VERSION
             return false
         }
 
@@ -221,12 +217,6 @@ class SetupTask {
                                 return
                             }
                         }
-                    } else {
-                        try {
-                            repository.testConnection()
-                        } catch (e: Exception) {
-                            myException = e
-                        }
                     }
                 } catch (e: Exception) {
                     myException = e
@@ -239,7 +229,11 @@ class SetupTask {
         if (e == null) {
             myBadRepositories.remove(repository)
             correctUrl = repository.url
-            noteState = NotifierState.SUCCESS
+            if (isValidVersion(repository)) {
+                noteState = NotifierState.SUCCESS
+            }
+            else
+                noteState = NotifierState.INVALID_VERSION
         } else if (e !is ProcessCanceledException) {
             val message = e.message
             if (e is UnknownHostException) {
@@ -253,19 +247,28 @@ class SetupTask {
     }
 
     private fun isValidVersion(repository: YouTrackRepository): Boolean {
+        val client = HttpClient()
         val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
         val fields = NameValuePair("fields", "version")
         method.setQueryString(arrayOf(fields))
         method.setRequestHeader("Authorization", "Bearer " + repository.password)
-        val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
-        return if (json.get("version") == null || json.get("version").isJsonNull) {
-            noteState = NotifierState.LOGIN_ERROR
-            false
-        } else {
-            val version: Float = json.get("version").asString.toFloat()
-            (version >= 2017.1)
+        val status = client.executeMethod(method)
 
+        return if (status == 200) {
+            val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+            if (json.get("version") == null || json.get("version").isJsonNull) {
+                noteState = NotifierState.LOGIN_ERROR
+                false
+            } else {
+                (json.get("version").asString.toFloat() >= 2017.1)
+            }
+        }
+        else {
+            noteState = NotifierState.LOGIN_ERROR
+            logger.warn("INVALID LOGIN OR TOKEN, FAILED ON VERSION VALIDATION: ${method.statusCode}")
+            false
         }
     }
 }
+
 
