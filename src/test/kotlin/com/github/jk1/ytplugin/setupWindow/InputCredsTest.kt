@@ -6,7 +6,7 @@ import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.SetupConnectionTrait
 import com.github.jk1.ytplugin.SetupManagerTrait
 import com.github.jk1.ytplugin.setupWindow.NotifierState
-import com.github.jk1.ytplugin.setupWindow.SetupTask
+import com.github.jk1.ytplugin.setupWindow.SetupManager
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -33,7 +33,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
@@ -46,7 +46,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
@@ -59,7 +59,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
@@ -72,7 +72,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
@@ -85,7 +85,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
         Assert.assertEquals(401, setupTask.statusCode)
@@ -97,7 +97,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://lug/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
@@ -110,7 +110,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("https://tains.com/youtrack", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
@@ -123,7 +123,7 @@ class InputCredsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait
         val token = ""
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals("", setupTask.correctUrl)
         Assert.assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)

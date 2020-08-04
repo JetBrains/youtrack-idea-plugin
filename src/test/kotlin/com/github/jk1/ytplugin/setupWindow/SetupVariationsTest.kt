@@ -6,7 +6,7 @@ import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.SetupConnectionTrait
 import com.github.jk1.ytplugin.SetupManagerTrait
 import com.github.jk1.ytplugin.setupWindow.NotifierState
-import com.github.jk1.ytplugin.setupWindow.SetupTask
+import com.github.jk1.ytplugin.setupWindow.SetupManager
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -34,13 +34,13 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
         repository.defaultSearch = "Assignee:Unassigned"
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         issueStoreComponent[repository].update(repository).waitFor(5000)
 
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        /* should contain on task (AT-10825 Test Task) */
-        Assert.assertEquals(issueStoreComponent[repository].getAllIssues().lastIndex, 0)
+        /* should contain two issues */
+        Assert.assertEquals(issueStoreComponent[repository].getAllIssues().lastIndex, 1)
     }
 
     @Test
@@ -48,7 +48,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals(200, setupTask.statusCode)
     }
@@ -58,7 +58,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest"
         repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
         Assert.assertEquals(401, setupTask.statusCode)
@@ -70,7 +70,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, true, false, false, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(200, setupTask.statusCode)
@@ -82,7 +82,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token, false, false, true, false)
         val repo = repository.getRepo()
-        val setupTask = SetupTask()
+        val setupTask = SetupManager()
         setupTask.testConnection(repo, project)
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         Assert.assertEquals(200, setupTask.statusCode)

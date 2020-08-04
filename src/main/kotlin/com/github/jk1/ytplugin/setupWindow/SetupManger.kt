@@ -40,7 +40,7 @@ enum class NotifierState{
 /**
  * Class for the task management
  */
-class SetupTask() {
+class SetupManager() {
 
     var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
