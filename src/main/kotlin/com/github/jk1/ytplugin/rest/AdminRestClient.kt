@@ -24,11 +24,8 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         val fields = NameValuePair("fields", "groupsWithoutRecommended(name),recommendedGroups(name)")
         method.setQueryString(arrayOf(top, fields))
 
-        val res: URL? = javaClass.classLoader.getResource("admin_body.json")
-        val absolutePath= Paths.get(res!!.toURI()).toFile().absolutePath
-
-        val jsonBody = String(Files.readAllBytes(
-                Paths.get(absolutePath))).replace("{issueId}", issueId, true)
+        val res: URL? = this::class.java.classLoader.getResource("admin_body.json")
+        val jsonBody = res?.readText()?.replace("{issueId}", issueId, true)
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
 
@@ -37,10 +34,6 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             val groups: MutableList<String>  = mutableListOf("All Users")
             parseGroups(groups, method, "recommendedGroups")
             parseGroups(groups, method, "groupsWithoutRecommended")
-
-//            println(status)
-//            for (i in 0 until groups.size)
-//                println("name: " + groups[i])
 
             when (status) {
                 // YouTrack 5.2 has no rest method to get visibility groups{
@@ -54,7 +47,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
 
     private fun parseGroups(list: MutableList<String>, method: PostMethod, elem: String){
-        val myObject: JsonObject = JsonParser().parse(method.responseBodyAsString) as JsonObject
+        val myObject: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
         val recommendedGroups: JsonArray = myObject.get(elem) as JsonArray
         for (i in 0 until recommendedGroups.size()) {
             val recommendedGroup: JsonObject = recommendedGroups.get(i) as JsonObject
@@ -71,15 +64,12 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             val status = httpClient.executeMethod(method)
             val shortNamesList: MutableList<String>  = mutableListOf()
 
-            val json: JsonArray = JsonParser().parse(method.responseBodyAsString) as JsonArray
+            val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+
             for (i in 0 until json.size()) {
                 val e: JsonObject = json.get(i) as JsonObject
                 shortNamesList.add(e.get("shortName").asString)
             }
-
-//            println(status)
-//            for (i in 0 until shortNamesList.size)
-//                println("name: " + shortNamesList[i])
 
             if (status == 200) {
                 shortNamesList
