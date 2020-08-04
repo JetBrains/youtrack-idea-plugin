@@ -27,7 +27,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             val status = httpClient.executeMethod(method)
             if (status == 200) {
                 val stream = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
-                JsonParser().parse(stream).asJsonObject.get("id").asString
+                JsonParser.parseReader(stream).asJsonObject.get("id").asString
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
@@ -46,25 +46,17 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     private fun parseIssues(method: GetMethod): MutableList<Issue>{
-        println("hey1")
         return method.connect {
             val list: MutableList<Issue> = mutableListOf()
-
             val status = httpClient.executeMethod(method)
-            println("hey2")
-            val json: JsonArray = JsonParser().parse(method.responseBodyAsString) as JsonArray
-            println("hey3")
+            val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+
             for (i in 0 until json.size()) {
                 val e: JsonObject = json.get(i) as JsonObject
-                println("hey4 $e")
-                println("my id " + e.get("idReadable").asString)
-
                 val currentIssue = IssueParser().parseIssue(e, repository.url)
-                println("id: " + currentIssue.id)
-                println("entityId: " + currentIssue.entityId)
                 list.add(currentIssue)
             }
-            println("status: $status")
+
             if (status == 200) {
                 list
             }  else {

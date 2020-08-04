@@ -12,11 +12,8 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
-import org.jdom.input.SAXBuilder
 import java.io.InputStreamReader
 import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Paths
 
 
 class CommandRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
