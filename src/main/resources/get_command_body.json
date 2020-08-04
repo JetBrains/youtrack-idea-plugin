@@ -1,6 +1,6 @@
 {
-  "query": "sta",
-  "caret": 3,
+  "query": "{query}",
+  "caret": 0,
   "issues": [
     {
       "idReadable": "{id}"
