@@ -20,7 +20,6 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
 
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
 
-        val client = HttpClient()
         val method = PostMethod("${repository.url}/api/commands/assist")
         val fields = NameValuePair("fields", "caret,commands(delete,description,error),query,styleRanges(end,length,start,style),suggestions(caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix)")
         method.setQueryString(arrayOf(fields))
@@ -32,11 +31,10 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
                 ?.replace("{query}", command.command, true)
                 ?.replace("0", caret.toString(), true)
 
-        method.setRequestHeader("Authorization", "Bearer " + repository.password)
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
-        val status = client.executeMethod(method)
 
         return method.connect {
+            val status = httpClient.executeMethod(method)
             if (status == 200) {
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
@@ -71,11 +69,13 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
         val postMethod = PostMethod(execPostUrl)
         postMethod.setQueryString(arrayOf(fields))
 
+        val comment = command.comment ?: ""
+
         val res: URL? = this::class.java.classLoader.getResource("command_execution_rest.json")
         val jsonBody = res?.readText()?.replace("{groupId}", groupId, true)
                 ?.replace("{idReadable}", command.session.issue.id, true)
                 ?.replace("true", command.silent.toString(), true)
-                ?.replace("{comment}", command.comment!!, true)
+                ?.replace("{comment}", comment, true)
                 ?.replace("{query}", command.command, true)
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
