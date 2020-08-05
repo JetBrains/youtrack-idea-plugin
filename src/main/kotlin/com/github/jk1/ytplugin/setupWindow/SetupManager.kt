@@ -1,6 +1,6 @@
 // Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
-
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setupWindow.Connection.CancellableConnection
 import com.github.jk1.ytplugin.setupWindow.Connection.HttpTestConnection
 import com.github.jk1.ytplugin.setupWindow.Connection.TestConnectionTask
@@ -40,10 +40,11 @@ enum class NotifierState{
 /**
  * Class for the task management
  */
-class SetupTask() {
+class SetupManager() {
 
-    var correctUrl:String = ""
+    var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
+
     @TestOnly
     var statusCode = 401
 
@@ -72,7 +73,7 @@ class SetupTask() {
         return trimTrailingSlashes(repository.url)
     }
 
-    private fun isValidToken(token: String) : Boolean{
+    private fun isValidToken(token: String): Boolean {
         val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
         return token.matches(tokenPattern)
     }
@@ -92,26 +93,25 @@ class SetupTask() {
         }
     }
 
-    private fun fixURI(method: PostMethod){
-        if (!method.uri.toString().contains("https")){
+    private fun fixURI(method: PostMethod) {
+        if (!method.uri.toString().contains("https")) {
             val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
             method.uri = URI(newUri, false)
         }
-        if(!method.uri.toString().contains("/youtrack")){
+        if (!method.uri.toString().contains("/youtrack")) {
             val newUri = method.uri.toString() + "/youtrack"
             method.uri = URI(newUri, false)
-        }
-        else{
+        } else {
             throw HttpRequests.HttpStatusException("Cannot login: incorrect URL or token", method.statusCode, method.path)
         }
     }
 
-    private fun fixURI(uri: String): String{
+    private fun fixURI(uri: String): String {
         var newUri = uri
-        if (!uri.contains("https")){
+        if (!uri.contains("https")) {
             newUri = "https" + uri.substring(4, uri.length)
         }
-        if(!uri.contains("/youtrack")){
+        if (!uri.contains("/youtrack")) {
             newUri = "$newUri/youtrack"
         }
         return newUri
@@ -129,22 +129,24 @@ class SetupTask() {
         val response: String?
         response = try {
             statusCode = method.statusCode
-            if(method.statusCode in 301..399){
-                val location: String = method.getResponseHeader("Location").toString()
-                val newUri = location.substring(10, location.length)
-                method.uri = URI(newUri, false)
-                repository.url = method.uri.toString()
-                correctUrl = repository.url
-                createCancellableConnection(repository)
-            }
-            else if (method.statusCode == 403) {
-                throw java.lang.Exception("Cannot login: token error occurred or user was banned")
-            }
-            else if (method.statusCode != 200) {
-                fixURI(method)
-                // substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending
-                repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
-                createCancellableConnection(repository)
+            when {
+                statusCode in 301..399 -> {
+                    val location: String = method.getResponseHeader("Location").toString()
+                    val newUri = location.substring(10, location.length)
+                    method.uri = URI(newUri, false)
+                    repository.url = method.uri.toString()
+                    correctUrl = repository.url
+                    createCancellableConnection(repository)
+                }
+                statusCode == 403 -> {
+                    throw java.lang.Exception("Cannot login: token error occurred or user was banned")
+                }
+                statusCode != 200 -> {
+                    fixURI(method)
+                    /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
+                    repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
+                    createCancellableConnection(repository)
+                }
             }
             method.getResponseBodyAsString(1000)
         } finally {
@@ -161,8 +163,9 @@ class SetupTask() {
         val newUri = fixURI(repository.url)
         repository.url = newUri
         correctUrl = repository.url
+
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")
-        method.setRequestHeader("Authorization","Bearer "+ repository.password)
+        method.setRequestHeader("Authorization", "Bearer " + repository.password)
 
         return object : HttpTestConnection<PostMethod?>(method) {
             @Throws(java.lang.Exception::class)
@@ -177,13 +180,8 @@ class SetupTask() {
 
     fun testConnection(repository: YouTrackRepository, myProject: Project): Boolean {
 
-        if (!repository.isLoginAnonymously && !isValidToken(repository.password)){
+        if (!repository.isLoginAnonymously && !isValidToken(repository.password)) {
             noteState = NotifierState.INVALID_TOKEN
-            return false
-        }
-
-        if (!isValidVersion(repository)){
-            noteState = NotifierState.INVALID_VERSION
             return false
         }
 
@@ -219,12 +217,6 @@ class SetupTask() {
                                 return
                             }
                         }
-                    } else {
-                        try {
-                            repository.testConnection()
-                        } catch (e: Exception) {
-                            myException = e
-                        }
                     }
                 } catch (e: Exception) {
                     myException = e
@@ -237,7 +229,12 @@ class SetupTask() {
         if (e == null) {
             myBadRepositories.remove(repository)
             correctUrl = repository.url
-            noteState = NotifierState.SUCCESS
+            if (isValidVersion(repository)) {
+                noteState = NotifierState.SUCCESS
+            }
+            else
+                if (noteState != NotifierState.LOGIN_ERROR)
+                    noteState = NotifierState.INVALID_VERSION
         } else if (e !is ProcessCanceledException) {
             val message = e.message
             if (e is UnknownHostException) {
@@ -255,20 +252,24 @@ class SetupTask() {
         val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
         val fields = NameValuePair("fields", "version")
         method.setQueryString(arrayOf(fields))
-        println("version url: " + method.uri)
         method.setRequestHeader("Authorization", "Bearer " + repository.password)
         val status = client.executeMethod(method)
 
-        val json: JsonObject = JsonParser().parse(method.responseBodyAsString) as JsonObject
-        if (json.get("version") == null || json.get("version").isJsonNull){
-            noteState = NotifierState.LOGIN_ERROR
-            return false
+        return if (status == 200) {
+            val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+            if (json.get("version") == null || json.get("version").isJsonNull) {
+                noteState = NotifierState.LOGIN_ERROR
+                false
+            } else {
+                (json.get("version").asString.toFloat() >= 2017.1)
+            }
         }
-        else{
-            val version:Float = json.get("version").asString.toFloat()
-            return (version >= 2017.1)
-
+        else {
+            noteState = NotifierState.LOGIN_ERROR
+            logger.warn("INVALID LOGIN OR TOKEN, FAILED ON VERSION VALIDATION: ${method.statusCode}")
+            false
         }
     }
 }
+
 

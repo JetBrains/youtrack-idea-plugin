@@ -8,7 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.io.InputStreamReader
 
-/** won't be passed unless IssuesOldRestClient is turned on and set up **/
+/* will not be passed unless R]IssueOldRestClient is turned on and set up */
 class IssueJsonParseTest {
 
     private val serverUrl = "http://youtrack.com"
@@ -34,7 +34,7 @@ class IssueJsonParseTest {
     }
 
     private fun getJsonElement(resourceName: String): JsonElement {
-        val reader = InputStreamReader(this.javaClass.getResourceAsStream(resourceName))
-        return JsonParser().parse(reader)
+        val reader = InputStreamReader(this.javaClass.getResourceAsStream(resourceName), "UTF-8")
+        return JsonParser.parseReader(reader)
     }
 }

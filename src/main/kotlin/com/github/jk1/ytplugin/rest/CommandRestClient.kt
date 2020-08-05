@@ -19,17 +19,16 @@ import java.net.URL
 class CommandRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
     fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
-
         val method = PostMethod("${repository.url}/api/commands/assist")
         val fields = NameValuePair("fields", "caret,commands(delete,description,error),query,styleRanges(end,length,start,style),suggestions(caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix)")
         method.setQueryString(arrayOf(fields))
-
         val caret = command.caret - 1
-
         val res: URL? = this::class.java.classLoader.getResource("get_command_body.json")
-        val jsonBody = res?.readText()?.replace("{id}", command.session.issue.id, true)
+        val id = command.session.issue.id
+        val jsonBody = res?.readText()
                 ?.replace("{query}", command.command, true)
                 ?.replace("0", caret.toString(), true)
+                ?.replace("{id}", id, true)
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
 
@@ -43,13 +42,12 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
         }
     }
 
-    private fun getGroupId(command: YouTrackCommandExecution): String{
+    private fun getGroupId(command: YouTrackCommandExecution): String {
         val execUrl = "${repository.url}/api/groups?fields=name,id"
         val getMethod = GetMethod(execUrl)
         val status = httpClient.executeMethod(getMethod)
         val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsString) as JsonArray
         var groupId: String = ""
-
         if (status == 200) {
             for (element in response) {
                 if (command.commentVisibleGroup == element.asJsonObject.get("name").asString)
@@ -59,11 +57,8 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
         return groupId
     }
 
-
     fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
-
         val groupId: String = getGroupId(command)
-
         val execPostUrl = "${repository.url}/api/commands"
         val fields = NameValuePair("fields", "issues(id,idReadable),query,visibility(permittedGroups(id,name),permittedUsers(id,login))")
         val postMethod = PostMethod(execPostUrl)
@@ -79,7 +74,6 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
                 ?.replace("{query}", command.command, true)
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
-
         return postMethod.connect {
             val status = httpClient.executeMethod(postMethod)
             if (status != 200) {

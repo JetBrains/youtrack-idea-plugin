@@ -6,17 +6,14 @@ import com.github.jk1.ytplugin.IssueRestTrait
 import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.openapi.externalSystem.EMPTY_STATE
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.IssueNavigationLink
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class AdminComponentTestForNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
 
@@ -46,7 +43,6 @@ class AdminComponentTestForNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManage
 
         assertTrue(group.contains("Manual Test-team"))
         assertTrue(group.contains("Automated Test-team"))
-        assertTrue(group.contains("Automated Test Team"))
         assertTrue(group.contains("Registered Users"))
         assertTrue(group.contains("All Users"))
         assertEquals(size, 5)
