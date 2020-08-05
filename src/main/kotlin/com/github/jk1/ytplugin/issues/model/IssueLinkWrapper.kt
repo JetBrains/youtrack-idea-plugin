@@ -1,10 +1,6 @@
 package com.github.jk1.ytplugin.issues.model
 
-import com.github.jk1.ytplugin.rest.IssueJsonParser
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import sun.security.ec.point.ProjectivePoint
 
 
 class IssueLinkWrapper() {

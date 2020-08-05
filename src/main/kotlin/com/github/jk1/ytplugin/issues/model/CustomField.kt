@@ -42,19 +42,19 @@ class CustomField(item: JsonElement): YouTrackIssueField {
 
     override fun getFieldValues() = value
 
-    private fun JsonElement.asColor() = when {
-    // #F0A -> #FF00AA
-        asString.length == 4 -> Color.decode(asString.drop(1).map { "$it$it" }.joinToString("", "#"))
+    private fun JsonElement.asColor() = when (// #F0A -> #FF00AA
+        asString.length) {
+        4 -> Color.decode(asString.drop(1).map { "$it$it" }.joinToString("", "#"))
         else -> Color.decode(asString)
     }
 
     fun formatValues() = " ${value.joinToString { formatValue(it) }} "
 
     private fun formatValue(value: String): String {
-        if (value.matches(Regex("^[1-9][0-9]{12}"))) { // looks like a timestamp
-            return SimpleDateFormat().format(Date(value.toLong()))
+        return if (value.matches(Regex("^[1-9][0-9]{12}"))) { // looks like a timestamp
+            SimpleDateFormat().format(Date(value.toLong()))
         } else {
-            return value
+            value
         }
     }
 }

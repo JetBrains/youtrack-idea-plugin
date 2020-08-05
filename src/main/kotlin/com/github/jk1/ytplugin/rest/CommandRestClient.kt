@@ -16,9 +16,9 @@ import java.io.InputStreamReader
 import java.net.URL
 
 
-class CommandRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
-    fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
+    override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = PostMethod("${repository.url}/api/commands/assist")
         val fields = NameValuePair("fields", "caret,commands(delete,description,error),query,styleRanges(end,length,start,style),suggestions(caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix)")
         method.setQueryString(arrayOf(fields))
@@ -57,7 +57,7 @@ class CommandRestClient(override val repository: YouTrackServer) : RestClientTra
         return groupId
     }
 
-    fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
+    override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val groupId: String = getGroupId(command)
         val execPostUrl = "${repository.url}/api/commands"
         val fields = NameValuePair("fields", "issues(id,idReadable),query,visibility(permittedGroups(id,name),permittedUsers(id,login))")

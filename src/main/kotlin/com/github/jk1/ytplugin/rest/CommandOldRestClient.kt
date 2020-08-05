@@ -12,9 +12,9 @@ import org.apache.commons.httpclient.methods.PostMethod
 import org.jdom.input.SAXBuilder
 import java.io.InputStreamReader
 
-class CommandOldRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
+class CommandOldRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
-    fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
+    override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = GetMethod(command.intellisenseCommandUrl)
         return method.connect {
             it.addRequestHeader("Accept", "application/json")
@@ -27,7 +27,7 @@ class CommandOldRestClient(override val repository: YouTrackServer) : RestClient
         }
     }
 
-    fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
+    override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val method = PostMethod(command.executeCommandUrl)
         return method.connect {
             it.addRequestHeader("Accept", "application/json")
@@ -71,8 +71,7 @@ class CommandOldRestClient(override val repository: YouTrackServer) : RestClient
 
     private val YouTrackCommand.intellisenseCommandUrl: String
         get () {
-//            val assistUrl = "${repository.url}/rest/command/underlineAndSuggestAndCommands"
-            val assistUrl = "${repository.url}/api/command/underlineAndSuggestAndCommands"
+            val assistUrl = "${repository.url}/rest/command/underlineAndSuggestAndCommands"
 
             val result = "$assistUrl?command=${command.urlencoded}&caret=$caret&noIssuesContext=false"
             return if (session.hasEntityId()) {

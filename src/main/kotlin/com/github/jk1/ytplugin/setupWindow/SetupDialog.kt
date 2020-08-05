@@ -44,10 +44,7 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
     private lateinit var useProxy: JBCheckBox
     private lateinit var useHTTP: JBCheckBox
     private lateinit var loginAnon: JBCheckBox
-    private lateinit var testConnectPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var proxyPanel: JBPanel<JBPanelWithEmptyText>
-    private lateinit var okPanel: JBPanel<JBPanelWithEmptyText>
-    private lateinit var cancelPanel: JBPanel<JBPanelWithEmptyText>
 
     private val repo: YouTrackServer = inputRepo
     private var myRepository: YouTrackRepository = repo.getRepo()
