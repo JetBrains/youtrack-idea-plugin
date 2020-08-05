@@ -3,7 +3,6 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.commands.OpenSetupWindowAction
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.setupWindow.Actions.ToggleSetupViewAction
@@ -50,7 +49,7 @@ class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleSetupViewAction(project, setupList))
-        group.add(OpenSetupWindowAction(repo))
+        group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

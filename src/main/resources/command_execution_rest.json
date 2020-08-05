@@ -1,0 +1,18 @@
+{
+  "query": "{query}",
+  "issues": [
+    {
+      "idReadable": "{idReadable}"
+    }
+  ],
+  "silent": true,
+  "comment": "{comment}",
+  "visibility": {
+    "$type": "CommandLimitedVisibility",
+    "permittedGroups": [
+      {
+        "id": "{groupId}"
+      }
+    ]
+  }
+}

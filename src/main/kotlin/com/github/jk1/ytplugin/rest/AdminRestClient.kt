@@ -8,6 +8,7 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
+import java.net.URL
 import java.nio.charset.StandardCharsets
 
 class AdminRestClient(override val repository: YouTrackServer) : AdminRestClientBase, RestClientTrait, ResponseLoggerTrait {
@@ -19,9 +20,11 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         val top = NameValuePair("top", "-1")
         val fields = NameValuePair("fields", "groupsWithoutRecommended(name),recommendedGroups(name)")
-
         method.setQueryString(arrayOf(top, fields))
-        val jsonBody = "{\"issues\":[{\"type\":\"Issue\",\"id\":\"${issueId}\"}],\"prefix\":\"\",\"top\":20}"
+
+        val res: URL? = this::class.java.classLoader.getResource("admin_body.json")
+        val jsonBody = res?.readText()?.replace("{issueId}", issueId, true)
+
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
 
         return method.connect {
@@ -29,6 +32,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             val groups: MutableList<String>  = mutableListOf("All Users")
             parseGroups(groups, method, "recommendedGroups")
             parseGroups(groups, method, "groupsWithoutRecommended")
+
             when (status) {
                 // YouTrack 5.2 has no rest method to get visibility groups{
                 200, 404 -> {
@@ -59,10 +63,12 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             val shortNamesList: MutableList<String>  = mutableListOf()
 
             val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+
             for (i in 0 until json.size()) {
                 val e: JsonObject = json.get(i) as JsonObject
                 shortNamesList.add(e.get("shortName").asString)
             }
+
             if (status == 200) {
                 shortNamesList
             }  else {

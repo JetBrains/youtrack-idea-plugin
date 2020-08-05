@@ -1,11 +1,12 @@
 package com.github.jk1.ytplugin.issues.model
 
-import com.google.gson.JsonElement
 
-class IssueLink(item: JsonElement, repoUrl: String) {
 
-    val type: String = item.asJsonObject.get("type").asString
-    val role: String = item.asJsonObject.get("role").asString
-    val value: String = item.asJsonObject.get("value").asString
-    val url = "$repoUrl/issue/$value"
+class IssueLink(myValue: String, myType: String, myRole: String, myUrl: String) {
+
+    var type: String = myType
+    var value: String = myValue
+    var role: String = myRole
+    var url: String  = myUrl
+
 }

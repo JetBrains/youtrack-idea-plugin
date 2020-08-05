@@ -8,7 +8,7 @@ import com.intellij.openapi.util.TextRange
 class CommandHighlightRange(rangeElement: JsonElement) {
 
     private val start: Int = rangeElement.asJsonObject.get("start").asInt
-    private val end: Int = rangeElement.asJsonObject.get("end").asInt
+    private val end: Int = start + rangeElement.asJsonObject.get("length").asInt - 1
     val styleClass = rangeElement.asJsonObject.get("style").asStringNullSafe()
 
     fun getTextRange() = TextRange.create(start, end)

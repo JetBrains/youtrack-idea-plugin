@@ -17,19 +17,22 @@ class CommandSuggestion(item: JsonElement) {
 
     init {
         matchRange = TextRange(
-                item.asJsonObject.get("ms").asInt,
-                item.asJsonObject.get("me").asInt
+                item.asJsonObject.get("matchingStart").asInt,
+                item.asJsonObject.get("matchingEnd").asInt
         )
         completionRange = TextRange(
-                item.asJsonObject.get("cs").asInt,
-                item.asJsonObject.get("ce").asInt
+                item.asJsonObject.get("completionStart").asInt,
+                item.asJsonObject.get("completionEnd").asInt
         )
-        description = item.asJsonObject.get("d").asStringNullSafe()
-        option = item.asJsonObject.get("o").asStringNullSafe()
-        suffix = item.asJsonObject.get("suf").asStringNullSafe()
-        prefix = item.asJsonObject.get("pre").asStringNullSafe()
-        caretPosition = item.asJsonObject.get("cp").asInt
-        separator = item.asJsonObject.get("sep").asBoolean
+        description = item.asJsonObject.get("description").asStringNullSafe()
+        option = item.asJsonObject.get("option").asStringNullSafe()
+        suffix = item.asJsonObject.get("suffix").asStringNullSafe()
+        prefix = item.asJsonObject.get("prefix").asStringNullSafe()
+        caretPosition = item.asJsonObject.get("caret").asInt
+        //TODO where to find a separator
+//        separator = item.asJsonObject.get("sep").asBoolean
+        separator = false
+
     }
 
     private fun JsonElement.asStringNullSafe(default: String = ""): String = when (this) {

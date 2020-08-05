@@ -1,39 +1,47 @@
 package com.github.jk1.ytplugin.commands
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackPluginException
-import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.setupWindow.SetupDialog
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import javax.swing.Icon
+import javax.swing.JComponent
 
 /**
  *
  * Dumb aware actions can be executed when IDE is rebuilding indexes.
  */
-class OpenSetupWindowAction(val repository: YouTrackServer) : IssueAction(), DumbAware, IdeNotificationsTrait {
+class OpenSetupWindowAction(repo: YouTrackServer) : AnAction(
+        "Open Setup Dialog",
+        "Open configuration settings",
+        AllIcons.General.Settings), DumbAware, IdeNotificationsTrait {
 
-    override val text = "Open Setup Dialog"
-    override val description = "Open configuration settings"
-    override val icon = AllIcons.General.Settings
-    override val shortcut = "control shift Q"
+    val shortcut = "control shift Q"
+    val repository = repo
+
+    fun register(parent: JComponent) {
+        registerCustomShortcutSet(CustomShortcutSet.fromString(shortcut), parent)
+    }
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            val project = event.project
-            if (project != null && project.isInitialized) {
-                try {
-                    SetupDialog(project, repository).show()
+        val project = event.project
+        if (project != null && project.isInitialized) {
+            try {
+                SetupDialog(project, repository).show()
 
-                } catch (exception: YouTrackPluginException) {
-                    exception.showAsNotificationBalloon(project)
-                }
-            } else {
-                showError("Can't open YouTrack setup window", "No open project found")
+            } catch (exception: YouTrackPluginException) {
+                exception.showAsNotificationBalloon(project)
             }
+        } else {
+            showError("Can't open YouTrack setup window", "No open project found")
         }
     }
 

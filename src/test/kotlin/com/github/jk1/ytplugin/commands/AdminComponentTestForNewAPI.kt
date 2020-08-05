@@ -15,7 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
+class AdminComponentTestForNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var issue: Issue
@@ -52,8 +52,7 @@ class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTr
     fun `get accessible projects using new API`() {
         val link = IssueNavigationLink()
         adminComponent.updateIssueLinkProjects(link, repository)
-//        assertTrue(projects.contains("MT"))
-//        assertTrue(projects.contains("AT"))
+        /* test results are viewed via logger only, nothing to assert" */
     }
 
     @After

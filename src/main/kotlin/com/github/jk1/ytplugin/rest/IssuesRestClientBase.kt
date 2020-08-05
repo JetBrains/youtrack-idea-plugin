@@ -13,6 +13,4 @@ interface IssuesRestClientBase {
 
     fun getIssues(query: String = ""): List<Issue>
 
-    fun getWikifiedIssuesInProject(projectShortName: String, query: String = ""): List<Issue>
-
 }

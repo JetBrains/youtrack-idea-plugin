@@ -40,7 +40,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
 
         Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
         /* should contain two issues */
-        Assert.assertEquals(issueStoreComponent[repository].getAllIssues().lastIndex, 1)
+        Assert.assertEquals(issueStoreComponent[repository].getAllIssues().lastIndex, 2)
     }
 
     @Test
