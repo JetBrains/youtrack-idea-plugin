@@ -52,8 +52,7 @@ class AdminComponentTestNewAPI : IdeaProjectTrait, IssueRestTrait, TaskManagerTr
     fun `get accessible projects using new API`() {
         val link = IssueNavigationLink()
         adminComponent.updateIssueLinkProjects(link, repository)
-//        assertTrue(projects.contains("MT"))
-//        assertTrue(projects.contains("AT"))
+        /* test results are viewed via logger only, nothing to assert" */
     }
 
     @After
