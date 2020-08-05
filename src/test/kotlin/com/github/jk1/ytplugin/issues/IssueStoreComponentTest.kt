@@ -50,7 +50,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
     @Test
     fun testStoreUpdate() {
         issueStoreComponent[repository].update(repository).waitFor(5000)
-        Assert.assertEquals(3, issueStoreComponent[repository].getAllIssues().size)
+        Assert.assertEquals(4, issueStoreComponent[repository].getAllIssues().size)
         repository.defaultSearch = "#Resolved"
         issueStoreComponent[repository].update(repository).waitFor(5000)
         Assert.assertEquals(0, issueStoreComponent[repository].getAllIssues().size)
