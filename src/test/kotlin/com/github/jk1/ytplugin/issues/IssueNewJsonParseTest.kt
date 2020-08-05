@@ -23,18 +23,9 @@ class IssueNewJsonParseTest {
         assertEquals("2-3", issue.entityId)
     }
 
-    @Test
-    fun testMalformedCustomField() {
-        val issue = Issue(getJsonElement("malformed_custom_field.json"), serverUrl)
-
-        assertEquals("JT-1", issue.id)
-        assertEquals("25-4565", issue.entityId)
-        assertEquals("formatting problems in comments", issue.summary)
-        assertEquals("check out the source chunks in this issue", issue.description)
-    }
-
     private fun getJsonElement(resourceName: String): JsonElement {
         val reader = InputStreamReader(this.javaClass.getResourceAsStream(resourceName))
-        return JsonParser().parse(reader)
+        return JsonParser.parseReader(reader).asJsonObject
+
     }
 }

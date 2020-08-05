@@ -8,7 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.io.InputStreamReader
 
-
+/** won't be passed unless IssuesOldRestClient is turned on and set up **/
 class IssueJsonParseTest {
 
     private val serverUrl = "http://youtrack.com"
