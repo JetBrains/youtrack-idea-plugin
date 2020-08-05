@@ -43,7 +43,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         issueStoreComponent[repository].update(repository).waitFor(5000)
 
         val storedIssues = issueStoreComponent[repository].getAllIssues()
-        Assert.assertEquals(3, storedIssues.size)
+        Assert.assertEquals(4, storedIssues.size)
         assertTrue(storedIssues.map { it.id }.contains(issues.first()))
     }
 
@@ -90,7 +90,7 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         issueStoreComponent[repository].update(repository).waitFor(5000)
 
         with(issueStoreComponent[repository]){
-            Assert.assertEquals(5, getAllIssues().size)
+            Assert.assertEquals(6, getAllIssues().size)
             Assert.assertEquals(secondIssue, getIssue(0).id)
             Assert.assertEquals(thirdIssue, getIssue(1).id)
             Assert.assertEquals(issues.first(), getIssue(2).id)
@@ -102,16 +102,14 @@ class IssueStoreComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTra
         repository.defaultSearch = "project: AT sort by: updated asc"
         val secondIssue = createIssue()
         val thirdIssue = createIssue()
+        issueStoreComponent[repository].update(repository).waitFor(5000)
         touchIssue(secondIssue)
-
         issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        //TODO
         with(issueStoreComponent[repository]){
-            Assert.assertEquals(5, getAllIssues().size)
-            Assert.assertEquals(issues.first(), getIssue(0).id)
-            Assert.assertEquals(thirdIssue, getIssue(1).id)
-            Assert.assertEquals(secondIssue, getIssue(2).id)
+            Assert.assertEquals(6, getAllIssues().size)
+            Assert.assertEquals(thirdIssue, getIssue(getAllIssues().size - 2).id)
+            Assert.assertEquals(secondIssue, getIssue(getAllIssues().size - 1).id)
         }
     }
 
