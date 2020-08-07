@@ -130,7 +130,7 @@ class SetupRepositoryConnector() {
                 noteState = NotifierState.LOGIN_ERROR
                 false
             } else {
-                (json.get("version").asString.toFloat() >= 2017.1)
+                (json.get("version").asString.toDouble() >= 2017.1)
             }
         }
         else {
