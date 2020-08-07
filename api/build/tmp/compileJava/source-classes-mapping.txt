@@ -1,8 +1,0 @@
-com/github/jk1/ytplugin/YouTrackIssue.java
- com.github.jk1.ytplugin.YouTrackIssue
-com/github/jk1/ytplugin/YouTrackPluginApi.java
- com.github.jk1.ytplugin.YouTrackPluginApi
-com/github/jk1/ytplugin/YouTrackIssueField.java
- com.github.jk1.ytplugin.YouTrackIssueField
-com/github/jk1/ytplugin/YouTrackCommandExecutionResult.java
- com.github.jk1.ytplugin.YouTrackCommandExecutionResult
