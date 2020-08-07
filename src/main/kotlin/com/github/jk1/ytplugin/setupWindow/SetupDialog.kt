@@ -3,12 +3,14 @@ package com.github.jk1.ytplugin.setupWindow
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
+import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
+import com.intellij.util.ui.JBUI
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -83,10 +85,10 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
         myRepository.repositoryType = myRepositoryType
         myRepository.storeCredentials()
 
-        myRepository.isShared = shareUrl.isSelected()
-        myRepository.isUseProxy = useProxy.isSelected()
-        myRepository.isUseHttpAuthentication = useHTTP.isSelected()
-        myRepository.isLoginAnonymously = loginAnon.isSelected()
+        myRepository.isShared = shareUrl.isSelected
+        myRepository.isUseProxy = useProxy.isSelected
+        myRepository.isUseHttpAuthentication = useHTTP.isSelected
+        myRepository.isLoginAnonymously = loginAnon.isSelected
 
         setup.testConnection(myRepository, project)
 
@@ -156,21 +158,21 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
     }
 
     private fun prepareTabbedPane(): JTabbedPane {
-
-//        val color = (inputToken.border as LineBorder?)?.lineColor
-//        val size = (inputToken.border as LineBorder?)?.thickness
-        serverUrl = JBLabel("Server Url:")
+        serverUrl = JBLabel("Server URL:")
         serverUrl.setBounds(65, 60, 100, 22)
         inputUrl.apply {
             layout = BorderLayout()
-            border = inputToken.border
+            border = object: DarculaTextBorder() {
+                override fun paddings(): Insets {
+                    return JBUI.emptyInsets()
+                }
+            }
             text = repo.url
-//            border = MatteBorder(size!!, size, size, size, Color.red)
             background = inputToken.background
             setBounds(152, 60, 374, 24)
         }
 
-        tokenField = JBLabel("Permanent token:")
+        tokenField = JBLabel("Permanent Token:")
         tokenField.setBounds(15, 120, 150, 22)
         inputToken.apply {
             text = repo.password
@@ -215,7 +217,7 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
             enableButtons()
         })
 
-        loginAnon.addActionListener(ActionListener { loginAnonymouslyChanged(!loginAnon.isSelected()) })
+        loginAnon.addActionListener { loginAnonymouslyChanged(!loginAnon.isSelected) }
 
         proxyPanel = JBPanel<JBPanelWithEmptyText>().apply {
             add(proxySettingsButton)
@@ -272,25 +274,16 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
     }
 
     override fun createCenterPanel(): JComponent {
-
         val contextPane = JPanel(GridLayout())
         val tabbedPane = prepareTabbedPane()
-        val toolkit: Toolkit = Toolkit.getDefaultToolkit()
-        val screenSize: Dimension = toolkit.screenSize
         contextPane.apply{
-            add(tabbedPane)
-            title = "YouTrack"
             preferredSize = Dimension(540, 230)
-            minimumSize = Dimension(540, 230)
-            setLocation((screenSize.width - width) / 2, (screenSize.height - height) / 2)
-            pack()
+            minimumSize = preferredSize
+            add(tabbedPane)
         }
         return contextPane
     }
 
-    /**
-     * Submits command for async execution and closes command dialog immediately
-     */
     inner class OkCommandAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             testConnectionAction()
@@ -298,9 +291,6 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
         }
     }
 
-    /**
-     * Submits command for async execution
-     */
     inner class TestConnectionCommandAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             testConnectionAction()

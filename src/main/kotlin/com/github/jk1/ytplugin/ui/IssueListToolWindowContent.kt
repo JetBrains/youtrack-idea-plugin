@@ -1,11 +1,9 @@
-
-// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
+import com.github.jk1.ytplugin.setupWindow.actions.ToggleSetupViewAction
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.setupWindow.Actions.ToggleSetupViewAction
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
@@ -15,7 +13,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
-class IssueListToolWindowContent(val vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
+class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
 

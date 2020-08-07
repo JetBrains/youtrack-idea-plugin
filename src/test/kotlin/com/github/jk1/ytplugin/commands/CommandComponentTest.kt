@@ -33,7 +33,6 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
         createIssue()
         issueStoreComponent[repository].update(repository).waitFor(5000)
         issue = issueStoreComponent[repository].getAllIssues().first()
-        println(issue.id)
         session = CommandSession(issue)
     }
 

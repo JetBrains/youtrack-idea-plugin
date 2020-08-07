@@ -1,4 +1,3 @@
-// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin
 
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -8,15 +7,14 @@ import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 
-
 interface SetupConnectionTrait: IdeaProjectTrait, YouTrackConnectionTrait {
 
     val project: Project
 
     fun getTaskManagerComponent() = TaskManager.getManager(project)!! as TaskManagerImpl
 
-    fun createYouTrackRepository(url: String, token: String, shareUrl: Boolean,
-                                 useProxy: Boolean, useHTTP: Boolean, loginAnon: Boolean): YouTrackServer {
+    fun createYouTrackRepository(url: String, token: String, shareUrl: Boolean = false,
+                                 useProxy: Boolean = false, useHTTP: Boolean = false, loginAnon: Boolean = false): YouTrackServer {
         val repository = YouTrackRepository(YouTrackRepositoryType())
         repository.url = url
         repository.username = username

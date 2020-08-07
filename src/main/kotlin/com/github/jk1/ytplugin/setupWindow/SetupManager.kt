@@ -1,9 +1,9 @@
-// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setupWindow
+
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.setupWindow.Connection.CancellableConnection
-import com.github.jk1.ytplugin.setupWindow.Connection.HttpTestConnection
-import com.github.jk1.ytplugin.setupWindow.Connection.TestConnectionTask
+import com.github.jk1.ytplugin.setupWindow.connection.CancellableConnection
+import com.github.jk1.ytplugin.setupWindow.connection.HttpTestConnection
+import com.github.jk1.ytplugin.setupWindow.connection.TestConnectionTask
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.openapi.application.ApplicationManager

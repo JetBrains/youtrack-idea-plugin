@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.setupWindow.Connection
+package com.github.jk1.ytplugin.setupWindow.connection
 
 import java.util.concurrent.Callable
 

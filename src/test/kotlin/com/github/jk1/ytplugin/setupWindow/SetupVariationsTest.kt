@@ -1,17 +1,15 @@
-// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package com.github.jk1.ytplugin.issues
+package com.github.jk1.ytplugin.setupWindow
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.SetupConnectionTrait
 import com.github.jk1.ytplugin.SetupManagerTrait
-import com.github.jk1.ytplugin.setupWindow.NotifierState
-import com.github.jk1.ytplugin.setupWindow.SetupManager
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
@@ -28,64 +26,69 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun `test if connected repository has issues that can be displayed`() {
+    fun `test if connected repository has 3 issues that can be displayed`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, false, false, false, false)
+        repository = createYouTrackRepository(serverUrl, token)
         repository.defaultSearch = "Assignee:Unassigned"
         val repo = repository.getRepo()
         val setupTask = SetupManager()
+
         setupTask.testConnection(repo, project)
         issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        /* should contain two issues */
-        Assert.assertEquals(issueStoreComponent[repository].getAllIssues().lastIndex, 2)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+        assertEquals(3, issueStoreComponent[repository].getAllIssues().size)
     }
 
     @Test
     fun `test login anonymously feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-        repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
+        repository = createYouTrackRepository(serverUrl, token, loginAnon = true)
         val repo = repository.getRepo()
         val setupTask = SetupManager()
+
         setupTask.testConnection(repo, project)
-        Assert.assertEquals(200, setupTask.statusCode)
+
+        assertEquals(200, setupTask.statusCode)
     }
 
     @Test
     fun `test login anonymously feature with invalid url`() {
         val serverUrl = "https://ytplugintest"
-        repository = createYouTrackRepository(serverUrl, token, false, false, false, true)
+        repository = createYouTrackRepository(serverUrl, token, loginAnon = true)
         val repo = repository.getRepo()
         val setupTask = SetupManager()
+
         setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
-        Assert.assertEquals(401, setupTask.statusCode)
+
+        assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
+        assertEquals(401, setupTask.statusCode)
     }
 
     @Test
     fun `test share url feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, true, false, false, false)
+        repository = createYouTrackRepository(serverUrl, token, shareUrl = true)
         val repo = repository.getRepo()
         val setupTask = SetupManager()
+
         setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(200, setupTask.statusCode)
+
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+        assertEquals(200, setupTask.statusCode)
     }
 
     @Test
     fun `test use HTTP feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-        val token = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
-        repository = createYouTrackRepository(serverUrl, token, false, false, true, false)
+        repository = createYouTrackRepository(serverUrl, token, useHTTP = true)
         val repo = repository.getRepo()
         val setupTask = SetupManager()
+
         setupTask.testConnection(repo, project)
-        Assert.assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        Assert.assertEquals(200, setupTask.statusCode)
+
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+        assertEquals(200, setupTask.statusCode)
     }
 
     @After
