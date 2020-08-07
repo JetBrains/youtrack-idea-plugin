@@ -23,10 +23,6 @@ class OpenSetupWindowAction(repo: YouTrackServer) : AnAction(
     val shortcut = "control shift Q"
     val repository = repo
 
-    fun register(parent: JComponent) {
-        registerCustomShortcutSet(CustomShortcutSet.fromString(shortcut), parent)
-    }
-
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {

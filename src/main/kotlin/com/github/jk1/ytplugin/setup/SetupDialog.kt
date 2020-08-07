@@ -73,10 +73,9 @@ open class SetupDialog(override val project: Project, inputRepository: YouTrackS
 
 
     private fun testConnectionAction() {
-        val setup = SetupRepositoryConnector()
-        setup.correctUrl = inputUrlTextPane.text
+        val repoConnector = SetupRepositoryConnector()
+        repoConnector.correctUrl = inputUrlTextPane.text
         val fontColor = inputTokenField.foreground
-
 
         val myRepositoryType = YouTrackRepositoryType()
 
@@ -91,29 +90,29 @@ open class SetupDialog(override val project: Project, inputRepository: YouTrackS
         myRepository.isUseHttpAuthentication = useHTTPCheckBox.isSelected
         myRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
 
-        setup.testConnection(myRepository, project)
+        repoConnector.testConnection(myRepository, project)
 
         val oldUrl = inputUrlTextPane.text
         inputUrlTextPane.text = ""
 
-        if (oldUrl == setup.correctUrl) {
+        if (oldUrl == repoConnector.correctUrl) {
             inputUrlTextPane.text = oldUrl
         } else {
-            if (!oldUrl.contains("/youtrack") && setup.noteState == NotifierState.SUCCESS) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
+            if (!oldUrl.contains("/youtrack") && repoConnector.noteState == NotifierState.SUCCESS) {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
                     appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, setup.correctUrl.substring(5, setup.correctUrl.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length - 9), fontColor)
                     appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
                 }
                 else{
-                    appendToPane(inputUrlTextPane, setup.correctUrl.substring(0, setup.correctUrl.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(0, repoConnector.correctUrl.length - 9), fontColor)
                     appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
                 }
             }
             else {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
                     appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, setup.correctUrl.substring(5, setup.correctUrl.length), fontColor)
+                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length), fontColor)
                 } else {
                     inputUrlTextPane.text = oldUrl
                 }
@@ -123,20 +122,20 @@ open class SetupDialog(override val project: Project, inputRepository: YouTrackS
         if (myRepository.url.isBlank() || myRepository.password.isBlank()) {
             notifyFieldLabel.foreground = Color.red
             notifyFieldLabel.text = "Url and token fields are mandatory"
-        } else if (myRepository.isLoginAnonymously && setup.noteState != NotifierState.UNKNOWN_HOST) {
+        } else if (myRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
             notifyFieldLabel.foreground = Color.green
             notifyFieldLabel.text = "Login as a guest"
         } else
-            setup.setNotifier(notifyFieldLabel)
+            repoConnector.setNotifier(notifyFieldLabel)
 
         notifyFieldTab2Label.text = notifyFieldLabel.text
         notifyFieldTab2Label.foreground = notifyFieldLabel.foreground
 
-        if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
-            setup.showIssues(myRepository, project)
+        if (repoConnector.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
+            repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
         }
-        myRepository.url = setup.correctUrl
+        myRepository.url = repoConnector.correctUrl
         myRepository.password = inputTokenField.text
     }
 
@@ -144,8 +143,7 @@ open class SetupDialog(override val project: Project, inputRepository: YouTrackS
         val sc = StyleContext.getDefaultStyleContext()
         var aset: AttributeSet? = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c)
         aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED)
-        val len = tp.document.length
-        tp.caretPosition = len
+        tp.caretPosition = tp.document.length
         tp.setCharacterAttributes(aset, false)
         tp.replaceSelection(msg)
     }

@@ -116,7 +116,7 @@ class SetupRepositoryConnector() {
         return newUri
     }
 
-    private fun isValidVersion(repository: YouTrackRepository): Boolean {
+    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
         val client = HttpClient()
         val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
         val fields = NameValuePair("fields", "version")
@@ -253,7 +253,7 @@ class SetupRepositoryConnector() {
         if (e == null) {
             myBadRepositories.remove(repository)
             correctUrl = repository.url
-            if (isValidVersion(repository)) {
+            if (isValidYouTrackVersion(repository)) {
                 noteState = NotifierState.SUCCESS
             }
             else
@@ -271,11 +271,10 @@ class SetupRepositoryConnector() {
         return e == null
     }
 
-    fun showIssues(repository: YouTrackRepository, project: Project) {
+    fun showIssuesForConnectedRepo(repository: YouTrackRepository, project: Project) {
         val myManager: TaskManagerImpl = TaskManager.getManager(project) as TaskManagerImpl
         lateinit var myRepositories: List<YouTrackRepository>
-        myRepositories = ArrayList()
-        myRepositories.add(repository)
+        myRepositories = arrayListOf(repository)
         val newRepositories: List<TaskRepository> = ContainerUtil.map<TaskRepository, TaskRepository>(myRepositories) { obj: TaskRepository -> obj.clone() }
         myManager.setRepositories(newRepositories)
         myManager.updateIssues(null)
