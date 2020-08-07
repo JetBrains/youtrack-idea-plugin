@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.setupWindow.actions
+package com.github.jk1.ytplugin.setup.actions
 
 import com.github.jk1.ytplugin.ui.SetupList
 import com.intellij.icons.AllIcons

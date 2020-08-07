@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.setupWindow.connection
+package com.github.jk1.ytplugin.setup.connection
 
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project

@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.setupWindow.config
+package com.github.jk1.ytplugin.setup.config
 
 import com.intellij.ide.ui.search.SearchableOptionContributor
 import com.intellij.ide.ui.search.SearchableOptionProcessor

@@ -1,18 +1,14 @@
 package com.github.jk1.ytplugin.commands
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
-import com.github.jk1.ytplugin.setupWindow.SetupDialog
-import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.Project
-import javax.swing.Icon
 import javax.swing.JComponent
 
 /**

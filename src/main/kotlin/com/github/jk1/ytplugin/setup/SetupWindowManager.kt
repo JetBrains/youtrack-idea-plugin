@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.setupWindow
+package com.github.jk1.ytplugin.setup
 
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
@@ -6,7 +6,6 @@ import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
-import com.intellij.util.Function
 import com.intellij.util.containers.ContainerUtil
 
 class SetupWindowManager(val project: Project) {

@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.setupWindow
+package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue

@@ -1,9 +1,9 @@
-package com.github.jk1.ytplugin.setupWindow
+package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.setupWindow.connection.CancellableConnection
-import com.github.jk1.ytplugin.setupWindow.connection.HttpTestConnection
-import com.github.jk1.ytplugin.setupWindow.connection.TestConnectionTask
+import com.github.jk1.ytplugin.setup.connection.CancellableConnection
+import com.github.jk1.ytplugin.setup.connection.HttpTestConnection
+import com.github.jk1.ytplugin.setup.connection.TestConnectionTask
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.openapi.application.ApplicationManager
