@@ -6,9 +6,10 @@
 .idea
 
 # Compiled binaries
-/classes
 /build
 /out
+/api/build
+/api/out
 
 #gradle caches
 /.gradle
