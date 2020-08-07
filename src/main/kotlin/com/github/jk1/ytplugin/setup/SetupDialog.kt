@@ -22,38 +22,38 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 
-open class SetupDialog(override val project: Project, inputRepo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+open class SetupDialog(override val project: Project, inputRepository: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
 
     private val testConnectionAction = TestConnectionCommandAction("Test Connection")
     private val okAction = OkCommandAction("Ok")
 
-    private lateinit var bigTabFrame: JBTabbedPane
+    private lateinit var myTabbedPane: JBTabbedPane
     private lateinit var tabPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var tab2Panel: JBPanel<JBPanelWithEmptyText>
 
-    private lateinit var serverUrl: JBLabel
-    private lateinit var notifyField: JBLabel
-    private lateinit var notifyFieldTab2: JBLabel
+    private lateinit var serverUrlLabel: JBLabel
+    private lateinit var notifyFieldLabel: JBLabel
+    private lateinit var notifyFieldTab2Label: JBLabel
 
-    private lateinit var proxyDescription: JBLabel
+    private lateinit var proxyDescriptionLabel: JBLabel
 
-    private lateinit var tokenField: JBLabel
-    private lateinit var getTokenField: HyperlinkLabel
-    private lateinit var advertiserField: HyperlinkLabel
+    private lateinit var tokenLabel: JBLabel
+    private lateinit var getTokenInfoLabel: HyperlinkLabel
+    private lateinit var advertiserLabel: HyperlinkLabel
     private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
-    private lateinit var shareUrl: JBCheckBox
-    private lateinit var useProxy: JBCheckBox
-    private lateinit var useHTTP: JBCheckBox
-    private lateinit var loginAnon: JBCheckBox
+    private lateinit var shareUrlCheckBox: JBCheckBox
+    private lateinit var useProxyCheckBox: JBCheckBox
+    private lateinit var useHTTPCheckBox: JBCheckBox
+    private lateinit var loginAnonCheckBox: JBCheckBox
     private lateinit var proxyPanel: JBPanel<JBPanelWithEmptyText>
 
-    private val repo: YouTrackServer = inputRepo
+    private val repo: YouTrackServer = inputRepository
     private var myRepository: YouTrackRepository = repo.getRepo()
 
     private var proxySettingsButton = JButton("Proxy settings...")
-    var inputUrl = JTextPane()
-    var inputToken = JBPasswordField()
+    var inputUrlTextPane = JTextPane()
+    var inputTokenField = JBPasswordField()
 
     override fun init() {
         title = "YouTrack"
@@ -66,78 +66,78 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
     }
 
     private fun loginAnonymouslyChanged(enabled: Boolean) {
-        inputToken.isEnabled = enabled
-        tokenField.isEnabled = enabled
-        useHTTP.isEnabled = enabled
+        inputTokenField.isEnabled = enabled
+        tokenLabel.isEnabled = enabled
+        useHTTPCheckBox.isEnabled = enabled
     }
 
+
     private fun testConnectionAction() {
-        val setup = SetupManager()
-        setup.correctUrl = inputUrl.text
-        val fontColor = inputToken.foreground
+        val setup = SetupRepositoryConnector()
+        setup.correctUrl = inputUrlTextPane.text
+        val fontColor = inputTokenField.foreground
 
 
         val myRepositoryType = YouTrackRepositoryType()
 
-        myRepository.url = inputUrl.text
-        myRepository.password = inputToken.text
+        myRepository.url = inputUrlTextPane.text
+        myRepository.password = inputTokenField.text
         myRepository.username = "random" // could be anything
         myRepository.repositoryType = myRepositoryType
         myRepository.storeCredentials()
 
-        myRepository.isShared = shareUrl.isSelected
-        myRepository.isUseProxy = useProxy.isSelected
-        myRepository.isUseHttpAuthentication = useHTTP.isSelected
-        myRepository.isLoginAnonymously = loginAnon.isSelected
+        myRepository.isShared = shareUrlCheckBox.isSelected
+        myRepository.isUseProxy = useProxyCheckBox.isSelected
+        myRepository.isUseHttpAuthentication = useHTTPCheckBox.isSelected
+        myRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
 
         setup.testConnection(myRepository, project)
 
-        val oldUrl = inputUrl.text
-        inputUrl.text = ""
+        val oldUrl = inputUrlTextPane.text
+        inputUrlTextPane.text = ""
 
         if (oldUrl == setup.correctUrl) {
-            inputUrl.text = oldUrl
+            inputUrlTextPane.text = oldUrl
         } else {
             if (!oldUrl.contains("/youtrack") && setup.noteState == NotifierState.SUCCESS) {
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
-                    appendToPane(inputUrl, "https", Color.GREEN)
-                    appendToPane(inputUrl, setup.correctUrl.substring(5, setup.correctUrl.length - 9), fontColor)
-                    appendToPane(inputUrl, "/youtrack", Color.GREEN)
+                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+                    appendToPane(inputUrlTextPane, setup.correctUrl.substring(5, setup.correctUrl.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
                 }
                 else{
-                    appendToPane(inputUrl, setup.correctUrl.substring(0, setup.correctUrl.length - 9), fontColor)
-                    appendToPane(inputUrl, "/youtrack", Color.GREEN)
+                    appendToPane(inputUrlTextPane, setup.correctUrl.substring(0, setup.correctUrl.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
                 }
             }
             else {
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && setup.correctUrl.contains("https")) {
-                    appendToPane(inputUrl, "https", Color.GREEN)
-                    appendToPane(inputUrl, setup.correctUrl.substring(5, setup.correctUrl.length), fontColor)
+                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+                    appendToPane(inputUrlTextPane, setup.correctUrl.substring(5, setup.correctUrl.length), fontColor)
                 } else {
-                    inputUrl.text = oldUrl
+                    inputUrlTextPane.text = oldUrl
                 }
             }
         }
 
         if (myRepository.url.isBlank() || myRepository.password.isBlank()) {
-            notifyField.foreground = Color.red
-            notifyField.text = "Url and token fields are mandatory"
+            notifyFieldLabel.foreground = Color.red
+            notifyFieldLabel.text = "Url and token fields are mandatory"
         } else if (myRepository.isLoginAnonymously && setup.noteState != NotifierState.UNKNOWN_HOST) {
-            notifyField.foreground = Color.green
-            notifyField.text = "Login as a guest"
+            notifyFieldLabel.foreground = Color.green
+            notifyFieldLabel.text = "Login as a guest"
         } else
-            setup.setNotifier(notifyField)
+            setup.setNotifier(notifyFieldLabel)
 
-        notifyFieldTab2.text = notifyField.text
-        notifyFieldTab2.foreground = notifyField.foreground
+        notifyFieldTab2Label.text = notifyFieldLabel.text
+        notifyFieldTab2Label.foreground = notifyFieldLabel.foreground
 
         if (setup.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously){
-            val setupWindow = SetupWindowManager(project)
-            setupWindow.showIssues(myRepository)
+            setup.showIssues(myRepository, project)
 
         }
         myRepository.url = setup.correctUrl
-        myRepository.password = inputToken.text
+        myRepository.password = inputTokenField.text
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -151,16 +151,16 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
     }
 
     private fun enableButtons() {
-        this.useProxy.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
+        this.useProxyCheckBox.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
         if (!HttpConfigurable.getInstance().USE_HTTP_PROXY) {
-            this.useProxy.isSelected = false
+            this.useProxyCheckBox.isSelected = false
         }
     }
 
     private fun prepareTabbedPane(): JTabbedPane {
-        serverUrl = JBLabel("Server URL:")
-        serverUrl.setBounds(65, 60, 100, 22)
-        inputUrl.apply {
+        serverUrlLabel = JBLabel("Server URL:")
+        serverUrlLabel.setBounds(65, 60, 100, 22)
+        inputUrlTextPane.apply {
             layout = BorderLayout()
             border = object: DarculaTextBorder() {
                 override fun paddings(): Insets {
@@ -168,48 +168,48 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
                 }
             }
             text = repo.url
-            background = inputToken.background
+            background = inputTokenField.background
             setBounds(152, 60, 374, 24)
         }
 
-        tokenField = JBLabel("Permanent Token:")
-        tokenField.setBounds(15, 120, 150, 22)
-        inputToken.apply {
+        tokenLabel = JBLabel("Permanent Token:")
+        tokenLabel.setBounds(15, 120, 150, 22)
+        inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
             setBounds(150, 120, 378, 31)
         }
 
-        advertiserField = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack", "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
-        advertiserField.setBounds(240, 30, 300, 17)
+        advertiserLabel = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack", "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
+        advertiserLabel.setBounds(240, 30, 300, 17)
 
-        getTokenField = HyperlinkLabel("Get token", "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
-        getTokenField.setBounds(457, 155, 100, 17)
+        getTokenInfoLabel = HyperlinkLabel("Get token", "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
+        getTokenInfoLabel.setBounds(457, 155, 100, 17)
 
-        notifyField = JBLabel("").apply {
+        notifyFieldLabel = JBLabel("").apply {
             foreground = Color.red;
             setBounds(150, 158, 250, 36)
         }
 
-        notifyFieldTab2 = JBLabel("").apply {
+        notifyFieldTab2Label = JBLabel("").apply {
             foreground = Color.red;
             setBounds(220, 160, 250, 36)
         }
 
-        shareUrl = JBCheckBox("Share Url", false)
-        shareUrl.setBounds(440, 95, 100, 17)
+        shareUrlCheckBox = JBCheckBox("Share Url", false)
+        shareUrlCheckBox.setBounds(440, 95, 100, 17)
 
-        loginAnon = JBCheckBox("Login Anonymously", false)
-        loginAnon.setBounds(150, 95, 170, 17)
+        loginAnonCheckBox = JBCheckBox("Login Anonymously", false)
+        loginAnonCheckBox.setBounds(150, 95, 170, 17)
 
-        useHTTP = JBCheckBox("Use HTTP", false)
-        useHTTP.setBounds(20, 50, 100, 17);
+        useHTTPCheckBox = JBCheckBox("Use HTTP", false)
+        useHTTPCheckBox.setBounds(20, 50, 100, 17);
 
-        useProxy = JBCheckBox("Use Proxy", false)
-        useProxy.setBounds(20, 100, 100, 17)
+        useProxyCheckBox = JBCheckBox("Use Proxy", false)
+        useProxyCheckBox.setBounds(20, 100, 100, 17)
 
-        proxyDescription = JBLabel("You can configure the HTTP Proxy to:")
-        proxyDescription.setBounds(220, 20, 370, 20)
+        proxyDescriptionLabel = JBLabel("You can configure the HTTP Proxy to:")
+        proxyDescriptionLabel.setBounds(220, 20, 370, 20)
 
 
         proxySettingsButton.addActionListener(ActionListener {
@@ -217,7 +217,7 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
             enableButtons()
         })
 
-        loginAnon.addActionListener { loginAnonymouslyChanged(!loginAnon.isSelected) }
+        loginAnonCheckBox.addActionListener { loginAnonymouslyChanged(!loginAnonCheckBox.isSelected) }
 
         proxyPanel = JBPanel<JBPanelWithEmptyText>().apply {
             add(proxySettingsButton)
@@ -229,39 +229,36 @@ open class SetupDialog(override val project: Project, inputRepo: YouTrackServer)
         tabPanel = JBPanel<JBPanelWithEmptyText>().apply{
             setBounds(100, 100, 580, 300);
             layout = null
-            add(shareUrl)
-            add(advertiserField)
-            add(loginAnon)
-            add(serverUrl)
-            add(inputUrl)
-            add(tokenField)
-            add(inputToken)
-            add(getTokenField)
-            add(notifyField)
-            pack()
+            add(shareUrlCheckBox)
+            add(advertiserLabel)
+            add(loginAnonCheckBox)
+            add(serverUrlLabel)
+            add(inputUrlTextPane)
+            add(tokenLabel)
+            add(inputTokenField)
+            add(getTokenInfoLabel)
+            add(notifyFieldLabel)
         }
 
         tab2Panel = JBPanel<JBPanelWithEmptyText>().apply {
             setBounds(100, 100, 580, 300);
             layout = null
-            add(proxyDescription)
-            add(useProxy)
-            add(useHTTP)
+            add(proxyDescriptionLabel)
+            add(useProxyCheckBox)
+            add(useHTTPCheckBox)
             add(proxyPanel)
-            add(notifyFieldTab2)
-            pack()
+            add(notifyFieldTab2Label)
         }
 
-        bigTabFrame = JBTabbedPane().apply {
+        myTabbedPane = JBTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, tabPanel, null);
             setMnemonicAt(0, KeyEvent.VK_1)
             addTab("Proxy settings", null, tab2Panel, null);
             setMnemonicAt(1, KeyEvent.VK_2)
-            pack()
 
         }
-        return bigTabFrame
+        return myTabbedPane
     }
 
     override fun createActions(): Array<out Action> = arrayOf(testConnectionAction, okAction, cancelAction)

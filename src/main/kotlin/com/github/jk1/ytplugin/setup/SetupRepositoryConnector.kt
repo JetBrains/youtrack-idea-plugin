@@ -11,6 +11,10 @@ import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.TaskManager
+import com.intellij.tasks.TaskRepository
+import com.intellij.tasks.config.RecentTaskRepositories
+import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
@@ -30,17 +34,11 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.swing.JLabel
 
-/**
- * Login errors classification
- */
-enum class NotifierState{
-    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION
-}
 
 /**
  * Class for the task management
  */
-class SetupManager() {
+class SetupRepositoryConnector() {
 
     var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
@@ -58,7 +56,13 @@ class SetupManager() {
         return repository.password
     }
 
-    fun trimTrailingSlashes(url: String?): String? {
+    @Attribute("url")
+    fun getRepositoryUrl(repository: YouTrackRepository): String? {
+        return trimTrailingSlashes(repository.url)
+    }
+
+
+    private fun trimTrailingSlashes(url: String?): String? {
         if (url == null) return ""
         for (i in url.length - 1 downTo 0) {
             if (url[i] != '/') {
@@ -66,11 +70,6 @@ class SetupManager() {
             }
         }
         return ""
-    }
-
-    @Attribute("url")
-    fun getRepositoryUrl(repository: YouTrackRepository): String? {
-        return trimTrailingSlashes(repository.url)
     }
 
     private fun isValidToken(token: String): Boolean {
@@ -116,6 +115,31 @@ class SetupManager() {
         }
         return newUri
     }
+
+    private fun isValidVersion(repository: YouTrackRepository): Boolean {
+        val client = HttpClient()
+        val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
+        val fields = NameValuePair("fields", "version")
+        method.setQueryString(arrayOf(fields))
+        method.setRequestHeader("Authorization", "Bearer " + repository.password)
+        val status = client.executeMethod(method)
+
+        return if (status == 200) {
+            val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+            if (json.get("version") == null || json.get("version").isJsonNull) {
+                noteState = NotifierState.LOGIN_ERROR
+                false
+            } else {
+                (json.get("version").asString.toFloat() >= 2017.1)
+            }
+        }
+        else {
+            noteState = NotifierState.LOGIN_ERROR
+            logger.warn("INVALID LOGIN OR TOKEN, FAILED ON VERSION VALIDATION: ${method.statusCode}")
+            false
+        }
+    }
+
 
     @Throws(java.lang.Exception::class)
     private fun login(method: PostMethod, repository: YouTrackRepository): HttpClient? {
@@ -247,29 +271,22 @@ class SetupManager() {
         return e == null
     }
 
-    private fun isValidVersion(repository: YouTrackRepository): Boolean {
-        val client = HttpClient()
-        val method = GetMethod(getRepositoryUrl(repository) + "/api/config")
-        val fields = NameValuePair("fields", "version")
-        method.setQueryString(arrayOf(fields))
-        method.setRequestHeader("Authorization", "Bearer " + repository.password)
-        val status = client.executeMethod(method)
-
-        return if (status == 200) {
-            val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
-            if (json.get("version") == null || json.get("version").isJsonNull) {
-                noteState = NotifierState.LOGIN_ERROR
-                false
-            } else {
-                (json.get("version").asString.toFloat() >= 2017.1)
-            }
-        }
-        else {
-            noteState = NotifierState.LOGIN_ERROR
-            logger.warn("INVALID LOGIN OR TOKEN, FAILED ON VERSION VALIDATION: ${method.statusCode}")
-            false
-        }
+    fun showIssues(repository: YouTrackRepository, project: Project) {
+        val myManager: TaskManagerImpl = TaskManager.getManager(project) as TaskManagerImpl
+        lateinit var myRepositories: List<YouTrackRepository>
+        myRepositories = ArrayList()
+        myRepositories.add(repository)
+        val newRepositories: List<TaskRepository> = ContainerUtil.map<TaskRepository, TaskRepository>(myRepositories) { obj: TaskRepository -> obj.clone() }
+        myManager.setRepositories(newRepositories)
+        myManager.updateIssues(null)
+        RecentTaskRepositories.getInstance().addRepositories(myRepositories)
     }
 }
 
+/**
+ * Login errors classification
+ */
+enum class NotifierState{
+    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION
+}
 

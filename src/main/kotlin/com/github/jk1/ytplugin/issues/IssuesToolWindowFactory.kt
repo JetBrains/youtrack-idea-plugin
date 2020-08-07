@@ -2,8 +2,8 @@ package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.runAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.setup.SetupDialog
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable
@@ -12,6 +12,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.content.ContentFactory
@@ -63,14 +65,15 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
 
     private fun createContent(project: Project, toolWindow: ToolWindow) {
         val contentManager = toolWindow.contentManager
+        val repository = YouTrackRepository(YouTrackRepositoryType())
+        val repo = YouTrackServer(repository, project)
         contentManager.removeAllContents(true)
         val repos = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         logger.debug("${repos.size} YouTrack repositories discovered")
         when {
-            repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel())
+            repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel(project, repo))
             else -> {
                 repos.forEach {
-//                    val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                 }
@@ -88,11 +91,11 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         addContent(content)
     }
 
-    private fun createPlaceholderPanel(): JComponent {
+    private fun createPlaceholderPanel(project: Project, repo: YouTrackServer): JComponent {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { CONFIGURE_SERVERS_ACTION_ID.runAction() }
+        val configureLabel = createLink("Configure") { SetupDialog(project, repo).show() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)

@@ -29,7 +29,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -43,7 +43,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val serverUrl = "https://ytplugintest.myjetbrains.com"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -57,7 +57,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val serverUrl = "http://ytplugintest.myjetbrains.com"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -71,7 +71,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -86,7 +86,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -99,7 +99,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val serverUrl = "lug"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -113,7 +113,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val serverUrl = "https://tains.com"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -126,7 +126,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
     fun `test connection with empty form`() {
         repository = createYouTrackRepository("", "")
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 

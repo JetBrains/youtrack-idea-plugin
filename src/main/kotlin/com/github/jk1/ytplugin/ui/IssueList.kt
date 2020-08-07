@@ -2,8 +2,7 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
-import com.github.jk1.ytplugin.runAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
+import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
@@ -52,9 +51,9 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
                 val placeholder = issueList.emptyText
                 placeholder.clear()
                 if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-                    placeholder.appendText("No issues found ")
-                    placeholder.appendText("Edit search request", SimpleTextAttributes.LINK_ATTRIBUTES,
-                            { TaskManagerProxyComponent.CONFIGURE_SERVERS_ACTION_ID.runAction() })
+                    placeholder.appendText("No issues found. Edit search request or ")
+                    placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
+                    ) { SetupDialog(project, repo).show() }
                 }
                 issueListModel.update()
                 val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())

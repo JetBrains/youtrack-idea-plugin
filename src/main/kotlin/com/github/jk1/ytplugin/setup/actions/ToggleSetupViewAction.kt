@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.setup.actions
 
-import com.github.jk1.ytplugin.ui.SetupList
+import com.github.jk1.ytplugin.ui.IssueList
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import javax.swing.Icon
 
 
-class ToggleSetupViewAction(val project: Project, private val issueList: SetupList) : SetupAction() {
+class ToggleSetupViewAction(val project: Project, private val issueList: IssueList) : SetupAction() {
 
     override val text = "Toggle Presentation"
     override val description = "Toggle issue list presentation detail level"

@@ -30,7 +30,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         repository = createYouTrackRepository(serverUrl, token)
         repository.defaultSearch = "Assignee:Unassigned"
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
         issueStoreComponent[repository].update(repository).waitFor(5000)
@@ -44,7 +44,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token, loginAnon = true)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -56,7 +56,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest"
         repository = createYouTrackRepository(serverUrl, token, loginAnon = true)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -69,7 +69,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token, shareUrl = true)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
@@ -82,7 +82,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token, useHTTP = true)
         val repo = repository.getRepo()
-        val setupTask = SetupManager()
+        val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
