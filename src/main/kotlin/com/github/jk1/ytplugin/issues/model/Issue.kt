@@ -19,7 +19,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
     var json: String
     var id: String
-    val entityId: String?      // youtrack 5.2 doesn't expose entity id via rest
+    val entityId: String
     var summary: String
     var description: String = "none"
     var createDate: Date
@@ -38,7 +38,7 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         json = item.toString()
         id = root.get("idReadable").asString
 
-        entityId = root.get("id")?.asString
+        entityId = root.get("id").asString
 
         summary = root.get("summary")?.asString  ?: ""
 
@@ -55,14 +55,9 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
         customFields = root.getAsJsonArray("customFields")
                 .filter { it.isCustomField() }
-                .map { IssueJsonParser.parseCustomField(it) }
-                .filter { it != null }
-                .requireNoNulls()
+                .mapNotNull { IssueJsonParser.parseCustomField(it) }
 
-        comments = root.getAsJsonArray("comments")
-                .map { IssueJsonParser.parseComment(it) }
-                .filter { it != null }
-                .requireNoNulls()
+        comments = root.getAsJsonArray("comments").mapNotNull { IssueJsonParser.parseComment(it) }
 
         val wrapper =  IssueLinkWrapper()
         val result: MutableList<IssueLink> = mutableListOf()
@@ -70,18 +65,12 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
         for (element in myLinks)
             result.addAll(wrapper.reformatIssues(element, repoUrl))
 
+        //TODO: all good?
         links = result.filter { it.value != "" }
-                .requireNoNulls()
 
-        tags = root.getAsJsonArray(("tags"))
-                .map { IssueJsonParser.parseTag(it) }
-                .filter { it != null }
-                .requireNoNulls()
+        tags = root.getAsJsonArray(("tags")).mapNotNull { IssueJsonParser.parseTag(it) }
 
-        attachments = root.getAsJsonArray(("attachments"))
-                .map { IssueJsonParser.parseAttachment(it, repoUrl) }
-                .filter { it != null }
-                .requireNoNulls()
+        attachments = root.getAsJsonArray(("attachments")).mapNotNull { IssueJsonParser.parseAttachment(it, repoUrl) }
 
         url = "$repoUrl/issue/$id"
     }

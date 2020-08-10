@@ -21,8 +21,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     override fun createDraft(summary: String): String {
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
-        //todo: force markdown
-        method.requestEntity = StringRequestEntity(summary.asMarkdownIssueDraft(), "application/json", StandardCharsets.UTF_8.name())
+        method.requestEntity = StringRequestEntity(summary, "application/json", StandardCharsets.UTF_8.name())
+
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
@@ -51,11 +51,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
 
-            for (i in 0 until json.size()) {
-                val e: JsonObject = json.get(i) as JsonObject
-                val currentIssue = IssueParser().parseIssue(e, repository.url)
-                list.add(currentIssue)
-            }
+            json.map { list.add(IssueParser().parseIssue(it.asJsonObject, repository.url)) }
 
             if (status == 200) {
                 list
@@ -79,9 +75,4 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         method.setQueryString(arrayOf(myQuery, myFields))
         return parseIssues(method)
     }
-
-    fun String.asMarkdownIssueDraft() = JSONObject().also {
-        it["description"] = this
-        it["usesMarkdown"] = true
-    }.toJSONString()
 }

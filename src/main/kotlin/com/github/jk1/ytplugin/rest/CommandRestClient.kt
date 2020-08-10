@@ -20,7 +20,9 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = PostMethod("${repository.url}/api/commands/assist")
-        val fields = NameValuePair("fields", "caret,commands(delete,description,error),query,styleRanges(end,length,start,style),suggestions(caret,className,comment,completionEnd,completionStart,description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix)")
+        val fields = NameValuePair("fields", "caret,commands(delete,description,error),query," +
+                "styleRanges(end,length,start,style),suggestions(caret,className,comment,completionEnd,completionStart," +
+                "description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix)")
         method.setQueryString(arrayOf(fields))
         val caret = command.caret - 1
         val res: URL? = this::class.java.classLoader.getResource("get_command_body.json")
@@ -60,7 +62,8 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val groupId: String = getGroupId(command)
         val execPostUrl = "${repository.url}/api/commands"
-        val fields = NameValuePair("fields", "issues(id,idReadable),query,visibility(permittedGroups(id,name),permittedUsers(id,login))")
+        val fields = NameValuePair("fields", "issues(id,idReadable),query," +
+                "visibility(permittedGroups(id,name),permittedUsers(id,login))")
         val postMethod = PostMethod(execPostUrl)
         postMethod.setQueryString(arrayOf(fields))
 
@@ -78,14 +81,8 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
             val status = httpClient.executeMethod(postMethod)
             if (status != 200) {
                 val body = postMethod.responseBodyAsLoggedStream()
-                when (postMethod.getResponseHeader("Content-Type")?.value?.split(";")?.first()) {
-                    "application/json" -> {
-                        val error = JsonParser.parseReader(InputStreamReader(body, "UTF-8")).asJsonObject.get("value").asString
-                        CommandExecutionResponse(errors = listOf("Workflow: $error"))
-                    }
-                    else ->
-                        CommandExecutionResponse(errors = listOf("Unexpected command response from YouTrack server"))
-                }
+                val error = JsonParser.parseReader(InputStreamReader(body, "UTF-8")).asJsonObject.get("value").asString
+                CommandExecutionResponse(errors = listOf("Workflow: $error"))
             } else {
                 postMethod.responseBodyAsLoggedString()
                 CommandExecutionResponse()
