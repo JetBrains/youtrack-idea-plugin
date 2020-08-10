@@ -32,7 +32,10 @@ class CustomField(item: JsonElement): YouTrackIssueField {
             }
             else{
                 value = mutableListOf()
-                value.add(valueItem.asJsonObject.get("name").asString)
+                if(valueItem.asJsonObject.get("presentation") == null)
+                    value.add(valueItem.asJsonObject.get("name").asString)
+                else
+                    value.add(valueItem.asJsonObject.get("presentation").asString)
             }
 
         }
