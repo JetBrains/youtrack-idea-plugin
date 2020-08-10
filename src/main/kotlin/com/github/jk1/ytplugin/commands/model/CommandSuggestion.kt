@@ -29,8 +29,8 @@ class CommandSuggestion(item: JsonElement) {
         suffix = item.asJsonObject.get("suffix").asStringNullSafe()
         prefix = item.asJsonObject.get("prefix").asStringNullSafe()
         caretPosition = item.asJsonObject.get("caret").asInt
-        //TODO where to find a separator
-//        separator = item.asJsonObject.get("sep").asBoolean
+
+        //TODO: check if separator is needed
         separator = false
 
     }

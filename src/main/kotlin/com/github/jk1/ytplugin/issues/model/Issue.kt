@@ -8,15 +8,7 @@ import com.google.gson.JsonObject
 import org.apache.commons.lang3.mutable.Mutable
 import java.util.*
 
-class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
-
-    companion object {
-        val PREDEFINED_FIELDS = arrayOf("projectShortName", "numberInProject", "summary",
-                "description", "created", "updated", "updaterName", "updaterFullName", "resolved",
-                "reporterName", "reporterFullName", "commentsCount", "votes", "attachments", "links",
-                "sprint", "voterName", "permittedGroup", "markdown", "wikified")
-    }
-
+class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
     var json: String
     var id: String
     val entityId: String
@@ -40,10 +32,10 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
         entityId = root.get("id").asString
 
-        summary = root.get("summary")?.asString  ?: ""
+        summary = root.get("summary")?.asString ?: ""
 
-        description = if (root.get("description")== null || root.get("description").isJsonNull) ""
-            else root.get("description").asString
+        description = if (root.get("description") == null || root.get("description").isJsonNull) ""
+        else root.get("description").asString
 
         wikified = true
 
@@ -53,19 +45,16 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
         resolved = root.get("resolved") != null
 
-        customFields = root.getAsJsonArray("customFields")
-                .filter { it.isCustomField() }
-                .mapNotNull { IssueJsonParser.parseCustomField(it) }
+        customFields = root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
 
         comments = root.getAsJsonArray("comments").mapNotNull { IssueJsonParser.parseComment(it) }
 
-        val wrapper =  IssueLinkWrapper()
+        val wrapper = IssueLinkWrapper()
         val result: MutableList<IssueLink> = mutableListOf()
         val myLinks = root.getAsJsonArray("links")
         for (element in myLinks)
             result.addAll(wrapper.reformatIssues(element, repoUrl))
 
-        //TODO: all good?
         links = result.filter { it.value != "" }
 
         tags = root.getAsJsonArray(("tags")).mapNotNull { IssueJsonParser.parseTag(it) }
@@ -89,10 +78,6 @@ class Issue(item: JsonElement, val repoUrl: String): YouTrackIssue {
 
     override fun hashCode(): Int = toString().hashCode()
 
-    private fun JsonElement.isCustomField(): Boolean {
-        val name = asJsonObject.get("name")
-        return name != null && !PREDEFINED_FIELDS.contains(name.asString)
-    }
 }
 
 

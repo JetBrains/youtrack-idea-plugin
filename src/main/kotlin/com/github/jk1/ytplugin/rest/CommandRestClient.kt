@@ -7,7 +7,6 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
-import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
@@ -20,9 +19,8 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = PostMethod("${repository.url}/api/commands/assist")
-        val fields = NameValuePair("fields", "caret,commands(delete,description,error),query," +
-                "styleRanges(end,length,start,style),suggestions(caret,className,comment,completionEnd,completionStart," +
-                "description,group,icon,id,matchingEnd,matchingStart,option,prefix,suffix)")
+        val fields = NameValuePair("fields", "commands(description,error),styleRanges(length,start,style)," +
+                "suggestions(caret,completionEnd,completionStart,description,matchingEnd,matchingStart,option,prefix,suffix)")
         method.setQueryString(arrayOf(fields))
         val caret = command.caret - 1
         val res: URL? = this::class.java.classLoader.getResource("get_command_body.json")
@@ -62,10 +60,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val groupId: String = getGroupId(command)
         val execPostUrl = "${repository.url}/api/commands"
-        val fields = NameValuePair("fields", "issues(id,idReadable),query," +
-                "visibility(permittedGroups(id,name),permittedUsers(id,login))")
         val postMethod = PostMethod(execPostUrl)
-        postMethod.setQueryString(arrayOf(fields))
 
         val comment = command.comment ?: ""
 
