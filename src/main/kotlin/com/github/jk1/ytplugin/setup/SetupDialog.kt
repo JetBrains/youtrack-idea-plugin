@@ -10,7 +10,6 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
-import com.intellij.util.ui.JBInsets
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
@@ -64,7 +63,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val myRepositoryType = YouTrackRepositoryType()
         val myRepository: YouTrackRepository = repo.getRepo()
         myRepository.url = inputUrlTextPane.text
-        myRepository.password = inputTokenField.password.toString()
+        myRepository.password  = String(inputTokenField.password)
         myRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
         myRepository.repositoryType = myRepositoryType
         myRepository.storeCredentials()
@@ -118,7 +117,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         }
         myRepository.url = repoConnector.correctUrl
-        myRepository.password = inputTokenField.password.toString()
+        myRepository.password = String(inputTokenField.password)
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
