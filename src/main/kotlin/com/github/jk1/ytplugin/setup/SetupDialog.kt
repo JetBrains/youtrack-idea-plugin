@@ -10,16 +10,18 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
-import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.JBInsets
 import java.awt.*
 import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
+
 
 open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
@@ -140,14 +142,37 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         serverUrlLabel.setBounds(65, 60, 100, 22)
         inputUrlTextPane.apply {
             layout = BorderLayout()
-            border = object : DarculaTextBorder() {
-                override fun paddings(): Insets {
-                    return JBUI.emptyInsets()
-                }
-            }
+            border = BorderFactory.createLineBorder(Color.LIGHT_GRAY)
             text = repo.url
             background = inputTokenField.background
-            setBounds(152, 60, 374, 24)
+            // reset the default text area behavior to make TAB key transfer focus
+            setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null)
+            setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null)
+            // make text area border behave similar to the one of the text field
+            fun installDefaultBorder() {
+                border = BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(JBTabbedPane().background, 2),
+                        BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                                BorderFactory.createEmptyBorder(0, 5, 2, 2)
+                        )
+                )
+            }
+            installDefaultBorder()
+            addFocusListener(object : FocusListener {
+                override fun focusLost(e: FocusEvent) {
+                    installDefaultBorder()
+                    repaint()
+                }
+
+                override fun focusGained(e: FocusEvent) {
+                    border = BorderFactory.createCompoundBorder(
+                            DarculaTextBorder(),
+                            BorderFactory.createEmptyBorder(0, 5, 0, 0))
+                    repaint()
+                }
+            })
+            setBounds(152, 60, 374, 28)
         }
 
         tokenLabel = JBLabel("Permanent Token:")
@@ -167,12 +192,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         getTokenInfoLabel.setBounds(457, 155, 100, 17)
 
         notifyFieldLabel = JBLabel("").apply {
-            foreground = Color.red;
+            foreground = Color.red
             setBounds(150, 158, 250, 36)
         }
 
         notifyFieldTab2Label = JBLabel("").apply {
-            foreground = Color.red;
+            foreground = Color.red
             setBounds(220, 160, 250, 36)
         }
 
@@ -183,7 +208,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         loginAnonCheckBox.setBounds(150, 95, 170, 17)
 
         useHTTPCheckBox = JBCheckBox("Use HTTP", false)
-        useHTTPCheckBox.setBounds(20, 50, 100, 17);
+        useHTTPCheckBox.setBounds(20, 50, 100, 17)
 
         useProxyCheckBox = JBCheckBox("Use Proxy", false)
         useProxyCheckBox.setBounds(20, 100, 100, 17)
@@ -192,10 +217,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         proxyDescriptionLabel.setBounds(220, 20, 370, 20)
 
 
-        proxySettingsButton.addActionListener(ActionListener {
+        proxySettingsButton.addActionListener {
             HttpConfigurable.editConfigurable(controlPanel)
             enableButtons()
-        })
+        }
 
         loginAnonCheckBox.addActionListener { loginAnonymouslyChanged(!loginAnonCheckBox.isSelected) }
 
@@ -207,7 +232,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
         val connectionTab = JBPanel<JBPanelWithEmptyText>().apply {
-            setBounds(100, 100, 580, 300);
+            setBounds(100, 100, 580, 300)
             layout = null
             add(shareUrlCheckBox)
             add(advertiserLabel)
@@ -221,7 +246,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
 
         val proxyTab = JBPanel<JBPanelWithEmptyText>().apply {
-            setBounds(100, 100, 580, 300);
+            setBounds(100, 100, 580, 300)
             layout = null
             add(proxyDescriptionLabel)
             add(useProxyCheckBox)
@@ -232,9 +257,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         return JBTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
-            addTab("General", null, connectionTab, null);
+            addTab("General", null, connectionTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
-            addTab("Proxy settings", null, proxyTab, null);
+            addTab("Proxy settings", null, proxyTab, null)
             setMnemonicAt(1, KeyEvent.VK_2)
 
         }
