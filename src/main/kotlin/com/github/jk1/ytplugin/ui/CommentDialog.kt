@@ -11,7 +11,7 @@ class CommentDialog(project: Project, session: CommandSession) : CommandDialog(p
     override val focusRoot = commentArea
 
     override fun init() {
-        commandField.setText("comment")
+        commandField.text = "comment"
         super.init()
     }
 }

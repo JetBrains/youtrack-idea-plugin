@@ -89,18 +89,26 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
                     appendToPane(inputUrlTextPane, "https", Color.GREEN)
                     appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length - 9), fontColor)
+                    println("hey")
                     appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+                    println("hey")
+
                 } else {
                     appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(0, repoConnector.correctUrl.length - 9), fontColor)
                     appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+                    println("hey2")
+
                 }
-            } else {
+            } else if (repoConnector.noteState == NotifierState.SUCCESS){
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
                     appendToPane(inputUrlTextPane, "https", Color.GREEN)
                     appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length), fontColor)
                 } else {
                     inputUrlTextPane.text = oldUrl
                 }
+            }
+            else {
+                inputUrlTextPane.text = oldUrl
             }
         }
 
@@ -115,6 +123,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         notifyFieldTab2Label.text = notifyFieldLabel.text
         notifyFieldTab2Label.foreground = notifyFieldLabel.foreground
+
+        connectedRepository.url = repoConnector.correctUrl
+        connectedRepository.password = String(inputTokenField.password)
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
