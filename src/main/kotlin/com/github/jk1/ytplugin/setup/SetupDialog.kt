@@ -38,6 +38,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     private var inputUrlTextPane = JTextPane()
     private var inputTokenField = JBPasswordField()
 
+    val repoConnector = SetupRepositoryConnector()
+    private val connectedRepository: YouTrackRepository = YouTrackRepository()
+
+
     override fun init() {
         title = "YouTrack"
         super.init()
@@ -56,24 +60,23 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
 
     private fun testConnectionAction() {
-        val repoConnector = SetupRepositoryConnector()
         repoConnector.correctUrl = inputUrlTextPane.text
         val fontColor = inputTokenField.foreground
 
         val myRepositoryType = YouTrackRepositoryType()
-        val myRepository: YouTrackRepository = repo.getRepo()
-        myRepository.url = inputUrlTextPane.text
-        myRepository.password  = String(inputTokenField.password)
-        myRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
-        myRepository.repositoryType = myRepositoryType
-        myRepository.storeCredentials()
 
-        myRepository.isShared = shareUrlCheckBox.isSelected
-        myRepository.isUseProxy = useProxyCheckBox.isSelected
-        myRepository.isUseHttpAuthentication = useHTTPCheckBox.isSelected
-        myRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
+        connectedRepository.url = inputUrlTextPane.text
+        connectedRepository.password  = String(inputTokenField.password)
+        connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
+        connectedRepository.repositoryType = myRepositoryType
+        connectedRepository.storeCredentials()
 
-        repoConnector.testConnection(myRepository, project)
+        connectedRepository.isShared = shareUrlCheckBox.isSelected
+        connectedRepository.isUseProxy = useProxyCheckBox.isSelected
+        connectedRepository.isUseHttpAuthentication = useHTTPCheckBox.isSelected
+        connectedRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
+
+        repoConnector.testConnection(connectedRepository, project)
 
         val oldUrl = inputUrlTextPane.text
         inputUrlTextPane.text = ""
@@ -100,10 +103,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             }
         }
 
-        if (myRepository.url.isBlank() || myRepository.password.isBlank()) {
+        if (connectedRepository.url.isBlank() || connectedRepository.password.isBlank()) {
             notifyFieldLabel.foreground = Color.red
             notifyFieldLabel.text = "Url and token fields are mandatory"
-        } else if (myRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
+        } else if (connectedRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
             notifyFieldLabel.foreground = Color.green
             notifyFieldLabel.text = "Login as a guest"
         } else
@@ -111,13 +114,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         notifyFieldTab2Label.text = notifyFieldLabel.text
         notifyFieldTab2Label.foreground = notifyFieldLabel.foreground
-
-        if (repoConnector.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously) {
-            repoConnector.showIssuesForConnectedRepo(myRepository, project)
-
-        }
-        myRepository.url = repoConnector.correctUrl
-        myRepository.password = String(inputTokenField.password)
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -288,6 +284,21 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             testConnectionAction()
+            val myRepository: YouTrackRepository = repo.getRepo()
+            if (repoConnector.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously) {
+                myRepository.url = repoConnector.correctUrl
+                myRepository.password = String(inputTokenField.password)
+                myRepository.username = connectedRepository.username
+                myRepository.repositoryType = connectedRepository.repositoryType
+                myRepository.storeCredentials()
+
+                myRepository.isShared = connectedRepository.isShared
+                myRepository.isUseProxy =  connectedRepository.isUseProxy
+                myRepository.isUseHttpAuthentication = connectedRepository.isUseHttpAuthentication
+                myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
+
+                repoConnector.showIssuesForConnectedRepo(myRepository, project)
+            }
             this@SetupDialog.close(0)
         }
     }
