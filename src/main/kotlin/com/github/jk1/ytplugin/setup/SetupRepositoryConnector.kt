@@ -14,16 +14,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.config.RecentTaskRepositories
+import com.intellij.tasks.config.TaskSettings
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
+import com.intellij.util.net.HttpConfigurable
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.URI
-import org.apache.commons.httpclient.UsernamePasswordCredentials
+import org.apache.commons.httpclient.*
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
@@ -279,6 +278,53 @@ class SetupRepositoryConnector() {
         myManager.setRepositories(newRepositories)
         myManager.updateIssues(null)
         RecentTaskRepositories.getInstance().addRepositories(myRepositories)
+    }
+
+
+    fun reconfigureRepositoryClient(repository: YouTrackRepository) {
+        synchronized (repository.httpClient) {
+            configureHttpClient(repository)
+        }
+    }
+
+    private fun configureHttpClient(repository: YouTrackRepository) {
+        val client = repository.httpClient
+        client.params.connectionManagerTimeout = 3000
+        client.params.soTimeout = TaskSettings.getInstance().CONNECTION_TIMEOUT
+        if (repository.isUseProxy) {
+            val proxy = HttpConfigurable.getInstance()
+            client.hostConfiguration.setProxy(proxy.PROXY_HOST, proxy.PROXY_PORT)
+            if (proxy.PROXY_AUTHENTICATION && proxy.proxyLogin != null) {
+                val authScope = AuthScope(proxy.PROXY_HOST, proxy.PROXY_PORT)
+                val credentials = proxy.plainProxyPassword?.let { getCredentials(proxy.proxyLogin!!, it, proxy.PROXY_HOST) }
+                client.state.setProxyCredentials(authScope, credentials)
+            }
+        }
+        if (repository.isUseHttpAuthentication) {
+            client.params.credentialCharset = "UTF-8"
+            client.params.isAuthenticationPreemptive = true
+            client.state.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(repository.username, repository.password))
+        } else {
+            client.state.clearCredentials()
+            client.params.isAuthenticationPreemptive = false
+        }
+    }
+
+    private fun getCredentials(login: String, password: String, host: String): Credentials? {
+        val domainIndex = login.indexOf("\\")
+        return if (domainIndex > 0) {
+            // if the username is in the form "user\domain"
+            // then use NTCredentials instead of UsernamePasswordCredentials
+            val domain = login.substring(0, domainIndex)
+            if (login.length > domainIndex + 1) {
+                val user = login.substring(domainIndex + 1)
+                NTCredentials(user, password, host, domain)
+            } else {
+                null
+            }
+        } else {
+            UsernamePasswordCredentials(login, password)
+        }
     }
 }
 

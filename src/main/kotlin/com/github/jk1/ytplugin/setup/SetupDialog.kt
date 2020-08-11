@@ -65,6 +65,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         val myRepositoryType = YouTrackRepositoryType()
 
+        repoConnector.reconfigureRepositoryClient(connectedRepository)
         connectedRepository.url = inputUrlTextPane.text
         connectedRepository.password  = String(inputTokenField.password)
         connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
@@ -81,7 +82,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val oldUrl = inputUrlTextPane.text
         inputUrlTextPane.text = ""
 
-        if (oldUrl == repoConnector.correctUrl) {
+        if (oldUrl == repoConnector.correctUrl || connectedRepository.isUseHttpAuthentication) {
             inputUrlTextPane.text = oldUrl
         } else {
             if (!oldUrl.contains("/youtrack") && repoConnector.noteState == NotifierState.SUCCESS) {
@@ -297,6 +298,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                 myRepository.isUseHttpAuthentication = connectedRepository.isUseHttpAuthentication
                 myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
 
+                repoConnector.reconfigureRepositoryClient(myRepository)
                 repoConnector.showIssuesForConnectedRepo(myRepository, project)
             }
             this@SetupDialog.close(0)
