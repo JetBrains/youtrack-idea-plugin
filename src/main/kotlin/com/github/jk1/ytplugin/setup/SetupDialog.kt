@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
@@ -116,6 +117,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             notifyFieldLabel.text = "Login as a guest"
         } else
             repoConnector.setNotifier(notifyFieldLabel)
+
+        if (repoConnector.noteState == NotifierState.SUCCESS)
+            logger.info("YouTrack repository connected")
 
         notifyFieldTab2Label.text = notifyFieldLabel.text
         notifyFieldTab2Label.foreground = notifyFieldLabel.foreground
