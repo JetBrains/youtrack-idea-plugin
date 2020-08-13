@@ -43,7 +43,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         updateDate = Date(root.get("updated")?.asLong ?: 0)
 
-        resolved = root.get("resolved") != null
+        resolved = !root.get("resolved").isJsonNull
 
         customFields = root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
 
