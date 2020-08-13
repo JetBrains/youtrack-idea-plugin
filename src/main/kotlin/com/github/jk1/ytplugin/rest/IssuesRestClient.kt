@@ -69,8 +69,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val myFields = NameValuePair("fields", "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,text,created,updated," +
-                "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name,minutes,presentation)," +
-                "id,projectCustomField),resolved,attachments(name,url),description,reporter(login)")
+                "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,color,value(name,minutes,presentation,color(background,foreground)),id,projectCustomField)," +
+                "resolved,attachments(name,url),description,reporter(login)")
 
         method.setQueryString(arrayOf(myQuery, myFields))
         return parseIssues(method)
