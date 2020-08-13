@@ -11,11 +11,14 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
+import com.jetbrains.rd.util.catch
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -66,7 +69,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         val myRepositoryType = YouTrackRepositoryType()
 
-        repoConnector.reconfigureRepositoryClient(connectedRepository)
         connectedRepository.url = inputUrlTextPane.text
         connectedRepository.password = String(inputTokenField.password)
         connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
@@ -74,11 +76,19 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         connectedRepository.storeCredentials()
 
         connectedRepository.isShared = shareUrlCheckBox.isSelected
-        connectedRepository.isUseProxy = useProxyCheckBox.isSelected
+
         connectedRepository.isUseHttpAuthentication = useHTTPCheckBox.isSelected
         connectedRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
 
-        repoConnector.testConnection(connectedRepository, project)
+        val proxy = HttpConfigurable.getInstance()
+        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
+            connectedRepository.isUseProxy = useProxyCheckBox.isSelected
+            repoConnector.testConnection(connectedRepository, project)
+        }
+        else {
+            repoConnector.noteState = NotifierState.NULL_PROXY_HOST
+            connectedRepository.isUseProxy = false
+        }
 
         val oldUrl = inputUrlTextPane.text
         inputUrlTextPane.text = ""
@@ -115,8 +125,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         } else if (connectedRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
             notifyFieldLabel.foreground = Color.green
             notifyFieldLabel.text = "Login as a guest"
-        } else
+        } else{
             repoConnector.setNotifier(notifyFieldLabel)
+        }
 
         if (repoConnector.noteState == NotifierState.SUCCESS)
             logger.info("YouTrack repository connected")
@@ -308,9 +319,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             myRepository.isUseHttpAuthentication = connectedRepository.isUseHttpAuthentication
             myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
 
-            repoConnector.reconfigureRepositoryClient(myRepository)
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
-            this@SetupDialog.close(0)
+
+            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST)
+                this@SetupDialog.close(0)
         }
     }
 

@@ -77,6 +77,9 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         assertEquals(200, setupTask.statusCode)
     }
 
+
+    //TODO: add case of null host
+
     @Test
     fun `test use HTTP feature`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"

@@ -87,6 +87,7 @@ class SetupRepositoryConnector() {
             NotifierState.UNKNOWN_ERROR -> note.text = "Unknown error"
             NotifierState.UNKNOWN_HOST -> note.text = "Unknown host"
             NotifierState.INVALID_TOKEN -> note.text = "Invalid token"
+            NotifierState.NULL_PROXY_HOST -> note.text = "Invalid proxy host"
             NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1</html>"
         }
     }
@@ -279,59 +280,12 @@ class SetupRepositoryConnector() {
         myManager.updateIssues(null)
         RecentTaskRepositories.getInstance().addRepositories(myRepositories)
     }
-
-
-    fun reconfigureRepositoryClient(repository: YouTrackRepository) {
-        synchronized (repository.httpClient) {
-            configureHttpClient(repository)
-        }
-    }
-
-    private fun configureHttpClient(repository: YouTrackRepository) {
-        val client = repository.httpClient
-        client.params.connectionManagerTimeout = 3000
-        client.params.soTimeout = TaskSettings.getInstance().CONNECTION_TIMEOUT
-        if (repository.isUseProxy) {
-            val proxy = HttpConfigurable.getInstance()
-            client.hostConfiguration.setProxy(proxy.PROXY_HOST, proxy.PROXY_PORT)
-            if (proxy.PROXY_AUTHENTICATION && proxy.proxyLogin != null) {
-                val authScope = AuthScope(proxy.PROXY_HOST, proxy.PROXY_PORT)
-                val credentials = proxy.plainProxyPassword?.let { getCredentials(proxy.proxyLogin!!, it, proxy.PROXY_HOST) }
-                client.state.setProxyCredentials(authScope, credentials)
-            }
-        }
-        if (repository.isUseHttpAuthentication) {
-            client.params.credentialCharset = "UTF-8"
-            client.params.isAuthenticationPreemptive = true
-            client.state.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(repository.username, repository.password))
-        } else {
-            client.state.clearCredentials()
-            client.params.isAuthenticationPreemptive = false
-        }
-    }
-
-    private fun getCredentials(login: String, password: String, host: String): Credentials? {
-        val domainIndex = login.indexOf("\\")
-        return if (domainIndex > 0) {
-            // if the username is in the form "user\domain"
-            // then use NTCredentials instead of UsernamePasswordCredentials
-            val domain = login.substring(0, domainIndex)
-            if (login.length > domainIndex + 1) {
-                val user = login.substring(domainIndex + 1)
-                NTCredentials(user, password, host, domain)
-            } else {
-                null
-            }
-        } else {
-            UsernamePasswordCredentials(login, password)
-        }
-    }
 }
 
 /**
  * Login errors classification
  */
 enum class NotifierState{
-    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION
+    SUCCESS, LOGIN_ERROR, UNKNOWN_ERROR, UNKNOWN_HOST, INVALID_TOKEN, INVALID_VERSION, NULL_PROXY_HOST
 }
 
