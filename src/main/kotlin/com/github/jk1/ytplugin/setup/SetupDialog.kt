@@ -67,7 +67,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         repoConnector.reconfigureRepositoryClient(connectedRepository)
         connectedRepository.url = inputUrlTextPane.text
-        connectedRepository.password  = String(inputTokenField.password)
+        connectedRepository.password = String(inputTokenField.password)
         connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
         connectedRepository.repositoryType = myRepositoryType
         connectedRepository.storeCredentials()
@@ -89,25 +89,21 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
                     appendToPane(inputUrlTextPane, "https", Color.GREEN)
                     appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length - 9), fontColor)
-                    println("hey")
                     appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-                    println("hey")
 
                 } else {
                     appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(0, repoConnector.correctUrl.length - 9), fontColor)
                     appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-                    println("hey2")
 
                 }
-            } else if (repoConnector.noteState == NotifierState.SUCCESS){
+            } else if (repoConnector.noteState == NotifierState.SUCCESS) {
                 if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
                     appendToPane(inputUrlTextPane, "https", Color.GREEN)
                     appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length), fontColor)
                 } else {
                     inputUrlTextPane.text = oldUrl
                 }
-            }
-            else {
+            } else {
                 inputUrlTextPane.text = oldUrl
             }
         }
@@ -208,16 +204,16 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             setBounds(220, 160, 250, 36)
         }
 
-        shareUrlCheckBox = JBCheckBox("Share Url", false)
+        shareUrlCheckBox = JBCheckBox("Share Url", repo.getRepo().isShared)
         shareUrlCheckBox.setBounds(440, 95, 100, 17)
 
-        loginAnonCheckBox = JBCheckBox("Login Anonymously", false)
+        loginAnonCheckBox = JBCheckBox("Login Anonymously", repo.getRepo().isLoginAnonymously)
         loginAnonCheckBox.setBounds(150, 95, 170, 17)
 
-        useHTTPCheckBox = JBCheckBox("Use HTTP", false)
+        useHTTPCheckBox = JBCheckBox("Use HTTP", repo.getRepo().isUseHttpAuthentication)
         useHTTPCheckBox.setBounds(20, 50, 100, 17)
 
-        useProxyCheckBox = JBCheckBox("Use Proxy", false)
+        useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
         useProxyCheckBox.setBounds(20, 100, 100, 17)
 
         val proxyDescriptionLabel = JBLabel("You can configure the HTTP Proxy to:")
@@ -297,21 +293,19 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         override fun actionPerformed(e: ActionEvent) {
             testConnectionAction()
             val myRepository: YouTrackRepository = repo.getRepo()
-            if (repoConnector.noteState == NotifierState.SUCCESS || myRepository.isLoginAnonymously) {
-                myRepository.url = repoConnector.correctUrl
-                myRepository.password = String(inputTokenField.password)
-                myRepository.username = connectedRepository.username
-                myRepository.repositoryType = connectedRepository.repositoryType
-                myRepository.storeCredentials()
+            myRepository.url = repoConnector.correctUrl
+            myRepository.password = String(inputTokenField.password)
+            myRepository.username = connectedRepository.username
+            myRepository.repositoryType = connectedRepository.repositoryType
+            myRepository.storeCredentials()
 
-                myRepository.isShared = connectedRepository.isShared
-                myRepository.isUseProxy =  connectedRepository.isUseProxy
-                myRepository.isUseHttpAuthentication = connectedRepository.isUseHttpAuthentication
-                myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
+            myRepository.isShared = connectedRepository.isShared
+            myRepository.isUseProxy = connectedRepository.isUseProxy
+            myRepository.isUseHttpAuthentication = connectedRepository.isUseHttpAuthentication
+            myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
 
-                repoConnector.reconfigureRepositoryClient(myRepository)
-                repoConnector.showIssuesForConnectedRepo(myRepository, project)
-            }
+            repoConnector.reconfigureRepositoryClient(myRepository)
+            repoConnector.showIssuesForConnectedRepo(myRepository, project)
             this@SetupDialog.close(0)
         }
     }
