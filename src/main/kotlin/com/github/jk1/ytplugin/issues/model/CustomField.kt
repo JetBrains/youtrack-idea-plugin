@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.issues.model
 
 import com.github.jk1.ytplugin.YouTrackIssueField
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import java.awt.Color
 import java.text.SimpleDateFormat
 import java.util.*

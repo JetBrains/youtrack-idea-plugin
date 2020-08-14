@@ -11,14 +11,11 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
-import com.jetbrains.rd.util.catch
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet

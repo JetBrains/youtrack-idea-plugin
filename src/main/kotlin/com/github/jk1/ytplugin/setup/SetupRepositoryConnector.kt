@@ -14,12 +14,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.config.RecentTaskRepositories
-import com.intellij.tasks.config.TaskSettings
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
-import com.intellij.util.net.HttpConfigurable
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import org.apache.commons.httpclient.*

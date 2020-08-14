@@ -2,10 +2,7 @@ package com.github.jk1.ytplugin.issues.model
 
 import com.github.jk1.ytplugin.YouTrackIssue
 import com.github.jk1.ytplugin.rest.IssueJsonParser
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import org.apache.commons.lang3.mutable.Mutable
 import java.util.*
 
 class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
