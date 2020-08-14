@@ -44,9 +44,8 @@ class CustomField(item: JsonElement): YouTrackIssueField {
                 if(valueItem.asJsonObject.get("presentation") == null)
                     value.add(valueItem.asJsonObject.get("name").asString)
                 else
-                    value.add(valueItem.asJsonObject.get("presentation").asString)
+                    value.add(item.asJsonObject.get("name").asString + ": " +valueItem.asJsonObject.get("presentation").asString)
             }
-
         }
     }
 
