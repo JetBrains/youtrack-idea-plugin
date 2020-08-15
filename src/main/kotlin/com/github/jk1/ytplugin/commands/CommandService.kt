@@ -22,7 +22,7 @@ class CommandService(override val project: Project): ICommandService, ComponentA
 
     companion object {
         val SERVICE_KEY: Key<ICommandService> = Key.create(CommandService::class.toString())
-        val SESSION_KEY: Key<CommandSession> = Key.create(CommandSession::class.toString())
+        val ISSUE_KEY: Key<Issue> = Key.create(Issue::class.toString())
     }
 
     private val assistCache = CommandSuggestResponseCache(project)
@@ -33,7 +33,7 @@ class CommandService(override val project: Project): ICommandService, ComponentA
             override fun run(indicator: ProgressIndicator) {
                 try {
                     indicator.text = title
-                    val result = execution.session.restClient.executeCommand(execution)
+                    val result = execution.issue.restClient.executeCommand(execution)
                     result.errors.forEach {
                         showError("Command execution error", it)
                     }
@@ -52,7 +52,7 @@ class CommandService(override val project: Project): ICommandService, ComponentA
     }
 
     override fun suggest(command: YouTrackCommand): CommandAssistResponse {
-        val response = assistCache[command] ?: command.session.restClient.assistCommand(command)
+        val response = assistCache[command] ?: command.issue.restClient.assistCommand(command)
         assistCache[command] = response
         return response
     }
@@ -77,6 +77,6 @@ class CommandService(override val project: Project): ICommandService, ComponentA
         return future
     }
 
-    private val CommandSession.restClient: CommandRestClient
-        get() = CommandRestClient(taskManagerComponent.getYouTrackRepository(issue))
+    private val Issue.restClient: CommandRestClient
+        get() = CommandRestClient(taskManagerComponent.getYouTrackRepository(this))
 }

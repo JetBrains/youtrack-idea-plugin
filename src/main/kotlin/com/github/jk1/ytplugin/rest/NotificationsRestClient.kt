@@ -12,15 +12,16 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
         val method = GetMethod("${repository.url}/api/users/notifications?fields=id,content,metadata")
         method.setRequestHeader("Accept", "application/json")
         return method.connect {
-            val status = httpClient.executeMethod(it)
-            if (status == 200) {
-                val streamReader = InputStreamReader(it.responseBodyAsLoggedStream(), "UTF-8")
-                JsonParser.parseReader(streamReader).asJsonArray.map { YouTrackNotification(it, repository.url) }
-            } else if (status == 404) {
-                // persistent notifications are supported starting from YouTrack 2018.1
-                listOf()
-            } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
+            when (httpClient.executeMethod(it)) {
+                200 -> {
+                    val streamReader = InputStreamReader(it.responseBodyAsLoggedStream(), "UTF-8")
+                    JsonParser.parseReader(streamReader).asJsonArray.map { YouTrackNotification(it, repository.url) }
+                }
+                404 -> {
+                    // persistent notifications are supported starting from YouTrack 2018.1
+                    listOf()
+                }
+                else -> throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
     }

@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.issues.model.Issue
-import com.intellij.openapi.util.Key
 import java.util.concurrent.Future
 
 

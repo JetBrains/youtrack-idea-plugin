@@ -1,5 +1,5 @@
 package com.github.jk1.ytplugin.rest
-import com.github.jk1.ytplugin.issues.model.*
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.google.gson.JsonElement
 
 class IssueParser(){

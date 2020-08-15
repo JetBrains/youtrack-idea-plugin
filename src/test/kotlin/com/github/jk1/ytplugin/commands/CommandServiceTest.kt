@@ -19,7 +19,6 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var issue: Issue
-    private lateinit var session: CommandSession
 
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
@@ -33,12 +32,11 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
         createIssue()
         issueStoreComponent[repository].update(repository).waitFor(5000)
         issue = issueStoreComponent[repository].getAllIssues().first()
-        session = CommandSession(issue)
     }
 
     @Test
     fun testCommandCompletion() {
-        val command = YouTrackCommand(session, "Fixed", 5)
+        val command = YouTrackCommand(issue, "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
         Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
@@ -49,10 +47,9 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
     @Test
     fun testCommandCompletionWithIssueInLocalStore() {
         issueStoreComponent[repository].update(repository).waitFor(5000)
-        val command = YouTrackCommand(CommandSession(issue), "Fixed", 5)
+        val command = YouTrackCommand(issue, "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
-        Assert.assertTrue(command.session.hasEntityId())
         Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
         Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
         Assert.assertNotNull(assist.suggestions.find { "fixed in" == it.option })
@@ -61,7 +58,7 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
 
     @Test
     fun testCommandExecution() {
-        val execution = YouTrackCommandExecution(session, "Fixed", false, null, "All Users")
+        val execution = YouTrackCommandExecution(issue, "Fixed", false, null, "All Users")
         val future = commandComponent.executeAsync(execution)
         future.get() // wait for the command to complete
 

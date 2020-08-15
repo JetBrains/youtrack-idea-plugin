@@ -20,7 +20,10 @@ import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
-import org.apache.commons.httpclient.*
+import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.NameValuePair
+import org.apache.commons.httpclient.URI
+import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod

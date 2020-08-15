@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD

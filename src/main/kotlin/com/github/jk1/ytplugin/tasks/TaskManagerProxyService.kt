@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.tasks
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task

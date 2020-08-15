@@ -43,7 +43,8 @@ class FetchNotificationsExtension : StartupActivity.Background {
                     unseen.forEach { notification -> handleNotification(notification, project) }
                     saveAsSeen(notifications, project)
                 }  catch (e: Exception) {
-                    logger.warn(e)
+                    logger.warn("Failed to fetch notifications from YouTrack server: ${e.message}" )
+                    logger.debug(e)
                 }
             }
         }

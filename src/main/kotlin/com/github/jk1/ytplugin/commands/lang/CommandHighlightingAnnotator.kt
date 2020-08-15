@@ -31,7 +31,7 @@ class CommandHighlightingAnnotator : ExternalAnnotator<CommandAssistResponse, Li
     override fun collectInformation(file: PsiFile, editor: Editor, hasErrors: Boolean): CommandAssistResponse {
         val component: ICommandService = file.getUserData(SERVICE_KEY) ?:
                 throw IllegalStateException("Command component user data is missing from PSI file")
-        val session = file.getUserData(CommandService.SESSION_KEY) ?:
+        val session = file.getUserData(CommandService.ISSUE_KEY) ?:
                 throw IllegalStateException("Command component user data is missing from PSI file")
         return component.suggest(YouTrackCommand(session, file.text, editor.caretModel.offset))
     }
