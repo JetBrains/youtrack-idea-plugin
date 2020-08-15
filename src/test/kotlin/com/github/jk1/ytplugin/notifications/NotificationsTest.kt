@@ -26,6 +26,8 @@ class NotificationsTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Co
         repository = createYouTrackRepository()
         repository.defaultSearch = "project: AT"
         issueId = createIssue()
+        // post startup activities aren't called in the test mode at all
+        FetchNotificationsExtension().runActivity(project)
     }
 
     @Test

@@ -15,7 +15,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
+class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var issue: Issue
@@ -66,6 +66,16 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
         future.get() // wait for the command to complete
 
         Assert.assertTrue(repository.getTasks(issue.id, 0, 1).first().isClosed)
+    }
+
+    @Test
+    fun getVisibilityGroups() {
+        commandComponent.getActiveTaskVisibilityGroups(issue) { groups ->
+            Assert.assertEquals(3, groups.size)
+            Assert.assertTrue(groups.contains("All Users"))
+            Assert.assertTrue(groups.contains("Registered Users"))
+            Assert.assertTrue(groups.contains("Automated Test-team"))
+        }.get()
     }
 
     @After

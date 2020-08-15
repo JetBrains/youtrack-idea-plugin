@@ -2,7 +2,9 @@ package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.concurrency.JobScheduler
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.ProjectComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.TaskManager
@@ -18,7 +20,8 @@ import java.util.concurrent.TimeUnit
  * Provides integration with task management plugin.
  * Encapsulates task management api details to decouple the rest of our plugin from them.
  */
-class TaskManagerProxyComponent(val project: Project) : ProjectComponent {
+@Service
+class TaskManagerProxyService(val project: Project) : Disposable {
 
     companion object {
         const val CONFIGURE_SERVERS_ACTION_ID = "tasks.configure.servers"
@@ -26,9 +29,9 @@ class TaskManagerProxyComponent(val project: Project) : ProjectComponent {
 
     private var configurationHash = 0L
     private val listeners = ArrayList<() -> Unit>()
-    private lateinit var timedRefreshTask: ScheduledFuture<*>
+    private val timedRefreshTask: ScheduledFuture<*>
 
-    override fun projectOpened() {
+    init {
         syncTaskManagerConfig()
         timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             if (listeners.isNotEmpty()) {
@@ -37,7 +40,7 @@ class TaskManagerProxyComponent(val project: Project) : ProjectComponent {
         }, 3, 3, TimeUnit.SECONDS)
     }
 
-    override fun projectClosed() {
+    override fun dispose() {
         listeners.clear()
         timedRefreshTask.cancel(false)
     }

@@ -1,7 +1,8 @@
 package com.github.jk1.ytplugin.commands.lang
 
-import com.github.jk1.ytplugin.commands.CommandComponent
-import com.github.jk1.ytplugin.commands.CommandComponent.Companion.COMPONENT_KEY
+import com.github.jk1.ytplugin.commands.CommandService
+import com.github.jk1.ytplugin.commands.CommandService.Companion.SERVICE_KEY
+import com.github.jk1.ytplugin.commands.ICommandService
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandHighlightRange
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
@@ -28,9 +29,9 @@ class CommandHighlightingAnnotator : ExternalAnnotator<CommandAssistResponse, Li
     )
 
     override fun collectInformation(file: PsiFile, editor: Editor, hasErrors: Boolean): CommandAssistResponse {
-        val component: CommandComponent = file.getUserData(COMPONENT_KEY) ?:
+        val component: ICommandService = file.getUserData(SERVICE_KEY) ?:
                 throw IllegalStateException("Command component user data is missing from PSI file")
-        val session = file.getUserData(CommandComponent.SESSION_KEY) ?:
+        val session = file.getUserData(CommandService.SESSION_KEY) ?:
                 throw IllegalStateException("Command component user data is missing from PSI file")
         return component.suggest(YouTrackCommand(session, file.text, editor.caretModel.offset))
     }

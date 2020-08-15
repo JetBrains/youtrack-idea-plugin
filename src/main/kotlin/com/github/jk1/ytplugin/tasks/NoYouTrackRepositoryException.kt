@@ -2,7 +2,7 @@ package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.runAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
+import com.github.jk1.ytplugin.tasks.TaskManagerProxyService.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType

@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.commands.lang
 
-import com.github.jk1.ytplugin.commands.CommandComponent.Companion.COMPONENT_KEY
-import com.github.jk1.ytplugin.commands.CommandComponent.Companion.SESSION_KEY
+import com.github.jk1.ytplugin.commands.CommandService.Companion.SERVICE_KEY
+import com.github.jk1.ytplugin.commands.CommandService.Companion.SESSION_KEY
 import com.github.jk1.ytplugin.commands.model.CommandSuggestion
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.intellij.codeInsight.completion.CompletionContributor
@@ -32,12 +32,12 @@ class CommandCompletionContributor : CompletionContributor() {
         }
         super.fillCompletionVariants(parameters, result)
         val file = parameters.originalFile
-        val component = file.getUserData(COMPONENT_KEY) ?: return
+        val service = file.getUserData(SERVICE_KEY) ?: return
         val session = file.getUserData(SESSION_KEY) ?: return
         val future = ApplicationManager.getApplication().executeOnPooledThread (
                 Callable<List<CommandSuggestion>> {
                     val command = YouTrackCommand(session, parameters.originalFile.text, parameters.offset)
-                    component.suggest(command).suggestions
+                    service.suggest(command).suggestions
                 })
         try {
             val suggestions: List<CommandSuggestion> = future.get(TIMEOUT, TimeUnit.MILLISECONDS)

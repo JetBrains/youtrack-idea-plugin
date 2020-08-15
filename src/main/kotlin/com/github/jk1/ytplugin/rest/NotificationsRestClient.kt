@@ -18,7 +18,7 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
                 JsonParser.parseReader(streamReader).asJsonArray.map { YouTrackNotification(it, repository.url) }
             } else if (status == 404) {
                 // persistent notifications are supported starting from YouTrack 2018.1
-                throw UnsupportedOperationException("Current YouTrack version doesn't support notification persistence")
+                listOf()
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }

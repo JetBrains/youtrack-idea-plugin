@@ -1,14 +1,15 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.commands.CommandComponent
+import com.github.jk1.ytplugin.commands.CommandService
 import com.github.jk1.ytplugin.commands.CommandSession
+import com.github.jk1.ytplugin.commands.ICommandService
 import com.github.jk1.ytplugin.commands.lang.CommandLanguage
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.editor.AdminComponent
+import com.github.jk1.ytplugin.editor.IssueLinkProviderExtension
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
@@ -38,8 +39,8 @@ open class CommandDialog(override val project: Project, val session: CommandSess
     override fun init() {
         title = "Apply Command"
         // put placeholder value while group list is loaded in background
-        visibilityGroupDropdown.addItem(AdminComponent.ALL_USERS)
-        adminComponent.getActiveTaskVisibilityGroups(session.issue) { groups ->
+        visibilityGroupDropdown.addItem(IssueLinkProviderExtension.ALL_USERS)
+        commandComponent.getActiveTaskVisibilityGroups(session.issue) { groups ->
             SwingUtilities.invokeLater {
                 visibilityGroupDropdown.removeAllItems()
                 groups.forEach { visibilityGroupDropdown.addItem(it) }
@@ -78,8 +79,8 @@ open class CommandDialog(override val project: Project, val session: CommandSess
         val commandField = LanguageTextField(CommandLanguage, project, "")
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
-        file?.putUserData(CommandComponent.COMPONENT_KEY, CommandSuggestListener())
-        file?.putUserData(CommandComponent.SESSION_KEY, session)
+        file?.putUserData(CommandService.SERVICE_KEY, CommandSuggestListener())
+        file?.putUserData(CommandService.SESSION_KEY, session)
         // todo: find a better way to attach onEnter handler to LanguageTextField
         commandField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
@@ -160,7 +161,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
     /**
      * Formats parsed command preview as html and displays it in command window
      */
-    inner class CommandSuggestListener : CommandComponent by commandComponent {
+    inner class CommandSuggestListener : ICommandService by commandComponent {
         override fun suggest(command: YouTrackCommand): CommandAssistResponse {
             val response = commandComponent.suggest(command)
             SwingUtilities.invokeLater {
