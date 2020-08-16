@@ -1,10 +1,7 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.format
-import com.github.jk1.ytplugin.issues.model.Attachment
-import com.github.jk1.ytplugin.issues.model.Issue
-import com.github.jk1.ytplugin.issues.model.IssueComment
-import com.github.jk1.ytplugin.issues.model.IssueLink
+import com.github.jk1.ytplugin.issues.model.*
 import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileTypes.FileTypeManager
@@ -50,7 +47,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         val tabs = JBTabbedPane()
         addCommentsTab(issue.comments, tabs)
         addAttachmentsTab(issue.attachments, tabs)
-        addWorkLogTab(issue.comments, tabs)
+        addWorkLogTab(issue.workItems, tabs)
         container.add(tabs)
         issuePane.setHtml(issue.description)
         scrollToTop.invoke()
@@ -128,13 +125,13 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addWorkLogTab(comments: List<IssueComment>, tabs: JBTabbedPane){
-        if (comments.isNotEmpty()) {
+    private fun addWorkLogTab(workItems: List<IssueWorkItem>, tabs: JBTabbedPane){
+        if (workItems.isNotEmpty()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
-            tabs.addTab("Work Log (${comments.size})", commentsPanel)
+            tabs.addTab("Work Items (${workItems.size})", commentsPanel)
             tabs.isFocusable = false
-            comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+            workItems.forEach { commentsPanel.add(createWorkItemsPanel(it)) }
         }
     }
 
@@ -150,6 +147,27 @@ class IssueViewer : JPanel(BorderLayout()) {
         val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
         commentPane.margin = Insets(2, 4, 0, 0)
         commentPane.setHtml(comment.text)
+        commentPanel.add(commentPane, BorderLayout.CENTER)
+        val panel = JPanel(BorderLayout())
+        panel.add(topPanel, BorderLayout.NORTH)
+        panel.add(commentPanel, BorderLayout.CENTER)
+        panel.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+        return panel
+    }
+
+    private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
+        val topPanel = JPanel(BorderLayout())
+        val commentPanel = JPanel(BorderLayout())
+        val header = SimpleColoredComponent()
+        header.icon = AllIcons.General.User
+        header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        header.append(" at ")
+        header.append(workItem.created.format())
+        topPanel.add(header, BorderLayout.WEST)
+        val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        commentPane.margin = Insets(2, 4, 0, 0)
+        if (workItem.comment != null)
+            commentPane.setHtml(workItem.comment)
         commentPanel.add(commentPane, BorderLayout.CENTER)
         val panel = JPanel(BorderLayout())
         panel.add(topPanel, BorderLayout.NORTH)
