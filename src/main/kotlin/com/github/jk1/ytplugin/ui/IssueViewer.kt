@@ -165,14 +165,33 @@ class IssueViewer : JPanel(BorderLayout()) {
         header.append(workItem.created.format())
         topPanel.add(header, BorderLayout.WEST)
         val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
-        commentPane.margin = Insets(2, 4, 0, 0)
-        if (workItem.comment != null)
-            commentPane.setHtml(workItem.comment)
-        commentPanel.add(commentPane, BorderLayout.CENTER)
+//        commentPane.margin = Insets(2, 4, 0, 0)
+
+
+        val date = SimpleColoredComponent()
+        date.append(workItem.date.format(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        date.append(" .  ")
+
+        val value = SimpleColoredComponent()
+        value.append(workItem.value, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        value.icon = AllIcons.General.ContextHelp
+        value.append("  . ")
+
+        val comment = SimpleColoredComponent()
+        if (workItem.comment != null){
+            comment.icon = AllIcons.General.Settings
+            comment.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        }
+
+        commentPanel.add(date, BorderLayout.WEST)
+        commentPanel.add(value, BorderLayout.CENTER)
+        commentPanel.add(comment, BorderLayout.EAST)
+
+
         val panel = JPanel(BorderLayout())
         panel.add(topPanel, BorderLayout.NORTH)
         panel.add(commentPanel, BorderLayout.CENTER)
-        panel.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+//        panel.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
         return panel
     }
 }
