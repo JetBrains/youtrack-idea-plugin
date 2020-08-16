@@ -50,6 +50,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         val tabs = JBTabbedPane()
         addCommentsTab(issue.comments, tabs)
         addAttachmentsTab(issue.attachments, tabs)
+        addWorkLogTab(issue.comments, tabs)
         container.add(tabs)
         issuePane.setHtml(issue.description)
         scrollToTop.invoke()
@@ -122,6 +123,16 @@ class IssueViewer : JPanel(BorderLayout()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
             tabs.addTab("Comments (${comments.size})", commentsPanel)
+            tabs.isFocusable = false
+            comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+        }
+    }
+
+    private fun addWorkLogTab(comments: List<IssueComment>, tabs: JBTabbedPane){
+        if (comments.isNotEmpty()) {
+            val commentsPanel = JPanel()
+            commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
+            tabs.addTab("Work Log (${comments.size})", commentsPanel)
             tabs.isFocusable = false
             comments.forEach { commentsPanel.add(createCommentPanel(it)) }
         }

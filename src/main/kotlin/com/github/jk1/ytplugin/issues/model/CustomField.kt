@@ -6,7 +6,7 @@ import java.awt.Color
 import java.text.SimpleDateFormat
 import java.util.*
 
-class CustomField(item: JsonElement): YouTrackIssueField {
+class CustomField(item: JsonElement) : YouTrackIssueField {
 
     val name: String
     val value: List<String>
@@ -20,31 +20,29 @@ class CustomField(item: JsonElement): YouTrackIssueField {
         valueId = mutableListOf()
         valueId.add(item.asJsonObject.get("id").asString)
         val valueItem = item.asJsonObject.get("value")
-        if (valueItem == null || valueItem.isJsonNull ||(valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
+        if (valueItem == null || valueItem.isJsonNull || (valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
             value = emptyList()
-        }
-        else {
-            if (valueItem.isJsonArray){
+        } else {
+            if (valueItem.isJsonArray) {
                 value = mutableListOf()
-                for (currValue in valueItem.asJsonArray){
+                for (currValue in valueItem.asJsonArray) {
                     value.add(currValue.asJsonObject.get("name").asString)
                     val color = currValue.asJsonObject.get("color")
                     foregroundColor = color.asJsonObject.get("foreground").asColor()
                     backgroundColor = color.asJsonObject.get("background").asColor()
                 }
-            }
-            else{
-                if (valueItem.asJsonObject.get("color") != null){
+            } else {
+                if (valueItem.asJsonObject.get("color") != null) {
                     val color = valueItem.asJsonObject.get("color")
                     foregroundColor = color.asJsonObject.get("foreground").asColor()
                     backgroundColor = color.asJsonObject.get("background").asColor()
                 }
 
                 value = mutableListOf()
-                if(valueItem.asJsonObject.get("presentation") == null)
+                if (valueItem.asJsonObject.get("presentation") == null)
                     value.add(valueItem.asJsonObject.get("name").asString)
                 else
-                    value.add(item.asJsonObject.get("name").asString + ": " +valueItem.asJsonObject.get("presentation").asString)
+                    value.add(item.asJsonObject.get("name").asString + ": " + valueItem.asJsonObject.get("presentation").asString)
             }
         }
     }

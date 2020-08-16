@@ -21,6 +21,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
     var attachments: List<Attachment> = emptyList()
     var url: String
     var wikified: Boolean
+    var workItems: MutableList<IssueWorkItem> = mutableListOf()
 
     init {
         val root = item.asJsonObject

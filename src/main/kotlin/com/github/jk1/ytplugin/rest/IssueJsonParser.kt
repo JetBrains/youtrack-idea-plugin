@@ -3,10 +3,13 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.issues.model.*
 import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonElement
+import com.intellij.tasks.timeTracking.model.WorkItem
 
 object IssueJsonParser {
 
     fun parseIssue(element: JsonElement, url: String) = parseSafe(element) { Issue(element, url) }
+
+    fun parseWorkItem(element: JsonElement) = parseSafe(element) { IssueWorkItem(element) }
 
     fun parseCustomField(element: JsonElement) = parseSafe(element) { CustomField(element) }
 
