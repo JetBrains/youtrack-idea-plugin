@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.issues.actions
 
-import com.github.jk1.ytplugin.commands.CommandSession
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.ui.CommentDialog
 import com.github.jk1.ytplugin.whenActive
@@ -19,7 +18,7 @@ class AddCommentAction(private val getSelectedIssue: () -> Issue?) : IssueAction
         event.whenActive { project ->
             val issue = getSelectedIssue.invoke()
             if (issue != null) {
-                CommentDialog(project, CommandSession(issue)).show()
+                CommentDialog(project, issue).show()
             }
         }
     }

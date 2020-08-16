@@ -1,19 +1,16 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.commands.CommandComponent
-import com.github.jk1.ytplugin.editor.AdminComponent
-import com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent
-import com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent
-import com.github.jk1.ytplugin.navigator.SourceNavigatorComponent
-import com.github.jk1.ytplugin.notifications.NotificationsComponent
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent
+import com.github.jk1.ytplugin.commands.CommandService
+import com.github.jk1.ytplugin.commands.ICommandService
+import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
+import com.github.jk1.ytplugin.issues.PersistentIssueStore
+import com.github.jk1.ytplugin.navigator.SourceNavigatorService
+import com.github.jk1.ytplugin.tasks.TaskManagerProxyService
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 
 
 interface ComponentAware {
-
-//    fun toggleIssueViewAction(project: Project, issueList: SetupList): ToggleIssueViewAction
 
     val project: Project
 
@@ -28,27 +25,21 @@ interface ComponentAware {
 
     }
 
-    val taskManagerComponent: TaskManagerProxyComponent
-        get() = project.getComponent(TaskManagerProxyComponent::class.java)!!
+    val taskManagerComponent: TaskManagerProxyService
+        get() = project.getService(TaskManagerProxyService::class.java)!!
 
-    val commandComponent: CommandComponent
-        get() = project.getComponent(CommandComponent::class.java)!!
+    val commandComponent: ICommandService
+        get() = project.getService(CommandService::class.java)!!
 
-    val adminComponent: AdminComponent
-        get() = project.getComponent(AdminComponent::class.java)!!
+    val sourceNavigatorComponent: SourceNavigatorService
+        get() = project.getService(SourceNavigatorService::class.java)!!
 
-    val sourceNavigatorComponent: SourceNavigatorComponent
-        get() = project.getComponent(SourceNavigatorComponent::class.java)!!
+    val issueStoreComponent: PersistentIssueStore
+        get() = ApplicationManager.getApplication().getService(PersistentIssueStore::class.java)!!
 
-    val issueStoreComponent: PersistentIssueStoreComponent
-        get() = ApplicationManager.getApplication().getComponent(PersistentIssueStoreComponent::class.java)!!
+    val issueUpdaterComponent: IssueStoreUpdaterService
+        get() = project.getService(IssueStoreUpdaterService::class.java)!!
 
-    val issueUpdaterComponent: IssueStoreUpdaterComponent
-        get() = project.getComponent(IssueStoreUpdaterComponent::class.java)!!
-
-    val notificationsComponent: NotificationsComponent
-        get() = project.getComponent(NotificationsComponent::class.java)!!
-
-    val pluginApiComponent: YouTrackPluginApiComponent
-        get() = project.getComponent(YouTrackPluginApi::class.java) as YouTrackPluginApiComponent
+    val pluginApiComponent: YouTrackPluginApiService
+        get() = project.getService(YouTrackPluginApiService::class.java) as YouTrackPluginApiService
 }

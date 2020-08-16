@@ -1,9 +1,11 @@
 package com.github.jk1.ytplugin.issues.actions
 
 import com.github.jk1.ytplugin.commands.OpenSetupWindowAction
-import com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent.Companion.CONFIGURE_SERVERS_ACTION_ID
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.CustomShortcutSet
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import javax.swing.JComponent
 
 

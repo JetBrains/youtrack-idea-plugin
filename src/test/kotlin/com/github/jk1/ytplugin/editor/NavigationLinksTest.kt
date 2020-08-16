@@ -22,6 +22,8 @@ class NavigationLinksTest : IdeaProjectTrait, TaskManagerTrait {
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
+        // post startup activities aren't called in the test mode at all
+        IssueLinkProviderExtension().runActivity(project)
     }
 
     @Test
@@ -31,7 +33,7 @@ class NavigationLinksTest : IdeaProjectTrait, TaskManagerTrait {
         assertTrue(navigationConfig.findIssueLinks(comment).isEmpty())
 
         setUpYouTrackServer()
-        Thread.sleep(10000) // wait for async configuration listeners to be notified
+        Thread.sleep(5000) // wait for async configuration listeners to be notified
 
         assertTrue(navigationConfig.findIssueLinks(comment).map { it.targetUrl }.contains("$serverUrl/issue/AT-18"))
     }
@@ -40,7 +42,7 @@ class NavigationLinksTest : IdeaProjectTrait, TaskManagerTrait {
     fun noLinksForUnknownProject(){
         val comment = "// this line also fixes WTF-42"
         setUpYouTrackServer()
-        Thread.sleep(10000) // wait for async configuration listeners to be notified
+        Thread.sleep(5000) // wait for async configuration listeners to be notified
 
         assertTrue(IssueNavigationConfiguration.getInstance(project).findIssueLinks(comment).isEmpty())
     }
@@ -52,7 +54,7 @@ class NavigationLinksTest : IdeaProjectTrait, TaskManagerTrait {
         navigationConfig.links.add(IssueNavigationLink("[az]--//w", "$serverUrl/issue/$0"))
 
         setUpYouTrackServer()
-        Thread.sleep(10000) // wait for async configuration listeners to be notified
+        Thread.sleep(5000) // wait for async configuration listeners to be notified
 
         assertTrue(navigationConfig.findIssueLinks(comment).isEmpty())
     }

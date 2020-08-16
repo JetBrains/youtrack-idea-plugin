@@ -1,11 +1,12 @@
 package com.github.jk1.ytplugin.issues
 
-import com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent.Memento
+import com.github.jk1.ytplugin.issues.PersistentIssueStore.Memento
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import java.util.concurrent.ConcurrentHashMap
@@ -14,8 +15,9 @@ import java.util.concurrent.ConcurrentHashMap
  * Application-scoped persistent issue data cache. Issue data is persisted in a home folder instead of
  * a project directory. This comes in handy for projects with /.idea under VCS control.
  */
+@Service
 @State(name = "YouTrack Issues", storages = [(Storage(value = "issues.xml"))])
-class PersistentIssueStoreComponent : PersistentStateComponent<Memento> {
+class PersistentIssueStore : PersistentStateComponent<Memento> {
 
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()

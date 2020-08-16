@@ -7,7 +7,8 @@ import com.intellij.ui.ClickListener
 import org.jetbrains.annotations.NotNull
 import java.awt.Cursor
 import java.awt.GridBagConstraints
-import java.awt.GridBagConstraints.*
+import java.awt.GridBagConstraints.CENTER
+import java.awt.GridBagConstraints.NONE
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.MouseEvent

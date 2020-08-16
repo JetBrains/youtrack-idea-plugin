@@ -5,67 +5,42 @@ import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.YouTrackIssueNa
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.createdByYouTrackPlugin
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.pointsTo
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.setProjects
-import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.concurrency.JobScheduler
-import com.intellij.openapi.components.ProjectComponent
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.Task
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.IssueNavigationConfiguration
 import com.intellij.openapi.vcs.IssueNavigationLink
-import com.intellij.util.concurrency.FutureResult
-import java.util.concurrent.Future
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class AdminComponent(override val project: Project) : ProjectComponent, ComponentAware {
+class IssueLinkProviderExtension : StartupActivity.Background {
 
     companion object {
-        val ALL_USERS = "All Users"
+        const val ALL_USERS = "All Users"
     }
 
-    private lateinit var projectListRefreshTask: ScheduledFuture<*>
-
-    fun getActiveTaskVisibilityGroups(issue: Issue, callback: (List<String>) -> Unit): Future<Unit> {
-        val future = FutureResult<Unit>()
-        object : Task.Backgroundable(project, "Loading eligible visibility groups") {
-            override fun run(indicator: ProgressIndicator) {
-                try {
-                    indicator.text = title
-                    val repo = taskManagerComponent.getYouTrackRepository(issue)
-                    // replaced issueId with entityId
-                    issue.entityId?.let { AdminRestClient(repo).getVisibilityGroups(it) }?.let { callback.invoke(it) }
-                } catch (e: Throwable) {
-                    logger.info("Failed to load eligible visibility groups for issue")
-                    logger.debug(e)
-                } finally {
-                    future.set(Unit)
-                }
-            }
-        }.queue()
-        return future
-    }
-
-    override fun projectOpened() {
+    override fun runActivity(project: Project) {
+        // todo: https://github.com/jk1/youtrack-idea-plugin/issues/105
         // update navigation links every 30 min to recognize new projects
-        projectListRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
-            updateNavigationLinkPatterns()
+        val projectListRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
+            updateNavigationLinkPatterns(project)
         }, 1, 60, TimeUnit.MINUTES)
         // update navigation links when server connection configuration has been changed
-        taskManagerComponent.addConfigurationChangeListener { updateNavigationLinkPatterns() }
+        ComponentAware.of(project).taskManagerComponent.addConfigurationChangeListener {
+            updateNavigationLinkPatterns(project)
+        }
+        Disposer.register(ComponentAware.of(project).sourceNavigatorComponent, // any project-level disposable will do
+                Disposable { projectListRefreshTask.cancel(false) })
     }
 
-    override fun projectClosed() {
-        projectListRefreshTask.cancel(false)
-    }
-
-    private fun updateNavigationLinkPatterns() {
+    private fun updateNavigationLinkPatterns(project: Project) {
         val navigationConfig = IssueNavigationConfiguration.getInstance(project)
         navigationConfig.links.remove(null) // where are these nulls coming from I wonder
-        taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach { server ->
+        ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach { server ->
             val links = navigationConfig.links.filter { it.pointsTo(server) }
             val generatedLinks = links.filter { it.createdByYouTrackPlugin }
             if (links.isEmpty()) {
@@ -82,7 +57,7 @@ class AdminComponent(override val project: Project) : ProjectComponent, Componen
         }
     }
 
-    fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
+    private fun updateIssueLinkProjects(link: IssueNavigationLink, repo: YouTrackServer) {
         try {
             val projects = AdminRestClient(repo).getAccessibleProjects()
             if (projects.isEmpty()) {

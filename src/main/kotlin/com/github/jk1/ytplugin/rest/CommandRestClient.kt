@@ -24,7 +24,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         method.setQueryString(arrayOf(fields))
         val caret = command.caret - 1
         val res: URL? = this::class.java.classLoader.getResource("get_command_body.json")
-        val id = command.session.issue.id
+        val id = command.issue.id
         val jsonBody = res?.readText()
                 ?.replace("{query}", command.command, true)
                 ?.replace("0", caret.toString(), true)
@@ -47,11 +47,12 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val getMethod = GetMethod(execUrl)
         val status = httpClient.executeMethod(getMethod)
         val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsString) as JsonArray
-        var groupId: String = ""
+        var groupId = ""
         if (status == 200) {
             for (element in response) {
-                if (command.commentVisibleGroup == element.asJsonObject.get("name").asString)
+                if (command.commentVisibleGroup == element.asJsonObject.get("name").asString) {
                     groupId = element.asJsonObject.get("id").asString
+                }
             }
         }
         return groupId
@@ -66,7 +67,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
         val res: URL? = this::class.java.classLoader.getResource("command_execution_rest.json")
         val jsonBody = res?.readText()?.replace("{groupId}", groupId, true)
-                ?.replace("{idReadable}", command.session.issue.id, true)
+                ?.replace("{idReadable}", command.issue.id, true)
                 ?.replace("true", command.silent.toString(), true)
                 ?.replace("{comment}", comment, true)
                 ?.replace("{query}", command.command, true)

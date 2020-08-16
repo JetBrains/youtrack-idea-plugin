@@ -1,17 +1,17 @@
 package com.github.jk1.ytplugin
 
-import com.github.jk1.ytplugin.commands.CommandSession
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.rest.CommandRestClient
-import com.github.jk1.ytplugin.rest.IssuesOldRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.ui.IssueViewer
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 
-class YouTrackPluginApiComponent(override val project: Project): YouTrackPluginApi, ComponentAware {
+@Service
+class YouTrackPluginApiService(override val project: Project): YouTrackPluginApi, ComponentAware {
 
     override fun openIssueInToolWidow(issueId: String) {
         openIssueInToolWidow(findIssue(issueId))
@@ -28,7 +28,7 @@ class YouTrackPluginApiComponent(override val project: Project): YouTrackPluginA
             throw IllegalArgumentException("Can't handle issue that was not loaded from the plugin API")
         }
         val client = CommandRestClient(taskManagerComponent.getYouTrackRepository(issue))
-        return client.executeCommand(YouTrackCommandExecution(CommandSession(issue), command, commentVisibleGroup = "All Users"))
+        return client.executeCommand(YouTrackCommandExecution(issue, command, commentVisibleGroup = "All Users"))
     }
 
     fun openIssueInToolWidow(issue: Issue) {

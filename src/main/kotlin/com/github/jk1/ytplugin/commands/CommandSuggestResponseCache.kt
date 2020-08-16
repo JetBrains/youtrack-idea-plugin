@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.containers.hash.LinkedHashMap
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 /**
  * Command assist response cache to make command completion more responsive and avoid UI lags. This is
@@ -42,7 +43,7 @@ class CommandSuggestResponseCache(override val project: Project) : ComponentAwar
         }
     }
 
-    private fun YouTrackCommand.url() = taskManagerComponent.getYouTrackRepository(session.issue).url
+    private fun YouTrackCommand.url() = taskManagerComponent.getYouTrackRepository(issue).url
 
     data class CommandCacheKey(val command: String, val caret: Int, val serverUrl: String)
 
@@ -55,7 +56,7 @@ class CommandSuggestResponseCache(override val project: Project) : ComponentAwar
 
         override fun get(key: CommandCacheKey?): CommandAssistResponse? {
             super.get(key)?.let {
-                if (Math.abs(System.currentTimeMillis() - it.timestamp) > CACHE_ENTRY_TTL) {
+                if (abs(System.currentTimeMillis() - it.timestamp) > CACHE_ENTRY_TTL) {
                     logger.debug("Stale value evicted from command suggestion cache: $key")
                     remove(key)
                 }

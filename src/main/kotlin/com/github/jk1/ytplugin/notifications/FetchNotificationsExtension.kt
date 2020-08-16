@@ -6,54 +6,51 @@ import com.github.jk1.ytplugin.rest.NotificationsRestClient
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.concurrency.JobScheduler
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.notification.NotificationDisplayType.*
+import com.intellij.notification.NotificationDisplayType.STICKY_BALLOON
 import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.components.ProjectComponent
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.util.Disposer
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
-class NotificationsComponent(override val project: Project) : ProjectComponent, ComponentAware {
+class FetchNotificationsExtension : StartupActivity.Background {
 
     companion object {
-        private val PERSISTENT_KEY = "com.jetbrains.youtrack.notifications"
+        private const val PERSISTENT_KEY = "com.jetbrains.youtrack.notifications"
         private val group = NotificationGroup("YouTrack Notifications", STICKY_BALLOON, true, null, YouTrackPluginIcons.YOUTRACK)
     }
 
-    private lateinit var timedRefreshTask: ScheduledFuture<*>
-
-    override fun initComponent() {
+    override fun runActivity(project: Project) {
         //  todo: customizable update interval
-        timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({ update() }, 15, 60, TimeUnit.SECONDS)
+        val timedRefreshTask: ScheduledFuture<*> =
+                JobScheduler.getScheduler().scheduleWithFixedDelay({ update(project) }, 15, 60, TimeUnit.SECONDS)
+        Disposer.register(ComponentAware.of(project).sourceNavigatorComponent, // any project-level disposable will do
+                Disposable { timedRefreshTask.cancel(false) })
     }
 
-    override fun disposeComponent() {
-        timedRefreshTask.cancel(true)
-    }
-
-    fun update() {
+    private fun update(project: Project) {
         if (!project.isDisposed) {
-            taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
+            ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
                 logger.debug("Fetching notifications from YouTrack server ${it.url}")
                 try {
                     val notifications = NotificationsRestClient(it).getNotifications()
-                    val unseen = notifications.filterUnseen()
+                    val unseen = notifications.filterUnseen(project)
                     logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
-                    unseen.forEach { notification -> handleNotification(notification) }
-                    saveAsSeen(notifications)
-                } catch (e: UnsupportedOperationException) {
-                    logger.info(e.message)
-                    timedRefreshTask.cancel(false)
-                } catch (e: Exception) {
-                    logger.warn(e)
+                    unseen.forEach { notification -> handleNotification(notification, project) }
+                    saveAsSeen(notifications, project)
+                }  catch (e: Exception) {
+                    logger.warn("Failed to fetch notifications from YouTrack server: ${e.message}" )
+                    logger.debug(e)
                 }
             }
         }
     }
 
-    private fun handleNotification(incoming: YouTrackNotification) {
+    private fun handleNotification(incoming: YouTrackNotification, project: Project) {
         SwingUtilities.invokeLater {
             with(incoming) {
                 val notification = group.createNotification(issueId, summary, content, NotificationType.INFORMATION, null)
@@ -65,11 +62,11 @@ class NotificationsComponent(override val project: Project) : ProjectComponent, 
         }
     }
 
-    private fun saveAsSeen(notifications: List<YouTrackNotification>) {
+    private fun saveAsSeen(notifications: List<YouTrackNotification>, project: Project) {
         PropertiesComponent.getInstance(project).setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
     }
 
-    private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification> {
+    private fun List<YouTrackNotification>.filterUnseen(project: Project): List<YouTrackNotification> {
         val ids = PropertiesComponent.getInstance(project).getValue(PERSISTENT_KEY, "").split(" ").toSet()
         return this.filter { !ids.contains(it.id) }
     }
