@@ -27,9 +27,10 @@ class SourceNavigatorFallbackTest : IdeaProjectTrait {
     fun testListenOnDefaultPort() {
         val expectedPort = firstFreePortFromRange
         fixture.setUp()
-        val component = fixture.project.getComponent(SourceNavigatorComponent::class.java)
+        val service = fixture.project.getService(SourceNavigatorService::class.java)
 
-        Assert.assertEquals(expectedPort, component?.getActivePort())
+        Assert.assertNotNull(service)
+        Assert.assertEquals(expectedPort, service.getActivePort())
     }
 
     @Test
@@ -37,10 +38,11 @@ class SourceNavigatorFallbackTest : IdeaProjectTrait {
         val socket = ServerSocket(firstFreePortFromRange)
         val expectedPort = firstFreePortFromRange
         fixture.setUp()
-        val component = fixture.project.getComponent(SourceNavigatorComponent::class.java)
+        val service = fixture.project.getService(SourceNavigatorService::class.java)
         socket.close()
 
-        Assert.assertEquals(expectedPort, component?.getActivePort())
+        Assert.assertNotNull(service)
+        Assert.assertEquals(expectedPort, service.getActivePort())
     }
 
     @After

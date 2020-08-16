@@ -15,11 +15,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
+class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var issue: Issue
-    private lateinit var session: CommandSession
 
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
@@ -33,12 +32,11 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
         createIssue()
         issueStoreComponent[repository].update(repository).waitFor(5000)
         issue = issueStoreComponent[repository].getAllIssues().first()
-        session = CommandSession(issue)
     }
 
     @Test
     fun testCommandCompletion() {
-        val command = YouTrackCommand(session, "Fixed", 5)
+        val command = YouTrackCommand(issue, "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
         Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
@@ -49,10 +47,9 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
     @Test
     fun testCommandCompletionWithIssueInLocalStore() {
         issueStoreComponent[repository].update(repository).waitFor(5000)
-        val command = YouTrackCommand(CommandSession(issue), "Fixed", 5)
+        val command = YouTrackCommand(issue, "Fixed", 5)
         val assist = commandComponent.suggest(command)
 
-        Assert.assertTrue(command.session.hasEntityId())
         Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
         Assert.assertNotNull(assist.suggestions.find { "Fixed" == it.option })
         Assert.assertNotNull(assist.suggestions.find { "fixed in" == it.option })
@@ -61,11 +58,21 @@ class CommandComponentTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait,
 
     @Test
     fun testCommandExecution() {
-        val execution = YouTrackCommandExecution(session, "Fixed", false, null, "All Users")
+        val execution = YouTrackCommandExecution(issue, "Fixed", false, null, "All Users")
         val future = commandComponent.executeAsync(execution)
         future.get() // wait for the command to complete
 
         Assert.assertTrue(repository.getTasks(issue.id, 0, 1).first().isClosed)
+    }
+
+    @Test
+    fun getVisibilityGroups() {
+        commandComponent.getActiveTaskVisibilityGroups(issue) { groups ->
+            Assert.assertEquals(3, groups.size)
+            Assert.assertTrue(groups.contains("All Users"))
+            Assert.assertTrue(groups.contains("Registered Users"))
+            Assert.assertTrue(groups.contains("Automated Test-team"))
+        }.get()
     }
 
     @After

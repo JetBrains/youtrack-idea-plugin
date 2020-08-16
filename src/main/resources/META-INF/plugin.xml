@@ -57,49 +57,21 @@
         </action>
     </actions>
 
-    <application-components>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.issues.PersistentIssueStoreComponent</implementation-class>
-        </component>
-    </application-components>
-
-    <project-components>
-        <component>
-            <interface-class>com.github.jk1.ytplugin.commands.CommandComponent</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.commands.CommandComponentImpl</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.tasks.TaskManagerProxyComponent</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.editor.AdminComponent</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.navigator.SourceNavigatorComponent</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.issues.IssueStoreUpdaterComponent</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.github.jk1.ytplugin.notifications.NotificationsComponent</implementation-class>
-        </component>
-        <component>
-            <interface-class>com.github.jk1.ytplugin.YouTrackPluginApi</interface-class>
-            <implementation-class>com.github.jk1.ytplugin.YouTrackPluginApiComponent</implementation-class>
-        </component>
-    </project-components>
-
     <extensions defaultExtensionNs="com.intellij">
+        <!--Main issue tool window-->
+        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
+                    factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
+        <!-- Scheduled tasks-->
+        <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.editor.IssueLinkProviderExtension"/>
+        <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.notifications.FetchNotificationsExtension"/>
         <!--YouTrack command language support-->
-        <fileTypeFactory implementation="com.github.jk1.ytplugin.commands.lang.CommandFileFactory"/>
+        <fileType name="YouTrack Commands" language="YouTrack Commands"
+                  implementationClass="com.github.jk1.ytplugin.commands.lang.CommandFileType"/>
         <lang.parserDefinition language="YouTrack Commands"
                                implementationClass="com.github.jk1.ytplugin.commands.lang.CommandParserDefinition"/>
         <completion.contributor language="YouTrack Commands"
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
-        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
-                    factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
-
     </extensions>
 </idea-plugin>

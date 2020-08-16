@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
-import com.github.jk1.ytplugin.rest.IssuesOldRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.IssueTask
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
@@ -31,7 +30,7 @@ class OpenCommandWindowAction : AnAction(
             try {
                 assertYouTrackRepositoryConfigured(project)
                 val issue = getIssueFromCurrentActiveTask(project)
-                CommandDialog(project, CommandSession(issue)).show()
+                CommandDialog(project, issue).show()
             } catch (exception: YouTrackPluginException) {
                 exception.showAsNotificationBalloon(project)
             }

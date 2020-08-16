@@ -1,20 +1,23 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.commands.CommandComponent
-import com.github.jk1.ytplugin.commands.CommandSession
+import com.github.jk1.ytplugin.commands.CommandService
+import com.github.jk1.ytplugin.commands.ICommandService
 import com.github.jk1.ytplugin.commands.lang.CommandLanguage
 import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandPreview
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
-import com.github.jk1.ytplugin.editor.AdminComponent
+import com.github.jk1.ytplugin.editor.IssueLinkProviderExtension
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.ui.LanguageTextField
+import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.KeyboardFocusManager
 import java.awt.event.ActionEvent
@@ -24,11 +27,11 @@ import java.awt.event.WindowEvent
 import javax.swing.*
 
 
-open class CommandDialog(override val project: Project, val session: CommandSession) : DialogWrapper(project, false), ComponentAware {
+open class CommandDialog(override val project: Project, val issue: Issue) : DialogWrapper(project, false), ComponentAware {
 
     protected val commandField = createCommandField()
     protected val commentArea = JTextArea(6, 60)
-    protected val visibilityGroupDropdown = JComboBox<String>()
+    protected val visibilityGroupDropdown = ComboBox<String>()
     protected val previewLabel = JLabel()
     protected open val focusRoot: JComponent = commandField
 
@@ -38,8 +41,8 @@ open class CommandDialog(override val project: Project, val session: CommandSess
     override fun init() {
         title = "Apply Command"
         // put placeholder value while group list is loaded in background
-        visibilityGroupDropdown.addItem(AdminComponent.ALL_USERS)
-        adminComponent.getActiveTaskVisibilityGroups(session.issue) { groups ->
+        visibilityGroupDropdown.addItem(IssueLinkProviderExtension.ALL_USERS)
+        commandComponent.getActiveTaskVisibilityGroups(issue) { groups ->
             SwingUtilities.invokeLater {
                 visibilityGroupDropdown.removeAllItems()
                 groups.forEach { visibilityGroupDropdown.addItem(it) }
@@ -78,8 +81,8 @@ open class CommandDialog(override val project: Project, val session: CommandSess
         val commandField = LanguageTextField(CommandLanguage, project, "")
         // Setup document for completion and highlighting
         val file = PsiDocumentManager.getInstance(project).getPsiFile(commandField.document)
-        file?.putUserData(CommandComponent.COMPONENT_KEY, CommandSuggestListener())
-        file?.putUserData(CommandComponent.SESSION_KEY, session)
+        file?.putUserData(CommandService.SERVICE_KEY, CommandSuggestListener())
+        file?.putUserData(CommandService.ISSUE_KEY, issue)
         // todo: find a better way to attach onEnter handler to LanguageTextField
         commandField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
@@ -104,7 +107,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
 
     private fun createCommandStringPanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        with(session.issue) {
+        with(issue) {
             val adaptedSummary = if (summary.length > 40) "${summary.substring(0, 40)}..." else summary
             val label = JLabel("Command for: $id $adaptedSummary")
             label.border = BorderFactory.createEmptyBorder(0, 0, 2, 0)
@@ -119,7 +122,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
         commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null)
         commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null)
         val panel = JPanel(BorderLayout())
-        val scrollPane = JScrollPane(commentArea)
+        val scrollPane = JBScrollPane(commentArea)
         val label = JLabel("Comment: ")
         panel.add(label, BorderLayout.NORTH)
         panel.add(scrollPane, BorderLayout.CENTER)
@@ -151,7 +154,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
     inner class ExecuteCommandAction(name: String, private val silent: Boolean = false) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             val group = visibilityGroupDropdown.selectedItem?.toString() ?: "All Users"
-            val execution = YouTrackCommandExecution(session, commandField.text, silent, commentArea.text, group)
+            val execution = YouTrackCommandExecution(issue, commandField.text, silent, commentArea.text, group)
             commandComponent.executeAsync(execution)
             this@CommandDialog.close(0)
         }
@@ -160,7 +163,7 @@ open class CommandDialog(override val project: Project, val session: CommandSess
     /**
      * Formats parsed command preview as html and displays it in command window
      */
-    inner class CommandSuggestListener : CommandComponent by commandComponent {
+    inner class CommandSuggestListener : ICommandService by commandComponent {
         override fun suggest(command: YouTrackCommand): CommandAssistResponse {
             val response = commandComponent.suggest(command)
             SwingUtilities.invokeLater {

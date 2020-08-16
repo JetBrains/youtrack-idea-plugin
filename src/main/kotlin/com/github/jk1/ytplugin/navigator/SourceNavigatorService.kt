@@ -3,8 +3,9 @@ package com.github.jk1.ytplugin.navigator
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.ProjectComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import fi.iki.elonen.NanoHTTPD
 import java.io.IOException
@@ -16,12 +17,13 @@ import java.io.IOException
  *
  * TeamCity plugin listens on the same ports as well and both plugins can coexists within the port range.
  */
-class SourceNavigatorComponent(override val project: Project): ProjectComponent, ComponentAware, IdeNotificationsTrait {
+@Service
+class SourceNavigatorService(override val project: Project): ComponentAware, Disposable, IdeNotificationsTrait {
 
     private val eligiblePorts = 63330..63339
     private var httpServer: NanoHTTPD? = null
 
-    override fun projectOpened() {
+    init {
         val port = eligiblePorts.firstOrNull {
             try {
                 val server = ConnectionHandler(project, it)
@@ -38,7 +40,7 @@ class SourceNavigatorComponent(override val project: Project): ProjectComponent,
         }
     }
 
-    override fun projectClosed() {
+    override fun dispose() {
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 httpServer?.stop()
