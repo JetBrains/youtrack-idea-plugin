@@ -157,41 +157,34 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
         val topPanel = JPanel(BorderLayout())
-        val commentPanel = JPanel(BorderLayout())
+        val workItemsPanel = JPanel(BorderLayout())
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         header.append(" at ")
         header.append(workItem.created.format())
         topPanel.add(header, BorderLayout.WEST)
-        val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
-//        commentPane.margin = Insets(2, 4, 0, 0)
-
 
         val date = SimpleColoredComponent()
-        date.append(workItem.date.format(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        date.append(" .  ")
+        date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        date.append("   |   ")
 
         val value = SimpleColoredComponent()
         value.append(workItem.value, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         value.icon = AllIcons.General.ContextHelp
-        value.append("  . ")
 
-        val comment = SimpleColoredComponent()
         if (workItem.comment != null){
-            comment.icon = AllIcons.General.Settings
-            comment.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            value.append("   |   ")
+            value.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }
 
-        commentPanel.add(date, BorderLayout.WEST)
-        commentPanel.add(value, BorderLayout.CENTER)
-        commentPanel.add(comment, BorderLayout.EAST)
-
+        workItemsPanel.add(date, BorderLayout.WEST)
+        workItemsPanel.add(value, BorderLayout.CENTER)
 
         val panel = JPanel(BorderLayout())
         panel.add(topPanel, BorderLayout.NORTH)
-        panel.add(commentPanel, BorderLayout.CENTER)
-//        panel.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+        panel.add(workItemsPanel, BorderLayout.CENTER)
+
         return panel
     }
 }
