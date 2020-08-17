@@ -11,10 +11,10 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import java.awt.*
-import java.util.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+
 
 class IssueViewer : JPanel(BorderLayout()) {
 
@@ -144,7 +144,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(comment.authorName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-//        header.append(" at ")
+        header.append(" at ")
         header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
         val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
@@ -159,32 +159,48 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
-        val topPanel = JPanel(BorderLayout())
-        val workItemsPanel = JPanel(BorderLayout())
+        val workItemsPanel = JPanel(GridLayout(1, 8, 0, rootPane.height / 110))
+
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        topPanel.add(header, BorderLayout.WEST)
 
         val date = SimpleColoredComponent()
         date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        date.append("   |   ")
 
         val value = SimpleColoredComponent()
         value.append(workItem.value, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         value.icon = AllIcons.Vcs.History
+        value.append("    ")
 
+        val slash = SimpleColoredComponent()
+        slash.append("                   |")
+        val slash1 = SimpleColoredComponent()
+        slash1.append("                  |")
+        val slash2 = SimpleColoredComponent()
+        slash2.append("                  |")
+
+        workItemsPanel.add(header)
+        workItemsPanel.add(slash)
+        workItemsPanel.add(date)
+        workItemsPanel.add(slash1)
+        workItemsPanel.add(value)
+
+        val comment = SimpleColoredComponent()
         if (workItem.comment != null){
-            value.append("   |   ")
-            value.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            comment.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            workItemsPanel.add(slash2)
+            workItemsPanel.add(comment)
+        }
+        else{
+            workItemsPanel.add(JLabel(""))  // for empty cell
+            workItemsPanel.add(JLabel(""))  // for empty cell
         }
 
-        workItemsPanel.add(date, BorderLayout.WEST)
-        workItemsPanel.add(value, BorderLayout.CENTER)
+        workItemsPanel.add(JLabel(""))  // for empty cell
 
         val panel = JPanel(BorderLayout())
-        panel.add(topPanel, BorderLayout.NORTH)
-        panel.add(workItemsPanel, BorderLayout.CENTER)
+        panel.add(workItemsPanel, BorderLayout.NORTH)
 
         return panel
     }
