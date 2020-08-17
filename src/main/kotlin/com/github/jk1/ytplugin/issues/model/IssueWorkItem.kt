@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import java.util.*
 
 
-class IssueWorkItem(item: JsonElement) {
+class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
 
     val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
     val date: Date = Date(item.asJsonObject.get("date").asLong)
@@ -22,4 +22,7 @@ class IssueWorkItem(item: JsonElement) {
     else
         null
 
+    override operator fun compareTo(other: IssueWorkItem): Int {
+        return date.compareTo(other.date)
+    }
 }

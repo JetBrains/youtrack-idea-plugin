@@ -11,6 +11,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import java.awt.*
+import java.util.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -125,12 +126,14 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addWorkLogTab(workItems: List<IssueWorkItem>, tabs: JBTabbedPane){
+    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane){
         if (workItems.isNotEmpty()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
             tabs.addTab("Work Items (${workItems.size})", commentsPanel)
             tabs.isFocusable = false
+
+            workItems.sort()
             workItems.forEach { commentsPanel.add(createWorkItemsPanel(it)) }
         }
     }
