@@ -41,7 +41,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name)," +
                 "id,projectCustomField),resolved,attachments(name,url),description,reporter(login)")
         method.setQueryString(arrayOf(fields))
-        return method.execute { IssueJsonParser.parseIssue(it, repository.url) }
+        val issue = method.execute { IssueJsonParser.parseIssue(it, repository.url) }
+
+        return if (issue != null)
+            getWorkItemsForIssues(issue.issueId, mutableListOf(issue))[0]
+        else
+            null
     }
 
     private fun parseIssues(method: GetMethod): MutableList<Issue> {
