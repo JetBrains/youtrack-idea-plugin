@@ -169,7 +169,7 @@ class IssueViewer : JPanel(BorderLayout()) {
 
         val value = SimpleColoredComponent()
         value.append(workItem.value, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        value.icon = AllIcons.General.ContextHelp
+        value.icon = AllIcons.Vcs.History
 
         if (workItem.comment != null){
             value.append("   |   ")
