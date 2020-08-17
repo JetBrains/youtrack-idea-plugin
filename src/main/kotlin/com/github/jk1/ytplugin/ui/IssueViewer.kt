@@ -141,7 +141,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(comment.authorName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        header.append(" at ")
+//        header.append(" at ")
         header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
         val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
@@ -161,8 +161,6 @@ class IssueViewer : JPanel(BorderLayout()) {
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        header.append(" at ")
-        header.append(workItem.created.format())
         topPanel.add(header, BorderLayout.WEST)
 
         val date = SimpleColoredComponent()
