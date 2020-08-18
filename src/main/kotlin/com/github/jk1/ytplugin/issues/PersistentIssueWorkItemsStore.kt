@@ -22,7 +22,6 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueWorkItemStore>()
 
-
     override fun getState(): Memento? = Memento(stores)
 
     override fun loadState(state: Memento) {

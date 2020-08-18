@@ -8,6 +8,7 @@ class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
 
     val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
     val date: Date = Date(item.asJsonObject.get("date").asLong)
+    val created: Date =  Date(item.asJsonObject.get("created").asLong)
     val value: String = item.asJsonObject.get("duration").asJsonObject.get("presentation").asString
             .replace("h", " hours")
             .replace("d", " days")

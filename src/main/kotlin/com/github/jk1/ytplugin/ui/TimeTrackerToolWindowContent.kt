@@ -18,10 +18,9 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
 
     private val splitter = EditorSplitter(vertical)
     private val viewer = IssueViewer()
-    private val issuesList = IssueList(repo)
     private val workItemsList = WorkItemsList(repo)
-
     private val searchBar = IssueSearchBar(repo)
+
 
     init {
         val leftPanel = JPanel(BorderLayout())
@@ -31,54 +30,45 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
-        setupIssueListActionListeners()
+        setupIssueWorkItemsListActionListeners()
     }
 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
-        val selectedIssue = { issuesList.getSelectedIssue() }
+        val selectedIssue = { workItemsList.getSelectedIssueWorkItem() }
         group.add(RefreshIssuesAction(repo))
         group.add(CreateIssueAction())
-        // todo: grouping and separators for actions
-        group.add(AddCommentAction(selectedIssue))
-//        group.add(OpenCommandWindowAction(selectedIssue))
-//        group.add(SetAsActiveTaskAction(selectedIssue, repo))
-//        group.add(CopyIssueLinkAction(selectedIssue))
-//        group.add(BrowseIssueAction(selectedIssue))
-//        group.add(AnalyzeStacktraceAction(selectedIssue))
-        group.add(PinIssueAction(selectedIssue))
-        group.add(ToggleIssueViewAction(project, issuesList))
         group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }
 
-    private fun setupIssueListActionListeners() {
+    private fun setupIssueWorkItemsListActionListeners() {
         // update preview contents upon selection
-        issuesList.addListSelectionListener {
-            val selectedIssue = issuesList.getSelectedIssue()
-            if (selectedIssue == null) {
+        workItemsList.addListSelectionListener {
+            val selectedIssueWorkItem = workItemsList.getSelectedIssueWorkItem()
+            if (selectedIssueWorkItem == null) {
                 splitter.collapse()
-            } else if (selectedIssue != viewer.currentIssue) {
-                viewer.showIssue(selectedIssue)
+            } else {
+                viewer.showWorkItems(selectedIssueWorkItem)
             }
         }
 
         // keystrokes to expand/collapse issue preview
-        issuesList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
-        issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
-        issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
+        workItemsList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
+        workItemsList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
+        workItemsList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
         // expand issue preview on click
-        issuesList.addMouseListener(object : MouseAdapter() {
+        workItemsList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
-                if (issuesList.getIssueCount() > 0) {
+                if (workItemsList.getIssueWorkItemsCount() > 0) {
                     splitter.expand()
                 }
             }
         })
         // apply issue search
         searchBar.actionListener = { search ->
-            issuesList.startLoading()
+            workItemsList.startLoading()
             repo.defaultSearch = search
             issueStoreComponent[repo].update(repo)
         }

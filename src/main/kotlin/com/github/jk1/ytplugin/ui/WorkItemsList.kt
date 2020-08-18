@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ui.ListSpeedSearch
@@ -20,26 +20,27 @@ import javax.swing.SwingUtilities
 class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
 
     override val project = repo.project
-    private val issueList: JBList<Issue> = JBList()
-    private val issueListModel: IssueListModel = IssueListModel()
-    val renderer: IssueListCellRenderer
+    private val issueWorkItemsList: JBList<IssueWorkItem> = JBList()
+    private val issueWorkItemListModel: IssueWorkItemsListModel = IssueWorkItemsListModel()
+    val renderer: WorkItemsListCellRenderer
+
 
     init {
-        val issueListScrollPane = JBScrollPane(issueList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        renderer = IssueListCellRenderer({ issueListScrollPane.viewport.width }, IssueListCellIconProvider(project))
-        issueList.cellRenderer = renderer
-        add(issueListScrollPane, BorderLayout.CENTER)
-        initIssueListModel()
-        ListSpeedSearch(issueList)
+        val issueWorkItemsListScrollPane = JBScrollPane(issueWorkItemsList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
+        renderer = WorkItemsListCellRenderer { issueWorkItemsListScrollPane.viewport.width }
+        issueWorkItemsList.cellRenderer = renderer
+        add(issueWorkItemsListScrollPane, BorderLayout.CENTER)
+        initIssueWorkItemsListModel()
+        ListSpeedSearch(issueWorkItemsList)
     }
 
-    private fun initIssueListModel() {
-        issueList.emptyText.clear()
-        issueList.model = issueListModel
+    private fun initIssueWorkItemsListModel() {
+        issueWorkItemsList.emptyText.clear()
+        issueWorkItemsList.model = issueWorkItemListModel
         startLoading()
-        if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-            issueStoreComponent[repo].update(repo).doWhenDone {
-                issueListModel.update()
+        if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
+            issueWorkItemsStoreComponent[repo].update(repo).doWhenDone {
+                issueWorkItemListModel.update()
                 stopLoading()
             }
         } else {
@@ -48,49 +49,50 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
         // listen to IssueStore updates and repaint issue list accordingly
         issueUpdaterComponent.subscribe {
             SwingUtilities.invokeLater {
-                val placeholder = issueList.emptyText
+                val placeholder = issueWorkItemsList.emptyText
                 placeholder.clear()
-                if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
-                    placeholder.appendText("No issues found. Edit search request or ")
-                    placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
-                    ) { SetupDialog(project, repo).show() }
+                if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
+                    placeholder.appendText("No work items found.")
+//                    placeholder.appendText("No issue work items found. Edit search request or ")
+//                    placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
+//                    ) { SetupDialog(project, repo).show() }
                 }
-                issueListModel.update()
-                val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())
-                if (updatedSelectedIssueIndex == -1) {
-                    issueList.clearSelection()
+                issueWorkItemListModel.update()
+                val updatedSelectedIssueWorkItemIndex = issueWorkItemsStoreComponent[repo].indexOf(getSelectedIssueWorkItem())
+                if (updatedSelectedIssueWorkItemIndex == -1) {
+                    issueWorkItemsList.clearSelection()
                 } else {
-                    issueList.selectedIndex = updatedSelectedIssueIndex
+                    issueWorkItemsList.selectedIndex = updatedSelectedIssueWorkItemIndex
                 }
                 stopLoading()
             }
         }
     }
 
-    fun getSelectedIssue() = when {
-        issueList.selectedIndex == -1 -> null
-        issueList.selectedIndex >= issueListModel.size -> null
-        else -> issueListModel.getElementAt(issueList.selectedIndex)
+    fun getSelectedIssueWorkItem() = when {
+        issueWorkItemsList.selectedIndex == -1 -> null
+        issueWorkItemsList.selectedIndex >= issueWorkItemListModel.size -> null
+        else -> issueWorkItemListModel.getElementAt(issueWorkItemsList.selectedIndex)
     }
 
-    fun getIssueCount() = issueListModel.size
+    fun getIssueWorkItemsCount() = issueWorkItemListModel.size
 
-    fun update() = issueListModel.update()
+    fun update() = issueWorkItemListModel.update()
 
     fun addListSelectionListener(listener: () -> Unit) {
-        issueList.addListSelectionListener { listener.invoke() }
+        issueWorkItemsList.addListSelectionListener { listener.invoke() }
     }
 
     override fun registerKeyboardAction(action: ActionListener, keyStroke: KeyStroke, condition: Int) {
-        issueList.registerKeyboardAction(action, keyStroke, condition)
+        issueWorkItemsList.registerKeyboardAction(action, keyStroke, condition)
     }
 
-    inner class IssueListModel : AbstractListModel<Issue>() {
+    inner class IssueWorkItemsListModel : AbstractListModel<IssueWorkItem>() {
 
-        override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
+        override fun getElementAt(index: Int) = issueWorkItemsStoreComponent[repo].getWorkItem(index)
 
         // we still can get this method invoked from swing focus lost handler on project close
-        override fun getSize() = if (project.isDisposed) 0 else issueStoreComponent[repo].getAllIssues().size
+        override fun getSize() = if (project.isDisposed) 0 else issueWorkItemsStoreComponent[repo].getAllWorkItems().size
 
         fun update() {
             fireContentsChanged(this, 0, size)

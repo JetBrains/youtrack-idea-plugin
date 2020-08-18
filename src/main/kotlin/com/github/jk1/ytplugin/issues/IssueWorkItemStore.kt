@@ -23,6 +23,7 @@ class IssueWorkItemStore(@Volatile private var workItems: MutableList<IssueWorkI
         return currentCallback
     }
 
+
     fun isUpdating() = !currentCallback.isDone
 
     fun getAllWorkItems() = workItems
