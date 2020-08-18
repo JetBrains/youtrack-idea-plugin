@@ -128,13 +128,13 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane){
         if (workItems.isNotEmpty()) {
-            val commentsPanel = JPanel()
-            commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
-            tabs.addTab("Work Items (${workItems.size})", commentsPanel)
+            val workItemsPanel = JPanel()
+            workItemsPanel.layout = BoxLayout(workItemsPanel, BoxLayout.Y_AXIS)
+            tabs.addTab("Work Items (${workItems.size})", workItemsPanel)
             tabs.isFocusable = false
 
             workItems.sort()
-            workItems.forEach { commentsPanel.add(createWorkItemsPanel(it)) }
+            workItems.forEach { workItemsPanel.add(createWorkItemsPanel(it)) }
         }
     }
 
