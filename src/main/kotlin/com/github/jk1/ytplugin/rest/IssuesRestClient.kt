@@ -34,11 +34,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun getIssue(id: String): Issue? {
-        println("hellp here")
         val method = GetMethod("${repository.url}/api/issues/$id")
         val fields = NameValuePair("fields", "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
-                "linkType(name,sourceToTarget,targetToSource),id),comments(id,text,created,updated," +
+                "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
                 "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,value(name)," +
                 "id,projectCustomField),resolved,attachments(name,url),description,reporter(login)")
         method.setQueryString(arrayOf(fields))
@@ -94,7 +93,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val myQuery = NameValuePair("query", query)
         val myFields = NameValuePair("fields", "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
-                "linkType(name,sourceToTarget,targetToSource),id),comments(id,text,created,updated," +
+                "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
                 "author(name,%20authorFullName,login)),summary,wikifiedDescription,customFields(name,color,value(name,minutes,presentation,color(background,foreground)),id,projectCustomField)," +
                 "resolved,attachments(name,url),description,reporter(login)")
 
