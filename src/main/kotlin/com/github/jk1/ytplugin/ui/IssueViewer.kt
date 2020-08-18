@@ -159,7 +159,7 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
-        val workItemsPanel = JPanel(GridLayout(1, 8, 0, rootPane.height / 110))
+        val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
 
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User

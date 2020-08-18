@@ -34,6 +34,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun getIssue(id: String): Issue? {
+        println("hellp here")
         val method = GetMethod("${repository.url}/api/issues/$id")
         val fields = NameValuePair("fields", "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
