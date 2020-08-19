@@ -46,8 +46,8 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
         } else {
             stopLoading()
         }
-        // listen to IssueStore updates and repaint issue list accordingly
-        issueUpdaterComponent.subscribe {
+        // listen to IssueStore updates and repaint issueWorkItems list accordingly
+        issueWorkItemsUpdaterComponent.subscribe {
             SwingUtilities.invokeLater {
                 val placeholder = issueWorkItemsList.emptyText
                 placeholder.clear()

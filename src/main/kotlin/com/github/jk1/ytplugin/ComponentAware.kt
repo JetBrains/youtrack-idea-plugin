@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin
 import com.github.jk1.ytplugin.commands.CommandService
 import com.github.jk1.ytplugin.commands.ICommandService
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
+import com.github.jk1.ytplugin.issues.IssueWorkItemsStoreUpdaterService
 import com.github.jk1.ytplugin.issues.PersistentIssueStore
 import com.github.jk1.ytplugin.issues.PersistentIssueWorkItemsStore
 import com.github.jk1.ytplugin.navigator.SourceNavigatorService
@@ -37,6 +38,9 @@ interface ComponentAware {
 
     val issueWorkItemsStoreComponent: PersistentIssueWorkItemsStore
         get() = ApplicationManager.getApplication().getService(PersistentIssueWorkItemsStore::class.java)!!
+
+    val issueWorkItemsUpdaterComponent: IssueWorkItemsStoreUpdaterService
+        get() = project.getService(IssueWorkItemsStoreUpdaterService::class.java)!!
 
     val issueStoreComponent: PersistentIssueStore
         get() = ApplicationManager.getApplication().getService(PersistentIssueStore::class.java)!!

@@ -12,8 +12,8 @@ import com.intellij.openapi.components.Storage
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Application-scoped persistent issue data cache. Issue data is persisted in a home folder instead of
- * a project directory. This comes in handy for projects with /.idea under VCS control.
+ * Application-scoped persistent issue work items data cache. Issue work items data is persisted in a home folder instead of
+ * a project directory.
  */
 @Service
 @State(name = "YouTrack IssuesWorkItems", storages = [(Storage(value = "issuesWorkItems.xml"))])
@@ -52,10 +52,8 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
         fun getStore(repo: YouTrackServer): IssueWorkItemStore {
             try {
                 val issuesWorkItemsJson = persistentIssueWorkItems[repo.id] ?: return IssueWorkItemStore()
-                val issues = JsonParser.parseString(issuesWorkItemsJson).asJsonArray
-                        .mapNotNull { IssueJsonParser.parseIssue(it, repo.url) }
-                val issuesWorkItems = mutableListOf<IssueWorkItem>()
-                issues.map { issuesWorkItems.addAll(it.workItems)}
+                val issuesWorkItems = JsonParser.parseString(issuesWorkItemsJson).asJsonArray
+                        .mapNotNull { IssueJsonParser.parseWorkItem(it) }
                 logger.debug("IssueWorkItems store file cache loaded for ${repo.url} with a total of ${issuesWorkItems.size}")
                 return IssueWorkItemStore(issuesWorkItems)
             } catch (e: Exception) {

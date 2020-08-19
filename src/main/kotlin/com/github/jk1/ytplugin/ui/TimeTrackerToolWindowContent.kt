@@ -35,8 +35,10 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
-        val selectedIssue = { workItemsList.getSelectedIssueWorkItem() }
-        group.add(RefreshIssuesAction(repo))
+        group.add(RefreshWorkItemsAction(repo))
+        group.add(StartTrackerAction())
+        group.add(StopTrackerAction())
+
         group.add(CreateIssueAction())
         group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
@@ -54,11 +56,11 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
             }
         }
 
-        // keystrokes to expand/collapse issue preview
+        // keystrokes to expand/collapse preview
         workItemsList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
         workItemsList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
         workItemsList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
-        // expand issue preview on click
+        // expand  preview on click
         workItemsList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 if (workItemsList.getIssueWorkItemsCount() > 0) {
@@ -66,11 +68,11 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
                 }
             }
         })
-        // apply issue search
+        // apply work items search
         searchBar.actionListener = { search ->
             workItemsList.startLoading()
             repo.defaultSearch = search
-            issueStoreComponent[repo].update(repo)
+            issueWorkItemsStoreComponent[repo].update(repo)
         }
     }
 }

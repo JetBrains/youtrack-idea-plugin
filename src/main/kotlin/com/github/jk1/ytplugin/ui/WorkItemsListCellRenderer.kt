@@ -18,18 +18,12 @@ class WorkItemsListCellRenderer(
 
     private val topPanel = JPanel(BorderLayout())
     private val bottomPanel = JPanel(BorderLayout())
-    private val idSummaryPanel = JPanel(BorderLayout())
+    private val idSummaryPanel = JPanel(GridLayout(1, 11, 0, 0))
     private val idSummary = SimpleColoredComponent()
     private val fields = SimpleColoredComponent()
     private val time = JLabel()
     private val glyphs = JLabel()
 
-
-    var compactView: Boolean = true
-        set(value) {
-            if (value) remove(bottomPanel) else add(bottomPanel, BorderLayout.SOUTH)
-            field = value
-        }
 
     init {
         idSummary.isOpaque = false
@@ -53,33 +47,51 @@ class WorkItemsListCellRenderer(
                                               issueWorkItem: IssueWorkItem, index: Int,
                                               isSelected: Boolean, cellHasFocus: Boolean): Component {
 
-        val fgColor =Color(75, 107, 244)
+        val fgColor = Color(75, 107, 244)
 
         background = UIUtil.getListBackground(isSelected)
         fillSummaryLine(issueWorkItem, fgColor)
-        fillCustomFields(issueWorkItem, fgColor, isSelected)
+        fillCustomFields(issueWorkItem, isSelected)
         time.foreground = if (isSelected) UIUtil.getListForeground(true) else JBColor(Color(75, 107, 244), Color(87, 120, 173))
         time.text = issueWorkItem.created.format() + " "
         return this
     }
 
     private fun fillSummaryLine(issueWorkItem: IssueWorkItem, fgColor: Color) {
-        val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
+        val complimentaryColor =Color(123, 123, 127)
         idSummaryPanel.removeAll()
+
         idSummary.clear()
-        idSummary.ipad = Insets(0, 4, 0, 0)
         val idStyle = STYLE_BOLD
         idSummary.icon = AllIcons.General.User
         idSummary.append(issueWorkItem.author, SimpleTextAttributes(idStyle, fgColor))
-        idSummary.append("      ")
-        idSummary.append(issueWorkItem.date.format().substring(0, issueWorkItem.date.format().length - 5)
-                + "      ", SimpleTextAttributes(idStyle, fgColor))
-        idSummary.append(issueWorkItem.value, SimpleTextAttributes(idStyle, fgColor))
 
-        idSummaryPanel.add(idSummary, BorderLayout.EAST)
+        val date = SimpleColoredComponent()
+        date.isOpaque = false
+        date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+        date.append(issueWorkItem.date.format().substring(0, issueWorkItem.date.format().length - 5), SimpleTextAttributes(idStyle, complimentaryColor))
+
+        val value = SimpleColoredComponent()
+        value.isOpaque = false
+        value.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+        value.icon = AllIcons.Vcs.History
+        value.append(issueWorkItem.value, SimpleTextAttributes(idStyle, fgColor))
+
+        val issue = SimpleColoredComponent()
+        issue.isOpaque = false
+        issue.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+        issue.append("Issue " + issueWorkItem.issueId, SimpleTextAttributes(idStyle, complimentaryColor))
+
+        idSummaryPanel.add(idSummary)
+        idSummaryPanel.add(JLabel(""))  // for empty cell
+        idSummaryPanel.add(date)
+        idSummaryPanel.add(JLabel(""))  // for empty cell
+        idSummaryPanel.add(value)
+        idSummaryPanel.add(JLabel(""))  // for empty cell
+        idSummaryPanel.add(issue)
     }
 
-    private fun fillCustomFields(issueWorkItem: IssueWorkItem, fgColor: Color, isSelected: Boolean) {
+    private fun fillCustomFields(issueWorkItem: IssueWorkItem, isSelected: Boolean) {
         val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
         fields.clear()
         fields.isOpaque = !isSelected

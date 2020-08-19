@@ -4,13 +4,14 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.rest.UserRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.ActionCallback
 import java.net.SocketTimeoutException
 
-class IssueWorkItemStore(@Volatile private var workItems: MutableList<IssueWorkItem> = mutableListOf()) : Iterable<IssueWorkItem> {
+class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = listOf()) : Iterable<IssueWorkItem> {
 
     private var currentCallback: ActionCallback = ActionCallback.Done()
 
@@ -38,8 +39,7 @@ class IssueWorkItemStore(@Volatile private var workItems: MutableList<IssueWorkI
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issuesWorkItems for search query: ${repo.defaultSearch}")
-                val issues = IssuesRestClient(repo).getIssues(repo.defaultSearch)
-                issues.map { workItems.addAll(it.workItems)}
+                workItems = UserRestClient(repo).getWorkItemsForUser(repo.defaultSearch)
             } catch (e: SocketTimeoutException) {
                 displayErrorMessage("Failed to updated issueWorkItems from YouTrack server. Request timed out.", e)
             } catch (e: Exception) {
@@ -62,7 +62,7 @@ class IssueWorkItemStore(@Volatile private var workItems: MutableList<IssueWorkI
         override fun onSuccess() {
             future.setDone()
             logger.debug("IssueWorkItems store has been updated for YouTrack server ${repo.url}")
-            ComponentAware.of(repo.project).issueUpdaterComponent.onAfterUpdate()
+            ComponentAware.of(repo.project).issueWorkItemsUpdaterComponent.onAfterUpdate()
         }
     }
 }
