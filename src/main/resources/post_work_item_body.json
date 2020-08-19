@@ -1,0 +1,14 @@
+{
+  "usesMarkdown": true,
+  "text": "I keep on testing *samples*.",
+  "date": "{date}",
+  "author": {
+    "id": "1-1"
+  },
+  "duration": {
+    "minutes": "{minutes}"
+  },
+  "$type": "IssueWorkItem"
+}
+
+

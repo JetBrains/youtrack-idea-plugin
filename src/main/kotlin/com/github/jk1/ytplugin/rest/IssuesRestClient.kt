@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
@@ -113,5 +114,21 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         method.setQueryString(arrayOf(myQuery, myFields))
 
         return parseWorkItems(method, issues)
+    }
+
+    fun getEntityIdByIssueId(issueId: String): String {
+        val myQuery = NameValuePair("fields", "id")
+        val url = "${repository.url}/api/issues/${issueId}"
+        val method = GetMethod(url)
+        method.setQueryString(arrayOf(myQuery))
+        return method.connect {
+            val status = httpClient.executeMethod(method)
+            if (status == 200){
+                val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+                json.get("id").asString
+            }
+            else
+                throw RuntimeException(method.responseBodyAsLoggedString())
+        }
     }
 }

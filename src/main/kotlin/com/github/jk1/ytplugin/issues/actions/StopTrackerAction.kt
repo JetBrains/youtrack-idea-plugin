@@ -1,5 +1,7 @@
 package com.github.jk1.ytplugin.issues.actions
 
+import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
@@ -7,7 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import javax.swing.Icon
 
 
-class StopTrackerAction(timer: TimeTracker) : IssueAction() {
+class StopTrackerAction(timer: TimeTracker, repo: YouTrackServer) : IssueAction() {
     override val text = "Stop time tracking"
     override val description = "Stop time tracking"
 
@@ -16,10 +18,13 @@ class StopTrackerAction(timer: TimeTracker) : IssueAction() {
 
     override val shortcut = "control shift L"
     private val myTimer = timer
+    private val myRepo = repo
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
             val time = myTimer.stop()
+            if (time != "0")
+                TimeTrackerRestClient(myRepo).postNewWorkItem(myTimer.issueId, myTimer.getRecordedTime())
         }
     }
 }

@@ -21,49 +21,34 @@ class TimeTracker() {
             time
         }
         else{
+            TrackerNotifier.infoBox("Could not stop time tracking - timer is not started", "");
             logger.debug("Time tracking was not recorded")
-            "0m"
+            "0"
         }
     }
 
     fun start(){
         if (!isRunning) {
-            logger.debug("Time tracking started")
+            logger.debug("Time tracking started for issue $issueId")
+            TrackerNotifier.infoBox("Time tracking started for issue $issueId", "");
+
             startTime = System.currentTimeMillis()
             isRunning = true
         }
     }
 
     private fun formatTimePeriod(timeInMilSec: Long): String {
-        var timeInMilliSec = timeInMilSec
-        require(timeInMilliSec >= 0) { "0m" }
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
 
-        var days = TimeUnit.MILLISECONDS.toDays(timeInMilliSec)
-        timeInMilliSec -= TimeUnit.DAYS.toMillis(days)
+        return if (minutes > 0){
+            TrackerNotifier.infoBox("Time tracking stopped", "");
+            minutes.toString()
+        }
+        else{
+            TrackerNotifier.infoBox("Time is not recorded (< 1min)", "");
+            "0"
+        }
 
-        val weeks = days / 7
-        days %=  7
-
-        val hours = TimeUnit.MILLISECONDS.toHours(timeInMilliSec)
-        timeInMilliSec -= TimeUnit.HOURS.toMillis(hours)
-
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilliSec)
-        timeInMilliSec -= TimeUnit.MINUTES.toMillis(minutes)
-
-        val sb = StringBuilder(64)
-        if (weeks > 0)
-            sb.append(weeks).append("w ")
-        if (days > 0)
-            sb.append(days).append("d ")
-        if (hours > 0)
-            sb.append(hours).append("h ")
-        if (minutes > 0)
-            sb.append(minutes).append("m ")
-
-        if (sb.isEmpty())
-            return "0m"
-
-        return sb.toString()
     }
 
     fun getRecordedTime() = time

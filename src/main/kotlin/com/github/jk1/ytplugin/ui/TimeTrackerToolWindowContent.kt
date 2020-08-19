@@ -40,8 +40,8 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         val group = IssueActionGroup(this)
         group.add(RefreshWorkItemsAction(repo))
 
-        group.add(StartTrackerAction(timer, taskManager))
-        group.add(StopTrackerAction(timer))
+        group.add(StartTrackerAction(repo, timer, taskManager))
+        group.add(StopTrackerAction(timer, repo))
 
         group.add(CreateIssueAction())
         group.addConfigureTaskServerAction(repo)
