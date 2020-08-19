@@ -3,7 +3,9 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.TaskManager
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
 import java.awt.event.MouseAdapter
@@ -20,7 +22,8 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     private val viewer = IssueViewer()
     private val workItemsList = WorkItemsList(repo)
     private val searchBar = IssueSearchBar(repo)
-
+    private val timer = TimeTracker()
+    private var taskManager = TaskManager.getManager(project)
 
     init {
         val leftPanel = JPanel(BorderLayout())
@@ -36,8 +39,9 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
         group.add(RefreshWorkItemsAction(repo))
-        group.add(StartTrackerAction())
-        group.add(StopTrackerAction())
+
+        group.add(StartTrackerAction(timer, taskManager))
+        group.add(StopTrackerAction(timer))
 
         group.add(CreateIssueAction())
         group.addConfigureTaskServerAction(repo)
