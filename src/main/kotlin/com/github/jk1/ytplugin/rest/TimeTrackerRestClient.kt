@@ -31,7 +31,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                     logger.debug("Successfully posted")
                 }
                 else -> {
-                    TrackerNotifier.infoBox("Could not post time: time tracking is disabled", "");
+                    TrackerNotifier.infoBox("Could not record time: time tracking is disabled", "");
                 }
             }
         }

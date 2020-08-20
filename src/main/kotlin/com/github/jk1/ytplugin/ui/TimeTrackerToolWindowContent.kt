@@ -22,7 +22,6 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     override val project: Project = repo.project
 
     private val splitter = EditorSplitter(vertical)
-    private val viewer = IssueViewer()
     private val workItemsList = WorkItemsList(repo)
     private val timer = TimeTracker()
     private var taskManager = TaskManager.getManager(project)
@@ -31,7 +30,6 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         val leftPanel = JPanel(BorderLayout())
         leftPanel.add(workItemsList, BorderLayout.CENTER)
         splitter.firstComponent = leftPanel
-        splitter.secondComponent = viewer
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueWorkItemsListActionListeners()
@@ -56,8 +54,6 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
             val selectedIssueWorkItem = workItemsList.getSelectedIssueWorkItem()
             if (selectedIssueWorkItem == null) {
                 splitter.collapse()
-            } else {
-                viewer.showWorkItems(selectedIssueWorkItem)
             }
         }
 
