@@ -38,8 +38,8 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
 
         override fun run(indicator: ProgressIndicator) {
             try {
-                logger.debug("Fetching issuesWorkItems for search query: ${repo.defaultSearch}")
-                workItems = UserRestClient(repo).getWorkItemsForUser(repo.defaultSearch)
+                logger.debug("Fetching issuesWorkItems for search query: #{Assigned to me}")
+                workItems = UserRestClient(repo).getWorkItemsForUser("#{Assigned to me}")
             } catch (e: SocketTimeoutException) {
                 displayErrorMessage("Failed to updated issueWorkItems from YouTrack server. Request timed out.", e)
             } catch (e: Exception) {
