@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
+import com.github.jk1.ytplugin.timeTracker.TrackerNotifier
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -24,9 +25,14 @@ class StartTrackerAction(repo: YouTrackServer, timer: TimeTracker, project: Proj
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
             val activeTask = myManager.activeTask
-            myTimer.issueId =  IssuesRestClient(myRepo).getEntityIdByIssueId(activeTask.id)
-            if (myTimer.issueId != "0")
-                myTimer.start(myProject)
+            if (!myTimer.isRunning){
+                myTimer.issueId =  IssuesRestClient(myRepo).getEntityIdByIssueId(activeTask.id)
+                if (myTimer.issueId  != "0")
+                    myTimer.start(myProject)
+            }
+            else
+                TrackerNotifier.infoBox("Time tracking is already running", "");
+
         }
     }
 }

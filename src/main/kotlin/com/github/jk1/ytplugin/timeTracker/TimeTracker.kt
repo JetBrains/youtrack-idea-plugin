@@ -1,6 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WindowManager
