@@ -21,13 +21,11 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     private val splitter = EditorSplitter(vertical)
     private val viewer = IssueViewer()
     private val workItemsList = WorkItemsList(repo)
-    private val searchBar = IssueSearchBar(repo)
     private val timer = TimeTracker()
     private var taskManager = TaskManager.getManager(project)
 
     init {
         val leftPanel = JPanel(BorderLayout())
-        leftPanel.add(searchBar, BorderLayout.NORTH)
         leftPanel.add(workItemsList, BorderLayout.CENTER)
         splitter.firstComponent = leftPanel
         splitter.secondComponent = viewer
@@ -40,8 +38,8 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         val group = IssueActionGroup(this)
         group.add(RefreshWorkItemsAction(repo))
 
-        group.add(StartTrackerAction(repo, timer, taskManager))
-        group.add(StopTrackerAction(timer, repo))
+        group.add(StartTrackerAction(repo, timer, project, taskManager))
+        group.add(StopTrackerAction(timer, repo, project))
 
         group.add(CreateIssueAction())
         group.addConfigureTaskServerAction(repo)
@@ -72,11 +70,5 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
                 }
             }
         })
-        // apply work items search
-        searchBar.actionListener = { search ->
-            workItemsList.startLoading()
-            repo.defaultSearch = search
-            issueWorkItemsStoreComponent[repo].update(repo)
-        }
     }
 }

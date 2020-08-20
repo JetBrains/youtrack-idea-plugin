@@ -1,6 +1,9 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.StatusBarWidgetFactory
+import com.intellij.openapi.wm.WindowManager
 import java.util.concurrent.TimeUnit
 
 
@@ -13,11 +16,13 @@ class TimeTracker() {
     private var startTime: Long = 0
     var isRunning = false
 
-    fun stop(): String {
+    fun stop(project: Project): String {
         return if (isRunning){
             logger.debug("Time tracking stopped")
             time = formatTimePeriod((System.currentTimeMillis() - startTime))
             isRunning = false
+            val bar = WindowManager.getInstance().getStatusBar(project)
+            bar?.removeWidget("Time Tracking Clock")
             time
         }
         else{
@@ -27,13 +32,15 @@ class TimeTracker() {
         }
     }
 
-    fun start(){
+    fun start(project: Project){
         if (!isRunning) {
             logger.debug("Time tracking started for issue $issueId")
             TrackerNotifier.infoBox("Time tracking started for issue $issueId", "");
 
             startTime = System.currentTimeMillis()
             isRunning = true
+            val bar = WindowManager.getInstance().getStatusBar(project)
+            bar?.addWidget(ClockWidget(startTime))
         }
     }
 
