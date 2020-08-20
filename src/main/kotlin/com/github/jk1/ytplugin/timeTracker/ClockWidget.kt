@@ -15,7 +15,7 @@ class ClockWidget(startTime: Long) : CustomStatusBarWidget {
     val label = JLabel(time())
 
     private val startingTime = startTime
-    private val timer = Timer(1000, ActionListener { it: ActionEvent? -> label.text = time() })
+    private val timer = Timer(1000, ActionListener { label.text = time() })
 
     fun time(): String {
         val recordedTime = System.currentTimeMillis() - startingTime

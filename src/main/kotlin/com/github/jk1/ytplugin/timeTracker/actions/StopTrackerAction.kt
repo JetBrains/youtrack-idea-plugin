@@ -1,5 +1,6 @@
-package com.github.jk1.ytplugin.issues.actions
+package com.github.jk1.ytplugin.timeTracker.actions
 
+import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker

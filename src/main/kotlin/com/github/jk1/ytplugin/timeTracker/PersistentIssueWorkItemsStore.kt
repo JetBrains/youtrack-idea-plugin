@@ -1,6 +1,6 @@
-package com.github.jk1.ytplugin.issues
+package com.github.jk1.ytplugin.timeTracker
 
-import com.github.jk1.ytplugin.issues.model.IssueWorkItem
+import com.github.jk1.ytplugin.issues.IssueWorkItemStore
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer

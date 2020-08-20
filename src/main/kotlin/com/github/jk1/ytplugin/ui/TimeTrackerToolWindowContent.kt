@@ -4,6 +4,9 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
+import com.github.jk1.ytplugin.timeTracker.actions.RefreshWorkItemsAction
+import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 import java.awt.BorderLayout

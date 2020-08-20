@@ -3,9 +3,9 @@ package com.github.jk1.ytplugin
 import com.github.jk1.ytplugin.commands.CommandService
 import com.github.jk1.ytplugin.commands.ICommandService
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
-import com.github.jk1.ytplugin.issues.IssueWorkItemsStoreUpdaterService
+import com.github.jk1.ytplugin.timeTracker.IssueWorkItemsStoreUpdaterService
 import com.github.jk1.ytplugin.issues.PersistentIssueStore
-import com.github.jk1.ytplugin.issues.PersistentIssueWorkItemsStore
+import com.github.jk1.ytplugin.timeTracker.PersistentIssueWorkItemsStore
 import com.github.jk1.ytplugin.navigator.SourceNavigatorService
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService
 import com.intellij.openapi.application.ApplicationManager
