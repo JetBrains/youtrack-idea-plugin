@@ -30,7 +30,7 @@ class ClockWidget(startTime: Long) : CustomStatusBarWidget {
 
     override fun install(statusBar: StatusBar) {
         Intrinsics.checkParameterIsNotNull(statusBar, "statusBar")
-        label.text = "00:00"
+        label.text = "Time spent: 00:00"
         timer.start()
     }
 

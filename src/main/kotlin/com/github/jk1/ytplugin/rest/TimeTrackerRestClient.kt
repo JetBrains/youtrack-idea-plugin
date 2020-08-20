@@ -26,15 +26,12 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
 
         method.connect {
-            val status = httpClient.executeMethod(method)
-
-            when (status) {
+            when (httpClient.executeMethod(method)) {
                 200 -> {
                     logger.debug("Successfully posted")
                 }
                 else -> {
                     TrackerNotifier.infoBox("Could not post time: time tracking is disabled", "");
-                    throw RuntimeException(method.responseBodyAsLoggedString())
                 }
             }
         }
