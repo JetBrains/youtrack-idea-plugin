@@ -24,11 +24,13 @@ class ClockWidget(startTime: Long) : CustomStatusBarWidget {
                 TimeUnit.MILLISECONDS.toHours(recordedTime),
                 TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
                         TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
+
         return "Time spent: $time"
     }
 
     override fun install(statusBar: StatusBar) {
         Intrinsics.checkParameterIsNotNull(statusBar, "statusBar")
+        label.text = "00:00"
         timer.start()
     }
 

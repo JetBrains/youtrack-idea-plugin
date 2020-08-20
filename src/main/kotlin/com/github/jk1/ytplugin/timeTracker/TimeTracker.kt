@@ -26,7 +26,7 @@ class TimeTracker() {
             time
         }
         else{
-            TrackerNotifier.infoBox("Could not stop time tracking - timer is not started", "");
+            TrackerNotifier.infoBox("Could not stop time tracking: timer is not started", "");
             logger.debug("Time tracking was not recorded")
             "0"
         }

@@ -25,7 +25,8 @@ class StartTrackerAction(repo: YouTrackServer, timer: TimeTracker, project: Proj
         event.whenActive {
             val activeTask = myManager.activeTask
             myTimer.issueId =  IssuesRestClient(myRepo).getEntityIdByIssueId(activeTask.id)
-            myTimer.start(myProject)
+            if (myTimer.issueId != "0")
+                myTimer.start(myProject)
         }
     }
 }

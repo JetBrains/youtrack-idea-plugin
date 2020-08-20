@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotifier
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.net.URL
@@ -32,6 +33,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                     logger.debug("Successfully posted")
                 }
                 else -> {
+                    TrackerNotifier.infoBox("Could not post time: time tracking is disabled", "");
                     throw RuntimeException(method.responseBodyAsLoggedString())
                 }
             }

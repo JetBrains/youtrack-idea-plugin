@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotifier
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -127,8 +128,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
                 json.get("id").asString
             }
-            else
-                throw RuntimeException(method.responseBodyAsLoggedString())
+            else{
+                TrackerNotifier.infoBox("Could not post time: not a YouTrack issue", "")
+                "0"
+            }
         }
     }
 }
