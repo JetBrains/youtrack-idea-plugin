@@ -83,6 +83,7 @@ class WorkItemsListCellRenderer(
 
         val panel = JPanel(GridLayout(1, 6, 0, 0))
         panel.isOpaque = false
+        //TODO: size won't be hardcoded
         panel.preferredSize = Dimension(1050, 40)
         panel.add(author)
         panel.add(date)

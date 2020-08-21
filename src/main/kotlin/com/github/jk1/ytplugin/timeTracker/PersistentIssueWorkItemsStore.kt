@@ -42,7 +42,7 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
     class Memento constructor() {
 
         // should stay mutable and public for serialization to work
-       var persistentIssueWorkItems: Map<String, String> = mutableMapOf()
+        var persistentIssueWorkItems: Map<String, String> = mutableMapOf()
 
         // primary constructor is reserved for serializer
         constructor(stores: Map<String, IssueWorkItemStore>) : this() {
@@ -54,6 +54,7 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
                 val issuesWorkItemsJson = persistentIssueWorkItems[repo.id] ?: return IssueWorkItemStore()
                 val issuesWorkItems = JsonParser.parseString(issuesWorkItemsJson).asJsonArray
                         .mapNotNull { IssueJsonParser.parseWorkItem(it) }
+
                 logger.debug("IssueWorkItems store file cache loaded for ${repo.url} with a total of ${issuesWorkItems.size}")
                 return IssueWorkItemStore(issuesWorkItems)
             } catch (e: Exception) {

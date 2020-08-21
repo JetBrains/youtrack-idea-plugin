@@ -36,7 +36,7 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         }
     }
 
-    fun getWorkItemsForUser(query: String): MutableList<IssueWorkItem> {
+    fun getWorkItemsForUser(query: String): List<IssueWorkItem> {
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
@@ -44,6 +44,10 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
                 "duration(presentation,minutes),author(name),creator(name),date,id")
         method.setQueryString(arrayOf(myQuery, myFields))
 
-        return parseWorkItems(method)
+        val sortedList = parseWorkItems(method)
+                .sortedWith(compareByDescending { it.created })
+                .sortedWith(compareByDescending { it.date })
+
+        return sortedList
     }
 }

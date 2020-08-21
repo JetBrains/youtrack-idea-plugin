@@ -25,12 +25,11 @@ class StartTrackerAction(repo: YouTrackServer, timer: TimeTracker, project: Proj
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
             val activeTask = myManager.activeTask
-            if (!myTimer.isRunning){
-                myTimer.issueId =  IssuesRestClient(myRepo).getEntityIdByIssueId(activeTask.id)
-                if (myTimer.issueId  != "0")
+            if (!myTimer.isRunning) {
+                myTimer.issueId = IssuesRestClient(myRepo).getEntityIdByIssueId(activeTask.id)
+                if (myTimer.issueId != "0")
                     myTimer.start(myProject)
-            }
-            else
+            } else
                 TrackerNotifier.infoBox("Time tracking is already running", "");
 
         }

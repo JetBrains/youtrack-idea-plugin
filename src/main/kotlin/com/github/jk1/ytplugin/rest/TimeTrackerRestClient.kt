@@ -12,7 +12,7 @@ import java.util.*
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun postNewWorkItem(issueId: String, time: String){
+    fun postNewWorkItem(issueId: String, time: String) {
         val getGroupsUrl = "${repository.url}/api/issues/${issueId}/timeTracking/workItems"
 
         val method = PostMethod(getGroupsUrl)
@@ -29,8 +29,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
             when (httpClient.executeMethod(method)) {
                 200 -> {
                     logger.debug("Successfully posted")
-                }
-                else -> {
+                } else -> {
                     TrackerNotifier.infoBox("Could not record time: time tracking is disabled", "");
                 }
             }

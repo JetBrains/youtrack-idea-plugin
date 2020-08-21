@@ -124,11 +124,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         method.setQueryString(arrayOf(myQuery))
         return method.connect {
             val status = httpClient.executeMethod(method)
-            if (status == 200){
+            if (status == 200) {
                 val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
                 json.get("id").asString
-            }
-            else{
+            } else {
                 TrackerNotifier.infoBox("Could not post time: not a YouTrack issue", "")
                 "0"
             }

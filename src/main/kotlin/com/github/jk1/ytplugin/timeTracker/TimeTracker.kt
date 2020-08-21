@@ -26,8 +26,7 @@ class TimeTracker() {
             val bar = WindowManager.getInstance().getStatusBar(project)
             bar?.removeWidget("Time Tracking Clock")
             time
-        }
-        else{
+        } else{
             TrackerNotifier.infoBox("Could not stop time tracking: timer is not started", "");
             logger.debug("Time tracking was not recorded")
             "0"
@@ -52,8 +51,7 @@ class TimeTracker() {
         return if (minutes > 0){
             TrackerNotifier.infoBox("Time tracking stopped", "");
             minutes.toString()
-        }
-        else{
+        } else{
             TrackerNotifier.infoBox("Time is not recorded (< 1min)", "");
             "0"
         }

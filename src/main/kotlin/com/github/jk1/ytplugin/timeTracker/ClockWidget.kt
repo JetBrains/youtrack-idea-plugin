@@ -2,10 +2,7 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.intellij.openapi.wm.CustomStatusBarWidget
 import com.intellij.openapi.wm.StatusBar
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.time.LocalDateTime
-import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JLabel
 import javax.swing.Timer
