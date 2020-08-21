@@ -4,9 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
-import com.github.jk1.ytplugin.timeTracker.actions.RefreshWorkItemsAction
-import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
-import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
+import com.github.jk1.ytplugin.timeTracker.actions.*
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 import java.awt.BorderLayout
@@ -40,8 +38,8 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
 
         group.add(StartTrackerAction(repo, timer, project, taskManager))
         group.add(StopTrackerAction(timer, repo, project))
-
-        group.add(CreateIssueAction())
+        group.add(GroupByIssueAction(repo, workItemsList))
+        group.add(GroupByDateAction(repo, workItemsList))
         group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()

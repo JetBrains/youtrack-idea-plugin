@@ -14,6 +14,7 @@ import java.net.SocketTimeoutException
 class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = listOf()) : Iterable<IssueWorkItem> {
 
     private var currentCallback: ActionCallback = ActionCallback.Done()
+    var withGrouping = false
 
     fun update(repo: YouTrackServer): ActionCallback {
         if (!isUpdating()) {
@@ -39,7 +40,10 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issuesWorkItems for search query: #{Assigned to me}")
-                workItems = UserRestClient(repo).getWorkItemsForUser("#{Assigned to me}")
+                val list = UserRestClient(repo).getWorkItemsForUser("#{Assigned to me}")
+                workItems = if (withGrouping)
+                    list.sortedWith(compareBy { it.issueId })
+                else list
             } catch (e: SocketTimeoutException) {
                 displayErrorMessage("Failed to updated issueWorkItems from YouTrack server. Request timed out.", e)
             } catch (e: Exception) {
@@ -47,7 +51,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
             }
         }
 
-        private fun displayErrorMessage(message: String, exception: Exception){
+        private fun displayErrorMessage(message: String, exception: Exception) {
             logger.info("YouTrack issueWorkItems refresh failed: ${exception.message}")
             logger.debug(exception)
             title = " $message"
