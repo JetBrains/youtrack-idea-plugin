@@ -29,16 +29,14 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.jetbrains.annotations.TestOnly
 import java.awt.Color
+import java.io.InputStreamReader
 import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.swing.JLabel
 
-
-/**
- * Class for the task management
- */
-class SetupRepositoryConnector() {
+class SetupRepositoryConnector {
 
     var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
@@ -81,7 +79,7 @@ class SetupRepositoryConnector() {
         note.foreground = Color.red
         when (noteState) {
             NotifierState.SUCCESS -> {
-                note.foreground = Color.green;
+                note.foreground = Color.green
                 note.text = "Successfully connected"
             }
             NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
@@ -126,7 +124,8 @@ class SetupRepositoryConnector() {
         val status = client.executeMethod(method)
 
         return if (status == 200) {
-            val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+            val reader = InputStreamReader(method.responseBodyAsStream, StandardCharsets.UTF_8)
+            val json: JsonObject = JsonParser.parseReader(reader).asJsonObject
             if (json.get("version") == null || json.get("version").isJsonNull) {
                 noteState = NotifierState.LOGIN_ERROR
                 false
@@ -144,15 +143,15 @@ class SetupRepositoryConnector() {
 
     @Throws(java.lang.Exception::class)
     private fun login(method: PostMethod, repository: YouTrackRepository): HttpClient? {
-        val client: HttpClient = repository.httpClient
-        client.state.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(getRepositoryUsername(repository), getRepositoryPassword(repository)))
+        val client = repository.httpClient
+        val credentials = UsernamePasswordCredentials(getRepositoryUsername(repository), getRepositoryPassword(repository))
+        client.state.setCredentials(AuthScope.ANY, credentials)
         method.addParameter("login", getRepositoryUsername(repository))
         method.addParameter("password", getRepositoryPassword(repository))
         client.params.contentCharset = "UTF-8"
         client.executeMethod(method)
 
-        val response: String?
-        response = try {
+        try {
             statusCode = method.statusCode
             when {
                 statusCode in 301..399 -> {
@@ -173,12 +172,9 @@ class SetupRepositoryConnector() {
                     createCancellableConnection(repository)
                 }
             }
-            method.getResponseBodyAsString(1000)
+            method.getResponseBodyAsString(1000) ?: throw IllegalStateException("No response received")
         } finally {
             method.releaseConnection()
-        }
-        if (response == null) {
-            throw NullPointerException()
         }
         return client
     }

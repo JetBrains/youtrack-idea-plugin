@@ -56,7 +56,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
-                val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
                 json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
@@ -67,7 +67,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<Issue> {
         return method.connect {
             val status = httpClient.executeMethod(method)
-            val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+            val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
             if (status == 200) {
                 val workItems = mutableListOf<IssueWorkItem>()
                 json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }

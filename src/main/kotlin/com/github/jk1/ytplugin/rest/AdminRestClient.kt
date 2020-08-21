@@ -26,27 +26,22 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         val jsonBody = res?.readText()?.replace("{issueId}", issueId, true)
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
-
         return method.connect {
-            val status = httpClient.executeMethod(method)
-            val groups: MutableList<String>  = mutableListOf("All Users")
-            parseGroups(groups, method, "recommendedGroups")
-            parseGroups(groups, method, "groupsWithoutRecommended")
-
-            when (status) {
+            when (httpClient.executeMethod(method)) {
                 200 -> {
-                    groups
+                    listOf("All Users") +
+                            parseGroupNames(method, "recommendedGroups") +
+                            parseGroupNames(method, "groupsWithoutRecommended")
                 }
                 else -> throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
     }
 
-
-    private fun parseGroups(list: MutableList<String>, method: PostMethod, elem: String){
-        val myObject: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+    private fun parseGroupNames(method: PostMethod, elem: String): List<String> {
+        val myObject: JsonObject = JsonParser.parseReader(method.responseBodyAsReader) as JsonObject
         val recommendedGroups: JsonArray = myObject.get(elem) as JsonArray
-        recommendedGroups.map { list.add(it.asJsonObject.get("name").asString) }
+        return recommendedGroups.map { it.asJsonObject.get("name").asString }
     }
 
     override fun getAccessibleProjects(): List<String> {
@@ -55,16 +50,10 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         method.setQueryString(arrayOf(fields))
 
         return method.connect {
-            val status = httpClient.executeMethod(method)
-            val shortNamesList: MutableList<String>  = mutableListOf()
-
-            val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-
-            json.map { shortNamesList.add(it.asJsonObject.get("shortName").asString) }
-
-            if (status == 200) {
-                shortNamesList
-            }  else {
+            if (httpClient.executeMethod(method) == 200) {
+                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+                json.map { it.asJsonObject.get("shortName").asString }
+            } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
