@@ -2,7 +2,8 @@ package com.github.jk1.ytplugin
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.testFramework.LightProjectDescriptor
-import com.intellij.testFramework.fixtures.*
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.impl.LightTempDirTestFixtureImpl
 import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import org.apache.commons.lang.RandomStringUtils

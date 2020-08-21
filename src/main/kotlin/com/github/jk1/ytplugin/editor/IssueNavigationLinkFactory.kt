@@ -9,12 +9,12 @@ import com.intellij.openapi.vcs.IssueNavigationLink
  */
 object IssueNavigationLinkFactory {
 
-    private val markerSuffix = "#YouTrack"
+    private const val markerSuffix = "#YouTrack"
 
     /**
      * Constructs dumb and fast issue navigation link, which matches everything looking like issue id
      */
-    fun YouTrackIssueNavigationLink(youtrackUrl: String): IssueNavigationLink {
+    fun createNavigationLink(youtrackUrl: String): IssueNavigationLink {
         val link = IssueNavigationLink()
         link.linkRegexp = "$youtrackUrl/issue/$0"
         link.issueRegexp = "(?x)[A-Z]+-\\d+$markerSuffix"

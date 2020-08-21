@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.editor
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.YouTrackIssueNavigationLink
+import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.createNavigationLink
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.createdByYouTrackPlugin
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.pointsTo
 import com.github.jk1.ytplugin.editor.IssueNavigationLinkFactory.setProjects
@@ -35,6 +35,7 @@ class IssueLinkProviderExtension : StartupActivity.Background {
         }
         Disposer.register(ComponentAware.of(project).sourceNavigatorComponent, // any project-level disposable will do
                 Disposable { projectListRefreshTask.cancel(false) })
+
     }
 
     private fun updateNavigationLinkPatterns(project: Project) {
@@ -45,7 +46,7 @@ class IssueLinkProviderExtension : StartupActivity.Background {
             val generatedLinks = links.filter { it.createdByYouTrackPlugin }
             if (links.isEmpty()) {
                 // no issue links to that server have been defined so far
-                val link = YouTrackIssueNavigationLink(server.url)
+                val link = createNavigationLink(server.url)
                 updateIssueLinkProjects(link, server)
                 navigationConfig.links.add(link)
             } else if (generatedLinks.isNotEmpty()) {

@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 import java.io.InputStreamReader
 
