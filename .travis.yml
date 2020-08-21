@@ -1,6 +1,6 @@
 language: java
 jdk: openjdk8
-script: ./gradlew check -s -d
+script: travis_wait ./gradlew check -s -d
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
