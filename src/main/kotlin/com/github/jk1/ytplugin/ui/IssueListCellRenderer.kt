@@ -53,15 +53,15 @@ class IssueListCellRenderer(
                                               isSelected: Boolean, cellHasFocus: Boolean): Component {
 
         val fgColor = when {
-            isSelected -> UIUtil.getListForeground(true)
+            isSelected -> UIUtil.getListForeground(true, true)
             issue.resolved -> Color(150, 150, 150)
             UIUtil.isUnderDarcula() -> Color(200, 200, 200)
             else -> Color(75, 107, 244)
         }
-        background = UIUtil.getListBackground(isSelected)
+        background = UIUtil.getListBackground(isSelected, cellHasFocus)
         fillSummaryLine(issue, fgColor)
         fillCustomFields(issue, fgColor, isSelected)
-        time.foreground = if (isSelected) UIUtil.getListForeground(true) else JBColor(Color(75, 107, 244), Color(87, 120, 173))
+        time.foreground = if (isSelected) UIUtil.getListForeground(true, true) else JBColor(Color(75, 107, 244), Color(87, 120, 173))
         time.text = issue.updateDate.format() + " "
         return this
     }
