@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.setup
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
@@ -231,9 +232,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             add(useProxyCheckBox)
         }
 
+        val timeTrackingTab =  TimeTrackerSettingsTab()
+
         return JBTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
+            addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
         }
     }
