@@ -20,12 +20,12 @@ object IssueJsonParser {
     fun parseAttachment(element: JsonElement, url: String) = parseSafe(element) { Attachment(element, url) }
 
     private fun <T> parseSafe(element: JsonElement, parser: () -> T): T? {
-        try {
-            return parser.invoke()
+        return try {
+            parser.invoke()
         } catch(e: Exception) {
             logger.warn("YouTrack issue parse error. Offending element: $element")
             logger.debug(e)
-            return null
+            null
         }
     }
 }

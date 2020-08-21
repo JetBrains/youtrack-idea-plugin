@@ -21,7 +21,7 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
         valueId.add(item.asJsonObject.get("id").asString)
         val valueItem = item.asJsonObject.get("value")
         if (valueItem == null || valueItem.isJsonNull || (valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
-            value = emptyList()
+            value = listOf(item.asJsonObject.get("projectCustomField").asJsonObject.get("emptyFieldText").asString)
         } else {
             if (valueItem.isJsonArray) {
                 value = mutableListOf()
@@ -31,7 +31,10 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
                     foregroundColor = color.asJsonObject.get("foreground").asColor()
                     backgroundColor = color.asJsonObject.get("background").asColor()
                 }
+            } else if (valueItem.isJsonPrimitive) {
+                value = listOf(valueItem.asString)
             } else {
+                // must be JSON Object
                 if (valueItem.asJsonObject.get("color") != null) {
                     val color = valueItem.asJsonObject.get("color")
                     foregroundColor = color.asJsonObject.get("foreground").asColor()

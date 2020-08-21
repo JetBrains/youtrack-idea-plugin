@@ -20,7 +20,6 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
     var tags: List<IssueTag> = emptyList()
     var attachments: List<Attachment> = emptyList()
     var url: String
-    var wikified: Boolean
     var workItems: MutableList<IssueWorkItem> = mutableListOf()
 
     init {
@@ -32,10 +31,8 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         summary = root.get("summary")?.asString ?: ""
 
-        description = if (root.get("description") == null || root.get("description").isJsonNull) ""
-        else root.get("description").asString
-
-        wikified = true
+        val descriptionElement = root.get("wikifiedDescription")
+        description = if (descriptionElement == null || descriptionElement.isJsonNull) "" else descriptionElement.asString
 
         createDate = Date(root.get("created")?.asLong ?: 0)
 
