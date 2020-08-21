@@ -12,8 +12,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
 
 class StartTrackerAction(repo: YouTrackServer, timer: TimeTracker, project: Project, taskManager: TaskManager) : IssueAction() {
-    override val text = "Start time tracking"
-    override val description = "Start time tracking"
+    override val text = "Start work timer"
+    override val description = "Start work timer"
     override var icon = AllIcons.Actions.Profile
     override val shortcut = "control shift K"
     private var myManager = taskManager
@@ -30,7 +30,7 @@ class StartTrackerAction(repo: YouTrackServer, timer: TimeTracker, project: Proj
                 if (myTimer.issueId != "0")
                     myTimer.start(myProject)
             } else
-                TrackerNotifier.infoBox("Time tracking is already running", "");
+                TrackerNotifier.infoBox("Work timer is already running", "");
 
         }
     }

@@ -79,7 +79,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
                     val timeTrackerPanel = TimeTrackerToolWindowContent(!toolWindow.anchor.isHorizontal, it)
 
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
-                    contentManager.addContent("Time Tracker", timeTrackerPanel)
+                    contentManager.addContent("Time Tracking", timeTrackerPanel)
 
                 }
                 Disposer.register(project, Disposable {

@@ -27,7 +27,7 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
 
     init {
         val issueWorkItemsListScrollPane = JBScrollPane(issueWorkItemsList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        renderer = WorkItemsListCellRenderer { issueWorkItemsListScrollPane.viewport.width }
+        renderer = WorkItemsListCellRenderer({ issueWorkItemsListScrollPane.viewport.width }, repo.getRepo())
         issueWorkItemsList.cellRenderer = renderer
         add(issueWorkItemsListScrollPane, BorderLayout.CENTER)
         initIssueWorkItemsListModel()
@@ -53,9 +53,6 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
                 placeholder.clear()
                 if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
                     placeholder.appendText("No work items found.")
-//                    placeholder.appendText("No issue work items found. Edit search request or ")
-//                    placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
-//                    ) { SetupDialog(project, repo).show() }
                 }
                 issueWorkItemListModel.update()
                 val updatedSelectedIssueWorkItemIndex = issueWorkItemsStoreComponent[repo].indexOf(getSelectedIssueWorkItem())
@@ -91,7 +88,6 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
 
         override fun getElementAt(index: Int) = issueWorkItemsStoreComponent[repo].getWorkItem(index)
 
-        // we still can get this method invoked from swing focus lost handler on project close
         override fun getSize() = if (project.isDisposed) 0 else issueWorkItemsStoreComponent[repo].getAllWorkItems().size
 
         fun update() {

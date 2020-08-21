@@ -12,8 +12,8 @@ import javax.swing.ImageIcon
 
 
 class StopTrackerAction(timer: TimeTracker, repo: YouTrackServer, project: Project) : IssueAction() {
-    override val text = "Stop time tracking"
-    override val description = "Stop time tracking"
+    override val text = "Stop work timer"
+    override val description = "Stop work timer"
     override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/tracker_stop_icon_16.png"))
 
     override val shortcut = "control shift L"

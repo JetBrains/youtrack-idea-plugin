@@ -32,7 +32,6 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         splitter.firstComponent = leftPanel
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
-        setupIssueWorkItemsListActionListeners()
     }
 
     private fun createActionPanel(): JComponent {
