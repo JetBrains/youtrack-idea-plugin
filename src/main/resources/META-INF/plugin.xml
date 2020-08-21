@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>0.17</version>
+    <version>1.0.0</version>
     <vendor>JetBrains</vendor>
 
     <description><![CDATA[
@@ -28,7 +28,9 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li> IDEA Platform 2020.2 support </li>
+            <li> Markdown in issue comments </li>
+            <li> Basic time tracking work items support </li>
+            <li> User friendly connection configuration dialog </li>
         </ul>
           ]]>
     </change-notes>
