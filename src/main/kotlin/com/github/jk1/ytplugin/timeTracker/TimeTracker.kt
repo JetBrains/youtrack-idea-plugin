@@ -1,10 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.IssuesRestClient
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WindowManager
 import java.util.concurrent.TimeUnit
 
@@ -18,25 +15,28 @@ class TimeTracker() {
     private var startTime: Long = 0
     var isRunning = false
 
-    fun stop(project: Project): String {
+    fun stop(project: Project, idReadable: String): String {
+        val trackerNote = TrackerNotification()
+
         return if (isRunning){
-            logger.debug("Time tracking stopped")
             time = formatTimePeriod((System.currentTimeMillis() - startTime))
             isRunning = false
+
             val bar = WindowManager.getInstance().getStatusBar(project)
             bar?.removeWidget("Time Tracking Clock")
+
             time
-        } else{
-            TrackerNotifier.infoBox("Could not stop time tracking: timer is not started", "");
-            logger.debug("Time tracking was not recorded")
+        } else {
+            trackerNote.notify("Could not stop time tracking: timer is not started")
             "0"
         }
     }
 
-    fun start(project: Project){
+    fun start(project: Project, idReadable: String){
         if (!isRunning) {
-            logger.debug("Time tracking started for issue $issueId")
-            TrackerNotifier.infoBox("Time tracking started for issue $issueId", "");
+
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Work timer started for Issue $idReadable")
 
             startTime = System.currentTimeMillis()
             isRunning = true
@@ -47,15 +47,10 @@ class TimeTracker() {
 
     private fun formatTimePeriod(timeInMilSec: Long): String {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
-
-        return if (minutes > 0){
-            TrackerNotifier.infoBox("Time tracking stopped", "");
+        return if (minutes > 0)
             minutes.toString()
-        } else{
-            TrackerNotifier.infoBox("Time is not recorded (< 1min)", "");
+        else
             "0"
-        }
-
     }
 
     fun getRecordedTime() = time

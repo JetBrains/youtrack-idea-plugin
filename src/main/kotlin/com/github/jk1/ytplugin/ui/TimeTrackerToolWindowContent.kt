@@ -37,34 +37,11 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         group.add(RefreshWorkItemsAction(repo))
 
         group.add(StartTrackerAction(repo, timer, project, taskManager))
-        group.add(StopTrackerAction(timer, repo, project))
+        group.add(StopTrackerAction(timer, repo, project, taskManager))
         group.add(GroupByIssueAction(repo, workItemsList))
         group.add(GroupByDateAction(repo, workItemsList))
         group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
-    }
-
-    private fun setupIssueWorkItemsListActionListeners() {
-        // update preview contents upon selection
-        workItemsList.addListSelectionListener {
-            val selectedIssueWorkItem = workItemsList.getSelectedIssueWorkItem()
-            if (selectedIssueWorkItem == null) {
-                splitter.collapse()
-            }
-        }
-
-        // keystrokes to expand/collapse preview
-        workItemsList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
-        workItemsList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
-        workItemsList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
-        // expand  preview on click
-        workItemsList.addMouseListener(object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent) {
-                if (workItemsList.getIssueWorkItemsCount() > 0) {
-                    splitter.expand()
-                }
-            }
-        })
     }
 }
