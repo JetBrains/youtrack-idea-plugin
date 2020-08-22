@@ -256,7 +256,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val contextPane = JPanel(GridLayout())
         val tabbedPane = prepareTabbedPane()
         contextPane.apply {
-            preferredSize = Dimension(540, 230)
+            preferredSize = Dimension(540, 280)
             minimumSize = preferredSize
             add(tabbedPane)
         }

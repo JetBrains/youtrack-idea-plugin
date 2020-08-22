@@ -2,8 +2,9 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
-import java.awt.BorderLayout
 import java.awt.FlowLayout
+import java.awt.Rectangle
+import javax.swing.JComboBox
 import javax.swing.JPanel
 
 
@@ -11,6 +12,11 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
 
     private var scheduledHour: JBTextField
     private var scheduledMinutes: JBTextField
+
+    private var inactivityHour: JBTextField
+    private var inactivityMinutes: JBTextField
+    private var inactivityTextField = JBLabel("Inactivity period: ")
+
     private var scheduledTextField = JBLabel("Scheduled posting at ")
     private var isScheduledCheckbox: JBCheckBox
 
@@ -23,12 +29,24 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
     private var postWhenCommitCheckbox: JBCheckBox
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
+    private var commentLabel= JBLabel("Comment:")
+    private var typeLabel = JBLabel("Work items type:")
+    private var commentTextField: JBTextField
+
+    val workItemsTypes= arrayOf<String?>("Development", "Testing", "Documentation", "Other...")
+
+    private var typeComboBox =  JComboBox(workItemsTypes)
+
 
     init{
-        val scheduledPanel = JPanel(FlowLayout(2))
         val timePanel = JPanel(FlowLayout(3))
-        scheduledHour = JBTextField("")
-        scheduledMinutes = JBTextField("")
+        val inactivityTimePanel = JPanel(FlowLayout(3))
+
+        scheduledHour = JBTextField("19")
+        scheduledMinutes = JBTextField("00")
+
+        inactivityHour = JBTextField("")
+        inactivityMinutes = JBTextField("")
 
         isScheduledCheckbox = JBCheckBox()
         isScheduledCheckbox.isSelected = true
@@ -46,8 +64,8 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         timePanel.add(JBLabel(":"))
         timePanel.add(scheduledMinutes)
 
-
         val bigScheduledPanel = JPanel(FlowLayout(2))
+        val scheduledPanel = JPanel(FlowLayout(2))
 
         scheduledPanel.add(scheduledTextField)
         scheduledPanel.add(timePanel)
@@ -55,26 +73,50 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         bigScheduledPanel.add(isScheduledCheckbox)
         bigScheduledPanel.add(scheduledPanel)
 
+        inactivityTimePanel.add(inactivityHour)
+        inactivityTimePanel.add(JBLabel(":"))
+        inactivityTimePanel.add(inactivityMinutes)
+
+        val inactivityPeriodPanel = JPanel(FlowLayout(2))
+
+        inactivityPeriodPanel.add(inactivityTextField)
+        inactivityPeriodPanel.add(inactivityTimePanel)
 
         val parametersPanel = JPanel(VerticalLayout(3))
-        val manualPanel = JPanel(FlowLayout(2))
+        val manualPanel = JPanel(FlowLayout(4))
+        manualPanel.add(bigScheduledPanel)
+        manualPanel.add(JBLabel(""))
         manualPanel.add(isManualModeCheckbox)
         manualPanel.add(manualModeTextField)
         parametersPanel.add(manualPanel)
 
-        val postWhenProjectClosedPanel = JPanel(FlowLayout(2))
-        postWhenProjectClosedPanel.add(postWhenProjectClosedCheckbox)
-        postWhenProjectClosedPanel.add(postWhenProjectClosedTextField)
-        parametersPanel.add(postWhenProjectClosedPanel)
+        val postWhenPanel = JPanel(FlowLayout(5))
+        postWhenPanel.add(postWhenProjectClosedCheckbox)
+        postWhenPanel.add(postWhenProjectClosedTextField)
+        // TODO: remove hardcore
+        postWhenPanel.add(JBLabel(""))
 
-        val postWhenCommitPanel = JPanel(FlowLayout(2))
-        postWhenCommitPanel.add(postWhenCommitCheckbox)
-        postWhenCommitPanel.add(mpostWhenCommitTextField)
-        parametersPanel.add(postWhenCommitPanel)
+        postWhenPanel.add(postWhenCommitCheckbox)
+        postWhenPanel.add(mpostWhenCommitTextField)
+        parametersPanel.add( postWhenPanel)
 
-        layout = VerticalLayout(2)
-        add(bigScheduledPanel)
+        commentTextField = JBTextField("")
+        typeComboBox.selectedIndex = 0
+        typeComboBox.isEditable = true
+
+        val typePanel = JPanel(FlowLayout(2))
+        typePanel.add(typeLabel)
+        typePanel.add(typeComboBox)
+
+        val commentPanel = JPanel(FlowLayout(2))
+        commentPanel.add(commentLabel)
+        commentPanel.add(commentTextField)
+
+        layout = VerticalLayout(4)
         add(parametersPanel)
-    }
+        add(inactivityPeriodPanel)
+        add(typePanel)
+        add(commentPanel)
 
+    }
 }
