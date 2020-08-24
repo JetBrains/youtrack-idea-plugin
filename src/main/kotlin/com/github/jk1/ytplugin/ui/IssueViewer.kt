@@ -55,39 +55,11 @@ class IssueViewer : JPanel(BorderLayout()) {
         issuePane.repaint()
     }
 
-    fun showWorkItems(issueWorkItem: IssueWorkItem) {
-        rootPane.removeAll()
-        val container = JPanel()
-        container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
-        rootPane.add(createWorkItemPanel(issueWorkItem), BorderLayout.NORTH)
-
-        scrollToTop.invoke()
-        rootPane.repaint()
-    }
-
     private fun createHeaderPanel(issue: Issue): JPanel {
         val panel = JPanel(BorderLayout())
         // todo: strikeout resolved issue ids
         val textArea = JTextArea()
         textArea.text = "${issue.id} ${issue.summary}"
-        textArea.wrapStyleWord = true
-        textArea.lineWrap = true
-        textArea.isOpaque = false
-        textArea.isEditable = false
-        textArea.isFocusable = false
-        textArea.background = UIManager.getColor("Label.background")
-        textArea.border = BorderFactory.createEmptyBorder(2, 7, 0, 0)
-        textArea.font = textArea.font.deriveFont(4.0f + textArea.font.size)
-        panel.add(textArea, BorderLayout.CENTER)
-        scrollToTop = { textArea.caretPosition = 0 }
-        return panel
-    }
-
-    private fun createWorkItemPanel(issueWorkItem: IssueWorkItem): JPanel {
-        val panel = JPanel(BorderLayout())
-        // todo: strikeout resolved issue ids
-        val textArea = JTextArea()
-        textArea.text = "${issueWorkItem.id} ${issueWorkItem.comment}"
         textArea.wrapStyleWord = true
         textArea.lineWrap = true
         textArea.isOpaque = false

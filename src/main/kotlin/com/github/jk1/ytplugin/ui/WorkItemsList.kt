@@ -20,8 +20,8 @@ import javax.swing.SwingUtilities
 class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
 
     override val project = repo.project
-    private val issueWorkItemsList: JBList<IssueWorkItem> = JBList()
     private val issueWorkItemListModel: IssueWorkItemsListModel = IssueWorkItemsListModel()
+    private val issueWorkItemsList: JBList<IssueWorkItem> = JBList()
     val renderer: WorkItemsListCellRenderer
 
 

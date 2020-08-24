@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssuesRestClient
@@ -15,11 +16,23 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
 
     private var currentCallback: ActionCallback = ActionCallback.Done()
     var withGrouping = false
+    var searchQuery = ""
+
 
     fun update(repo: YouTrackServer): ActionCallback {
         if (!isUpdating()) {
-            logger.debug("IssueWorkItem store refresh scheduled for project ${repo.project.name} and YouTrack server ${repo.url}")
+            logger.debug("Issue work item store refresh scheduled for project ${repo.project.name} and YouTrack server ${repo.url}")
             currentCallback = ActionCallback()
+            RefreshIssuesWorkItemsTask(currentCallback, repo).queue()
+        }
+        return currentCallback
+    }
+
+    fun filter(repo: YouTrackServer, search: String): ActionCallback {
+        if (!isUpdating()) {
+            logger.debug("Issue work items filtering")
+            currentCallback = ActionCallback()
+            searchQuery = search
             RefreshIssuesWorkItemsTask(currentCallback, repo).queue()
         }
         return currentCallback
@@ -39,15 +52,29 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
 
         override fun run(indicator: ProgressIndicator) {
             try {
-                logger.debug("Fetching issuesWorkItems for search query: #{Assigned to me}")
-                val list = UserRestClient(repo).getWorkItemsForUser("#{Assigned to me}")
-                workItems = if (withGrouping)
-                    list.sortedWith(compareBy { it.issueId })
+                logger.debug("Fetching issuesWorkItems for the search query")
+                val search = repo.defaultSearch + " #{Assigned to me}"
+                val list = UserRestClient(repo).getWorkItemsForUser(search)
+                workItems = if (searchQuery != "")
+                    filterWorkItems(searchQuery, list)
                 else list
+                workItems = if (withGrouping)
+                    workItems.sortedWith(compareBy { it.issueId })
+                else workItems
             } catch (e: SocketTimeoutException) {
                 displayErrorMessage("Failed to updated issueWorkItems from YouTrack server. Request timed out.", e)
             } catch (e: Exception) {
                 displayErrorMessage("Can't connect to YouTrack server. Are you offline?", e)
+            }
+        }
+
+        private fun filterWorkItems(searchQuery: String, list: List<IssueWorkItem>) : List<IssueWorkItem>{
+            return list.filter {
+                it.value.contains(searchQuery) ||
+                it.author.contains(searchQuery) ||
+                it.issueId.contains(searchQuery) ||
+                it.date.format().contains(searchQuery) ||
+                it.type.contains(searchQuery)
             }
         }
 

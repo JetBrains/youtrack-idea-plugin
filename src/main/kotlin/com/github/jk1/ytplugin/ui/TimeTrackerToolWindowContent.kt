@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
+import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.actions.*
@@ -23,13 +24,17 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     private val workItemsList = WorkItemsList(repo)
     private val timer = TimeTracker()
     private var taskManager = TaskManager.getManager(project)
+    private val searchBar = WorkItemsSearchBar(repo)
+
 
     init {
         val leftPanel = JPanel(BorderLayout())
+        leftPanel.add(searchBar, BorderLayout.NORTH)
         leftPanel.add(workItemsList, BorderLayout.CENTER)
         splitter.firstComponent = leftPanel
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
+        setupIssueListActionListeners()
     }
 
     private fun createActionPanel(): JComponent {
@@ -43,5 +48,12 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
+    }
+
+    private fun setupIssueListActionListeners() {
+        searchBar.actionListener = { search ->
+            workItemsList.startLoading()
+            issueWorkItemsStoreComponent[repo].filter(repo, search)
+        }
     }
 }
