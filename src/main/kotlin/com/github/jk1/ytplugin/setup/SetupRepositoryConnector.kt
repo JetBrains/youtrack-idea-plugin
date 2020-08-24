@@ -18,8 +18,6 @@ import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.io.HttpRequests
-import com.intellij.util.xmlb.annotations.Attribute
-import com.intellij.util.xmlb.annotations.Tag
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.URI
@@ -27,7 +25,6 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
-import org.jetbrains.annotations.TestOnly
 import java.awt.Color
 import java.io.InputStreamReader
 import java.net.UnknownHostException
@@ -40,21 +37,17 @@ class SetupRepositoryConnector {
 
     var correctUrl: String = ""
     var noteState = NotifierState.INVALID_TOKEN
-
-    @TestOnly
+    var isEndingFixed = false
     var statusCode = 401
 
-    @Tag("username")
     fun getRepositoryUsername(repository: YouTrackRepository): String? {
         return repository.username
     }
 
-    @Tag("password")
     fun getRepositoryPassword(repository: YouTrackRepository): String? {
         return repository.password
     }
 
-    @Attribute("url")
     fun getRepositoryUrl(repository: YouTrackRepository): String? {
         return trimTrailingSlashes(repository.url)
     }
@@ -104,15 +97,21 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun fixURI(uri: String): String {
+    private fun fixEnding(uri: String): String {
         var newUri = uri
-        if (!uri.contains("https")) {
-            newUri = "https" + uri.substring(4, uri.length)
-        }
         if (!uri.contains("/youtrack")) {
             newUri = "$newUri/youtrack"
         }
+        isEndingFixed = true
         return newUri
+    }
+
+    private fun fixProtocol(oldUrl: URI): URI {
+        println("old " + oldUrl.toString())
+        val url = URI("https",null, oldUrl.host, oldUrl.port, oldUrl.path, oldUrl.query, oldUrl.fragment)
+        println("new " + url.toString())
+
+        return url
     }
 
     private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
@@ -155,21 +154,30 @@ class SetupRepositoryConnector {
             statusCode = method.statusCode
             when {
                 statusCode in 301..399 -> {
-                    val location: String = method.getResponseHeader("Location").toString()
-                    val newUri = location.substring(10, location.length)
-                    method.uri = URI(newUri, false)
-                    repository.url = method.uri.toString()
-                    correctUrl = repository.url
+                    if (isEndingFixed || repository.url.contains("/youtrack")){
+                        val tmp = method.uri
+                        val new = URI(tmp.toString().substring(0, tmp.toString().length - 10), false)
+                        val newUri = fixProtocol(new)
+                        method.uri = URI("https://alinaboshchenko.myjetbrains.com/youtrack", false)
+                        repository.url = newUri.toString()
+                        correctUrl = repository.url
+                    }
+                    else{
+                        val newUri = fixEnding(repository.url)
+                        method.uri = URI(newUri, false)
+                        repository.url = newUri
+                        correctUrl = repository.url
+                    }
+
                     createCancellableConnection(repository)
                 }
                 statusCode == 403 -> {
                     throw java.lang.Exception("Cannot login: token error occurred or user was banned")
                 }
                 statusCode != 200 -> {
-                    fixURI(method)
-                    /* substring(0,  newUri.length - 12) is needed to get rid of "/api/token" ending */
-                    repository.url = method.uri.toString().substring(0, method.uri.toString().length - 12)
-                    createCancellableConnection(repository)
+                    println("hrr")
+                    noteState == NotifierState.LOGIN_ERROR
+                    throw HttpRequests.HttpStatusException("Cannot login: incorrect URL or token", method.statusCode, method.path)
                 }
             }
             method.getResponseBodyAsString(1000) ?: throw IllegalStateException("No response received")
@@ -181,8 +189,6 @@ class SetupRepositoryConnector {
 
 
     fun createCancellableConnection(repository: YouTrackRepository): CancellableConnection? {
-        val newUri = fixURI(repository.url)
-        repository.url = newUri
         correctUrl = repository.url
 
         val method = PostMethod(getRepositoryUrl(repository) + "/api/token")

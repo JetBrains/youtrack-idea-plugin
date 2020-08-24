@@ -82,34 +82,36 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             connectedRepository.isUseProxy = false
         }
 
-        val oldUrl = inputUrlTextPane.text
-        inputUrlTextPane.text = ""
+//        val oldUrl = inputUrlTextPane.text
+//        inputUrlTextPane.text = ""
+//
+//        println("state " + repoConnector.noteState + " " + repoConnector.correctUrl)
+//        if (oldUrl == repoConnector.correctUrl) {
+//            inputUrlTextPane.text = oldUrl
+//        } else if (repoConnector.noteState == NotifierState.SUCCESS) {
+//            if (!oldUrl.contains("/youtrack")) {
+//                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
+//                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+//                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length - 9), fontColor)
+//                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+//
+//                } else {
+//                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(0, repoConnector.correctUrl.length - 9), fontColor)
+//                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+//
+//                }
+//            } else {
+//                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
+//                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+//                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length), fontColor)
+//                } else
+//                    inputUrlTextPane.text = oldUrl
+//            }
+//        }
+//        else
+//            inputUrlTextPane.text = oldUrl
 
-        if (oldUrl == repoConnector.correctUrl) {
-            inputUrlTextPane.text = oldUrl
-        } else {
-            if (!oldUrl.contains("/youtrack") && repoConnector.noteState == NotifierState.SUCCESS) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
 
-                } else {
-                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(0, repoConnector.correctUrl.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-
-                }
-            } else if (repoConnector.noteState == NotifierState.SUCCESS) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length), fontColor)
-                } else {
-                    inputUrlTextPane.text = oldUrl
-                }
-            } else {
-                inputUrlTextPane.text = oldUrl
-            }
-        }
 
         if (connectedRepository.url.isBlank() || connectedRepository.password.isBlank()) {
             notifyFieldLabel.foreground = Color.red
