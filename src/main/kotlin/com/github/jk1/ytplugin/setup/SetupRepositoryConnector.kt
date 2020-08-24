@@ -84,18 +84,6 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun fixURI(method: PostMethod) {
-        if (!method.uri.toString().contains("https")) {
-            val newUri = "https" + method.uri.toString().substring(4, method.uri.toString().length)
-            method.uri = URI(newUri, false)
-        }
-        if (!method.uri.toString().contains("/youtrack")) {
-            val newUri = method.uri.toString() + "/youtrack"
-            method.uri = URI(newUri, false)
-        } else {
-            throw HttpRequests.HttpStatusException("Cannot login: incorrect URL or token", method.statusCode, method.path)
-        }
-    }
 
     private fun fixEnding(uri: String): String {
         var newUri = uri
@@ -107,9 +95,7 @@ class SetupRepositoryConnector {
     }
 
     private fun fixProtocol(oldUrl: URI): URI {
-        println("old " + oldUrl.toString())
         val url = URI("https",null, oldUrl.host, oldUrl.port, oldUrl.path, oldUrl.query, oldUrl.fragment)
-        println("new " + url.toString())
 
         return url
     }
