@@ -188,7 +188,6 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
         val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
-
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
@@ -197,9 +196,17 @@ class IssueViewer : JPanel(BorderLayout()) {
         date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
 
         val value = SimpleColoredComponent()
-        value.append(workItem.value, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         value.icon = AllIcons.Vcs.History
-        value.append("    ")
+        val viewportWidth = 70
+
+        val items = workItem.value.split(" ").iterator()
+        while (items.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
+            value.append(" ${items.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        }
+        if (items.hasNext()) {
+            value.append(" …", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        }
+
 
         val slash = SimpleColoredComponent()
         slash.append("                   |")

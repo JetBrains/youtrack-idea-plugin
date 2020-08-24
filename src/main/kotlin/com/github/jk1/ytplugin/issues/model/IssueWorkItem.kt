@@ -6,9 +6,14 @@ import java.util.*
 
 class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
 
+    val type: String =  if (item.asJsonObject.get("type").isJsonNull)
+                            "None"
+                        else
+                            item.asJsonObject.get("type").asJsonObject.get("name").asString
+
     val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
     val date: Date = Date(item.asJsonObject.get("date").asLong)
-    val created: Date =  Date(item.asJsonObject.get("created").asLong)
+    val created: Date = Date(item.asJsonObject.get("created").asLong)
     val value: String = item.asJsonObject.get("duration").asJsonObject.get("presentation").asString
             .replace("h", " hours")
             .replace("d", " days")

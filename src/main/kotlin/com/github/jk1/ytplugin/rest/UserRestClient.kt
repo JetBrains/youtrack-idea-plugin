@@ -40,7 +40,7 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
-        val myFields = NameValuePair("fields", "text,issue(idReadable),created," +
+        val myFields = NameValuePair("fields", "text,issue(idReadable),type(name),created," +
                 "duration(presentation,minutes),author(name),creator(name),date,id")
         method.setQueryString(arrayOf(myQuery, myFields))
 

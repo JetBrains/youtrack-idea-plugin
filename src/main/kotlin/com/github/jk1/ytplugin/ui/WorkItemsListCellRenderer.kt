@@ -22,6 +22,7 @@ class WorkItemsListCellRenderer(
     private val topPanel = JPanel(BorderLayout())
     private val summaryPanel = JPanel(BorderLayout())
     private val trackingComments = SimpleColoredComponent()
+    private lateinit var issueLink: HyperlinkLabel
 
     private val complimentaryColor = Color(123, 123, 127)
     private val fgColor = Color(75, 107, 244)
@@ -65,25 +66,31 @@ class WorkItemsListCellRenderer(
         value.icon = AllIcons.Vcs.History
         value.append(issueWorkItem.value, SimpleTextAttributes(idStyle, fgColor))
 
-        val issueLink = HyperlinkLabel(issueWorkItem.issueId,
+        val type = SimpleColoredComponent()
+        type.isOpaque = false
+        type.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+        type.append(issueWorkItem.type, SimpleTextAttributes(idStyle, fgColor))
+
+        issueLink = HyperlinkLabel(issueWorkItem.issueId,
                 "${myRepository.url}/issue/${issueWorkItem.issueId}")
 
         prepareCommentsForDisplaying(issueWorkItem)
 
         val panel = JPanel(GridLayout(1, 6, 0, 0))
         panel.isOpaque = false
-        panel.preferredSize = Dimension(7 * viewportWidthProvider.invoke() / 10, viewportWidthProvider.invoke() / 50)
+        panel.preferredSize = Dimension(9 * viewportWidthProvider.invoke() / 10, viewportWidthProvider.invoke() / 50)
         panel.add(author)
         panel.add(date)
         panel.add(value)
         panel.add(issueLink)
+        panel.add(type)
         panel.add(trackingComments)
 
         summaryPanel.add(panel, BorderLayout.CENTER)
     }
 
     private fun prepareCommentsForDisplaying(issueWorkItem: IssueWorkItem) {
-        val viewportWidth = viewportWidthProvider.invoke() / 10
+        val viewportWidth = viewportWidthProvider.invoke() / 8
 
         trackingComments.clear()
         trackingComments.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
