@@ -29,7 +29,6 @@ import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
 class SetupRepositoryConnector {
-    var correctUrl: String = "" // todo: ?
     var noteState = NotifierState.INVALID_TOKEN
     private fun isValidToken(token: String): Boolean {
         val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
@@ -107,7 +106,6 @@ class SetupRepositoryConnector {
                     val location: String = method.getResponseHeader("Location").toString()
                     // received: "Location: {new_repository.url}/api/token", thus needs to be cut
                     repository.url = location.substring(10, location.length - 11)
-                    correctUrl = repository.url
                     logger.debug("url after correction: ${repository.url}")
                     checker.check()
                 }
@@ -120,7 +118,6 @@ class SetupRepositoryConnector {
                     logger.debug("handling response code other than 301..399, 403 ${repository.url}: MANUAL FIX")
                     if (!method.uri.path.contains("/youtrack")){
                         repository.url = "${repository.url}/youtrack"
-                        correctUrl = repository.url
                         logger.debug("url after manual ending fix: ${repository.url}")
                         checker.check()
                     } else {
@@ -149,7 +146,6 @@ class SetupRepositoryConnector {
                         } else {
                             "https://" + repoUri.host  + repoUri.path
                         }
-                        correctUrl = repository.url
                         logger.debug("url after manual protocol fix: ${repository.url}")
                         checker.check()
                     } else {
@@ -176,7 +172,6 @@ class SetupRepositoryConnector {
                 indicator.text = "Connecting to " + repository.url + "..."
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
-                correctUrl = repository.url
                 val future = checkAndFixConnection(repository)
                 try {
                     future.get(15, TimeUnit.SECONDS)
