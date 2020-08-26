@@ -50,8 +50,8 @@ class SetupVariationsTest : SetupManagerTrait, IssueRestTrait, IdeaProjectTrait,
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
 
-        assertEquals(200, setupTask.statusCode)
     }
 
     @Test
@@ -63,8 +63,7 @@ class SetupVariationsTest : SetupManagerTrait, IssueRestTrait, IdeaProjectTrait,
 
         setupTask.testConnection(repo, project)
 
-        assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
-        assertEquals(401, setupTask.statusCode)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @Test
@@ -77,7 +76,6 @@ class SetupVariationsTest : SetupManagerTrait, IssueRestTrait, IdeaProjectTrait,
         setupTask.testConnection(repo, project)
 
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
     }
 
 
