@@ -33,9 +33,8 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
+        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
     }
 
     @Test
@@ -46,10 +45,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @Test
@@ -60,10 +56,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
-        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @Test
@@ -75,23 +68,20 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", setupTask.correctUrl)
+        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
     }
 
     @Test
     fun `test connection with invalid token `() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/"
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-
-        assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
-        assertEquals(401, setupTask.statusCode)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @Test
@@ -103,9 +93,8 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://lug/youtrack", setupTask.correctUrl)
-        assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
-        assertEquals(401, setupTask.statusCode)
+        assertEquals("https://lug", repository.getRepo().url)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @Test
@@ -117,22 +106,18 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://tains.com/youtrack", setupTask.correctUrl)
+        assertEquals("https://tains.com", repository.getRepo().url)
         assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
-        assertEquals(401, setupTask.statusCode)
     }
 
     @Test
     fun `test connection with empty form`() {
-        repository = createYouTrackRepository("", "")
+        repository = createYouTrackRepository("", token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-
-        assertEquals("", setupTask.correctUrl)
-        assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
-        assertEquals(401, setupTask.statusCode)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @After

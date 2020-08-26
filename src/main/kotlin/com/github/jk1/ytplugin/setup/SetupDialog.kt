@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
+import java.util.concurrent.CompletableFuture
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -106,16 +107,15 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             inputUrlTextPane.text = oldUrl
         }
 
-
         if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
-            notifyFieldLabel.foreground = Color.red
-            notifyFieldLabel.text = "Url and token fields are mandatory"
+            repoConnector.noteState = NotifierState.EMPTY_FIELD
         } else if (connectedRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
-            notifyFieldLabel.foreground = Color.green
-            notifyFieldLabel.text = "Logged in as a guest"
-        } else {
-            repoConnector.setNotifier(notifyFieldLabel)
+            repoConnector.noteState = NotifierState.GUEST_LOGIN
+        } else if (!connectedRepository.isLoginAnonymously && !repoConnector.isValidToken(connectedRepository.password)) {
+            repoConnector.noteState = NotifierState.INVALID_TOKEN
         }
+
+        repoConnector.setNotifier(notifyFieldLabel)
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {

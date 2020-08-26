@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.setup
 import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -30,7 +31,7 @@ import javax.swing.JLabel
 
 class SetupRepositoryConnector {
     var noteState = NotifierState.INVALID_TOKEN
-    private fun isValidToken(token: String): Boolean {
+    fun isValidToken(token: String): Boolean {
         val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
         return token.matches(tokenPattern)
     }
@@ -42,6 +43,11 @@ class SetupRepositoryConnector {
                 note.foreground = Color.green
                 note.text = "Successfully connected"
             }
+            NotifierState.GUEST_LOGIN -> {
+                note.foreground = Color.green
+                note.text = "Logged in as a guest"
+            }
+            NotifierState.EMPTY_FIELD -> note.text =  "Url and token fields are mandatory"
             NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
             NotifierState.UNKNOWN_ERROR -> note.text = "Unknown error"
             NotifierState.UNKNOWN_HOST -> note.text = "Unknown host"
@@ -50,7 +56,6 @@ class SetupRepositoryConnector {
             NotifierState.INCORRECT_CERTIFICATE -> note.text = "Incorrect certificate"
             NotifierState.TIMEOUT -> note.text = "Connection timeout: check login and token"
             NotifierState.UNAUTHORIZED -> note.text = "Unauthorized: check login and token"
-            NotifierState.CONNECTION_ERROR -> note.text = "Connection error, maybe you are offline?"
             NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1</html>"
         }
     }
@@ -150,7 +155,7 @@ class SetupRepositoryConnector {
                         checker.check()
                     } else {
                         logger.debug("no manual transport fix: LOGIN_ERROR")
-                        noteState = NotifierState.CONNECTION_ERROR
+                        noteState = NotifierState.LOGIN_ERROR
                         future.complete(Unit)
                     }
                 }
@@ -164,15 +169,14 @@ class SetupRepositoryConnector {
     fun testConnection(repository: YouTrackRepository, myProject: Project) {
         logger.debug("TRY CONNECTION FOR ${repository.url}")
 
-        if (!repository.isLoginAnonymously && !isValidToken(repository.password)) {
-            noteState = NotifierState.INVALID_TOKEN
-        }
         val task = object : Task.Modal(myProject, "Test connection", true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.text = "Connecting to " + repository.url + "..."
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
+
                 val future = checkAndFixConnection(repository)
+
                 try {
                     future.get(15, TimeUnit.SECONDS)
                 } catch (ignore: TimeoutException) {
@@ -211,5 +215,6 @@ enum class NotifierState {
     TIMEOUT,
     INCORRECT_CERTIFICATE,
     UNAUTHORIZED,
-    CONNECTION_ERROR
+    EMPTY_FIELD,
+    GUEST_LOGIN
 }
