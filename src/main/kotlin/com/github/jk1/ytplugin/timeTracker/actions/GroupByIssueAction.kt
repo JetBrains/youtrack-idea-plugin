@@ -13,7 +13,7 @@ class GroupByIssueAction(val repo: YouTrackServer, val workItemsList: WorkItemsL
     override val text = "Group work items by issue"
     override val description = "Group work items by issue"
     override val icon = AllIcons.Actions.GroupByPrefix
-    override val shortcut = "control alt shift U"
+    override val shortcut = "control alt shift W"
 
 
     override fun actionPerformed(event: AnActionEvent) {

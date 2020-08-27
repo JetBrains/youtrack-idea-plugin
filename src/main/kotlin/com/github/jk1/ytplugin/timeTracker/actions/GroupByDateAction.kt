@@ -13,7 +13,7 @@ class GroupByDateAction(val repo: YouTrackServer, val workItemsList: WorkItemsLi
     override val text = "Group work items by date"
     override val description = "Group work items by date"
     override val icon = AllIcons.Actions.GroupBy
-    override val shortcut = "control alt shift U"
+    override val shortcut = "control alt shift Q"
 
 
     override fun actionPerformed(event: AnActionEvent) {

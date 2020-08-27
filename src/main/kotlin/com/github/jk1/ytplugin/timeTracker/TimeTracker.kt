@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.util.concurrent.TimeUnit
@@ -11,38 +12,53 @@ class TimeTracker() {
     var issueId: String = "Default"
     private var time: String = ""
     private var comment: String = ""
+    private var timeInMills: Long = 0
 
     private var startTime: Long = 0
     var isRunning = false
+    var isPaused = false
 
-    fun stop(project: Project, idReadable: String): String {
+    fun stop(): String {
         val trackerNote = TrackerNotification()
 
-        return if (isRunning){
-            time = formatTimePeriod((System.currentTimeMillis() - startTime))
+        return if (isRunning) {
+            if (!isPaused) {
+                timeInMills += (System.currentTimeMillis() - startTime)
+            }
+            time = formatTimePeriod(timeInMills)
+            timeInMills = 0
             isRunning = false
-
-            val bar = WindowManager.getInstance().getStatusBar(project)
-            bar?.removeWidget("Time Tracking Clock")
+            isPaused = false
 
             time
         } else {
-            trackerNote.notify("Could not stop time tracking: timer is not started")
+            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.ERROR)
             "0"
         }
     }
 
-    fun start(project: Project, idReadable: String){
-        if (!isRunning) {
 
-            val trackerNote = TrackerNotification()
-            trackerNote.notify("Work timer started for Issue $idReadable")
-
-            startTime = System.currentTimeMillis()
-            isRunning = true
-            val bar = WindowManager.getInstance().getStatusBar(project)
-            bar?.addWidget(ClockWidget(startTime))
+    fun pause() {
+        val trackerNote = TrackerNotification()
+        if (isPaused) {
+            trackerNote.notify("Timer already paused", NotificationType.ERROR)
+        } else {
+            if (isRunning) {
+                timeInMills += (System.currentTimeMillis() - startTime)
+                isPaused = true
+                trackerNote.notify("Work timer paused", NotificationType.INFORMATION)
+            } else {
+                trackerNote.notify("Could not pause - timer is not started", NotificationType.ERROR)
+            }
         }
+    }
+
+    fun start(idReadable: String) {
+        val trackerNote = TrackerNotification()
+        trackerNote.notify("Work timer started for Issue $idReadable", NotificationType.INFORMATION)
+        startTime = System.currentTimeMillis()
+        isRunning = true
+        isPaused = false
     }
 
     private fun formatTimePeriod(timeInMilSec: Long): String {
@@ -54,6 +70,11 @@ class TimeTracker() {
     }
 
     fun getRecordedTime() = time
+
+    fun getRecordedTimeInMills() = timeInMills
+
+    fun getStartTime() = startTime
+
 
     fun getComment() = comment
 

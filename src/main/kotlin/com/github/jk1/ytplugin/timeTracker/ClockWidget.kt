@@ -8,20 +8,21 @@ import javax.swing.JLabel
 import javax.swing.Timer
 import kotlin.jvm.internal.Intrinsics
 
-class ClockWidget(startTime: Long) : CustomStatusBarWidget {
+class ClockWidget(val timeTracker: TimeTracker) : CustomStatusBarWidget {
     val label = JLabel(time())
 
-    private val startingTime = startTime
     private val timer = Timer(1000, ActionListener { label.text = time() })
 
     fun time(): String {
-        val recordedTime = System.currentTimeMillis() - startingTime
-
+        val recordedTime = if (timeTracker.isPaused){
+            timeTracker.getRecordedTimeInMills()
+        } else {
+            timeTracker.getRecordedTimeInMills() + System.currentTimeMillis() - timeTracker.getStartTime()
+        }
         val time = String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toHours(recordedTime),
-                TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
-
+        TimeUnit.MILLISECONDS.toHours(recordedTime),
+        TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
+                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
         return "Time spent: $time"
     }
 

@@ -50,12 +50,6 @@ class WorkItemsListCellRenderer(
     private fun fillTrackingInfoLine(issueWorkItem: IssueWorkItem, fgColor: Color) {
         summaryPanel.removeAll()
 
-        val author = SimpleColoredComponent()
-        author.isOpaque = false
-        author.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-        author.icon = AllIcons.General.User
-        author.append(issueWorkItem.author, SimpleTextAttributes(idStyle, fgColor))
-
         val date = SimpleColoredComponent()
         date.isOpaque = false
         date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
@@ -70,17 +64,17 @@ class WorkItemsListCellRenderer(
         val type = SimpleColoredComponent()
         type.isOpaque = false
         type.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-        type.append(issueWorkItem.type, SimpleTextAttributes(idStyle, fgColor))
+        type.append(issueWorkItem.type, SimpleTextAttributes(idStyle, complimentaryColor))
 
         issueLink = HyperlinkLabel(issueWorkItem.issueId,
                 "${myRepository.url}/issue/${issueWorkItem.issueId}")
+        issueLink.icon = AllIcons.Actions.MoveTo2
 
         prepareCommentsForDisplaying(issueWorkItem)
 
         val panel = JPanel(GridLayout(1, 6, 0, 0))
         panel.isOpaque = false
         panel.preferredSize = Dimension(9 * viewportWidthProvider.invoke() / 10, viewportWidthProvider.invoke() / 50)
-        panel.add(author)
         panel.add(date)
         panel.add(value)
         panel.add(issueLink)
@@ -99,6 +93,8 @@ class WorkItemsListCellRenderer(
 
         val comments = issueWorkItem.comment?.split(" ")?.iterator()
         if (comments != null) {
+            trackingComments.icon = AllIcons.General.Balloon
+
             while (comments.hasNext() && (viewportWidth > trackingComments.computePreferredSize(false).width)) {
                 trackingComments.append(" ${comments.next()}", SimpleTextAttributes(idStyle, complimentaryColor))
             }

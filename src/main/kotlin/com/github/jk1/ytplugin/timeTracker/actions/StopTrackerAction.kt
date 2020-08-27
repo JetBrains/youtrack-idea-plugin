@@ -7,9 +7,10 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
-import com.intellij.icons.AllIcons
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.tasks.TaskManager
 import javax.swing.Icon
 import javax.swing.ImageIcon
@@ -25,18 +26,21 @@ class StopTrackerAction(val timer: TimeTracker, val repo: YouTrackServer,val pro
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
-            val time = timer.stop(project, taskManager.activeTask.id)
+            val time = timer.stop()
+
+            val bar = WindowManager.getInstance().getStatusBar(project)
+            bar?.removeWidget("Time Tracking Clock")
 
             val trackerNote = TrackerNotification()
 
             if (time == "0")
-                trackerNote.notify("Time was not recorded (less than 1 minute)")
+                trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.ERROR)
             else{
                 val status = TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, timer.getRecordedTime())
                 if (status != 200)
-                    trackerNote.notify("Could not record time: time tracking is disabled")
+                    trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.ERROR)
                 else{
-                    trackerNote.notify("Work timer stopped")
+                    trackerNote.notify("Work timer stopped, time posted on server", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 }
             }

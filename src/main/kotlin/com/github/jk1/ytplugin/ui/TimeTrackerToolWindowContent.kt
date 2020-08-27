@@ -40,8 +40,9 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
         group.add(RefreshWorkItemsAction(repo))
-
         group.add(StartTrackerAction(repo, timer, project, taskManager))
+        group.add(ResetTrackerAction(repo, timer, project, taskManager))
+        group.add(PauseTrackerAction(repo, timer, project, taskManager))
         group.add(StopTrackerAction(timer, repo, project, taskManager))
         group.add(GroupByIssueAction(repo, workItemsList))
         group.add(GroupByDateAction(repo, workItemsList))
