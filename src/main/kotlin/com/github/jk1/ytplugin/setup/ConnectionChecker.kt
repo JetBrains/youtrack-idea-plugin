@@ -17,14 +17,8 @@ class ConnectionChecker(val repository: YouTrackRepository) {
     private var onTransportError: (method: HttpMethod, e: Exception) -> Unit = { _: HttpMethod, _: Exception -> }
 
     fun check() {
-        // TODO: better way of checking
-        if (Thread.currentThread().name.contains("pooled")) {
-            doConnect()
-        } else {
-            ApplicationManager.getApplication().executeOnPooledThread {
-                doConnect()
-            }
-        }
+        //TODO: check current thread
+        doConnect()
     }
 
     private fun doConnect() {

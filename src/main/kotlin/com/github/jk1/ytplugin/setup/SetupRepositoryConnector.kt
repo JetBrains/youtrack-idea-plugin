@@ -30,8 +30,9 @@ import javax.swing.JLabel
 
 class SetupRepositoryConnector {
     var noteState = NotifierState.INVALID_TOKEN
+    val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
+
     fun isValidToken(token: String): Boolean {
-        val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
         return token.matches(tokenPattern)
     }
 

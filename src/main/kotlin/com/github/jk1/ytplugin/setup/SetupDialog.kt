@@ -73,7 +73,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val proxy = HttpConfigurable.getInstance()
         if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
             connectedRepository.isUseProxy = useProxyCheckBox.isSelected
-            repoConnector.testConnection(connectedRepository, project)
+            if(inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()){
+                repoConnector.testConnection(connectedRepository, project)
+            }
         } else {
             repoConnector.noteState = NotifierState.NULL_PROXY_HOST
             connectedRepository.isUseProxy = false
@@ -274,8 +276,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST)
+            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)
+            }
         }
     }
 
