@@ -10,6 +10,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.io.InputStreamReader
+import java.net.URL
 import java.nio.charset.StandardCharsets
 
 
@@ -28,8 +29,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     override fun createDraft(summary: String): String {
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
-        method.requestEntity = StringRequestEntity(summary, "application/json", StandardCharsets.UTF_8.name())
+        val res: URL? = this::class.java.classLoader.getResource("create_draft_body.json")
 
+        val summaryFormatted = summary.replace("\n","\\n").replace("\"","\\\"")
+        val jsonBody = res?.readText()?.replace("{description}", summaryFormatted)
+
+        method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
