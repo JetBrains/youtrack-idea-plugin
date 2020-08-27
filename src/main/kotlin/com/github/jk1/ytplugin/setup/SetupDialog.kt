@@ -16,7 +16,6 @@ import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
-import java.util.concurrent.CompletableFuture
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -40,6 +39,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
+    private var isConnectionTested = false
 
     override fun init() {
         title = "YouTrack"
@@ -79,33 +79,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             connectedRepository.isUseProxy = false
         }
 
-        val oldUrl = inputUrlTextPane.text
-        inputUrlTextPane.text = ""
-
-        if (oldUrl == connectedRepository.url) {
-            inputUrlTextPane.text = oldUrl
-        } else if (repoConnector.noteState == NotifierState.SUCCESS) {
-            logger.info("YouTrack repository ${connectedRepository.url} connected")
-            if (!oldUrl.contains("/youtrack")) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-                } else {
-                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(0, connectedRepository.url.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-                }
-            } else {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length), fontColor)
-                } else {
-                    inputUrlTextPane.text = oldUrl
-                }
-            }
-        } else {
-            inputUrlTextPane.text = oldUrl
-        }
+        drawAutoCorrection(fontColor)
 
         if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
             repoConnector.noteState = NotifierState.EMPTY_FIELD
@@ -116,6 +90,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
+        isConnectionTested = true
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -228,6 +203,36 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
     }
 
+    private fun drawAutoCorrection(fontColor: Color) {
+        val oldUrl = inputUrlTextPane.text
+        inputUrlTextPane.text = ""
+
+        if (oldUrl == connectedRepository.url) {
+            inputUrlTextPane.text = oldUrl
+        } else if (repoConnector.noteState == NotifierState.SUCCESS) {
+            logger.info("YouTrack repository ${connectedRepository.url} connected")
+            if (!oldUrl.contains("/youtrack")) {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
+                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+                } else {
+                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(0, connectedRepository.url.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+                }
+            } else {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
+                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length), fontColor)
+                } else {
+                    inputUrlTextPane.text = oldUrl
+                }
+            }
+        } else {
+            inputUrlTextPane.text = oldUrl
+        }
+    }
+
     override fun createActions(): Array<out Action> =
             arrayOf(TestConnectionAction(), OpenProxySettingsAction(), OkAction("Ok"), cancelAction)
 
@@ -251,7 +256,11 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
-            testConnectionAction()
+
+            if (!isConnectionTested) {
+                testConnectionAction()
+            }
+
             val myRepository: YouTrackRepository = repo.getRepo()
             myRepository.url = connectedRepository.url
             myRepository.password = String(inputTokenField.password)
@@ -276,7 +285,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
     }
 
-    inner class OpenProxySettingsAction: AbstractAction("Proxy settings...") {
+    inner class OpenProxySettingsAction : AbstractAction("Proxy settings...") {
         override fun actionPerformed(e: ActionEvent) {
             HttpConfigurable.editConfigurable(controlPanel)
             enableButtons()

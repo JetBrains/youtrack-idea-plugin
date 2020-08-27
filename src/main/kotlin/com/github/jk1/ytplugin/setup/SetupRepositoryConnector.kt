@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.setup
 import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -146,11 +145,7 @@ class SetupRepositoryConnector {
                     if (method.uri.scheme != "https") {
                         logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
                         val repoUri = URI(repository.url, false)
-                        repository.url = if (repoUri.port != -1){
-                            "https://" + repoUri.host + repoUri.port + repoUri.path
-                        } else {
-                            "https://" + repoUri.host  + repoUri.path
-                        }
+                        repository.url = URI("https", null, repoUri.host, repoUri.port, repoUri.path).toString()
                         logger.debug("url after manual protocol fix: ${repository.url}")
                         checker.check()
                     } else {
