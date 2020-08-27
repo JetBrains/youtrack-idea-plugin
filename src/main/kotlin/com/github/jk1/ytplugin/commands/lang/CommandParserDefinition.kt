@@ -17,9 +17,11 @@ import com.intellij.psi.tree.TokenSet
 
 class CommandParserDefinition : ParserDefinition {
 
-    val ANY_TEXT = IElementType("ANY_TEXT", CommandLanguage)
-    val QUERY = IElementType("QUERY", CommandLanguage)
-    private val FILE = IFileElementType(CommandLanguage)
+    companion object {
+        val ANY_TEXT = IElementType("ANY_TEXT", CommandLanguage)
+        val QUERY = IElementType("QUERY", CommandLanguage)
+        private val FILE = IFileElementType(CommandLanguage)
+    }
 
     override fun getFileNodeType(): IFileElementType = FILE
 
@@ -37,8 +39,6 @@ class CommandParserDefinition : ParserDefinition {
 
     override fun createFile(provider: FileViewProvider): PsiFile? = CommandFile(provider)
 
-    override fun spaceExistanceTypeBetweenTokens(start: ASTNode, end: ASTNode): ParserDefinition.SpaceRequirements?
-            = ParserDefinition.SpaceRequirements.MAY
     /**
      * Sole element that represents YouTrack command in PSI tree
      */
@@ -53,7 +53,6 @@ class CommandParserDefinition : ParserDefinition {
         private lateinit var buffer: CharSequence
 
         override fun start(buffer: CharSequence , startOffset: Int, endOffset: Int, initialState: Int) {
-            //LOG.debug(String.format("buffer: '%s', start: %d, end: %d", buffer, startOffset, endOffset))
             this.buffer = buffer
             this.start = startOffset
             this.end = endOffset

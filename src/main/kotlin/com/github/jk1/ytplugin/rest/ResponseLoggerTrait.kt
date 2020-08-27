@@ -6,6 +6,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
 import com.intellij.openapi.util.JDOMUtil
 import org.apache.commons.httpclient.HttpMethod
+import org.apache.commons.httpclient.HttpMethodBase
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -13,8 +14,8 @@ import java.util.*
 
 interface ResponseLoggerTrait {
 
-    fun HttpMethod.responseBodyAsLoggedString(): String {
-        val response = responseBodyAsString
+    fun HttpMethodBase.responseBodyAsLoggedString(): String {
+        val response = getResponseBodyAsString(25 * 1024 * 1024)
         if (logger.isDebugEnabled){
             try {
                 val header = getRequestHeader("Content-Type")
@@ -31,7 +32,7 @@ interface ResponseLoggerTrait {
         return response
     }
 
-    fun HttpMethod.responseBodyAsLoggedStream(): InputStream {
+    fun HttpMethodBase.responseBodyAsLoggedStream(): InputStream {
         return if (logger.isDebugEnabled){
             ByteArrayInputStream(responseBodyAsLoggedString().toByteArray(Charsets.UTF_8))
         } else {

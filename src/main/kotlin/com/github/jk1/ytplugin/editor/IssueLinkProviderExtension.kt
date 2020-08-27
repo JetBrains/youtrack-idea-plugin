@@ -24,7 +24,6 @@ class IssueLinkProviderExtension : StartupActivity.Background {
     }
 
     override fun runActivity(project: Project) {
-        // todo: https://github.com/jk1/youtrack-idea-plugin/issues/105
         // update navigation links every 30 min to recognize new projects
         val projectListRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             updateNavigationLinkPatterns(project)

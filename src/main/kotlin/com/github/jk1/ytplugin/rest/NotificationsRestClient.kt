@@ -14,7 +14,7 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
         return method.connect {
             when (httpClient.executeMethod(it)) {
                 200 -> {
-                    val streamReader = InputStreamReader(it.responseBodyAsLoggedStream(), "UTF-8")
+                    val streamReader = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
                     JsonParser.parseReader(streamReader).asJsonArray.map { YouTrackNotification(it, repository.url) }
                 }
                 404 -> {

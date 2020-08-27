@@ -1,22 +1,21 @@
 package com.github.jk1.ytplugin.setup
 
-import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.IdeaProjectTrait
-import com.github.jk1.ytplugin.SetupConnectionTrait
-import com.github.jk1.ytplugin.SetupManagerTrait
+import com.github.jk1.ytplugin.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
+import org.apache.commons.httpclient.HttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
+class SetupVariationsTest : SetupManagerTrait, IssueRestTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
+    override val httpClient = super<SetupManagerTrait>.httpClient
 
     @Before
     fun setUp() {
@@ -25,18 +24,22 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
     }
 
     @Test
-    fun `test if connected repository has 3 issues that can be displayed`() {
+    fun `test if connected repository has an issue that can be displayed`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token)
-        repository.defaultSearch = "Assignee:Unassigned"
+        repository.defaultSearch = "project: AT"
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
+        val issueId = createIssue()
+        try {
+            setupTask.testConnection(repo, project)
+            issueStoreComponent[repository].update(repository).waitFor(5000)
 
-        setupTask.testConnection(repo, project)
-        issueStoreComponent[repository].update(repository).waitFor(5000)
-
-        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(3, issueStoreComponent[repository].getAllIssues().size)
+            assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+            assertEquals(1, issueStoreComponent[repository].getAllIssues().size)
+        } finally {
+            deleteIssue(issueId)
+        }
     }
 
     @Test
@@ -47,8 +50,8 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
 
-        assertEquals(200, setupTask.statusCode)
     }
 
     @Test
@@ -60,8 +63,7 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
 
         setupTask.testConnection(repo, project)
 
-        assertEquals(NotifierState.UNKNOWN_HOST, setupTask.noteState)
-        assertEquals(401, setupTask.statusCode)
+        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
     @Test
@@ -74,24 +76,10 @@ class SetupVariationsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnection
         setupTask.testConnection(repo, project)
 
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
     }
 
 
     //TODO: add case of null host
-
-    @Test
-    fun `test use HTTP feature`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
-        repository = createYouTrackRepository(serverUrl, token, useHTTP = true)
-        val repo = repository.getRepo()
-        val setupTask = SetupRepositoryConnector()
-
-        setupTask.testConnection(repo, project)
-
-        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-        assertEquals(200, setupTask.statusCode)
-    }
 
     @After
     fun tearDown() {

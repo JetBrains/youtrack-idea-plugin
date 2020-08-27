@@ -40,6 +40,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
+    private var isConnectionTested = false
 
     override fun init() {
         title = "YouTrack"
@@ -58,11 +59,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
 
     private fun testConnectionAction() {
-        repoConnector.correctUrl = inputUrlTextPane.text
         val fontColor = inputTokenField.foreground
 
         val myRepositoryType = YouTrackRepositoryType()
-
         connectedRepository.url = inputUrlTextPane.text
         connectedRepository.password = String(inputTokenField.password)
         connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
@@ -70,63 +69,31 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         connectedRepository.storeCredentials()
 
         connectedRepository.isShared = shareUrlCheckBox.isSelected
-
         connectedRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
 
         val proxy = HttpConfigurable.getInstance()
         if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
             connectedRepository.isUseProxy = useProxyCheckBox.isSelected
-            repoConnector.testConnection(connectedRepository, project)
-        }
-        else {
+            if(inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()){
+                repoConnector.testConnection(connectedRepository, project)
+            }
+        } else {
             repoConnector.noteState = NotifierState.NULL_PROXY_HOST
             connectedRepository.isUseProxy = false
         }
 
-        val oldUrl = inputUrlTextPane.text
-        inputUrlTextPane.text = ""
+        drawAutoCorrection(fontColor)
 
-        if (oldUrl == repoConnector.correctUrl) {
-            inputUrlTextPane.text = oldUrl
-        } else {
-            if (!oldUrl.contains("/youtrack") && repoConnector.noteState == NotifierState.SUCCESS) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-
-                } else {
-                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(0, repoConnector.correctUrl.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-
-                }
-            } else if (repoConnector.noteState == NotifierState.SUCCESS) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && repoConnector.correctUrl.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, repoConnector.correctUrl.substring(5, repoConnector.correctUrl.length), fontColor)
-                } else {
-                    inputUrlTextPane.text = oldUrl
-                }
-            } else {
-                inputUrlTextPane.text = oldUrl
-            }
-        }
-
-        if (connectedRepository.url.isBlank() || connectedRepository.password.isBlank()) {
-            notifyFieldLabel.foreground = Color.red
-            notifyFieldLabel.text = "Url and token fields are mandatory"
+        if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
+            repoConnector.noteState = NotifierState.EMPTY_FIELD
         } else if (connectedRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
-            notifyFieldLabel.foreground = Color.green
-            notifyFieldLabel.text = "Logged in as a guest"
-        } else{
-            repoConnector.setNotifier(notifyFieldLabel)
+            repoConnector.noteState = NotifierState.GUEST_LOGIN
+        } else if (!connectedRepository.isLoginAnonymously && !repoConnector.isValidToken(connectedRepository.password)) {
+            repoConnector.noteState = NotifierState.INVALID_TOKEN
         }
 
-        if (repoConnector.noteState == NotifierState.SUCCESS) {
-            logger.info("YouTrack repository ${repoConnector.correctUrl} connected")
-        }
-        connectedRepository.url = repoConnector.correctUrl
-        connectedRepository.password = String(inputTokenField.password)
+        repoConnector.setNotifier(notifyFieldLabel)
+        isConnectionTested = true
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -242,6 +209,36 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
     }
 
+    private fun drawAutoCorrection(fontColor: Color) {
+        val oldUrl = inputUrlTextPane.text
+        inputUrlTextPane.text = ""
+
+        if (oldUrl == connectedRepository.url) {
+            inputUrlTextPane.text = oldUrl
+        } else if (repoConnector.noteState == NotifierState.SUCCESS) {
+            logger.info("YouTrack repository ${connectedRepository.url} connected")
+            if (!oldUrl.contains("/youtrack")) {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
+                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+                } else {
+                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(0, connectedRepository.url.length - 9), fontColor)
+                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
+                }
+            } else {
+                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
+                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
+                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length), fontColor)
+                } else {
+                    inputUrlTextPane.text = oldUrl
+                }
+            }
+        } else {
+            inputUrlTextPane.text = oldUrl
+        }
+    }
+
     override fun createActions(): Array<out Action> =
             arrayOf(TestConnectionAction(), OpenProxySettingsAction(), OkAction("Ok"), cancelAction)
 
@@ -265,9 +262,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
-            testConnectionAction()
+
+            if (!isConnectionTested) {
+                testConnectionAction()
+            }
+
             val myRepository: YouTrackRepository = repo.getRepo()
-            myRepository.url = repoConnector.correctUrl
+            myRepository.url = connectedRepository.url
             myRepository.password = String(inputTokenField.password)
             myRepository.username = connectedRepository.username
             myRepository.repositoryType = connectedRepository.repositoryType
@@ -279,8 +280,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST)
+            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)
+            }
         }
     }
 
@@ -290,7 +292,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
     }
 
-    inner class OpenProxySettingsAction: AbstractAction("Proxy settings...") {
+    inner class OpenProxySettingsAction : AbstractAction("Proxy settings...") {
         override fun actionPerformed(e: ActionEvent) {
             HttpConfigurable.editConfigurable(controlPanel)
             enableButtons()

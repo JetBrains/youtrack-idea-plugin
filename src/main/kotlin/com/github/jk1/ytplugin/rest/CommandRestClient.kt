@@ -11,9 +11,7 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
-import java.io.InputStreamReader
 import java.net.URL
-
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
@@ -46,7 +44,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val execUrl = "${repository.url}/api/groups?fields=name,id"
         val getMethod = GetMethod(execUrl)
         val status = httpClient.executeMethod(getMethod)
-        val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsString) as JsonArray
+        val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
         var groupId = ""
         if (status == 200) {
             for (element in response) {
@@ -76,8 +74,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         return postMethod.connect {
             val status = httpClient.executeMethod(postMethod)
             if (status != 200) {
-                val body = postMethod.responseBodyAsLoggedStream()
-                val error = JsonParser.parseReader(InputStreamReader(body, "UTF-8")).asJsonObject.get("value").asString
+                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
                 CommandExecutionResponse(errors = listOf("Workflow: $error"))
             } else {
                 postMethod.responseBodyAsLoggedString()

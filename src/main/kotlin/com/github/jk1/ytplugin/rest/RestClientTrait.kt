@@ -5,11 +5,13 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
+import org.apache.commons.httpclient.HttpMethodBase
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import java.io.InputStreamReader
 import java.net.URLEncoder
 import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 
@@ -26,7 +28,7 @@ interface RestClientTrait: ResponseLoggerTrait {
             return client
         }
 
-    fun <R> HttpMethod.connect(block: (HttpMethod) -> R): R {
+    fun <R> HttpMethodBase.connect(block: (HttpMethod) -> R): R {
         try {
             val credentials = "${repository.username}:${repository.password}".b64Encoded
             this.addRequestHeader("Authorization", "Basic $credentials")
@@ -37,12 +39,12 @@ interface RestClientTrait: ResponseLoggerTrait {
         }
     }
 
-    fun <T> HttpMethod.execute(responseParser: (json: JsonElement) -> T): T {
+    fun <T> HttpMethodBase.execute(responseParser: (json: JsonElement) -> T): T {
         this.setRequestHeader("Accept", "application/json")
         return connect {
             val status = httpClient.executeMethod(this)
             if (status == 200) {
-                val streamReader = InputStreamReader(this.responseBodyAsLoggedStream(), "UTF-8")
+                val streamReader = InputStreamReader(this.responseBodyAsLoggedStream(), StandardCharsets.UTF_8.name())
                 responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
                 throw RuntimeException(this.responseBodyAsLoggedString())
@@ -50,9 +52,12 @@ interface RestClientTrait: ResponseLoggerTrait {
         }
     }
 
+    val HttpMethodBase.responseBodyAsReader
+            get() = InputStreamReader(responseBodyAsStream, StandardCharsets.UTF_8)
+
     val String.urlencoded: String
-        get() = URLEncoder.encode(this, "UTF-8")
+        get() = URLEncoder.encode(this, StandardCharsets.UTF_8.name())
 
     private val String.b64Encoded: String
-        get() = Base64.getEncoder().encodeToString(this.toByteArray(Charset.forName("UTF-8")))
+        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 }
