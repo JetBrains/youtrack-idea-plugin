@@ -14,7 +14,7 @@
             <li> Recognizes YouTrack issue ids in Java code comments and VCS history </li>
             <li> Displays issue tracker notifications in IDE </li>
         </ul>
-        <p>Compatibility: YouTrack 5.2+<p/>
+        <p>Compatibility: YouTrack 2017.1+<p/>
         <p>Four minute plugin demo <a href="https://www.youtube.com/watch?v=gGVEwlZpvj8">on YouTube</a></p>
         <br>
         <p>If you like this plugin, you can support it:<p/>
