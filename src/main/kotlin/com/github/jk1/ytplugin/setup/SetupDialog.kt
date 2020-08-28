@@ -1,13 +1,17 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
+import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.tasks.TaskManager
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
@@ -39,6 +43,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
+
+    val timeTrackingTab =  TimeTrackerSettingsTab()
+
 
     private var isConnectionTested = false
 
@@ -199,8 +206,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             add(useProxyCheckBox)
         }
 
-        val timeTrackingTab =  TimeTrackerSettingsTab()
-
         return JBTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
@@ -279,6 +284,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
+
+            if (timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected){
+                val taskManager = TaskManager.getManager(project)
+                val timer = TimeTracker()
+                timer.isAutoTrackingEnable = true
+                StartTrackerAction(repo, timer, project, taskManager).startAutomatedTracking()
+            }
 
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)

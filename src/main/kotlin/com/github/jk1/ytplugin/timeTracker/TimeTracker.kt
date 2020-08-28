@@ -1,9 +1,9 @@
 package com.github.jk1.ytplugin.timeTracker
 
-import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.WindowManager
+import com.intellij.tasks.TaskManager
 import java.util.concurrent.TimeUnit
 
 
@@ -13,13 +13,18 @@ class TimeTracker() {
     private var time: String = ""
     private var comment: String = ""
     private var timeInMills: Long = 0
-
+    var isAutoTrackingEnable = false
     private var startTime: Long = 0
     var isRunning = false
     var isPaused = false
+    var activityTracker: ActivityTracker? = null
 
     fun stop(): String {
         val trackerNote = TrackerNotification()
+
+        if (isAutoTrackingEnable){
+            startTime = activityTracker?.startInactivityTime!!
+        }
 
         return if (isRunning) {
             if (!isPaused) {
@@ -53,7 +58,7 @@ class TimeTracker() {
         }
     }
 
-    fun start(idReadable: String) {
+    fun start(idReadable: String, repo: YouTrackServer, project: Project, taskManager: TaskManager) {
         val trackerNote = TrackerNotification()
         trackerNote.notify("Work timer started for Issue $idReadable", NotificationType.INFORMATION)
         startTime = System.currentTimeMillis()

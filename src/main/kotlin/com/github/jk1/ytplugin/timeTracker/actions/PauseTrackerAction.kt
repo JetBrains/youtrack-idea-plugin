@@ -15,7 +15,7 @@ import com.intellij.tasks.TaskManager
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
-class PauseTrackerAction(val repo: YouTrackServer, val timer: TimeTracker, val project: Project, val taskManager: TaskManager) : IssueAction() {
+class PauseTrackerAction(val timer: TimeTracker) : IssueAction() {
     override val text = "Pause work timer"
     override val description = "Pause work timer"
     override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/time_tracker_pause_dark.png"))
