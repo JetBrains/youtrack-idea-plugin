@@ -45,7 +45,9 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
+
+        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
     }
 
     @Test
@@ -56,7 +58,9 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
+
+        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
     }
 
     @Test
@@ -108,16 +112,6 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
 
         assertEquals("https://tains.com", repository.getRepo().url)
         assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
-    }
-
-    @Test
-    fun `test connection with empty form`() {
-        repository = createYouTrackRepository("", token)
-        val repo = repository.getRepo()
-        val setupTask = SetupRepositoryConnector()
-
-        setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.TIMEOUT, setupTask.noteState)
     }
 
     @After

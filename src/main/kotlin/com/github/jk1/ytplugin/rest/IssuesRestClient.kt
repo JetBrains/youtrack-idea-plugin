@@ -57,18 +57,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             null
     }
 
-    private fun parseIssues(method: GetMethod): List<Issue> {
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
-                json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
-            } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
-            }
-        }
-    }
-
     private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<Issue> {
         return method.connect {
             val status = httpClient.executeMethod(method)
@@ -95,7 +83,15 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
 
         method.setQueryString(arrayOf(myQuery, myFields))
-        val issues = parseIssues(method)
+        val issues = method.connect {
+            val status = httpClient.executeMethod(method)
+            if (status == 200) {
+                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+                json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
+            } else {
+                throw RuntimeException(method.responseBodyAsLoggedString())
+            }
+        }
 
         return getWorkItemsForIssues(query, issues)
     }

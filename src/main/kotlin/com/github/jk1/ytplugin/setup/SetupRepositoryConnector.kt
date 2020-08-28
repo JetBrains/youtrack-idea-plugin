@@ -8,11 +8,9 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.TaskManager
-import com.intellij.tasks.TaskRepository
 import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
-import com.intellij.util.containers.ContainerUtil
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.NameValuePair
@@ -21,16 +19,14 @@ import org.apache.commons.httpclient.methods.GetMethod
 import java.awt.Color
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
 class SetupRepositoryConnector {
+
+    @Volatile
     var noteState = NotifierState.INVALID_TOKEN
-    val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
+    private val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
 
     fun isValidToken(token: String): Boolean {
         return token.matches(tokenPattern)
@@ -56,7 +52,7 @@ class SetupRepositoryConnector {
             NotifierState.INCORRECT_CERTIFICATE -> note.text = "Incorrect certificate"
             NotifierState.TIMEOUT -> note.text = "Connection timeout: check login and token"
             NotifierState.UNAUTHORIZED -> note.text = "Unauthorized: check login and token"
-            NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1</html>"
+            NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1 or later</html>"
         }
     }
 
@@ -89,35 +85,32 @@ class SetupRepositoryConnector {
         return false
     }
 
-    private fun checkAndFixConnection(repository: YouTrackRepository): Future<*> {
-        val future = CompletableFuture<Any>()
+    private fun checkAndFixConnection(repository: YouTrackRepository) {
         val checker = ConnectionChecker(repository)
-
-        checker.onSuccess {
+        checker.onSuccess { method ->
             noteState = if (isValidYouTrackVersion(repository)) {
+                repository.url = method.uri.toString().replace("/api/token", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
             } else {
                 logger.debug("invalid YouTrack version detected")
                 NotifierState.INVALID_VERSION
             }
-            future.complete(Unit)
         }
         checker.onApplicationError { method, code ->
             logger.debug("handling application error for ${repository.url}")
             when (code) {
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
-                    val location: String = method.getResponseHeader("Location").toString()
-                    // received: "Location: {new_repository.url}/api/token", thus needs to be cut
-                    repository.url = location.substring(10, location.length - 11)
+                    val location = method.getResponseHeader("Location").value
+                    repository.url = location.replace("/api/token", "")
                     logger.debug("url after correction: ${repository.url}")
-                    checker.check()
+                    // unloaded instance redirect can't handle /api/* suffix properly
+                    checker.check(api = !location.contains("/waitInstanceStartup/"))
                 }
                 403 -> {
                     logger.debug("handling response code 403 for the ${repository.url}: UNAUTHORIZED")
                     noteState = NotifierState.UNAUTHORIZED
-                    future.complete(Unit)
                 }
                 else -> {
                     logger.debug("handling response code other than 301..399, 403 ${repository.url}: MANUAL FIX")
@@ -128,19 +121,16 @@ class SetupRepositoryConnector {
                     } else {
                         logger.debug("no manual ending fix: LOGIN_ERROR")
                         noteState = NotifierState.LOGIN_ERROR
-                        future.complete(Unit)
                     }
                 }
             }
         }
         checker.onTransportError { method: HttpMethod, exception: Exception ->
             logger.debug("handling transport error for ${repository.url}")
-
             when (exception) {
                 is SSLException -> {
                     logger.debug("application error: INCORRECT_CERTIFICATE")
                     noteState = NotifierState.INCORRECT_CERTIFICATE
-                    future.complete(Unit)
                 }
                 else -> {
                     if (method.uri.scheme != "https") {
@@ -152,34 +142,22 @@ class SetupRepositoryConnector {
                     } else {
                         logger.debug("no manual transport fix: LOGIN_ERROR")
                         noteState = NotifierState.LOGIN_ERROR
-                        future.complete(Unit)
                     }
                 }
             }
         }
         checker.check()
-        return future
     }
 
 
     fun testConnection(repository: YouTrackRepository, myProject: Project) {
         logger.debug("TRY CONNECTION FOR ${repository.url}")
-
         val task = object : Task.Modal(myProject, "Test connection", true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.text = "Connecting to " + repository.url + "..."
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
-
-                val future = checkAndFixConnection(repository)
-
-                try {
-                    future.get(15, TimeUnit.SECONDS)
-                } catch (ignore: TimeoutException) {
-                    logger.debug("could not connect to ${repository.url}: CONNECTION TIMEOUT")
-                    noteState = NotifierState.TIMEOUT
-                    indicator.stop()
-                }
+                checkAndFixConnection(repository)
             }
         }
         ProgressManager.getInstance().run(task)
@@ -187,13 +165,10 @@ class SetupRepositoryConnector {
 
     fun showIssuesForConnectedRepo(repository: YouTrackRepository, project: Project) {
         logger.debug("showing issues for ${repository.url}...")
-        val myManager: TaskManagerImpl = TaskManager.getManager(project) as TaskManagerImpl
-        lateinit var myRepositories: List<YouTrackRepository>
-        myRepositories = arrayListOf(repository)
-        val newRepositories: List<TaskRepository> = ContainerUtil.map<TaskRepository, TaskRepository>(myRepositories) { obj: TaskRepository -> obj.clone() }
-        myManager.setRepositories(newRepositories)
-        myManager.updateIssues(null)
-        RecentTaskRepositories.getInstance().addRepositories(myRepositories)
+        val taskManager = TaskManager.getManager(project) as TaskManagerImpl
+        taskManager.setRepositories(listOf(repository))
+        taskManager.updateIssues(null)
+        RecentTaskRepositories.getInstance().addRepositories(listOf(repository))
     }
 }
 

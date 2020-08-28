@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
+import java.net.URL
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -31,7 +32,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var shareUrlCheckBox: JBCheckBox
     private lateinit var useProxyCheckBox: JBCheckBox
-    private lateinit var loginAnonCheckBox: JBCheckBox
 
     private var inputUrlTextPane = JTextPane()
     private var inputTokenField = JBPasswordField()
@@ -51,24 +51,18 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         super.show()
     }
 
-    private fun loginAnonymouslyChanged(enabled: Boolean) {
-        inputTokenField.isEnabled = enabled
-        tokenLabel.isEnabled = enabled
-    }
-
-
     private fun testConnectionAction() {
         val fontColor = inputTokenField.foreground
 
         val myRepositoryType = YouTrackRepositoryType()
         connectedRepository.url = inputUrlTextPane.text
         connectedRepository.password = String(inputTokenField.password)
-        connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
+        connectedRepository.username = "Token-based authentication" // ignored by YouTrack anyway when token is sent as password
         connectedRepository.repositoryType = myRepositoryType
         connectedRepository.storeCredentials()
 
         connectedRepository.isShared = shareUrlCheckBox.isSelected
-        connectedRepository.isLoginAnonymously = loginAnonCheckBox.isSelected
+        connectedRepository.isLoginAnonymously = false
 
         val proxy = HttpConfigurable.getInstance()
         if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
@@ -85,9 +79,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
             repoConnector.noteState = NotifierState.EMPTY_FIELD
-        } else if (connectedRepository.isLoginAnonymously && repoConnector.noteState != NotifierState.UNKNOWN_HOST) {
-            repoConnector.noteState = NotifierState.GUEST_LOGIN
-        } else if (!connectedRepository.isLoginAnonymously && !repoConnector.isValidToken(connectedRepository.password)) {
+        }  else if (!repoConnector.isValidToken(connectedRepository.password)) {
             repoConnector.noteState = NotifierState.INVALID_TOKEN
         }
 
@@ -173,13 +165,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         shareUrlCheckBox = JBCheckBox("Share Url", repo.getRepo().isShared)
         shareUrlCheckBox.setBounds(440, 95, 100, 17)
 
-        loginAnonCheckBox = JBCheckBox("Login Anonymously", repo.getRepo().isLoginAnonymously)
-        loginAnonCheckBox.setBounds(150, 95, 170, 17)
-
         useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
         useProxyCheckBox.setBounds(330, 95, 100, 17)
-
-        loginAnonCheckBox.addActionListener { loginAnonymouslyChanged(!loginAnonCheckBox.isSelected) }
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
@@ -188,7 +175,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             layout = null
             add(shareUrlCheckBox)
             add(advertiserLabel)
-            add(loginAnonCheckBox)
             add(serverUrlLabel)
             add(inputUrlTextPane)
             add(tokenLabel)
@@ -206,32 +192,26 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     }
 
     private fun drawAutoCorrection(fontColor: Color) {
-        val oldUrl = inputUrlTextPane.text
-        inputUrlTextPane.text = ""
-
-        if (oldUrl == connectedRepository.url) {
-            inputUrlTextPane.text = oldUrl
-        } else if (repoConnector.noteState == NotifierState.SUCCESS) {
+        fun getColor(closure: () -> Boolean) = if (closure.invoke()) fontColor else Color.GREEN
+        if (repoConnector.noteState == NotifierState.SUCCESS)  {
             logger.info("YouTrack repository ${connectedRepository.url} connected")
-            if (!oldUrl.contains("/youtrack")) {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-                } else {
-                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(0, connectedRepository.url.length - 9), fontColor)
-                    appendToPane(inputUrlTextPane, "/youtrack", Color.GREEN)
-                }
-            } else {
-                if (!oldUrl.contains("https") && oldUrl.contains("http") && connectedRepository.url.contains("https")) {
-                    appendToPane(inputUrlTextPane, "https", Color.GREEN)
-                    appendToPane(inputUrlTextPane, connectedRepository.url.substring(5, connectedRepository.url.length), fontColor)
-                } else {
-                    inputUrlTextPane.text = oldUrl
-                }
+            val oldAddress = inputUrlTextPane.text
+            // if we managed to fix this and there's no protocol, well, it must be a default one missing
+            val oldUrl = URL(if (oldAddress.startsWith("http")) oldAddress else  "http://$oldAddress")
+            val fixedUrl = URL(connectedRepository.url)
+            inputUrlTextPane.text = ""
+            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol }
+            appendToPane(inputUrlTextPane, fixedUrl.protocol, protocolColor)
+            appendToPane(inputUrlTextPane, "://", protocolColor)
+            appendToPane(inputUrlTextPane, fixedUrl.host, getColor { oldUrl.host == fixedUrl.host })
+            if (fixedUrl.port != -1) {
+                val color = getColor { oldUrl.port == fixedUrl.port }
+                appendToPane(inputUrlTextPane, ":", color)
+                appendToPane(inputUrlTextPane, fixedUrl.port.toString(), color)
             }
-        } else {
-            inputUrlTextPane.text = oldUrl
+            if (fixedUrl.path.isNotEmpty()) {
+                appendToPane(inputUrlTextPane, fixedUrl.path, getColor { oldUrl.path == fixedUrl.path })
+            }
         }
     }
 
@@ -272,7 +252,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             myRepository.isShared = connectedRepository.isShared
             myRepository.isUseProxy = connectedRepository.isUseProxy
-            myRepository.isLoginAnonymously = connectedRepository.isLoginAnonymously
+            myRepository.isLoginAnonymously = false
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
