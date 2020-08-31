@@ -8,8 +8,6 @@ import kotlin.jvm.internal.Intrinsics
 class SetUpProject(project: Project) {
     private val project: Project
     fun projectOpened() {
-        val bar = WindowManager.getInstance().getStatusBar(project)
-        bar?.addWidget(ClockWidget(System.currentTimeMillis()))
     }
 
     init {

@@ -104,7 +104,7 @@ class ActivityTracker(
                 val isIDEActive = captureIdeState(Type.IdeState, "")
                 if (!isIDEActive){
                     myInactivityTime = currentTimeMillis() - startInactivityTime
-
+                    println("time: " + myInactivityTime)
 
                     if ((myInactivityTime > inactivityPeriod) && timer.isRunning){
                         PauseTrackerAction(timer)
@@ -172,6 +172,7 @@ class ActivityTracker(
             }
             if (!isMouseOrKeyboardActive){
                 myInactivityTime = currentTimeMillis() - startInactivityTime
+                println("time when not active: " + myInactivityTime)
 
                 if((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused){
                     timer.pause()
@@ -179,6 +180,7 @@ class ActivityTracker(
             } else if (isMouseOrKeyboardActive) {
                 myInactivityTime = 0
                 startInactivityTime = currentTimeMillis()
+                println("time: " + myInactivityTime)
                 if (!timer.isRunning || timer.isPaused) {
                     val action = StartTrackerAction(repo, timer, project, taskManager)
                     action.startAutomatedTracking()
