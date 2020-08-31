@@ -160,6 +160,7 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
         val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
+
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
@@ -206,9 +207,6 @@ class IssueViewer : JPanel(BorderLayout()) {
 
         workItemsPanel.add(JLabel(""))  // for empty cell
 
-        val panel = JPanel(BorderLayout())
-        panel.add(workItemsPanel, BorderLayout.NORTH)
-
-        return panel
+        return workItemsPanel
     }
 }

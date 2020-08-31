@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
-import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.ui.Gray
@@ -13,7 +12,10 @@ import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
-import javax.swing.*
+import javax.swing.JList
+import javax.swing.JPanel
+import javax.swing.JTextField
+import javax.swing.ListCellRenderer
 
 
 class WorkItemsListCellRenderer(
