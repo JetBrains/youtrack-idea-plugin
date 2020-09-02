@@ -1,32 +1,40 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.ui.WorkItemsList
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.DumbAware
 
-class GroupByIssueAction(val repo: YouTrackServer, val workItemsList: WorkItemsList) : IssueAction() {
-    override val text = "Group work items by issue"
-    override val description = "Group work items by issue"
-    override val icon = AllIcons.Actions.GroupByPrefix
-    override val shortcut = "control alt shift W"
-
+class GroupByIssueAction: AnAction(
+        "Group work items by issue",
+        "Group work items by issue",
+        AllIcons.Actions.GroupByPrefix), DumbAware, IdeNotificationsTrait {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            logger.debug("Work items grouping by issue for ${repo.url}")
-            workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = true
-            ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+            val project = event.project
+            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+            val workItemsList = repo?.let { WorkItemsList(it) }
+            if (repo != null){
+                logger.debug("Work items grouping by issue for ${repo.url}")
+                if (workItemsList != null) {
+                    workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = true
+                }
+                ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+            }
         }
     }
 
     override fun update(event: AnActionEvent) {
         val project = event.project
-        event.presentation.isEnabled = project != null &&
+        val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+
+        event.presentation.isEnabled = project != null && repo != null &&
                 project.isInitialized &&
                 !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
     }

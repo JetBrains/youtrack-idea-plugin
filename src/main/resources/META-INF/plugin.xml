@@ -51,13 +51,28 @@
             <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
         </action>
 
-
         <action id="com.github.jk1.ytplugin.issues.actions.CreateIssueAction"
                 class="com.github.jk1.ytplugin.issues.actions.CreateIssueAction">
             <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
         </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction">
+            <keyboard-shortcut first-keystroke="control shift I" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.GroupByIssueAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.GroupByIssueAction">
+            <keyboard-shortcut first-keystroke="control alt shift W" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
