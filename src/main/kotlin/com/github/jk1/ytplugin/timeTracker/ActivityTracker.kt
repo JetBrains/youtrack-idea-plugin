@@ -1,3 +1,4 @@
+
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
@@ -104,7 +105,6 @@ class ActivityTracker(
                 val isIDEActive = captureIdeState(Type.IdeState, "")
                 if (!isIDEActive){
                     myInactivityTime = currentTimeMillis() - startInactivityTime
-                    println("time: " + myInactivityTime)
 
                     if ((myInactivityTime > inactivityPeriod) && timer.isRunning){
                         PauseTrackerAction(timer)
@@ -139,7 +139,7 @@ class ActivityTracker(
     }
 
     private fun startAWTEventListener( parentDisposable: Disposable, trackKeyboard: Boolean,
-            trackMouse: Boolean, mouseMoveEventsThresholdMs: Long
+                                       trackMouse: Boolean, mouseMoveEventsThresholdMs: Long
     ) {
         var lastMouseMoveTimestamp = 0L
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
@@ -172,7 +172,6 @@ class ActivityTracker(
             }
             if (!isMouseOrKeyboardActive){
                 myInactivityTime = currentTimeMillis() - startInactivityTime
-                println("time when not active: " + myInactivityTime)
 
                 if((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused){
                     timer.pause()
@@ -180,7 +179,6 @@ class ActivityTracker(
             } else if (isMouseOrKeyboardActive) {
                 myInactivityTime = 0
                 startInactivityTime = currentTimeMillis()
-                println("time: " + myInactivityTime)
                 if (!timer.isRunning || timer.isPaused) {
                     val action = StartTrackerAction(repo, timer, project, taskManager)
                     action.startAutomatedTracking()
@@ -234,7 +232,7 @@ class ActivityTracker(
             }
             val editor = currentEditorIn(project)
             if (editor != null) {
-               return true
+                return true
             }
 
             return false

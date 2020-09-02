@@ -6,6 +6,7 @@ import java.util.*
 
 class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
 
+    val json: String = item.toString()
     val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
     val date: Date = Date(item.asJsonObject.get("date").asLong)
     val value: String = item.asJsonObject.get("duration").asJsonObject.get("presentation").asString

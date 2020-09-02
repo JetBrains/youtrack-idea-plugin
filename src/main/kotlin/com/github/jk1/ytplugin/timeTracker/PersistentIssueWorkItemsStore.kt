@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker
 
-import com.github.jk1.ytplugin.issues.IssueWorkItemStore
+import com.github.jk1.ytplugin.timeTracker.IssueWorkItemStore
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -46,7 +46,7 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
 
         // primary constructor is reserved for serializer
         constructor(stores: Map<String, IssueWorkItemStore>) : this() {
-            persistentIssueWorkItems = stores.mapValues { "[${it.value.joinToString(", ") { it.author }}]" }
+            persistentIssueWorkItems = stores.mapValues { "[${it.value.joinToString(", ") { it.json }}]" }
         }
 
         fun getStore(repo: YouTrackServer): IssueWorkItemStore {

@@ -1,10 +1,9 @@
-package com.github.jk1.ytplugin.issues
+package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.rest.UserRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.progress.ProgressIndicator
@@ -53,7 +52,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issuesWorkItems for the search query")
-                val search = repo.defaultSearch + " #{Assigned to me}"
+                val search = repo.defaultSearch + "#{Assigned to me}"
                 val list = UserRestClient(repo).getWorkItemsForUser(search)
                 workItems = if (searchQuery != "")
                     filterWorkItems(searchQuery, list)
@@ -71,10 +70,10 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
         private fun filterWorkItems(searchQuery: String, list: List<IssueWorkItem>) : List<IssueWorkItem>{
             return list.filter {
                 it.value.contains(searchQuery) ||
-                it.author.contains(searchQuery) ||
-                it.issueId.contains(searchQuery) ||
-                it.date.format().contains(searchQuery) ||
-                it.type.contains(searchQuery)
+                        it.author.contains(searchQuery) ||
+                        it.issueId.contains(searchQuery) ||
+                        it.date.format().contains(searchQuery) ||
+                        it.type.contains(searchQuery)
             }
         }
 
