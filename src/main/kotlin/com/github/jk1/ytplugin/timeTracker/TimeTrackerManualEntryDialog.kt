@@ -133,49 +133,60 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         var time = inputTime.replace("\\s".toRegex(), "")
 
-        var sepPos: Int = time.lastIndexOf("w")
-        if (sepPos != -1){
-            weeks = time.substring(0, sepPos).toLong()
-            time = time.substring(sepPos + 1, time.length)
+        try {
+            var sepPos: Int = time.lastIndexOf("w")
+            if (sepPos != -1) {
+                weeks = time.substring(0, sepPos).toLong()
+                time = time.substring(sepPos + 1, time.length)
+            }
+            sepPos = time.lastIndexOf("d")
+            if (sepPos != -1) {
+                days = time.substring(0, sepPos).toLong()
+                time = time.substring(sepPos + 1, time.length)
+            }
+            sepPos = time.lastIndexOf("h")
+            if (sepPos != -1) {
+                hours = time.substring(0, sepPos).toLong()
+                time = time.substring(sepPos + 1, time.length)
+            }
+            sepPos = time.lastIndexOf("m")
+            if (sepPos != -1) {
+                minutes = time.substring(0, sepPos).toLong()
+            }
         }
-        sepPos = time.lastIndexOf("d")
-        if (sepPos != -1){
-            days = time.substring(0, sepPos).toLong()
-            time = time.substring(sepPos + 1, time.length)
+        catch (e: NumberFormatException){
+            notifier.foreground = Color.red
+            notifier.text = " Could not post: incorrect time"
         }
-        sepPos = time.lastIndexOf("h")
-        if (sepPos != -1){
-            hours= time.substring(0, sepPos).toLong()
-            time = time.substring(sepPos + 1, time.length)
-        }
-        sepPos = time.lastIndexOf("m")
-        if (sepPos != -1){
-            minutes = time.substring(0, sepPos).toLong()
-        }
-
         return (weeks * 10080 + days * 1440 + hours * 60 + minutes).toString()
     }
 
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             var status = 0
-            var taskManager = TaskManager.getManager(project)
+            var date: Date? = null
+
+            val taskManager = TaskManager.getManager(project)
             val activeTask = taskManager.activeTask
 
-            val sdf = SimpleDateFormat("yyyy-MM-dd")
-            val date = sdf.parse(datePicker.date.toInstant().toString().substring(0, 10))
-
-            typeComboBox.getItemAt(typeComboBox.selectedIndex)?.let {
-                status = TimeTrackerRestClient(repo).postNewWorkItem(activeTask.id,
-                        formatTime(timeTextField.text), it, commentTextField.text, date.time.toString())
-            }
-            state = status
-            if (status == 200) {
-                this@TimeTrackerManualEntryDialog.close(0)
-            }
-            else {
+            if (datePicker.date == null) {
                 notifier.foreground = Color.red
-                notifier.text = " Could not post, please check your input"
+                notifier.text = " Date is not specified"
+            } else {
+                val sdf = SimpleDateFormat("yyyy-MM-dd")
+                date = sdf.parse(datePicker.date.toInstant().toString().substring(0, 10))
+                typeComboBox.getItemAt(typeComboBox.selectedIndex)?.let {
+                    status = TimeTrackerRestClient(repo).postNewWorkItem(activeTask.id,
+                            formatTime(timeTextField.text), it, commentTextField.text, date?.time.toString())
+                }
+                state = status
+                if (status == 200) {
+                    this@TimeTrackerManualEntryDialog.close(0)
+                }
+                else {
+                    notifier.foreground = Color.red
+                    notifier.text = " Could not post, please check your input"
+                }
             }
         }
     }
