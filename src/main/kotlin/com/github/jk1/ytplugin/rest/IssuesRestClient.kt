@@ -21,6 +21,15 @@ import java.nio.charset.StandardCharsets
 class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClientBase, RestClientTrait {
 
     companion object {
+
+        fun mapWorkItemsWithIssues(workItems: List<IssueWorkItem>, issues: List<Issue>): List<Issue>{
+            for (item in workItems) {
+                val issue: MutableList<Issue> = issues.filter { it.id == item.issueId }.toMutableList()
+                issue[0].workItems.add(item)
+            }
+            return issues
+        }
+
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
@@ -70,23 +79,20 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         }
     }
 
-    private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<Issue> {
+    private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<IssueWorkItem> {
         return method.connect {
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
             if (status == 200) {
                 val workItems = mutableListOf<IssueWorkItem>()
                 json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
-                for (item in workItems) {
-                    val issue: MutableList<Issue> = issues.filter { it.id == item.issueId }.toMutableList()
-                    issue[0].workItems.add(item)
-                }
-                issues
+                workItems
             } else {
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
     }
+
 
     override fun getIssues(query: String): List<Issue> {
         // todo: customizable "max" limit
@@ -102,7 +108,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
 
-    private fun getWorkItemsForIssues(query: String, issues: List<Issue>): List<Issue> {
+    fun getWorkItemsForIssues(query: String, issues: List<Issue>): List<Issue> {
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
@@ -110,7 +116,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "duration(presentation,minutes),author(name),creator(name),date,id")
         method.setQueryString(arrayOf(myQuery, myFields))
 
-        return parseWorkItems(method, issues)
+        val workItems = parseWorkItems(method, issues)
+        return mapWorkItemsWithIssues(workItems, issues)
     }
 
     fun getEntityIdByIssueId(issueId: String): String {
