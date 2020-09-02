@@ -1,6 +1,6 @@
 {
   "usesMarkdown": true,
-  "text": "I keep on testing *samples*.",
+  "text": "{comment}",
   "date": "{date}",
   "author": {
     "id": "1-1"
@@ -10,8 +10,10 @@
   },
   "type": {
     "name": "{type}",
+    "id": "{typeId}",
     "$type": "WorkItemType"
   },
+
   "$type": "IssueWorkItem"
 }
 

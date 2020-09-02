@@ -15,7 +15,7 @@ class TimeTracker() {
     var isManualTrackingEnable = true
     var scheduledPeriod: Long = 0
     private var time: String = ""
-    private var comment: String = ""
+    private var comment: String = "default comment"
     private var timeInMills: Long = 0
     var isAutoTrackingEnable = false
     private var startTime: Long = 0

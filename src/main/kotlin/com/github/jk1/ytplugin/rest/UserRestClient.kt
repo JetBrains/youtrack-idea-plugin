@@ -42,7 +42,8 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         val method = GetMethod(url)
         val myFields = NameValuePair("fields", "text,issue(idReadable),type(name),created," +
                 "duration(presentation,minutes),author(name),creator(name),date,id")
-        method.setQueryString(arrayOf(myQuery, myFields))
+        val myTop = NameValuePair("\$top","100")
+        method.setQueryString(arrayOf(myTop, myQuery, myFields))
 
         val sortedList = parseWorkItems(method)
                 .sortedWith(compareByDescending { it.created })

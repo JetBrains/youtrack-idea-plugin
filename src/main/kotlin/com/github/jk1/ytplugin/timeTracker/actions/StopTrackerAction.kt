@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.tasks.TaskManager
+import java.util.*
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
@@ -36,7 +37,8 @@ class StopTrackerAction(val timer: TimeTracker, val repo: YouTrackServer,val pro
             if (time == "0")
                 trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.ERROR)
             else{
-                val status = TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, timer.getRecordedTime(), timer.type)
+                val status = TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
+                        timer.getRecordedTime(), timer.type, timer.getComment(), (Date().time).toString())
                 if (status != 200)
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.ERROR)
                 else{
