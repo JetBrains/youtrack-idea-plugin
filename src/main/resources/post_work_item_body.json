@@ -8,6 +8,10 @@
   "duration": {
     "minutes": "{minutes}"
   },
+  "type": {
+    "name": "{type}",
+    "$type": "WorkItemType"
+  },
   "$type": "IssueWorkItem"
 }
 

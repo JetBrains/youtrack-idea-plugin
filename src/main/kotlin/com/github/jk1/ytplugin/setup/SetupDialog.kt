@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
+import java.util.concurrent.TimeUnit
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -265,6 +266,18 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         return contextPane
     }
 
+    fun setupTimer(timer: TimeTracker){
+        timer.isAutoTrackingEnable = timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected
+        timer.type = timeTrackingTab.getType().toString()
+        timer.isManualTrackingEnable = timeTrackingTab.getManualModeCheckbox().isSelected
+        if (timeTrackingTab.getScheduledCheckbox().isSelected){
+            timer.scheduledPeriod = TimeUnit.HOURS.toMillis(timeTrackingTab.getScheduledHours().toLong()) +
+                    TimeUnit.MINUTES.toMillis(timeTrackingTab.getScheduledMinutes().toLong())
+        }
+        timer.inactivityPeriodInMills = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
+                TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
+    }
+
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
 
@@ -285,13 +298,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            if (timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected){
+            val timer = TimeTracker()
+            setupTimer(timer)
+
+            if (timer.isAutoTrackingEnable){
                 val taskManager = TaskManager.getManager(project)
-                val timer = TimeTracker()
-                timer.isAutoTrackingEnable = true
                 StartTrackerAction(repo, timer, project, taskManager).startAutomatedTracking()
             }
-
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)
             }

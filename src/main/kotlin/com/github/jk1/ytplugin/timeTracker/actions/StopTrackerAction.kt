@@ -36,7 +36,7 @@ class StopTrackerAction(val timer: TimeTracker, val repo: YouTrackServer,val pro
             if (time == "0")
                 trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.ERROR)
             else{
-                val status = TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, timer.getRecordedTime())
+                val status = TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, timer.getRecordedTime(), timer.type)
                 if (status != 200)
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.ERROR)
                 else{

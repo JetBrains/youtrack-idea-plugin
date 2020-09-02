@@ -13,7 +13,7 @@ import java.util.*
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun postNewWorkItem(issueId: String, time: String) : Int {
+    fun postNewWorkItem(issueId: String, time: String, type: String) : Int {
         val getGroupsUrl = "${repository.url}/api/issues/${issueId}/timeTracking/workItems"
 
         val method = PostMethod(getGroupsUrl)
@@ -23,6 +23,8 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         val jsonBody = res?.readText()
                 ?.replace("\"{minutes}\"", time, true)
                 ?.replace("\"{date}\"", (Date().time).toString(), true)
+                ?.replace("\"{type}\"", type, true)
+
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
         var status = 0

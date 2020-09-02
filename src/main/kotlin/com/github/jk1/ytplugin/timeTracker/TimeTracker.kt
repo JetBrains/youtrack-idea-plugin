@@ -10,6 +10,10 @@ import java.util.concurrent.TimeUnit
 class TimeTracker() {
 
     var issueId: String = "Default"
+    var inactivityPeriodInMills: Long = 0
+    var type: String = "None"
+    var isManualTrackingEnable = true
+    var scheduledPeriod: Long = 0
     private var time: String = ""
     private var comment: String = ""
     private var timeInMills: Long = 0

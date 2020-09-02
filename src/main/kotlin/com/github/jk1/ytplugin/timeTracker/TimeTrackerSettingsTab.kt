@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
+import java.awt.BorderLayout
 import java.awt.FlowLayout
 import javax.swing.JComboBox
 import javax.swing.JPanel
@@ -13,13 +14,13 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
     private var scheduledMinutes: JBTextField
 
     private var isAutoTrackingEnabledCheckBox: JBCheckBox
-    private var autoTrackingEnabledTextField = JBLabel("Enable automated time tracking")
+    private var autoTrackingEnabledTextField = JBLabel("Enable automated mode      ")
 
-    private var inactivityHour: JBTextField
-    private var inactivityMinutes: JBTextField
-    private var inactivityTextField = JBLabel("Inactivity period: ")
+    private var inactivityHourInputField: JBTextField
+    private var inactivityMinutesInputField: JBTextField
+    private var inactivityTextField = JBLabel("Inactivity period (hh/mm): ")
 
-    private var scheduledTextField = JBLabel("Scheduled posting at ")
+    private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm)")
     private var isScheduledCheckbox: JBCheckBox
 
     private var isManualModeCheckbox: JBCheckBox
@@ -34,7 +35,6 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
     private val postWhenPanel: JPanel
     private val typePanel: JPanel
     private val parametersPanel: JPanel
-    private val manualPanel: JPanel
 
     private var commentLabel= JBLabel("Comment:")
     private var typeLabel = JBLabel("Work items type:")
@@ -57,8 +57,8 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         scheduledHour = JBTextField("19")
         scheduledMinutes = JBTextField("00")
 
-        inactivityHour = JBTextField("00")
-        inactivityMinutes = JBTextField("10")
+        inactivityHourInputField = JBTextField("00")
+        inactivityMinutesInputField = JBTextField("10")
 
         isScheduledCheckbox = JBCheckBox()
         isScheduledCheckbox.isSelected = true
@@ -85,9 +85,9 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         bigScheduledPanel.add(isScheduledCheckbox)
         bigScheduledPanel.add(scheduledPanel)
 
-        inactivityTimePanel.add(inactivityHour)
+        inactivityTimePanel.add(inactivityHourInputField)
         inactivityTimePanel.add(JBLabel(":"))
-        inactivityTimePanel.add(inactivityMinutes)
+        inactivityTimePanel.add(inactivityMinutesInputField)
 
         val inactivityPeriodPanel = JPanel(FlowLayout(2))
 
@@ -95,17 +95,18 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         inactivityPeriodPanel.add(inactivityTimePanel)
 
         val enableAutoTrackingPanel = JPanel(FlowLayout(2))
+        val enableManualTrackingPanel = JPanel(FlowLayout(2))
         enableAutoTrackingPanel.add(isAutoTrackingEnabledCheckBox)
         enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
+        enableManualTrackingPanel.add(isManualModeCheckbox)
+        enableManualTrackingPanel.add(manualModeTextField)
 
+        val bigTrackingPanel = JPanel(BorderLayout())
+        bigTrackingPanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
+        bigTrackingPanel.add(enableManualTrackingPanel, BorderLayout.CENTER)
 
         parametersPanel = JPanel(VerticalLayout(3))
-        manualPanel = JPanel(FlowLayout(4))
-        manualPanel.add(bigScheduledPanel)
-        manualPanel.add(JBLabel(""))
-        manualPanel.add(isManualModeCheckbox)
-        manualPanel.add(manualModeTextField)
-        parametersPanel.add(manualPanel)
+        parametersPanel.add(bigScheduledPanel)
 
         postWhenPanel = JPanel(FlowLayout(5))
         postWhenPanel.add(postWhenProjectClosedCheckbox)
@@ -130,7 +131,7 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         commentPanel.add(commentTextField)
 
         layout = VerticalLayout(4)
-        add(enableAutoTrackingPanel)
+        add(bigTrackingPanel)
         add(parametersPanel)
         add(inactivityPeriodPanel)
         add(typePanel)
@@ -145,15 +146,12 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
         scheduledHour.isEnabled = enabled
         scheduledMinutes.isEnabled = enabled
 
-        inactivityHour.isEnabled = enabled
-        inactivityMinutes.isEnabled = enabled
+        inactivityHourInputField.isEnabled = enabled
+        inactivityMinutesInputField.isEnabled = enabled
         inactivityTextField.isEnabled = enabled
 
         scheduledTextField.isEnabled = enabled
         isScheduledCheckbox.isEnabled = enabled
-
-        isManualModeCheckbox.isEnabled = enabled
-        manualModeTextField.isEnabled = enabled
 
         postWhenProjectClosedCheckbox.isEnabled = enabled
         postWhenProjectClosedTextField.isEnabled = enabled
@@ -163,5 +161,13 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
     }
 
     fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledCheckBox
+    fun getType() = typeComboBox.getItemAt(typeComboBox.selectedIndex)
+    fun getInactivityHours(): String = inactivityHourInputField.text
+    fun getInactivityMinutes(): String = inactivityMinutesInputField.text
+    fun getManualModeCheckbox() = isManualModeCheckbox
+    fun getScheduledCheckbox() = isScheduledCheckbox
+    fun getScheduledHours(): String = scheduledHour.text
+    fun getScheduledMinutes(): String = scheduledMinutes.text
+
 
 }
