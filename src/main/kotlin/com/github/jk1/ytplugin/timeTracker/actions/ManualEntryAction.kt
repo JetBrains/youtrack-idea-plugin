@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerManualEntryDialog
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
@@ -10,12 +11,15 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
+import javax.swing.Icon
+import javax.swing.ImageIcon
 
 
-class ManualEntryAction : AnAction(
-        "Post work item manually",
-        "Post work item manually",
-        AllIcons.Actions.Edit), DumbAware, IdeNotificationsTrait {
+class ManualEntryAction : IssueAction() {
+        override val text = "Create new work item"
+        override val description = "Create new work item"
+        override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/add_new_dark_16.png"))
+        override val shortcut = "control shift I"
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {

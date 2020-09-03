@@ -58,14 +58,6 @@
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
         </action>
 
-        <action id="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction"
-                class="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction">
-            <keyboard-shortcut first-keystroke="control shift I" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
-        </action>
-
-
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
