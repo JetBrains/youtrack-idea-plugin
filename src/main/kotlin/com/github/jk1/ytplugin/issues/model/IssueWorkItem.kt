@@ -9,11 +9,7 @@ class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
     val json: String = item.toString()
     val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
     val date: Date = Date(item.asJsonObject.get("date").asLong)
-    val value: String = item.asJsonObject.get("duration").asJsonObject.get("presentation").asString
-            .replace("h", " hours")
-            .replace("d", " days")
-            .replace("w", " weeks")
-            .replace("m", " minutes")
+    val value: String = formatTime(item.asJsonObject.get("duration").asJsonObject.get("presentation").asString)
 
     val type: String =  if (item.asJsonObject.get("type").isJsonNull)
         "None"
@@ -31,5 +27,60 @@ class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
 
     override operator fun compareTo(other: IssueWorkItem): Int {
         return date.compareTo(other.date)
+    }
+
+    private fun formatTime(inputTime: String) : String{
+        var weeks: Long = 0
+        var days: Long = 0
+        var hours: Long = 0
+        var minutes: Long = 0
+
+        var time = inputTime.replace("\\s".toRegex(), "")
+        var result = ""
+
+        var sepPos: Int = time.lastIndexOf("w")
+        if (sepPos != -1) {
+            weeks = time.substring(0, sepPos).toLong()
+            result += weeks
+            result += if (weeks > 1){
+                " weeks "
+            } else {
+                " week "
+            }
+            time = time.substring(sepPos + 1, time.length)
+        }
+        sepPos = time.lastIndexOf("d")
+        if (sepPos != -1) {
+            days = time.substring(0, sepPos).toLong()
+            result += days
+            result += if (days  > 1){
+                " days "
+            } else {
+                " day "
+            }
+            time = time.substring(sepPos + 1, time.length)
+        }
+        sepPos = time.lastIndexOf("h")
+        if (sepPos != -1) {
+            hours = time.substring(0, sepPos).toLong()
+            result += hours
+            result += if (hours > 1){
+                " hours "
+            } else {
+                " hour "
+            }
+            time = time.substring(sepPos + 1, time.length)
+        }
+        sepPos = time.lastIndexOf("m")
+        if (sepPos != -1) {
+            minutes = time.substring(0, sepPos).toLong()
+            result += minutes
+            result += if (minutes > 1){
+                " minutes "
+            } else {
+                " minute "
+            }
+        }
+        return result
     }
 }
