@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
+import org.apache.commons.httpclient.NameValuePair
 import org.jdesktop.swingx.JXDatePicker
 import java.awt.Color
 import java.awt.Dimension
@@ -27,16 +28,14 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     var state = 0
 
-    private var dateLabel = JBLabel(" Date:")
+    private var dateLabel = JBLabel("                         Date:")
     private val datePicker = JXDatePicker()
     private var idLabel = JBLabel("Issue:")
     private var idComboBox =  JComboBox(arrayOf<String>())
 
     private var typeComboBox =  JComboBox(arrayOf<String>("Development"))
 
-    private var timeLabel = JBLabel("Time (hh/mm):")
-    private var timeTextField = JTextField("1h 30m")
-
+    private var timeLabel = JBLabel("  Time (hh/mm):")
 
     private lateinit var commentPanel: JPanel
 
@@ -47,16 +46,19 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private lateinit var minutesSpinner: JSpinner
 
 
-    private var commentLabel= JBLabel(" Comment:")
+    private var commentLabel= JBLabel("             Comment:")
     private var typeLabel = JBLabel(" Work item type:")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("" )
 
+    private val ids = IssuesRestClient(repo).getUniqueIssueIds()
+
+    private val tasksIdRepresentation = mutableListOf<String>()
+    private val tasksIds  = mutableListOf<String>()
 
     init {
         title = "Create new work item"
-        super.init()
     }
 
     override fun show() {
@@ -64,7 +66,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         super.show()
     }
 
-    fun prepareMainPane() : JPanel{
+    private fun prepareMainPane() : JPanel{
 
         val picker = JXDatePicker()
         picker.isEditable = true
@@ -73,10 +75,12 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         picker.setFormats(SimpleDateFormat("dd.MM.yyyy"))
 
         val idPanel = JPanel(FlowLayout(2))
-        val ids = IssuesRestClient(repo).getUniqueIssueIds()
-        idComboBox =  JComboBox(ids.toTypedArray())
-        idComboBox.selectedIndex = ids.indexOf( TaskManager.getManager(project).activeTask.id)
-        idComboBox.isEditable = true
+        for (id in ids){
+            tasksIdRepresentation.add(id.value)
+            tasksIds.add(id.name)
+        }
+        idComboBox =  JComboBox(tasksIdRepresentation.toTypedArray())
+        idComboBox.selectedIndex = tasksIds.indexOf( TaskManager.getManager(project).activeTask.id)
 
         idPanel.add(idLabel)
         idPanel.add(idComboBox)
@@ -101,7 +105,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         commentTextField = JBTextField("")
         //TODO
-        commentTextField.preferredSize = Dimension(342, 28)
+        commentTextField.preferredSize = Dimension(390, 28)
 
 
         val inputTimePanel = JPanel(FlowLayout(3))
@@ -110,14 +114,11 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         inputTimePanel.add(minutesSpinner)
 
         timePanel.add(timeLabel)
-
         timePanel.add(inputTimePanel)
-
 
         parametersPanel = JPanel(FlowLayout(2))
         parametersPanel.add(timePanel)
         parametersPanel.add(idPanel)
-
 
         commentPanel = JPanel(FlowLayout(2))
         commentPanel.add(commentLabel)
@@ -158,7 +159,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val contextPane = JPanel(GridLayout())
         val mainPane = prepareMainPane()
         contextPane.apply {
-            preferredSize = Dimension(440, 220)
+            preferredSize = Dimension(530, 220)
             minimumSize = preferredSize
             add(mainPane)
         }
@@ -182,10 +183,11 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 notifier.foreground = Color.red
                 notifier.text = " Date is not specified"
             } else {
+                val selectedId = ids[idComboBox.selectedIndex].name
                 val sdf = SimpleDateFormat("yyyy-MM-dd")
                 date = sdf.parse(datePicker.date.toInstant().toString().substring(0, 10))
                 typeComboBox.getItemAt(typeComboBox.selectedIndex)?.let {
-                    status = TimeTrackerRestClient(repo).postNewWorkItem(activeTask.id,
+                    status = TimeTrackerRestClient(repo).postNewWorkItem(selectedId,
                             time.toString(), it, commentTextField.text, date?.time.toString())
                 }
                 state = status
