@@ -9,7 +9,7 @@ import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 
-class GroupByDateAction(val repo: YouTrackServer, val workItemsList: WorkItemsList) : IssueAction() {
+class GroupByDateAction : IssueAction() {
     override val text = "Group work items by date"
     override val description = "Group work items by date"
     override val icon = AllIcons.Actions.GroupBy
@@ -18,6 +18,8 @@ class GroupByDateAction(val repo: YouTrackServer, val workItemsList: WorkItemsLi
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
+            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+            val workItemsList = repo.let { WorkItemsList(it) }
             logger.debug("Work items grouping by date for ${repo.url}")
             workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = false
             ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
@@ -26,8 +28,10 @@ class GroupByDateAction(val repo: YouTrackServer, val workItemsList: WorkItemsLi
 
     override fun update(event: AnActionEvent) {
         val project = event.project
-        event.presentation.isEnabled = project != null &&
-                project.isInitialized &&
-                !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
+        if (project != null){
+            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+            event.presentation.isEnabled = project.isInitialized &&
+                    !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
+        }
     }
 }

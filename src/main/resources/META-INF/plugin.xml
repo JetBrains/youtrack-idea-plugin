@@ -66,13 +66,6 @@
         </action>
 
 
-        <action id="com.github.jk1.ytplugin.timeTracker.actions.GroupByIssueAction"
-                class="com.github.jk1.ytplugin.timeTracker.actions.GroupByIssueAction">
-            <keyboard-shortcut first-keystroke="control alt shift W" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
-        </action>
-
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">

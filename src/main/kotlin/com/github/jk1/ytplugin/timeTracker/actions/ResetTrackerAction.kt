@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -16,7 +17,7 @@ import com.intellij.tasks.TaskManager
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
-class ResetTrackerAction(val repo: YouTrackServer, timer: TimeTracker, val project: Project, val taskManager: TaskManager) : IssueAction() {
+class ResetTrackerAction(timer: TimeTracker) : IssueAction() {
     override val text = "Reset work timer"
     override val description = "Reset work timer"
     override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/time_tracker_reset_dark.png"))
@@ -25,10 +26,12 @@ class ResetTrackerAction(val repo: YouTrackServer, timer: TimeTracker, val proje
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
+            val project = event.project
+
             if (myTimer.isRunning){
                 myTimer.isRunning = false
                 myTimer.isPaused = false
-                val bar = WindowManager.getInstance().getStatusBar(project)
+                val bar = project?.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                 bar?.removeWidget("Time Tracking Clock")
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Work timer reset", NotificationType.INFORMATION)

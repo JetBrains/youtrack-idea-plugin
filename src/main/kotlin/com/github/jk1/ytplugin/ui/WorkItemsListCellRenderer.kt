@@ -94,14 +94,14 @@ class WorkItemsListCellRenderer(
         trackingComments.isOpaque = false
 
         val comments = issueWorkItem.comment?.split(" ")?.iterator()
-        if (comments != null) {
+        if (comments != null && issueWorkItem.comment != "") {
             trackingComments.icon = AllIcons.General.Balloon
 
             while (comments.hasNext() && (viewportWidth > trackingComments.computePreferredSize(false).width)) {
                 trackingComments.append(" ${comments.next()}", SimpleTextAttributes(idStyle, complimentaryColor))
             }
         }
-        if (comments != null) {
+        if (comments != null && issueWorkItem.comment != "") {
             if (comments.hasNext()) {
                 trackingComments.append(" …", SimpleTextAttributes(idStyle, complimentaryColor))
             }

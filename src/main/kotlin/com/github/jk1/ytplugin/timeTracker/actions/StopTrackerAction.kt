@@ -17,19 +17,20 @@ import javax.swing.Icon
 import javax.swing.ImageIcon
 
 
-class StopTrackerAction(val timer: TimeTracker, val repo: YouTrackServer,val project: Project, val taskManager: TaskManager) : IssueAction() {
+class StopTrackerAction(val timer: TimeTracker) : IssueAction() {
     override val text = "Stop work timer"
     override val description = "Stop work timer"
-
     override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/time_tracker_stop_dark.png"))
-
     override val shortcut = "control shift L"
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
+            val project = event.project
+            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+
             val time = timer.stop()
 
-            val bar = WindowManager.getInstance().getStatusBar(project)
+            val bar = project?.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
             bar?.removeWidget("Time Tracking Clock")
 
             val trackerNote = TrackerNotification()
@@ -37,8 +38,10 @@ class StopTrackerAction(val timer: TimeTracker, val repo: YouTrackServer,val pro
             if (time == "0")
                 trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.ERROR)
             else{
-                val status = TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
-                        timer.getRecordedTime(), timer.type, timer.getComment(), (Date().time).toString())
+                val status = repo?.let { it1 ->
+                    TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+                            timer.getRecordedTime(), timer.type, timer.getComment(), (Date().time).toString())
+                }
                 if (status != 200)
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.ERROR)
                 else{

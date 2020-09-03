@@ -17,16 +17,11 @@ class GroupByIssueAction: AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            val project = event.project
-            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
-            val workItemsList = repo?.let { WorkItemsList(it) }
-            if (repo != null){
-                logger.debug("Work items grouping by issue for ${repo.url}")
-                if (workItemsList != null) {
-                    workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = true
-                }
-                ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
-            }
+            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+            val workItemsList = repo.let { WorkItemsList(it) }
+            logger.debug("Work items grouping by issue for ${repo.url}")
+            workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = true
+            ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
         }
     }
 
