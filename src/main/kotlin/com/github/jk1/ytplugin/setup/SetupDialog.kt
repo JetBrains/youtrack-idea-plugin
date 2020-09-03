@@ -32,6 +32,7 @@ import javax.swing.text.StyleContext
 open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
+    private lateinit var mainPane: JBTabbedPane
 
     private lateinit var tokenLabel: JBLabel
     private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
@@ -45,7 +46,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    val timeTrackingTab =  TimeTrackerSettingsTab()
+    val timeTrackingTab =  TimeTrackerSettingsTab(repo.getRepo())
 
 
     private var isConnectionTested = false
@@ -98,6 +99,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             repoConnector.noteState = NotifierState.GUEST_LOGIN
         } else if (!connectedRepository.isLoginAnonymously && !repoConnector.isValidToken(connectedRepository.password)) {
             repoConnector.noteState = NotifierState.INVALID_TOKEN
+        }
+
+        if (repoConnector.noteState != NotifierState.SUCCESS){
+            mainPane.setEnabledAt(1, false)
+        } else {
+            mainPane.setEnabledAt(1, true)
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
@@ -207,12 +214,18 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             add(useProxyCheckBox)
         }
 
-        return JBTabbedPane().apply {
+        mainPane = JBTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
         }
+        if (repoConnector.noteState != NotifierState.SUCCESS){
+            println("state " + repoConnector.noteState)
+            mainPane.setEnabledAt(1, false)
+        }
+
+        return mainPane
     }
 
     private fun drawAutoCorrection(fontColor: Color) {

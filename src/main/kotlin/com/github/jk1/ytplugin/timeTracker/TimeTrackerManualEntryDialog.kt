@@ -70,8 +70,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         val picker = JXDatePicker()
         picker.isEditable = true
-        picker.date = Date()
-//        picker.date = Calendar.getInstance().time
+//        picker.date = Date()
+        picker.date = Calendar.getInstance().time
         picker.setFormats(SimpleDateFormat("dd.MM.yyyy"))
 
         val idPanel = JPanel(FlowLayout(2))

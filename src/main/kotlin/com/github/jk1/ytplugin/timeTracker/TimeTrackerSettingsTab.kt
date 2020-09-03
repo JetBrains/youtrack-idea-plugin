@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.intellij.ide.plugins.newui.VerticalLayout
+import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.ui.components.*
 import java.awt.BorderLayout
 import java.awt.FlowLayout
@@ -8,7 +9,7 @@ import javax.swing.JComboBox
 import javax.swing.JPanel
 
 
-class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(repo: YouTrackRepository) : JBPanel<JBPanelWithEmptyText>() {
 
     private var scheduledHour: JBTextField
     private var scheduledMinutes: JBTextField
