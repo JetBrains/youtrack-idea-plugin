@@ -58,7 +58,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val tasksIds  = mutableListOf<String>()
 
     init {
-        title = "Create new work item"
+        title = "Add spent time"
     }
 
     override fun show() {

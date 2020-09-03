@@ -11,15 +11,15 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 
 class GroupByIssueAction: AnAction(
-        "Group work items by issue",
-        "Group work items by issue",
+        "Group spent time by issue",
+        "Group spent time by issue",
         AllIcons.Actions.GroupByPrefix), DumbAware, IdeNotificationsTrait {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
             val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             val workItemsList = repo.let { WorkItemsList(it) }
-            logger.debug("Work items grouping by issue for ${repo.url}")
+            logger.debug("Spent time grouping by issue for ${repo.url}")
             workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = true
             ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
         }

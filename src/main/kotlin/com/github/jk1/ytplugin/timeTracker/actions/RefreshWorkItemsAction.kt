@@ -13,15 +13,15 @@ import com.intellij.openapi.actionSystem.AnActionEvent
  */
 class RefreshWorkItemsAction : IssueAction() {
 
-    override val text = "Refresh work items"
-    override val description = "Update work items list from YouTrack server"
+    override val text = "Refresh spent time"
+    override val description = "Update spent time list from YouTrack server"
     override val icon = AllIcons.Actions.Refresh
     override val shortcut = "control alt shift U"
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
             val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
-            logger.debug("Work items refresh requested for ${repo.url}")
+            logger.debug("Spent time refresh requested for ${repo.url}")
             ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
         }
     }

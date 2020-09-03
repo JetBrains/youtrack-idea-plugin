@@ -16,8 +16,8 @@ import javax.swing.ImageIcon
 
 
 class ManualEntryAction : IssueAction() {
-        override val text = "Create new work item"
-        override val description = "Create new work item"
+        override val text = "Add spent time"
+        override val description = "Add spent time"
         override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/add_new_dark_16.png"))
         override val shortcut = "control shift I"
 
@@ -39,7 +39,7 @@ class ManualEntryAction : IssueAction() {
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Unable add work item manually" , NotificationType.ERROR)
+                trackerNote.notify("Unable to add spent time manually" , NotificationType.ERROR)
             }
         }
     }

@@ -37,7 +37,7 @@ class TimeTrackerSettingsTab() : JBPanel<JBPanelWithEmptyText>() {
     private val parametersPanel: JPanel
 
     private var commentLabel= JBLabel("Comment:")
-    private var typeLabel = JBLabel("Work items type:")
+    private var typeLabel = JBLabel("Spent time type:")
     private var commentTextField: JBTextField
 
     val workItemsTypes= arrayOf<String?>("Development", "Testing", "Documentation", "None", "Other...")
