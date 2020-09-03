@@ -136,4 +136,24 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             }
         }
     }
+
+    fun getUniqueIssueIds(): List<String> {
+        val myQuery = NameValuePair("fields", "idReadable")
+        val url = "${repository.url}/api/issues"
+        val method = GetMethod(url)
+        method.setQueryString(arrayOf(myQuery))
+        val result =  mutableListOf<String>()
+        return method.connect {
+            val status = httpClient.executeMethod(method)
+            if (status == 200) {
+                val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+                for (item in json){
+                    result.add(item.asJsonObject.get("idReadable").asString)
+                }
+                result
+            } else {
+                result
+            }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -8,6 +9,10 @@ import java.util.concurrent.TimeUnit
 
 
 class TimeTracker() {
+
+//    override val project = myProject
+
+//    val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
 
     var issueId: String = "Default"
     var inactivityPeriodInMills: Long = 0
@@ -83,7 +88,6 @@ class TimeTracker() {
     fun getRecordedTimeInMills() = timeInMills
 
     fun getStartTime() = startTime
-
 
     fun getComment() = comment
 

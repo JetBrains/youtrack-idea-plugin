@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
@@ -18,6 +19,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.swing.*
 
 
@@ -25,20 +27,28 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     var state = 0
 
-    private var dateLabel = JBLabel("Date:")
+    private var dateLabel = JBLabel(" Date:")
     private val datePicker = JXDatePicker()
+    private var idLabel = JBLabel("Issue:")
+    private var idComboBox =  JComboBox(arrayOf<String>())
+
     private var typeComboBox =  JComboBox(arrayOf<String>("Development"))
 
-    private var timeLabel = JBLabel("Time:")
-    private lateinit var timeTextField: JBTextField
+    private var timeLabel = JBLabel("Time (hh/mm):")
+    private var timeTextField = JTextField("1h 30m")
+
 
     private lateinit var commentPanel: JPanel
 
     private lateinit var typePanel: JPanel
     private lateinit var parametersPanel: JPanel
 
-    private var commentLabel= JBLabel("Comment:")
-    private var typeLabel = JBLabel("Work item type:")
+    private lateinit var hoursSpinner: JSpinner
+    private lateinit var minutesSpinner: JSpinner
+
+
+    private var commentLabel= JBLabel(" Comment:")
+    private var typeLabel = JBLabel(" Work item type:")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("" )
@@ -57,8 +67,19 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     fun prepareMainPane() : JPanel{
 
         val picker = JXDatePicker()
-        picker.date = Calendar.getInstance().time
+        picker.isEditable = true
+        picker.date = Date()
+//        picker.date = Calendar.getInstance().time
         picker.setFormats(SimpleDateFormat("dd.MM.yyyy"))
+
+        val idPanel = JPanel(FlowLayout(2))
+        val ids = IssuesRestClient(repo).getUniqueIssueIds()
+        idComboBox =  JComboBox(ids.toTypedArray())
+        idComboBox.selectedIndex = ids.indexOf( TaskManager.getManager(project).activeTask.id)
+        idComboBox.isEditable = true
+
+        idPanel.add(idLabel)
+        idPanel.add(idComboBox)
 
         val timePanel = JPanel(FlowLayout(2))
         val datePanel = JPanel(FlowLayout(2))
@@ -66,19 +87,37 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         datePanel.add(dateLabel)
         datePanel.add(datePicker)
 
-        timeTextField = JBTextField("1h 30m")
+        val hoursModel: SpinnerModel = SpinnerNumberModel(2,  //initial value
+                0,  //min
+                100,  //max
+                1)
+        hoursSpinner = JSpinner(hoursModel)
+
+        val minutesModel: SpinnerModel = SpinnerNumberModel(30,  //initial value
+                0,  //min
+                60,  //max
+                1)
+        minutesSpinner = JSpinner(minutesModel)
+
         commentTextField = JBTextField("")
         //TODO
-        commentTextField.preferredSize = Dimension(347, 32)
+        commentTextField.preferredSize = Dimension(342, 28)
 
-        // displayPanel.add( titleText, BorderLayout.NORTH );
+
+        val inputTimePanel = JPanel(FlowLayout(3))
+        inputTimePanel.add(hoursSpinner)
+        inputTimePanel.add(JLabel(":"))
+        inputTimePanel.add(minutesSpinner)
+
         timePanel.add(timeLabel)
-        timePanel.add(timeTextField)
+
+        timePanel.add(inputTimePanel)
+
 
         parametersPanel = JPanel(FlowLayout(2))
-        parametersPanel.add(datePanel)
-
         parametersPanel.add(timePanel)
+        parametersPanel.add(idPanel)
+
 
         commentPanel = JPanel(FlowLayout(2))
         commentPanel.add(commentLabel)
@@ -96,10 +135,11 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         typePanel.add(typeComboBox)
 
         return JPanel().apply {
-            layout = VerticalLayout(3)
+            layout = VerticalLayout(4)
             add(parametersPanel)
             add(typePanel)
             add(commentPanel)
+            add(datePanel)
             add(notifier)
         }
     }
@@ -118,48 +158,13 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val contextPane = JPanel(GridLayout())
         val mainPane = prepareMainPane()
         contextPane.apply {
-            preferredSize = Dimension(440, 180)
+            preferredSize = Dimension(440, 220)
             minimumSize = preferredSize
             add(mainPane)
         }
         return contextPane
     }
 
-    fun formatTime(inputTime: String) : String {
-        var weeks: Long = 0
-        var days: Long = 0
-        var hours: Long = 0
-        var minutes: Long = 0
-
-        var time = inputTime.replace("\\s".toRegex(), "")
-
-        try {
-            var sepPos: Int = time.lastIndexOf("w")
-            if (sepPos != -1) {
-                weeks = time.substring(0, sepPos).toLong()
-                time = time.substring(sepPos + 1, time.length)
-            }
-            sepPos = time.lastIndexOf("d")
-            if (sepPos != -1) {
-                days = time.substring(0, sepPos).toLong()
-                time = time.substring(sepPos + 1, time.length)
-            }
-            sepPos = time.lastIndexOf("h")
-            if (sepPos != -1) {
-                hours = time.substring(0, sepPos).toLong()
-                time = time.substring(sepPos + 1, time.length)
-            }
-            sepPos = time.lastIndexOf("m")
-            if (sepPos != -1) {
-                minutes = time.substring(0, sepPos).toLong()
-            }
-        }
-        catch (e: NumberFormatException){
-            notifier.foreground = Color.red
-            notifier.text = " Could not post: incorrect time"
-        }
-        return (weeks * 10080 + days * 1440 + hours * 60 + minutes).toString()
-    }
 
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
@@ -169,6 +174,10 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             val taskManager = TaskManager.getManager(project)
             val activeTask = taskManager.activeTask
 
+            val hours = hoursSpinner.value.toString()
+            val minutes = minutesSpinner.value.toString()
+            val time = hours.toInt() * 60 + minutes.toInt()
+
             if (datePicker.date == null) {
                 notifier.foreground = Color.red
                 notifier.text = " Date is not specified"
@@ -177,7 +186,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 date = sdf.parse(datePicker.date.toInstant().toString().substring(0, 10))
                 typeComboBox.getItemAt(typeComboBox.selectedIndex)?.let {
                     status = TimeTrackerRestClient(repo).postNewWorkItem(activeTask.id,
-                            formatTime(timeTextField.text), it, commentTextField.text, date?.time.toString())
+                            time.toString(), it, commentTextField.text, date?.time.toString())
                 }
                 state = status
                 if (status == 200) {
