@@ -38,7 +38,7 @@ class FetchNotificationsExtension : StartupActivity.Background {
                 logger.debug("Fetching notifications from YouTrack server ${it.url}")
                 try {
                     val notifications = NotificationsRestClient(it).getNotifications()
-                    val unseen = notifications.filterUnseen(project)
+                    val unseen = notifications.filterUnseen()
                     logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
                     unseen.forEach { notification -> handleNotification(notification, project) }
                     saveAsSeen(notifications, project)
@@ -51,13 +51,17 @@ class FetchNotificationsExtension : StartupActivity.Background {
     }
 
     private fun handleNotification(incoming: YouTrackNotification, project: Project) {
-        SwingUtilities.invokeLater {
-            with(incoming) {
-                val notification = group.createNotification(issueId, summary, content, NotificationType.INFORMATION, null)
-                notification.addAction(BrowseNotificationAction(incoming))
-                notification.addAction(DismissNotificationAction(notification))
-                notification.addAction(ConfigureNotificationsAction(incoming))
-                notification.notify(project)
+        if (incoming.recipient == "guest" ) {
+            logger.warn("Notification ${incoming.id} is intended for the guest user, dropping")
+        } else {
+            SwingUtilities.invokeLater {
+                with(incoming) {
+                    val notification = group.createNotification(issueId, summary, content, NotificationType.INFORMATION, null)
+                    notification.addAction(BrowseNotificationAction(incoming))
+                    notification.addAction(DismissNotificationAction(notification))
+                    notification.addAction(ConfigureNotificationsAction(incoming))
+                    notification.notify(project)
+                }
             }
         }
     }
@@ -66,8 +70,8 @@ class FetchNotificationsExtension : StartupActivity.Background {
         PropertiesComponent.getInstance(project).setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
     }
 
-    private fun List<YouTrackNotification>.filterUnseen(project: Project): List<YouTrackNotification> {
-        val ids = PropertiesComponent.getInstance(project).getValue(PERSISTENT_KEY, "").split(" ").toSet()
+    private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification> {
+        val ids = PropertiesComponent.getInstance().getValue(PERSISTENT_KEY, "").split(" ").toSet()
         return this.filter { !ids.contains(it.id) }
     }
 }

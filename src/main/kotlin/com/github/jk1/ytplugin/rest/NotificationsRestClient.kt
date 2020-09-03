@@ -9,7 +9,7 @@ import java.io.InputStreamReader
 class NotificationsRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
     fun getNotifications(): List<YouTrackNotification>{
-        val method = GetMethod("${repository.url}/api/users/notifications?fields=id,content,metadata")
+        val method = GetMethod("${repository.url}/api/users/notifications?fields=id,recipient(login),content,metadata")
         method.setRequestHeader("Accept", "application/json")
         return method.connect {
             when (httpClient.executeMethod(it)) {
