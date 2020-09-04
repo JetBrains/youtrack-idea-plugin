@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.NameValuePair
@@ -22,14 +23,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     companion object {
 
-        fun mapWorkItemsWithIssues(workItems: List<IssueWorkItem>, issues: List<Issue>): List<Issue>{
-            for (item in workItems) {
-                val issue: MutableList<Issue> = issues.filter { it.id == item.issueId }.toMutableList()
-                issue[0].workItems.add(item)
-            }
-            return issues
-        }
-
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
@@ -41,7 +34,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
         val res: URL? = this::class.java.classLoader.getResource("create_draft_body.json")
 
-        val summaryFormatted = summary.replace("\n","\\n").replace("\"","\\\"")
+        val summaryFormatted = summary.replace("\n", "\\n").replace("\"", "\\\"")
         val jsonBody = res?.readText()?.replace("{description}", summaryFormatted)
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
@@ -60,26 +53,22 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val method = GetMethod("${repository.url}/api/issues/$id")
         val fields = NameValuePair("fields", ISSUE_FIELDS)
         method.setQueryString(arrayOf(fields))
-        val issue = method.execute { IssueJsonParser.parseIssue(it, repository.url) }
-        return if (issue != null)
-            getWorkItemsForIssues(issue.issueId, mutableListOf(issue))[0]
-        else
-            null
-    }
-
-    private fun parseIssues(method: GetMethod): List<Issue> {
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
-                json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
-            } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
-            }
+        val status = httpClient.executeMethod(method)
+        if (status == 200) {
+            val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader).asJsonArray
+            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
+            val fullIssues = parseIssues(issuesWithWorkItems)
+            return fullIssues[0]
         }
+        else
+            return null
     }
 
-    private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<IssueWorkItem> {
+    private fun parseIssues(json: List<JsonElement>): List<Issue> {
+        return json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
+    }
+
+    private fun parseWorkItems(method: GetMethod): List<IssueWorkItem> {
         return method.connect {
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
@@ -100,15 +89,22 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val method = GetMethod(url)
         val myQuery = NameValuePair("query", query)
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
-
+        var fullIssues = listOf<Issue>()
         method.setQueryString(arrayOf(myQuery, myFields))
-        val issues = parseIssues(method)
+        val status = httpClient.executeMethod(method)
+        if (status == 200) {
+            val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
+            fullIssues = parseIssues(issuesWithWorkItems)
+        } else {
+            throw RuntimeException(method.responseBodyAsLoggedString())
+        }
 
-        return getWorkItemsForIssues(query, issues)
+        return fullIssues
     }
 
 
-    fun getWorkItemsForIssues(query: String, issues: List<Issue>): List<Issue> {
+    fun getWorkItemsForIssues(query: String): List<IssueWorkItem> {
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
@@ -116,8 +112,33 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "duration(presentation,minutes),author(name),creator(name),date,id")
         method.setQueryString(arrayOf(myQuery, myFields))
 
-        val workItems = parseWorkItems(method, issues)
-        return mapWorkItemsWithIssues(workItems, issues)
+        return parseWorkItems(method)
+    }
+
+    fun mapWorkItemsWithIssues(issues: JsonArray): List<JsonElement> {
+
+        var newIssues = mutableListOf<JsonElement>()
+        for (issue in issues) {
+            val id = issue.asJsonObject.get("idReadable").asString
+            val workItems = getWorkItemsForIssues(id)
+
+            var workItemsJson: String
+            if (workItems.isEmpty()){
+                workItemsJson  = "\"workItems\":null"
+            } else {
+                workItemsJson  = "\"workItems\": ["
+                for (x in 0..(workItems.size - 2)){
+                    workItemsJson += "${workItems[x].json},"
+                }
+                workItemsJson += "${workItems.last().json}]"
+            }
+
+            val issueString = issue.toString().replace("\"project\":{\"\$type\":\"Project\"}", workItemsJson)
+            newIssues.add(JsonParser.parseString(issueString) as JsonElement)
+
+        }
+
+        return newIssues
     }
 
     fun getEntityIdByIssueId(issueId: String): String {
@@ -142,12 +163,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val url = "${repository.url}/api/issues"
         val method = GetMethod(url)
         method.setQueryString(arrayOf(myQuery))
-        val result =  mutableListOf<NameValuePair>()
+        val result = mutableListOf<NameValuePair>()
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                for (item in json){
+                for (item in json) {
                     val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
                             item.asJsonObject.get("idReadable").asString + ": " + item.asJsonObject.get("summary").asString)
                     result.add(pair)

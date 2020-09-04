@@ -2,7 +2,9 @@ package com.github.jk1.ytplugin.issues.model
 
 import com.github.jk1.ytplugin.YouTrackIssue
 import com.github.jk1.ytplugin.rest.IssueJsonParser
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import java.util.*
 
 class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
@@ -57,6 +59,11 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
         attachments = root.getAsJsonArray(("attachments")).mapNotNull { IssueJsonParser.parseAttachment(it, repoUrl) }
 
         url = "$repoUrl/issue/$id"
+
+        if (!root.getAsJsonArray(("workItems")).isJsonNull && root.getAsJsonArray(("workItems")) != null){
+            val workItemsJson: JsonArray = root.getAsJsonArray(("workItems"))
+            workItemsJson.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
+        }
     }
 
     override fun getIssueId() = id
