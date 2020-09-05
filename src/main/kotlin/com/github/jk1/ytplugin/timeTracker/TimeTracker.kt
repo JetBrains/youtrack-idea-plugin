@@ -17,8 +17,7 @@ class TimeTracker(){
     var recordedTime: String = ""
     var timeInMills: Long = 0
     var startTime: Long = 0
-
-    private var comment: String = "default comment"
+    var comment: String = "default comment"
     var isAutoTrackingEnable = false
     var isRunning = false
     var isPaused = false
@@ -83,8 +82,6 @@ class TimeTracker(){
     }
 
     fun getRecordedTimeInMills() = timeInMills
-
-    fun getComment() = comment
 
 }
 

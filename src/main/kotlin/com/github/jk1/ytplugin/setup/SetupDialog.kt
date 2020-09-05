@@ -44,7 +44,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    val timeTrackingTab =  TimeTrackerSettingsTab(repo)
+    private val myHeight = 320
+    private val myWidth = 540
+
+    private val timeTrackingTab =  TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
 
     private var isConnectionTested = false
@@ -253,7 +256,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val contextPane = JPanel(GridLayout())
         val tabbedPane = prepareTabbedPane()
         contextPane.apply {
-            preferredSize = Dimension(540, 280)
+            preferredSize = Dimension(myWidth, myHeight)
             minimumSize = preferredSize
             add(tabbedPane)
         }
@@ -261,6 +264,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     }
 
     fun setupTimer(timer: TimeTracker){
+        timer.comment = timeTrackingTab.getComment()
         timer.isAutoTrackingEnable = timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected
         timer.type = timeTrackingTab.getType().toString()
         timer.isManualTrackingEnable = timeTrackingTab.getManualModeCheckbox().isSelected

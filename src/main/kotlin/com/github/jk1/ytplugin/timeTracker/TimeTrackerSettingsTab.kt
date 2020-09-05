@@ -5,12 +5,13 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.JComboBox
 import javax.swing.JPanel
 
 
-class TimeTrackerSettingsTab(repo: YouTrackServer) : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JBPanel<JBPanelWithEmptyText>() {
 
     private var scheduledHour: JBTextField
     private var scheduledMinutes: JBTextField
@@ -103,24 +104,31 @@ class TimeTrackerSettingsTab(repo: YouTrackServer) : JBPanel<JBPanelWithEmptyTex
         enableManualTrackingPanel.add(isManualModeCheckbox)
         enableManualTrackingPanel.add(manualModeTextField)
 
-        val bigTrackingPanel = JPanel(BorderLayout())
-        bigTrackingPanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
-        bigTrackingPanel.add(enableManualTrackingPanel, BorderLayout.CENTER)
+        val bigTrackingPanel = JPanel(FlowLayout(3))
+        val separator1 = JBLabel("")
+        separator1.preferredSize = Dimension((0.135 * width).toInt(), (0.0875 * height).toInt())
+        bigTrackingPanel.add(enableAutoTrackingPanel)
+        bigTrackingPanel.add(separator1)
+        bigTrackingPanel.add(enableManualTrackingPanel)
 
         parametersPanel = JPanel(VerticalLayout(3))
-        parametersPanel.add(bigScheduledPanel)
 
         postWhenPanel = JPanel(FlowLayout(5))
         postWhenPanel.add(postWhenProjectClosedCheckbox)
         postWhenPanel.add(postWhenProjectClosedTextField)
         // TODO: remove hardcode
-        postWhenPanel.add(JBLabel(""))
+        val separator2 = JBLabel("")
+        separator2.preferredSize = Dimension((0.1 * width).toInt(), (0.0875 * height).toInt())
+        postWhenPanel.add(separator2)
 
         postWhenPanel.add(postWhenCommitCheckbox)
         postWhenPanel.add(mpostWhenCommitTextField)
+
         parametersPanel.add( postWhenPanel)
+        parametersPanel.add(bigScheduledPanel)
 
         commentTextField = JBTextField("")
+        commentTextField.preferredSize = Dimension((0.8 * width).toInt(), (0.0875 * height).toInt())
 
         val types = mutableListOf<String>()
         TimeTrackerRestClient(repo).getAvailableWorkItemTypes().map { types.add(it.name) }
@@ -144,7 +152,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer) : JBPanel<JBPanelWithEmptyTex
         add(parametersPanel)
         add(inactivityPeriodPanel)
         add(typePanel)
-//        add(commentPanel)
+        add(commentPanel)
     }
 
     private fun isAutoTrackingChanged(enabled: Boolean) {
@@ -177,6 +185,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer) : JBPanel<JBPanelWithEmptyTex
     fun getScheduledCheckbox() = isScheduledCheckbox
     fun getScheduledHours(): String = scheduledHour.text
     fun getScheduledMinutes(): String = scheduledMinutes.text
+    fun getComment(): String = commentTextField.text
 
 
 }
