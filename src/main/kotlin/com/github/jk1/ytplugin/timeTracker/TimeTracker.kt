@@ -10,7 +10,7 @@ class TimeTracker(){
 
 
     var issueId: String = "Default"
-    var inactivityPeriodInMills: Long = 0
+    var inactivityPeriodInMills: Long = 600000
     var type: String = "None"
     var scheduledPeriod: Long = 0
     var recordedTime: String = ""

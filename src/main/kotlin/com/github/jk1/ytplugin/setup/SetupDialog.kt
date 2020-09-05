@@ -44,7 +44,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    private val myHeight = 320
+    private val myHeight = 340
     private val myWidth = 540
 
     private val timeTrackingTab =  TimeTrackerSettingsTab(repo, myHeight, myWidth)
