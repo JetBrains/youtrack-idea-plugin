@@ -12,12 +12,15 @@ class TimeTracker(){
     var issueId: String = "Default"
     var inactivityPeriodInMills: Long = 0
     var type: String = "None"
-    var isManualTrackingEnable = true
     var scheduledPeriod: Long = 0
     var recordedTime: String = ""
     var timeInMills: Long = 0
     var startTime: Long = 0
     var comment: String = "default comment"
+    var isManualTrackingEnable = true
+    var isScheduledUnabled = true
+    var isWhenProjectClosedUnabled = true
+    var isPostAfterCommitUnabled = false
     var isAutoTrackingEnable = false
     var isRunning = false
     var isPaused = false

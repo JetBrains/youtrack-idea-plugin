@@ -49,7 +49,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
     private val timeTrackingTab =  TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
-
     private var isConnectionTested = false
 
     override fun init() {
@@ -274,7 +273,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
         timer.inactivityPeriodInMills = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
-        println("inact "+ timer.inactivityPeriodInMills)
     }
 
     inner class OkAction(name: String) : AbstractAction(name) {
@@ -299,7 +297,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             var timer = repo.timeTracker
             setupTimer(timer)
-            println("before isRunning: " + timer.isRunning + " isPaused: " + timer.isPaused)
 
             if (timer.isAutoTrackingEnable){
                 StartTrackerAction(repo).startAutomatedTracking(project)
