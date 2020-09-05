@@ -107,7 +107,7 @@ class ActivityTracker(
                     myInactivityTime = currentTimeMillis() - startInactivityTime
 
                     if ((myInactivityTime > inactivityPeriod) && timer.isRunning){
-                        PauseTrackerAction(timer)
+                        timer.pause()
                     }
                 }
                 else if (isIDEActive ){
@@ -116,7 +116,7 @@ class ActivityTracker(
                         startInactivityTime = currentTimeMillis()
                         timer.isRunning = false
                         timer.isPaused = false
-                        StartTrackerAction(timer)
+                        StartTrackerAction(repo).startAutomatedTracking(project)
                     }
                 }
             }
@@ -171,17 +171,20 @@ class ActivityTracker(
             }
             if (!isMouseOrKeyboardActive){
                 myInactivityTime = currentTimeMillis() - startInactivityTime
+//                println("inactivity time: " + myInactivityTime)
 
                 if((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused){
                     timer.pause()
+//                    println("timer paused ")
 
                 }
             } else if (isMouseOrKeyboardActive) {
                 myInactivityTime = 0
+//                println("time: " + myInactivityTime)
 
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
-                    val action = StartTrackerAction(timer)
+                    val action = StartTrackerAction(repo)
                     action.startAutomatedTracking(project)
                 }
             }

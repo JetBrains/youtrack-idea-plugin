@@ -26,10 +26,10 @@ class TimeTracker(){
 
     fun stop(): String {
         val trackerNote = TrackerNotification()
-
-        if (isAutoTrackingEnable){
-            startTime = activityTracker?.startInactivityTime!!
-        }
+//
+//        if (isAutoTrackingEnable){
+//            startTime = activityTracker?.startInactivityTime!!
+//        }
 
         return if (isRunning) {
             if (!isPaused) {
@@ -39,7 +39,6 @@ class TimeTracker(){
             timeInMills = 0
             isRunning = false
             isPaused = false
-
             recordedTime
         } else {
             trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.ERROR)
@@ -49,6 +48,9 @@ class TimeTracker(){
 
 
     fun pause() {
+        if (isAutoTrackingEnable){
+            startTime = activityTracker?.startInactivityTime!!
+        }
 
         val trackerNote = TrackerNotification()
         if (isPaused) {

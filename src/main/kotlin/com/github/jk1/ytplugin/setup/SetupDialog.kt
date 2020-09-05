@@ -28,7 +28,7 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 
-open class SetupDialog(val timer: TimeTracker, override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
     private lateinit var mainPane: JBTabbedPane
@@ -204,8 +204,12 @@ open class SetupDialog(val timer: TimeTracker, override val project: Project, va
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
         }
-        if (!connectedRepository.isConfigured){
+
+        //TODO
+        if (!repo.getRepo().isConfigured){
             mainPane.setEnabledAt(1, false)
+        } else {
+            mainPane.setEnabledAt(1, true)
         }
 
         return mainPane
@@ -266,6 +270,7 @@ open class SetupDialog(val timer: TimeTracker, override val project: Project, va
         }
         timer.inactivityPeriodInMills = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
+        println("inact "+ timer.inactivityPeriodInMills)
     }
 
     inner class OkAction(name: String) : AbstractAction(name) {
@@ -288,9 +293,12 @@ open class SetupDialog(val timer: TimeTracker, override val project: Project, va
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
+            var timer = repo.timeTracker
             setupTimer(timer)
+            println("before isRunning: " + timer.isRunning + " isPaused: " + timer.isPaused)
+
             if (timer.isAutoTrackingEnable){
-                StartTrackerAction(timer).startAutomatedTracking(project)
+                StartTrackerAction(repo).startAutomatedTracking(project)
             }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)

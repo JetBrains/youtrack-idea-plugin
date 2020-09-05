@@ -38,8 +38,6 @@ import javax.swing.SwingUtilities
  */
 class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
 
-    val timer = TimeTracker()
-
 
     override fun init(toolWindow: ToolWindow) {
         toolWindow.setIcon(YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
@@ -79,8 +77,8 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel(project, repo))
             else -> {
                 repos.forEach {
-                    val panel = IssueListToolWindowContent(timer, !toolWindow.anchor.isHorizontal, it)
-                    val timeTrackerPanel = TimeTrackerToolWindowContent(timer, !toolWindow.anchor.isHorizontal, it)
+                    val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
+                    val timeTrackerPanel = TimeTrackerToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                     contentManager.addContent("Time Tracking", timeTrackerPanel)
 
@@ -103,7 +101,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { SetupDialog(timer, project, repo).show() }
+        val configureLabel = createLink("Configure") { SetupDialog(project, repo).show() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)

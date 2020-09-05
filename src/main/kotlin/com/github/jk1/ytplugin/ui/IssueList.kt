@@ -18,7 +18,7 @@ import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 
-class IssueList(val timer: TimeTracker, val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
+class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
 
     override val project = repo.project
     private val issueList: JBList<Issue> = JBList()
@@ -54,7 +54,7 @@ class IssueList(val timer: TimeTracker, val repo: YouTrackServer) : JBLoadingPan
                 if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
                     placeholder.appendText("No issues found. Edit search request or ")
                     placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
-                    ) { SetupDialog(timer, project, repo).show() }
+                    ) { SetupDialog(project, repo).show() }
                 }
                 issueListModel.update()
                 val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())

@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -13,19 +12,17 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.tasks.TaskManager
-import org.apache.batik.w3c.dom.events.KeyboardEvent
-import java.awt.event.ActionEvent
 
-class StartTrackerAction(timer: TimeTracker) : IssueAction() {
+class StartTrackerAction(val repo: YouTrackServer) : IssueAction() {
     override val text = "Start work timer"
     override val description = "Start work timer"
     override var icon = AllIcons.Actions.Profile
     override val shortcut = "control shift K"
 
-    private var myTimer = timer
+    val myTimer = repo.timeTracker
 
     fun startAutomatedTracking(project: Project) {
-        val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+//        val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
         val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
 
@@ -50,6 +47,7 @@ class StartTrackerAction(timer: TimeTracker) : IssueAction() {
                         project = project,
                         taskManager = taskManager
                 )
+
                 myTimer.activityTracker!!.startTracking()
                 myTimer.isAutoTrackingEnable = true
             }
@@ -62,30 +60,31 @@ class StartTrackerAction(timer: TimeTracker) : IssueAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
+
             val project = event.project
-            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+//            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             val taskManager = project?.let { it1 -> TaskManager.getManager(it1) }
             val activeTask = taskManager?.activeTask
 
             if (!myTimer.isRunning || myTimer.isPaused) {
-                if (activeTask != null && repo != null){
-                    myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
-                    if (myTimer.issueId == "0"){
-                        val trackerNote = TrackerNotification()
-                        trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
-                    } else {
-                        val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
-                        if (bar?.getWidget("Time Tracking Clock") == null){
-                            bar?.addWidget(ClockWidget(myTimer))
-                        }
-                        myTimer.start(activeTask.id)
+                    if (activeTask != null){
+                        myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
+                        if (myTimer.issueId == "0"){
+                            val trackerNote = TrackerNotification()
+                            trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
+                        } else {
+                            val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+                            if (bar?.getWidget("Time Tracking Clock") == null){
+                                bar?.addWidget(ClockWidget(myTimer))
+                            }
+                            myTimer.start(activeTask.id)
 
+                        }
                     }
+                } else {
+                    val trackerNote = TrackerNotification()
+                    trackerNote.notify("Work timer is already running", NotificationType.ERROR)
                 }
-            } else {
-                val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is already running", NotificationType.ERROR)
-            }
         }
     }
 }

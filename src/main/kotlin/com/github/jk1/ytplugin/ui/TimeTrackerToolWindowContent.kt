@@ -16,7 +16,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
-class TimeTrackerToolWindowContent(val timer: TimeTracker, vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
+class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
 
@@ -37,15 +37,15 @@ class TimeTrackerToolWindowContent(val timer: TimeTracker, vertical: Boolean, va
 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
-        group.add(RefreshWorkItemsAction())
+        group.add(RefreshWorkItemsAction(repo))
         group.add(ManualEntryAction())
-        group.add(StartTrackerAction(timer))
-        group.add(ResetTrackerAction(timer))
-        group.add(PauseTrackerAction(timer))
-        group.add(StopTrackerAction(timer))
+        group.add(StartTrackerAction(repo))
+        group.add(ResetTrackerAction(repo))
+        group.add(PauseTrackerAction(repo))
+        group.add(StopTrackerAction(repo))
         group.add(GroupByIssueAction())
         group.add(GroupByDateAction())
-        group.addConfigureTaskServerAction(repo, timer)
+        group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

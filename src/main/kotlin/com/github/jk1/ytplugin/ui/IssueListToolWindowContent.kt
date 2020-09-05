@@ -13,13 +13,13 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
-class IssueListToolWindowContent(val timer: TimeTracker, vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
+class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
 
     private val splitter = EditorSplitter(vertical)
     private val viewer = IssueViewer()
-    private val issuesList = IssueList(timer, repo)
+    private val issuesList = IssueList(repo)
     private val searchBar = IssueSearchBar(repo)
 
     init {
@@ -47,7 +47,7 @@ class IssueListToolWindowContent(val timer: TimeTracker, vertical: Boolean, val 
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issuesList))
-        group.addConfigureTaskServerAction(repo, timer)
+        group.addConfigureTaskServerAction(repo)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

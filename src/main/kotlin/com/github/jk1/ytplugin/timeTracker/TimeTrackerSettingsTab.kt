@@ -125,7 +125,9 @@ class TimeTrackerSettingsTab(repo: YouTrackServer) : JBPanel<JBPanelWithEmptyTex
         val types = mutableListOf<String>()
         TimeTrackerRestClient(repo).getAvailableWorkItemTypes().map { types.add(it.name) }
 
-        typeComboBox =  JComboBox(types.toTypedArray())
+        if (types.isNotEmpty()){
+            typeComboBox =  JComboBox(types.toTypedArray())
+        }
         typeComboBox.selectedIndex = 0
         typeComboBox.isEditable = true
 

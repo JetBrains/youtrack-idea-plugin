@@ -17,7 +17,7 @@ import javax.swing.Icon
 import javax.swing.ImageIcon
 
 
-class StopTrackerAction(val timer: TimeTracker) : IssueAction() {
+class StopTrackerAction(val repo: YouTrackServer) : IssueAction() {
     override val text = "Stop work timer"
     override val description = "Stop work timer"
     override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/time_tracker_stop_dark.png"))
@@ -25,9 +25,10 @@ class StopTrackerAction(val timer: TimeTracker) : IssueAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
-            val project = event.project
-            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
 
+            val project = event.project
+//            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+            val timer = repo.timeTracker
             val time = timer.stop()
 
             val bar = project?.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
@@ -38,7 +39,7 @@ class StopTrackerAction(val timer: TimeTracker) : IssueAction() {
             if (time == "0")
                 trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.ERROR)
             else{
-                val status = repo?.let { it1 ->
+                val status = repo.let { it1 ->
                     TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
                             timer.recordedTime, timer.type, timer.getComment(), (Date().time).toString())
                 }
@@ -46,7 +47,7 @@ class StopTrackerAction(val timer: TimeTracker) : IssueAction() {
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.ERROR)
                 else{
                     trackerNote.notify("Work timer stopped, time posted on server", NotificationType.INFORMATION)
-                    ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+                    project?.let { it1 -> ComponentAware.of(it1).issueWorkItemsStoreComponent }?.get(repo)?.update(repo)
                 }
             }
         }

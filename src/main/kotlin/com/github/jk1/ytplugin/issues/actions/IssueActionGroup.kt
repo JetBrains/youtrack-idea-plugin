@@ -19,9 +19,9 @@ class IssueActionGroup(private val parent: JComponent) : DefaultActionGroup() {
         super.add(action)
     }
 
-    fun addConfigureTaskServerAction(repo: YouTrackServer, timer: TimeTracker) {
+    fun addConfigureTaskServerAction(repo: YouTrackServer) {
         // action wrap is required to override shortcut for a global action
-        val action = OpenSetupWindowAction(repo, timer)
+        val action = OpenSetupWindowAction(repo)
         action.registerCustomShortcutSet(CustomShortcutSet.fromString("ctrl shift Q"), parent)
         super.add(action)
     }

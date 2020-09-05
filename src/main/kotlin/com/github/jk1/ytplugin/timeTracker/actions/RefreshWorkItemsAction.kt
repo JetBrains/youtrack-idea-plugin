@@ -11,7 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 /**
  * Starts async issue store update from a remote server
  */
-class RefreshWorkItemsAction : IssueAction() {
+class RefreshWorkItemsAction(val repo: YouTrackServer) : IssueAction() {
 
     override val text = "Refresh spent time"
     override val description = "Update spent time list from YouTrack server"
@@ -20,7 +20,6 @@ class RefreshWorkItemsAction : IssueAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             logger.debug("Spent time refresh requested for ${repo.url}")
             ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
         }
