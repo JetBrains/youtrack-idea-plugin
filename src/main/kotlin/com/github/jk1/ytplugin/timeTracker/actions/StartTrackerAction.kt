@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -12,34 +13,39 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.tasks.TaskManager
+import org.apache.batik.w3c.dom.events.KeyboardEvent
+import java.awt.event.ActionEvent
 
-class StartTrackerAction(val repo: YouTrackServer, timer: TimeTracker, val project: Project, val taskManager: TaskManager) : IssueAction() {
+class StartTrackerAction(timer: TimeTracker) : IssueAction() {
     override val text = "Start work timer"
     override val description = "Start work timer"
     override var icon = AllIcons.Actions.Profile
     override val shortcut = "control shift K"
-    private val myTimer = timer
 
+    private var myTimer = timer
 
-    fun startAutomatedTracking(){
+    fun startAutomatedTracking(project: Project) {
+        val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+        val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
+
         if (!myTimer.isRunning || myTimer.isPaused) {
             myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
-            if (myTimer.issueId == "0"){
+            if (myTimer.issueId == "0") {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
             } else {
                 val bar = WindowManager.getInstance().getStatusBar(project)
-                if (bar?.getWidget("Time Tracking Clock") == null){
+                if (bar?.getWidget("Time Tracking Clock") == null) {
                     bar?.addWidget(ClockWidget(myTimer))
                 }
-                myTimer.start(activeTask.id, repo, project, taskManager)
+                myTimer.start(activeTask.id)
                 val application = ApplicationManager.getApplication()
                 myTimer.activityTracker = ActivityTracker(
                         parentDisposable = application,
                         logTrackerCallDuration = false,
                         timer = myTimer,
-                        inactivityPeriod = 10000, // set as 10sec for now
+                        inactivityPeriod = myTimer.inactivityPeriodInMills,
                         repo = repo,
                         project = project,
                         taskManager = taskManager
@@ -53,20 +59,28 @@ class StartTrackerAction(val repo: YouTrackServer, timer: TimeTracker, val proje
         }
     }
 
+
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
-            val activeTask = taskManager.activeTask
+            val project = event.project
+            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+            val taskManager = project?.let { it1 -> TaskManager.getManager(it1) }
+            val activeTask = taskManager?.activeTask
+
             if (!myTimer.isRunning || myTimer.isPaused) {
-                myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
-                if (myTimer.issueId == "0"){
-                    val trackerNote = TrackerNotification()
-                    trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
-                } else {
-                    val bar = WindowManager.getInstance().getStatusBar(project)
-                    if (bar?.getWidget("Time Tracking Clock") == null){
-                        bar?.addWidget(ClockWidget(myTimer))
+                if (activeTask != null && repo != null){
+                    myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
+                    if (myTimer.issueId == "0"){
+                        val trackerNote = TrackerNotification()
+                        trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
+                    } else {
+                        val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+                        if (bar?.getWidget("Time Tracking Clock") == null){
+                            bar?.addWidget(ClockWidget(myTimer))
+                        }
+                        myTimer.start(activeTask.id)
+
                     }
-                    myTimer.start(activeTask.id, repo, project, taskManager)
                 }
             } else {
                 val trackerNote = TrackerNotification()

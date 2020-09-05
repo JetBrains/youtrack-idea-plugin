@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -10,7 +11,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
-import org.apache.commons.httpclient.NameValuePair
 import org.jdesktop.swingx.JXDatePicker
 import java.awt.Color
 import java.awt.Dimension
@@ -20,7 +20,6 @@ import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.swing.*
 
 
@@ -125,8 +124,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         commentPanel.add(commentTextField)
 
         val types = mutableListOf<String>()
-        TimeTrackerRestClient(repo).getAvailableWorkItems().map { types.add(it.name) }
-        for (t in types)
+        TimeTrackerRestClient(repo).getAvailableWorkItemTypes().map { types.add(it.name) }
+
         typeComboBox =  JComboBox(types.toTypedArray())
         typeComboBox.selectedIndex = 0
         typeComboBox.isEditable = true
@@ -170,10 +169,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             var status = 0
-            var date: Date? = null
-
-            val taskManager = TaskManager.getManager(project)
-            val activeTask = taskManager.activeTask
+            var date: Date?
 
             val hours = hoursSpinner.value.toString()
             val minutes = minutesSpinner.value.toString()
@@ -184,8 +180,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 notifier.text = " Date is not specified"
             } else {
                 val selectedId = ids[idComboBox.selectedIndex].name
-                val sdf = SimpleDateFormat("yyyy-MM-dd")
-                date = sdf.parse(datePicker.date.toInstant().toString().substring(0, 10))
+                val sdf = SimpleDateFormat("dd MMM yyyy")
+                date = sdf.parse(datePicker.date.format())
                 typeComboBox.getItemAt(typeComboBox.selectedIndex)?.let {
                     status = TimeTrackerRestClient(repo).postNewWorkItem(selectedId,
                             time.toString(), it, commentTextField.text, date?.time.toString())

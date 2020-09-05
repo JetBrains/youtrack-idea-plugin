@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
 import com.github.jk1.ytplugin.ui.TimeTrackerToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
@@ -36,6 +37,9 @@ import javax.swing.SwingUtilities
  * DumbAware tool window can be opened in a "dumb mode", when no IDE index is available.
  */
 class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
+
+    val timer = TimeTracker()
+
 
     override fun init(toolWindow: ToolWindow) {
         toolWindow.setIcon(YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
@@ -75,9 +79,8 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             repos.isEmpty() -> contentManager.addContent("", createPlaceholderPanel(project, repo))
             else -> {
                 repos.forEach {
-                    val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
-                    val timeTrackerPanel = TimeTrackerToolWindowContent(!toolWindow.anchor.isHorizontal, it)
-
+                    val panel = IssueListToolWindowContent(timer, !toolWindow.anchor.isHorizontal, it)
+                    val timeTrackerPanel = TimeTrackerToolWindowContent(timer, !toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
                     contentManager.addContent("Time Tracking", timeTrackerPanel)
 
@@ -100,7 +103,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { SetupDialog(project, repo).show() }
+        val configureLabel = createLink("Configure") { SetupDialog(timer, project, repo).show() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)

@@ -116,7 +116,7 @@ class ActivityTracker(
                         startInactivityTime = currentTimeMillis()
                         timer.isRunning = false
                         timer.isPaused = false
-                        StartTrackerAction(repo, timer, project, taskManager)
+                        StartTrackerAction(timer)
                     }
                 }
             }
@@ -148,7 +148,6 @@ class ActivityTracker(
                 val eventData = "click:" + awtEvent.button + ":" + awtEvent.clickCount + ":" + awtEvent.modifiers
                 isMouseOrKeyboardActive = captureIdeState(Type.MouseEvent, eventData)
                 logger.debug("state MOUSE_CLICKED " + isMouseOrKeyboardActive)
-
             }
             if (trackMouse && awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
                 val now = currentTimeMillis()
@@ -175,13 +174,15 @@ class ActivityTracker(
 
                 if((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused){
                     timer.pause()
+
                 }
             } else if (isMouseOrKeyboardActive) {
                 myInactivityTime = 0
+
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
-                    val action = StartTrackerAction(repo, timer, project, taskManager)
-                    action.startAutomatedTracking()
+                    val action = StartTrackerAction(timer)
+                    action.startAutomatedTracking(project)
                 }
             }
             false

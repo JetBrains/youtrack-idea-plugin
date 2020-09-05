@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
@@ -17,7 +18,7 @@ import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 
-class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
+class IssueList(val timer: TimeTracker, val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
 
     override val project = repo.project
     private val issueList: JBList<Issue> = JBList()
@@ -53,7 +54,7 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
                 if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
                     placeholder.appendText("No issues found. Edit search request or ")
                     placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
-                    ) { SetupDialog(project, repo).show() }
+                    ) { SetupDialog(timer, project, repo).show() }
                 }
                 issueListModel.update()
                 val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())

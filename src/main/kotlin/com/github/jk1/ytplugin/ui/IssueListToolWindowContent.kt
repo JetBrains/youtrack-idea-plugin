@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
@@ -12,13 +13,13 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
-class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
+class IssueListToolWindowContent(val timer: TimeTracker, vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
 
     private val splitter = EditorSplitter(vertical)
     private val viewer = IssueViewer()
-    private val issuesList = IssueList(repo)
+    private val issuesList = IssueList(timer, repo)
     private val searchBar = IssueSearchBar(repo)
 
     init {
@@ -46,7 +47,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issuesList))
-        group.addConfigureTaskServerAction(repo)
+        group.addConfigureTaskServerAction(repo, timer)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

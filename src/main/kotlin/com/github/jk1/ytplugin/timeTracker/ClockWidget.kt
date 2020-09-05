@@ -17,7 +17,7 @@ class ClockWidget(val timeTracker: TimeTracker) : CustomStatusBarWidget {
         val recordedTime = if (timeTracker.isPaused){
             timeTracker.getRecordedTimeInMills()
         } else {
-            timeTracker.getRecordedTimeInMills() + System.currentTimeMillis() - timeTracker.getStartTime()
+            timeTracker.getRecordedTimeInMills() + System.currentTimeMillis() - timeTracker.startTime
         }
         val time = String.format("%02d:%02d",
         TimeUnit.MILLISECONDS.toHours(recordedTime),

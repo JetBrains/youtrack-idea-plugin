@@ -3,10 +3,7 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
+import com.google.gson.*
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
@@ -54,14 +51,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val fields = NameValuePair("fields", ISSUE_FIELDS)
         method.setQueryString(arrayOf(fields))
         val status = httpClient.executeMethod(method)
-        if (status == 200) {
+        return if (status == 200) {
             val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader).asJsonArray
             val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
             val fullIssues = parseIssues(issuesWithWorkItems)
-            return fullIssues[0]
+            fullIssues[0]
         }
         else
-            return null
+            null
     }
 
     private fun parseIssues(json: List<JsonElement>): List<Issue> {
@@ -89,7 +86,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val method = GetMethod(url)
         val myQuery = NameValuePair("query", query)
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
-        var fullIssues = listOf<Issue>()
+        var fullIssues: List<Issue>
         method.setQueryString(arrayOf(myQuery, myFields))
         val status = httpClient.executeMethod(method)
         if (status == 200) {
@@ -99,12 +96,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         } else {
             throw RuntimeException(method.responseBodyAsLoggedString())
         }
-
         return fullIssues
     }
 
 
-    fun getWorkItemsForIssues(query: String): List<IssueWorkItem> {
+    private fun getWorkItems(query: String): List<IssueWorkItem> {
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
@@ -115,16 +111,16 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return parseWorkItems(method)
     }
 
-    fun mapWorkItemsWithIssues(issues: JsonArray): List<JsonElement> {
+    private fun mapWorkItemsWithIssues(issues: JsonArray): List<JsonElement> {
 
-        var newIssues = mutableListOf<JsonElement>()
+        val newIssues = mutableListOf<JsonElement>()
         for (issue in issues) {
             val id = issue.asJsonObject.get("idReadable").asString
-            val workItems = getWorkItemsForIssues(id)
+            val workItems = getWorkItems(id)
 
             var workItemsJson: String
-            if (workItems.isEmpty()){
-                workItemsJson  = "\"workItems\":null"
+            if (workItems.size == 0){
+                workItemsJson  = "\"workItems\":" + JsonNull()
             } else {
                 workItemsJson  = "\"workItems\": ["
                 for (x in 0..(workItems.size - 2)){
@@ -132,12 +128,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 }
                 workItemsJson += "${workItems.last().json}]"
             }
-
+            // project field is not going to be used, so could be replaced with valuable workItems
             val issueString = issue.toString().replace("\"project\":{\"\$type\":\"Project\"}", workItemsJson)
             newIssues.add(JsonParser.parseString(issueString) as JsonElement)
-
         }
-
         return newIssues
     }
 

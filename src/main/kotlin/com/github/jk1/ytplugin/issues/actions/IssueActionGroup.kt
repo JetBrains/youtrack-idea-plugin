@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.issues.actions
 
 import com.github.jk1.ytplugin.commands.OpenSetupWindowAction
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.CustomShortcutSet
@@ -18,9 +19,9 @@ class IssueActionGroup(private val parent: JComponent) : DefaultActionGroup() {
         super.add(action)
     }
 
-    fun addConfigureTaskServerAction(repo: YouTrackServer) {
+    fun addConfigureTaskServerAction(repo: YouTrackServer, timer: TimeTracker) {
         // action wrap is required to override shortcut for a global action
-        val action = OpenSetupWindowAction(repo)
+        val action = OpenSetupWindowAction(repo, timer)
         action.registerCustomShortcutSet(CustomShortcutSet.fromString("ctrl shift Q"), parent)
         super.add(action)
     }

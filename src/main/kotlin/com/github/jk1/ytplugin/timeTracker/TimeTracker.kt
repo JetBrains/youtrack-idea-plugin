@@ -1,29 +1,25 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.TaskManager
 import java.util.concurrent.TimeUnit
 
 
-class TimeTracker() {
+class TimeTracker(){
 
-//    override val project = myProject
-
-//    val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
 
     var issueId: String = "Default"
     var inactivityPeriodInMills: Long = 0
     var type: String = "None"
     var isManualTrackingEnable = true
     var scheduledPeriod: Long = 0
-    private var time: String = ""
+    var recordedTime: String = ""
+    var timeInMills: Long = 0
+    var startTime: Long = 0
+
     private var comment: String = "default comment"
-    private var timeInMills: Long = 0
     var isAutoTrackingEnable = false
-    private var startTime: Long = 0
     var isRunning = false
     var isPaused = false
     var activityTracker: ActivityTracker? = null
@@ -39,12 +35,12 @@ class TimeTracker() {
             if (!isPaused) {
                 timeInMills += (System.currentTimeMillis() - startTime)
             }
-            time = formatTimePeriod(timeInMills)
+            recordedTime = formatTimePeriod(timeInMills)
             timeInMills = 0
             isRunning = false
             isPaused = false
 
-            time
+            recordedTime
         } else {
             trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.ERROR)
             "0"
@@ -53,6 +49,7 @@ class TimeTracker() {
 
 
     fun pause() {
+
         val trackerNote = TrackerNotification()
         if (isPaused) {
             trackerNote.notify("Timer already paused", NotificationType.ERROR)
@@ -67,7 +64,7 @@ class TimeTracker() {
         }
     }
 
-    fun start(idReadable: String, repo: YouTrackServer, project: Project, taskManager: TaskManager) {
+    fun start(idReadable: String) {
         val trackerNote = TrackerNotification()
         trackerNote.notify("Work timer started for Issue $idReadable", NotificationType.INFORMATION)
         startTime = System.currentTimeMillis()
@@ -83,11 +80,7 @@ class TimeTracker() {
             "0"
     }
 
-    fun getRecordedTime() = time
-
     fun getRecordedTimeInMills() = timeInMills
-
-    fun getStartTime() = startTime
 
     fun getComment() = comment
 

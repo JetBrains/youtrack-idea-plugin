@@ -1,7 +1,6 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
@@ -11,7 +10,6 @@ import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.tasks.TaskManager
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
@@ -30,7 +28,7 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 
-open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+open class SetupDialog(val timer: TimeTracker, override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
     private lateinit var mainPane: JBTabbedPane
@@ -46,7 +44,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    val timeTrackingTab =  TimeTrackerSettingsTab(repo.getRepo())
+    val timeTrackingTab =  TimeTrackerSettingsTab(repo)
 
 
     private var isConnectionTested = false
@@ -206,7 +204,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
         }
-        if (repoConnector.noteState != NotifierState.SUCCESS){
+        if (!connectedRepository.isConfigured){
             mainPane.setEnabledAt(1, false)
         }
 
@@ -290,12 +288,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            val timer = TimeTracker()
             setupTimer(timer)
-
             if (timer.isAutoTrackingEnable){
-                val taskManager = TaskManager.getManager(project)
-                StartTrackerAction(repo, timer, project, taskManager).startAutomatedTracking()
+                StartTrackerAction(timer).startAutomatedTracking(project)
             }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)

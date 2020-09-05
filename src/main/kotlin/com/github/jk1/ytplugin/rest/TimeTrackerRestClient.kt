@@ -10,7 +10,6 @@ import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
@@ -41,7 +40,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
 
     // todo edge case - no such work item
     private fun findWorkItemId(name: String) : String {
-        val types = getAvailableWorkItems()
+        val types = getAvailableWorkItemTypes()
         for (type in types) {
             if (type.name == name) {
                 return type.value
@@ -50,7 +49,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         return ""
     }
 
-    fun getAvailableWorkItems() : List<NameValuePair> {
+    fun getAvailableWorkItemTypes() : List<NameValuePair> {
         val url = "${repository.url}/api/admin/timeTrackingSettings/workItemTypes"
         val method = GetMethod(url)
         val myFields = NameValuePair("fields","name,id")

@@ -1,7 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
-import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.ui.components.*
 import java.awt.BorderLayout
 import java.awt.FlowLayout
@@ -9,7 +10,7 @@ import javax.swing.JComboBox
 import javax.swing.JPanel
 
 
-class TimeTrackerSettingsTab(repo: YouTrackRepository) : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(repo: YouTrackServer) : JBPanel<JBPanelWithEmptyText>() {
 
     private var scheduledHour: JBTextField
     private var scheduledMinutes: JBTextField
@@ -41,7 +42,7 @@ class TimeTrackerSettingsTab(repo: YouTrackRepository) : JBPanel<JBPanelWithEmpt
     private var typeLabel = JBLabel("Spent time type:")
     private var commentTextField: JBTextField
 
-    val workItemsTypes= arrayOf<String?>("Development", "Testing", "Documentation", "None", "Other...")
+    val workItemsTypes= arrayOf<String?>("Development")
 
     private var typeComboBox =  JComboBox(workItemsTypes)
 
@@ -120,7 +121,12 @@ class TimeTrackerSettingsTab(repo: YouTrackRepository) : JBPanel<JBPanelWithEmpt
         parametersPanel.add( postWhenPanel)
 
         commentTextField = JBTextField("")
-        typeComboBox.selectedIndex = 3
+
+        val types = mutableListOf<String>()
+        TimeTrackerRestClient(repo).getAvailableWorkItemTypes().map { types.add(it.name) }
+
+        typeComboBox =  JComboBox(types.toTypedArray())
+        typeComboBox.selectedIndex = 0
         typeComboBox.isEditable = true
 
         typePanel = JPanel(FlowLayout(2))
