@@ -41,19 +41,19 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     }
 
     private fun getGroupId(command: YouTrackCommandExecution): String {
-        val execUrl = "${repository.url}/api/groups?fields=name,id"
+        val execUrl = "${repository.url}/api/groups?fields=name,id,allUsersGroup"
         val getMethod = GetMethod(execUrl)
         val status = httpClient.executeMethod(getMethod)
         val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
-        var groupId = ""
-        if (status == 200) {
-            for (element in response) {
-                if (command.commentVisibleGroup == element.asJsonObject.get("name").asString) {
-                    groupId = element.asJsonObject.get("id").asString
-                }
-            }
+        return if (status == 200) {
+            if (command.commentVisibleGroup == "All Users") {
+                response.first { it.asJsonObject.get("allUsersGroup").asBoolean }
+            } else {
+                response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }
+            }.asJsonObject.get("id").asString
+        } else {
+            "" // todo: doesnt really work, need to omit the field in json
         }
-        return groupId
     }
 
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {

@@ -57,7 +57,6 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createHeaderPanel(issue: Issue): JPanel {
         val panel = JPanel(BorderLayout())
-        // todo: strikeout resolved issue ids
         val textArea = JTextArea()
         textArea.text = "${issue.id} ${issue.summary}"
         textArea.wrapStyleWord = true
