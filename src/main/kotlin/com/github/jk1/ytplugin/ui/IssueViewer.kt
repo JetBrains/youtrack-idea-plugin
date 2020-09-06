@@ -122,7 +122,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
             tabs.addTab("Comments (${comments.size})", commentsPanel)
             tabs.isFocusable = false
-            comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+            comments.filterNot { it.deleted }.forEach { commentsPanel.add(createCommentPanel(it)) }
         }
     }
 
