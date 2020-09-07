@@ -120,7 +120,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
             var workItemsJson: String
             if (workItems.size == 0){
-                workItemsJson  = "\"workItems\":" + JsonNull()
+                workItemsJson  = "\"workItems\": []"
             } else {
                 workItemsJson  = "\"workItems\": ["
                 for (x in 0..(workItems.size - 2)){
