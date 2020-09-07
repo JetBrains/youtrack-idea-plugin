@@ -17,8 +17,7 @@ class PauseTrackerAction  : AnAction(
 
             val project = event.project
             if (project != null) {
-                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-                val timer = ComponentAware.of(event.project!!).timeTrackerComponent[repo]
+                val timer = ComponentAware.of(event.project!!).timeTrackerComponent
                 timer.pause()
             }
         }

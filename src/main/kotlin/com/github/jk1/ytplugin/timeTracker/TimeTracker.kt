@@ -28,10 +28,10 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var isPaused = false
     var activityTracker: ActivityTracker? = null
 
-    operator fun get(repo: YouTrackServer): TimeTracker {
-        logger.debug("Get time tracker for project")
-        return this
-    }
+//    operator fun get(repo: YouTrackServer): TimeTracker {
+//        logger.debug("Get time tracker for project")
+//        return this
+//    }
 
     private val listeners: MutableSet<() -> Unit> = mutableSetOf()
 
@@ -42,10 +42,6 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
     fun stop(): String {
         val trackerNote = TrackerNotification()
-//
-//        if (isAutoTrackingEnable){
-//            startTime = activityTracker?.startInactivityTime!!
-//        }
 
         return if (isRunning) {
             if (!isPaused) {

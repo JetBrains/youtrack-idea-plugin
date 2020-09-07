@@ -18,8 +18,7 @@ class ResetTrackerAction  : AnAction(
         event.whenActive {
             val project = event.project
             if (project != null) {
-                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-                val myTimer = ComponentAware.of(event.project!!).timeTrackerComponent[repo]
+                val myTimer = ComponentAware.of(event.project!!).timeTrackerComponent
 
                 if (myTimer.isRunning) {
                     myTimer.isRunning = false

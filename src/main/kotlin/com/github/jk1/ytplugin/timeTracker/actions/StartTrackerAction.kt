@@ -19,9 +19,21 @@ class StartTrackerAction : AnAction(
         AllIcons.Actions.Profile) {
 
     fun startAutomatedTracking(project: Project) {
+        startTracking(project)
+    }
 
+    override fun actionPerformed(event: AnActionEvent) {
+        event.whenActive {
+            if (event.project != null){
+                startTracking(event.project!!)
+            }
+        }
+    }
+
+
+    private fun startTracking(project: Project){
         val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-        val myTimer = ComponentAware.of(project).timeTrackerComponent[repo]
+        val myTimer = ComponentAware.of(project).timeTrackerComponent
 
         val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
@@ -37,57 +49,25 @@ class StartTrackerAction : AnAction(
                     bar?.addWidget(ClockWidget(myTimer))
                 }
                 myTimer.start(activeTask.id)
-                val application = ApplicationManager.getApplication()
-                myTimer.activityTracker = ActivityTracker(
-                        parentDisposable = application,
-                        logTrackerCallDuration = false,
-                        timer = myTimer,
-                        inactivityPeriod = myTimer.inactivityPeriodInMills,
-                        repo = repo,
-                        project = project,
-                        taskManager = taskManager
-                )
+                if (myTimer.isAutoTrackingEnable){
+                    val application = ApplicationManager.getApplication()
+                    myTimer.activityTracker = ActivityTracker(
+                            parentDisposable = application,
+                            logTrackerCallDuration = false,
+                            timer = myTimer,
+                            inactivityPeriod = myTimer.inactivityPeriodInMills,
+                            repo = repo,
+                            project = project,
+                            taskManager = taskManager
+                    )
 
-                myTimer.activityTracker!!.startTracking()
-                myTimer.isAutoTrackingEnable = true
+                    myTimer.activityTracker!!.startTracking()
+                    myTimer.isAutoTrackingEnable = true
+                }
             }
         } else {
             val trackerNote = TrackerNotification()
             trackerNote.notify("Work timer is already running", NotificationType.ERROR)
-        }
-    }
-
-
-    override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            val project = event.project
-
-            if (project != null) {
-                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-                val myTimer = ComponentAware.of(project).timeTrackerComponent[repo]
-                val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
-                val activeTask = taskManager?.activeTask
-
-                if (!myTimer.isRunning || myTimer.isPaused) {
-                    if (activeTask != null) {
-                        myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
-                        if (myTimer.issueId == "0") {
-                            val trackerNote = TrackerNotification()
-                            trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
-                        } else {
-                            val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
-                            if (bar?.getWidget("Time Tracking Clock") == null) {
-                                bar?.addWidget(ClockWidget(myTimer))
-                            }
-                            myTimer.start(activeTask.id)
-
-                        }
-                    }
-                } else {
-                    val trackerNote = TrackerNotification()
-                    trackerNote.notify("Work timer is already running", NotificationType.ERROR)
-                }
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
@@ -53,6 +54,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
     override fun init() {
         title = "YouTrack"
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent
+
+        if (timer.isRunning || timer.isPaused){
+            StopTrackerAction().stopTimer(project)
+        }
+
         super.init()
     }
 
@@ -283,8 +290,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            val tmpTimer = TimeTracker(project)
-            val timer = ComponentAware.of(repo.project).timeTrackerComponent[repo]
+            val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
 
             val timeToSchedule =   TimeUnit.HOURS.toMillis(timeTrackingTab.getScheduledHours().toLong()) +

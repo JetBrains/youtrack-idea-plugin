@@ -55,7 +55,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         val inactivityTimePanel = JPanel(FlowLayout(3))
 
         isAutoTrackingEnabledCheckBox = JBCheckBox()
-        val timer = ComponentAware.of(repo.project).timeTrackerComponent[repo]
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
         isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
         isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
