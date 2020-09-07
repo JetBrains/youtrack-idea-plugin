@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
+import org.apache.commons.httpclient.NameValuePair
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -133,7 +134,10 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         commentTextField.preferredSize = Dimension((0.8 * width).toInt(), (0.0875 * height).toInt())
 
         val types = mutableListOf<String>()
-        TimeTrackerRestClient(repo).getAvailableWorkItemTypes().map { types.add(it.name) }
+        val typesReceived  : List<NameValuePair> = TimeTrackerRestClient(repo).getAvailableWorkItemTypes()
+        if (typesReceived.isNotEmpty()){
+            typesReceived.map { types.add(it.name) }
+        }
 
         if (types.isNotEmpty()){
             typeComboBox =  JComboBox(types.toTypedArray())

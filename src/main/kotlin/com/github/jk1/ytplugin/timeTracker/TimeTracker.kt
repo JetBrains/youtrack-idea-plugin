@@ -1,8 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.project.Project
 import java.util.concurrent.TimeUnit
 
 
@@ -21,7 +19,7 @@ class TimeTracker(){
     var isScheduledUnabled = true
     var isWhenProjectClosedUnabled = true
     var isPostAfterCommitUnabled = false
-    var isAutoTrackingEnable = false
+    var isAutoTrackingEnable = true
     var isRunning = false
     var isPaused = false
     var activityTracker: ActivityTracker? = null
@@ -82,6 +80,18 @@ class TimeTracker(){
             minutes.toString()
         else
             "0"
+    }
+
+    fun setupTimer(myComment: String, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
+                   isScheduled: Boolean, timeToSchedule: Long, inactivityTime: Long ){
+        comment = myComment
+        isAutoTrackingEnable = isAutoTracking
+        type = myType
+        isManualTrackingEnable = isManualMode
+        if (isScheduled){
+            scheduledPeriod = timeToSchedule
+        }
+        inactivityPeriodInMills = inactivityTime
     }
 
     fun getRecordedTimeInMills() = timeInMills

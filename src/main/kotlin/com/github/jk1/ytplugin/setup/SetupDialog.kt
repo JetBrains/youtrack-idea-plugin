@@ -262,18 +262,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         return contextPane
     }
 
-    fun setupTimer(timer: TimeTracker){
-        timer.comment = timeTrackingTab.getComment()
-        timer.isAutoTrackingEnable = timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected
-        timer.type = timeTrackingTab.getType().toString()
-        timer.isManualTrackingEnable = timeTrackingTab.getManualModeCheckbox().isSelected
-        if (timeTrackingTab.getScheduledCheckbox().isSelected){
-            timer.scheduledPeriod = TimeUnit.HOURS.toMillis(timeTrackingTab.getScheduledHours().toLong()) +
-                    TimeUnit.MINUTES.toMillis(timeTrackingTab.getScheduledMinutes().toLong())
-        }
-        timer.inactivityPeriodInMills = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
-                TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
-    }
 
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
@@ -295,10 +283,18 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            var timer = repo.timeTracker
-            setupTimer(timer)
+//            setupTimer(repo.timeTracker)
+            val timeToSchedule =   TimeUnit.HOURS.toMillis(timeTrackingTab.getScheduledHours().toLong()) +
+                    TimeUnit.MINUTES.toMillis(timeTrackingTab.getScheduledMinutes().toLong())
 
-            if (timer.isAutoTrackingEnable){
+            val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
+                    TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
+
+            repo.timeTracker.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
+                    timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
+                    timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule, inactivityTime)
+
+            if (repo.timeTracker.isAutoTrackingEnable){
                 StartTrackerAction(repo).startAutomatedTracking(project)
             }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
