@@ -3,10 +3,8 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.timeTracker.IconLoader
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
-import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

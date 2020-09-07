@@ -55,12 +55,9 @@ class StartTrackerAction : AnAction(
                         val application = ApplicationManager.getApplication()
                         myTimer.activityTracker = ActivityTracker(
                                 parentDisposable = application,
-                                logTrackerCallDuration = false,
                                 timer = myTimer,
                                 inactivityPeriod = myTimer.inactivityPeriodInMills,
-                                repo = repo,
-                                project = project,
-                                taskManager = taskManager
+                                project = project
                         )
 
                         myTimer.activityTracker!!.startTracking()

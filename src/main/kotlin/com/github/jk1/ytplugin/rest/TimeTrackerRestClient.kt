@@ -1,9 +1,11 @@
 package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
+import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
