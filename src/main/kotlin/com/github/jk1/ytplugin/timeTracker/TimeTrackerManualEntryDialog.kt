@@ -29,17 +29,16 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     private var dateLabel = JBLabel("                         Date:")
     private val datePicker = JXDatePicker()
-    private var idLabel = JBLabel("Issue:")
+    private var idLabel = JBLabel("                        Issue:")
     private var idComboBox =  JComboBox(arrayOf<String>())
 
     private var typeComboBox =  JComboBox(arrayOf<String>("Development"))
 
-    private var timeLabel = JBLabel("  Time (hh/mm):")
+    private var timeLabel = JBLabel("    Time (hh/mm):")
 
     private lateinit var commentPanel: JPanel
 
     private lateinit var typePanel: JPanel
-    private lateinit var parametersPanel: JPanel
 
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
@@ -51,7 +50,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     private var notifier = JBLabel("" )
 
-    private val ids = IssuesRestClient(repo).getUniqueIssueIds()
+    private val ids = IssuesRestClient(repo).getFormattedUniqueIssueIds()
 
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds  = mutableListOf<String>()
@@ -115,10 +114,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         timePanel.add(timeLabel)
         timePanel.add(inputTimePanel)
 
-        parametersPanel = JPanel(FlowLayout(2))
-        parametersPanel.add(timePanel)
-        parametersPanel.add(idPanel)
-
         commentPanel = JPanel(FlowLayout(2))
         commentPanel.add(commentLabel)
         commentPanel.add(commentTextField)
@@ -136,7 +131,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         return JPanel().apply {
             layout = VerticalLayout(4)
-            add(parametersPanel)
+            add(timePanel)
+            add(idPanel)
             add(typePanel)
             add(commentPanel)
             add(datePanel)
@@ -158,7 +154,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val contextPane = JPanel(GridLayout())
         val mainPane = prepareMainPane()
         contextPane.apply {
-            preferredSize = Dimension(530, 220)
+            preferredSize = Dimension(530, 250)
             minimumSize = preferredSize
             add(mainPane)
         }

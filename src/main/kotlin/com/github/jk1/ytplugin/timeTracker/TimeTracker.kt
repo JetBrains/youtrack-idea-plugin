@@ -1,8 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project

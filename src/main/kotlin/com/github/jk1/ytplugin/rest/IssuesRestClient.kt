@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets
 class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClientBase, RestClientTrait {
 
     companion object {
-
+        const val SUMMARY_LENGTH_MAX = 38
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
@@ -152,7 +152,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         }
     }
 
-    fun getUniqueIssueIds(): List<NameValuePair> {
+    fun getFormattedUniqueIssueIds(): List<NameValuePair> {
         val myQuery = NameValuePair("fields", "idReadable,summary")
         val url = "${repository.url}/api/issues"
         val method = GetMethod(url)
@@ -163,8 +163,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             if (status == 200) {
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 for (item in json) {
+                    var summary = item.asJsonObject.get("summary").asString
+                    if (summary.length > SUMMARY_LENGTH_MAX){
+                        summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
+                    }
                     val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
-                            item.asJsonObject.get("idReadable").asString + ": " + item.asJsonObject.get("summary").asString)
+                            item.asJsonObject.get("idReadable").asString + ": " + summary)
                     result.add(pair)
                 }
                 result
