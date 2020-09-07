@@ -24,50 +24,53 @@ class StartTrackerAction : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
-            if (event.project != null){
+            if (event.project != null) {
+                ComponentAware.of(event.project!!).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
                 startTracking(event.project!!)
             }
         }
     }
 
 
-    private fun startTracking(project: Project){
+    private fun startTracking(project: Project) {
         val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
         val myTimer = ComponentAware.of(project).timeTrackerComponent
 
         val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
 
-        if (!myTimer.isRunning || myTimer.isPaused) {
-            myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
-            if (myTimer.issueId == "0") {
-                val trackerNote = TrackerNotification()
-                trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
-            } else {
-                val bar = WindowManager.getInstance().getStatusBar(project)
-                if (bar?.getWidget("Time Tracking Clock") == null) {
-                    bar?.addWidget(ClockWidget(myTimer))
-                }
-                myTimer.start(activeTask.id)
-                if (myTimer.isAutoTrackingEnable){
-                    val application = ApplicationManager.getApplication()
-                    myTimer.activityTracker = ActivityTracker(
-                            parentDisposable = application,
-                            logTrackerCallDuration = false,
-                            timer = myTimer,
-                            inactivityPeriod = myTimer.inactivityPeriodInMills,
-                            repo = repo,
-                            project = project,
-                            taskManager = taskManager
-                    )
+        if (!myTimer.isAutoTrackingTemporaryDisabled) {
+            if (!myTimer.isRunning || myTimer.isPaused) {
+                myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
+                if (myTimer.issueId == "0") {
+                    val trackerNote = TrackerNotification()
+                    trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
+                } else {
+                    val bar = WindowManager.getInstance().getStatusBar(project)
+                    if (bar?.getWidget("Time Tracking Clock") == null) {
+                        bar?.addWidget(ClockWidget(myTimer))
+                    }
+                    myTimer.start(activeTask.id)
+                    if (myTimer.isAutoTrackingEnable) {
+                        val application = ApplicationManager.getApplication()
+                        myTimer.activityTracker = ActivityTracker(
+                                parentDisposable = application,
+                                logTrackerCallDuration = false,
+                                timer = myTimer,
+                                inactivityPeriod = myTimer.inactivityPeriodInMills,
+                                repo = repo,
+                                project = project,
+                                taskManager = taskManager
+                        )
 
-                    myTimer.activityTracker!!.startTracking()
-                    myTimer.isAutoTrackingEnable = true
+                        myTimer.activityTracker!!.startTracking()
+                        myTimer.isAutoTrackingEnable = true
+                    }
                 }
+            } else {
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Work timer is already running", NotificationType.ERROR)
             }
-        } else {
-            val trackerNote = TrackerNotification()
-            trackerNote.notify("Work timer is already running", NotificationType.ERROR)
         }
     }
 }

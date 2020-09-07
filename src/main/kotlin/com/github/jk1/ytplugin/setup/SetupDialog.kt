@@ -58,6 +58,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         if (timer.isRunning || timer.isPaused){
             StopTrackerAction().stopTimer(project)
+            timer.isAutoTrackingTemporaryDisabled = true
         }
 
         super.init()

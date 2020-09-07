@@ -26,6 +26,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var isAutoTrackingEnable = true
     var isRunning = false
     var isPaused = false
+    var isAutoTrackingTemporaryDisabled = false
     var activityTracker: ActivityTracker? = null
 
 //    operator fun get(repo: YouTrackServer): TimeTracker {
@@ -98,6 +99,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
                    isScheduled: Boolean, timeToSchedule: Long, inactivityTime: Long ){
         comment = myComment
         isAutoTrackingEnable = isAutoTracking
+        isAutoTrackingTemporaryDisabled = false
         type = myType
         isManualTrackingEnable = isManualMode
         if (isScheduled){
