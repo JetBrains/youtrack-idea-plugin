@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.concurrency.JobScheduler
 import com.intellij.ide.IdeEventQueue
@@ -116,7 +115,7 @@ class ActivityTracker(
                         startInactivityTime = currentTimeMillis()
                         timer.isRunning = false
                         timer.isPaused = false
-                        StartTrackerAction(repo).startAutomatedTracking(project)
+                        StartTrackerAction().startAutomatedTracking(project)
                     }
                 }
             }
@@ -184,7 +183,7 @@ class ActivityTracker(
 
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
-                    val action = StartTrackerAction(repo)
+                    val action = StartTrackerAction()
                     action.startAutomatedTracking(project)
                 }
             }

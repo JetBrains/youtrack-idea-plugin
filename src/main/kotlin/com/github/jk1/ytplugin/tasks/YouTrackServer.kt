@@ -20,7 +20,6 @@ class YouTrackServer(private val delegate: YouTrackRepository, val project: Proj
     val username: String get() = delegate.username
     val password: String get() = delegate.password
 
-    var timeTracker = TimeTracker()
 
     var defaultSearch: String
         get() = synchronized(delegate) {

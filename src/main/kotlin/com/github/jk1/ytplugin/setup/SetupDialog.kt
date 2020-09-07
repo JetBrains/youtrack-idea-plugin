@@ -283,19 +283,22 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-//            setupTimer(repo.timeTracker)
+            val tmpTimer = TimeTracker(project)
+            val timer = ComponentAware.of(repo.project).timeTrackerComponent[repo]
+
+
             val timeToSchedule =   TimeUnit.HOURS.toMillis(timeTrackingTab.getScheduledHours().toLong()) +
                     TimeUnit.MINUTES.toMillis(timeTrackingTab.getScheduledMinutes().toLong())
 
             val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                     TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
 
-            repo.timeTracker.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
+            timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
                     timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
                     timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule, inactivityTime)
 
-            if (repo.timeTracker.isAutoTrackingEnable){
-                StartTrackerAction(repo).startAutomatedTracking(project)
+            if (timer.isAutoTrackingEnable){
+                StartTrackerAction().startAutomatedTracking(project)
             }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)

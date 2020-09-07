@@ -1,11 +1,15 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.project.Project
 import java.util.concurrent.TimeUnit
 
-
-class TimeTracker(){
-
+@Service
+class TimeTracker(override val project: Project) : ComponentAware{
 
     var issueId: String = "Default"
     var inactivityPeriodInMills: Long = 600000
@@ -23,6 +27,18 @@ class TimeTracker(){
     var isRunning = false
     var isPaused = false
     var activityTracker: ActivityTracker? = null
+
+    operator fun get(repo: YouTrackServer): TimeTracker {
+        logger.debug("Get time tracker for project")
+        return this
+    }
+
+    private val listeners: MutableSet<() -> Unit> = mutableSetOf()
+
+
+    fun subscribe(listener: () -> Unit) {
+        listeners.add(listener)
+    }
 
     fun stop(): String {
         val trackerNote = TrackerNotification()

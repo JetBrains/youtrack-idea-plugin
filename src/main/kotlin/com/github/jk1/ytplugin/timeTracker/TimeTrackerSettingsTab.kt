@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
@@ -54,32 +55,34 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         val inactivityTimePanel = JPanel(FlowLayout(3))
 
         isAutoTrackingEnabledCheckBox = JBCheckBox()
-        isAutoTrackingEnabledCheckBox.isSelected = repo.timeTracker.isAutoTrackingEnable
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent[repo]
+
+        isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
         isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
 
 
         scheduledHour = JBTextField("19")
         scheduledMinutes = JBTextField("00")
 
-        val inactivityHours = TimeUnit.MILLISECONDS.toHours(repo.timeTracker.inactivityPeriodInMills)
+        val inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.inactivityPeriodInMills)
 
-        val inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(repo.timeTracker.inactivityPeriodInMills -
+        val inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.inactivityPeriodInMills -
         TimeUnit.HOURS.toMillis(inactivityHours))
 
         inactivityHourInputField = JBTextField(inactivityHours.toString())
         inactivityMinutesInputField = JBTextField(inactivityMinutes.toString())
 
         isScheduledCheckbox = JBCheckBox()
-        isScheduledCheckbox.isSelected = repo.timeTracker.isScheduledUnabled
+        isScheduledCheckbox.isSelected = timer.isScheduledUnabled
 
         isManualModeCheckbox = JBCheckBox()
-        isManualModeCheckbox.isSelected = repo.timeTracker.isManualTrackingEnable
+        isManualModeCheckbox.isSelected = timer.isManualTrackingEnable
 
         postWhenCommitCheckbox = JBCheckBox()
-        postWhenCommitCheckbox.isSelected = repo.timeTracker.isPostAfterCommitUnabled
+        postWhenCommitCheckbox.isSelected = timer.isPostAfterCommitUnabled
 
         postWhenProjectClosedCheckbox = JBCheckBox()
-        postWhenProjectClosedCheckbox.isSelected = repo.timeTracker.isPostAfterCommitUnabled
+        postWhenProjectClosedCheckbox.isSelected = timer.isPostAfterCommitUnabled
 
         timePanel.add(scheduledHour)
         timePanel.add(JBLabel(":"))
@@ -130,7 +133,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         postWhenPanel.add(mpostWhenCommitTextField)
 
 
-        commentTextField = JBTextField(repo.timeTracker.comment)
+        commentTextField = JBTextField(timer.comment)
         commentTextField.preferredSize = Dimension((0.8 * width).toInt(), (0.0875 * height).toInt())
 
         val types = mutableListOf<String>()

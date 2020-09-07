@@ -9,8 +9,8 @@ import javax.swing.Timer
 import kotlin.jvm.internal.Intrinsics
 
 class ClockWidget(val timeTracker: TimeTracker) : CustomStatusBarWidget {
-    val label = JLabel(time())
 
+    val label = JLabel(time())
     private val timer = Timer(1000, ActionListener { label.text = time() })
 
     fun time(): String {

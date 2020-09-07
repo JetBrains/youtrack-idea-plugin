@@ -28,7 +28,6 @@ class RefreshWorkItemsAction(val repo: YouTrackServer) : IssueAction() {
     override fun update(event: AnActionEvent) {
         val project = event.project
         val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
-
         event.presentation.isEnabled = project != null &&
                 project.isInitialized && repo != null &&
                 !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()

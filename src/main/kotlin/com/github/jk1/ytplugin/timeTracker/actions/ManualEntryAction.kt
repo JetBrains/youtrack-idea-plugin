@@ -1,25 +1,19 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.actions.IssueAction
-import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
+import com.github.jk1.ytplugin.timeTracker.IconLoader
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerManualEntryDialog
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
-import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.DumbAware
-import javax.swing.Icon
-import javax.swing.ImageIcon
 
 
-class ManualEntryAction : IssueAction() {
-        override val text = "Add spent time"
-        override val description = "Add spent time"
-        override var icon: Icon = ImageIcon(this::class.java.classLoader.getResource("icons/add_new_dark_16.png"))
-        override val shortcut = "control shift I"
+class ManualEntryAction  : AnAction(
+        "Add spent time",
+        "Add spent time",
+        IconLoader.loadIcon("icons/add_new_dark_16.png")){
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
