@@ -29,7 +29,7 @@ class ResetTrackerAction  : AnAction(
                     trackerNote.notify("Work timer reset", NotificationType.INFORMATION)
                 } else {
                     val trackerNote = TrackerNotification()
-                    trackerNote.notify("Could not reset - timer is not started", NotificationType.ERROR)
+                    trackerNote.notify("Could not reset - timer is not started", NotificationType.WARNING)
                 }
             }
         }

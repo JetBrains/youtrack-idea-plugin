@@ -29,11 +29,11 @@ class ManualEntryAction  : AnAction(
                     trackerNote.notify("Time was successfully posted on server", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 } else {
-                    trackerNote.notify("Time was not posted, please check your input", NotificationType.ERROR)
+                    trackerNote.notify("Time was not posted, please check your input", NotificationType.WARNING)
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Unable to add spent time manually" , NotificationType.ERROR)
+                trackerNote.notify("Unable to add spent time manually" , NotificationType.WARNING)
             }
         }
     }

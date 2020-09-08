@@ -39,14 +39,14 @@ class StopTrackerAction : AnAction(
         val trackerNote = TrackerNotification()
 
         if (time == "0")
-            trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.ERROR)
+            trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.WARNING)
         else {
             val status = repo.let { it1 ->
                 TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
                         timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
             }
             if (status != 200)
-                trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.ERROR)
+                trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
             else {
                 trackerNote.notify("Work timer stopped, time posted on server", NotificationType.INFORMATION)
                 ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)

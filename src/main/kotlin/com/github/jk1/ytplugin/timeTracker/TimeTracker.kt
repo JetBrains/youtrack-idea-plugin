@@ -40,7 +40,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
             isPaused = false
             recordedTime
         } else {
-            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.ERROR)
+            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
             "0"
         }
     }
@@ -49,14 +49,14 @@ class TimeTracker(override val project: Project) : ComponentAware{
     fun pause() {
         val trackerNote = TrackerNotification()
         if (isPaused) {
-            trackerNote.notify("Timer already paused", NotificationType.ERROR)
+            trackerNote.notify("Timer already paused", NotificationType.WARNING)
         } else {
             if (isRunning) {
                 timeInMills += (System.currentTimeMillis() - startTime)
                 isPaused = true
                 trackerNote.notify("Work timer paused", NotificationType.INFORMATION)
             } else {
-                trackerNote.notify("Could not pause - timer is not started", NotificationType.ERROR)
+                trackerNote.notify("Could not pause - timer is not started", NotificationType.WARNING)
             }
         }
     }

@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
+import com.github.jk1.ytplugin.timeTracker.actions.ToggleStartAndPauseTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
@@ -303,6 +304,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
                     timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
                     timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule, inactivityTime)
+            ToggleStartAndPauseTrackerAction().getStartState(!timer.isAutoTrackingEnable)
 
             if (timer.isAutoTrackingEnable){
                 StartTrackerAction().startAutomatedTracking(project)
