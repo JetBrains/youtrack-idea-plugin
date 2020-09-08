@@ -47,11 +47,6 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
 
     fun pause() {
-        if (isAutoTrackingEnable){
-            startTime = activityTracker?.startInactivityTime!!
-            isAutoTrackingTemporaryDisabled = true
-        }
-
         val trackerNote = TrackerNotification()
         if (isPaused) {
             trackerNote.notify("Timer already paused", NotificationType.ERROR)

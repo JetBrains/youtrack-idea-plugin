@@ -17,6 +17,10 @@ class PauseTrackerAction  : AnAction(
             val project = event.project
             if (project != null) {
                 val timer = ComponentAware.of(event.project!!).timeTrackerComponent
+                if (timer.isAutoTrackingEnable){
+                    timer.startTime = timer.activityTracker?.startInactivityTime!!
+                    timer.isAutoTrackingTemporaryDisabled = true
+                }
                 timer.pause()
             }
         }

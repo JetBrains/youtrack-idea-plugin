@@ -4,11 +4,8 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
-import com.intellij.concurrency.JobScheduler
 import com.intellij.ide.IdeEventQueue
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
@@ -23,7 +20,6 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.lang.System.currentTimeMillis
 import java.util.*
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -45,16 +41,15 @@ class ActivityTracker(
             return
         }
         trackingDisposable = newDisposable(parentDisposable)
-        startPollingProjectState()
         startIDEListener(trackingDisposable!!, 1000)
     }
 
 
-    private fun <T> invoke(callback: () -> T): T? {
-        var result: T? = null
-        ApplicationManager.getApplication()
-                .invokeAndWait({ result = callback() }, ModalityState.any())
-        return result
+    override fun dispose() {
+        if (trackingDisposable != null) {
+            Disposer.dispose(trackingDisposable!!)
+            trackingDisposable = null
+        }
     }
 
     private fun newDisposable(vararg parents: Disposable, callback: () -> Any = {}): Disposable {
@@ -75,59 +70,37 @@ class ActivityTracker(
         return disposable
     }
 
-    private fun Disposable.whenDisposed(callback: () -> Any) = newDisposable(this, callback = callback)
-
-    private fun startPollingProjectState() {
-        val runnable = Runnable {
-            invoke {
-                val isProjectActive = captureIdeState()
-                if (!isProjectActive) {
-                    logger.debug("state PROJECT_INACTIVE")
-                }
-            }
-        }
-
-        val nextSecondStartMs = 1000 - (currentTimeMillis() % 1000)
-        val future = JobScheduler.getScheduler().scheduleWithFixedDelay(runnable, nextSecondStartMs, 1000, MILLISECONDS)
-        trackingDisposable?.whenDisposed {
-            future.cancel(true)
-        }
-    }
 
     private fun startIDEListener(parentDisposable: Disposable, mouseMoveEventsThresholdMs: Long) {
         var lastMouseMoveTimestamp = 0L
-
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
             var isMouseOrKeyboardActive = false
-
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
+                val eventData = "click:" + awtEvent.button + ":" + awtEvent.clickCount + ":" + awtEvent.modifiers
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state MOUSE_CLICKED $isMouseOrKeyboardActive")
+                logger.debug("state MOUSE_CLICKED " + isMouseOrKeyboardActive)
             }
-
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
-                    logger.debug("state MOUSE_MOVED $isMouseOrKeyboardActive")
+                    logger.debug("state MOUSE_MOVED" + isMouseOrKeyboardActive)
+
                 }
             }
-
             if (awtEvent is MouseWheelEvent && awtEvent.id == MouseEvent.MOUSE_WHEEL) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
-                    logger.debug("state MOUSE_WHEEL $isMouseOrKeyboardActive")
+                    logger.debug("state MOUSE_WHEEL " + isMouseOrKeyboardActive)
                 }
             }
-
             if (awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state keyboard $isMouseOrKeyboardActive")
+                logger.debug("state keyboard " + isMouseOrKeyboardActive)
             }
-
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
                 if ((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused) {
@@ -166,19 +139,21 @@ class ActivityTracker(
 
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
             val project = ideFocusManager.lastFocusedFrame?.project
+            val repo = project?.let { ComponentAware.of(it).taskManagerComponent.getActiveYouTrackRepository() }
 
             if (project == null || project.isDefault) {
-                if (project != null) {
-                    val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+                if (repo != null) {
                     TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
                             timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                 }
                 return false
             }
+
             val editor = currentEditorIn(project)
             if (editor != null) {
                 return true
             }
+
             return false
 
         } catch (e: Exception) {
@@ -186,23 +161,15 @@ class ActivityTracker(
         }
     }
 
-
     @Suppress("UNCHECKED_CAST")
     private fun <T> findParentComponent(component: Component?, matches: (Component) -> Boolean): T? =
             when {
-                component == null  -> null
+                component == null -> null
                 matches(component) -> component as T?
-                else               -> findParentComponent(component.parent, matches)
+                else -> findParentComponent(component.parent, matches)
             }
 
     private fun currentEditorIn(project: Project): Editor? =
             (FileEditorManagerEx.getInstance(project) as FileEditorManagerEx).selectedTextEditor
-
-    override fun dispose() {
-        if (trackingDisposable != null) {
-            Disposer.dispose(trackingDisposable!!)
-            trackingDisposable = null
-        }
-    }
 
 }
