@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.jvm.internal.Intrinsics
 import kotlin.test.assertNotEquals
 
-class ClockTest : PlatformLiteFixture() {
+class ClockWidgetTest : PlatformLiteFixture() {
     private var widget: ClockWidget? = null
     @Throws(Exception::class)
     public override fun setUp() {

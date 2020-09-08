@@ -69,6 +69,21 @@ class TimeTracker(override val project: Project) : ComponentAware{
         isPaused = false
     }
 
+
+    fun reset() {
+        if (isRunning) {
+            isPaused = false
+            recordedTime = "0"
+            timeInMills = 0
+            startTime = System.currentTimeMillis()
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Work timer reset", NotificationType.INFORMATION)
+        } else {
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Could not reset - timer is not started", NotificationType.WARNING)
+        }
+    }
+
     private fun formatTimePeriod(timeInMilSec: Long): String {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
         return if (minutes > 0)
