@@ -41,15 +41,15 @@ class ToggleStartAndPauseTrackerAction  : AnAction(
                     timer.pause()
                     event.presentation.icon = AllIcons.Actions.Profile
                     IS_START_ON = true
-                    templatePresentation.text = "Start work timer"
-                    templatePresentation.description = "Start work timer"
+                    event.presentation.text = "Start work timer"
+                    event.presentation.description = "Start work timer"
                 } else {
                     ComponentAware.of(event.project!!).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
                     StartTrackerAction().startTracking(event.project!!)
                     event.presentation.icon = IconLoader.loadIcon("icons/time_tracker_pause_dark.png")
                     IS_START_ON = false
-                    templatePresentation.text = "Pause work timer"
-                    templatePresentation.description = "Pause work timer"
+                    event.presentation.text = "Pause work timer"
+                    event.presentation.description = "Pause work timer"
                 }
             }
         }
