@@ -20,7 +20,6 @@ class ResetTrackerAction  : AnAction(
             if (project != null) {
                 val myTimer = ComponentAware.of(event.project!!).timeTrackerComponent
                 if (myTimer.isRunning) {
-                    myTimer.isRunning = false
                     myTimer.isPaused = false
                     myTimer.recordedTime = "0"
                     myTimer.timeInMills = 0

@@ -27,6 +27,14 @@ class StopTrackerAction : AnAction(
         }
     }
 
+    override fun update(event: AnActionEvent) {
+        val project = event.project
+        if (project != null) {
+            val timer = ComponentAware.of(event.project!!).timeTrackerComponent
+            event.presentation.isEnabled = timer.isRunning
+        }
+    }
+
     fun stopTimer(project: Project){
         val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
         val timer = ComponentAware.of(project).timeTrackerComponent

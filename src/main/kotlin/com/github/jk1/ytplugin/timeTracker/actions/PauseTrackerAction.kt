@@ -25,4 +25,12 @@ class PauseTrackerAction  : AnAction(
             }
         }
     }
+
+    override fun update(event: AnActionEvent) {
+        val project = event.project
+        if (project != null) {
+            val timer = ComponentAware.of(event.project!!).timeTrackerComponent
+            event.presentation.isVisible = (!timer.isPaused && timer.isRunning) && !timer.isAutoTrackingTemporaryDisabled
+        }
+    }
 }
