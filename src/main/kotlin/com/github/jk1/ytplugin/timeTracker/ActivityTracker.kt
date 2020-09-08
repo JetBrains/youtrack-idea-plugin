@@ -9,10 +9,15 @@ import com.intellij.ide.IdeEventQueue
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.ex.WindowManagerEx
+import com.intellij.openapi.wm.impl.IdeFrameImpl
 import java.awt.AWTEvent
+import java.awt.Component
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
@@ -21,12 +26,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 
-
-enum class Type {
-    IdeState,
-    KeyEvent,
-    MouseEvent,
-}
 
 class ActivityTracker(
 
@@ -47,7 +46,7 @@ class ActivityTracker(
         }
         trackingDisposable = newDisposable(parentDisposable)
         startPollingProjectState()
-        startIDEListener(trackingDisposable!!, true, true, 1000)
+        startIDEListener(trackingDisposable!!, 1000)
     }
 
 
@@ -81,7 +80,7 @@ class ActivityTracker(
     private fun startPollingProjectState() {
         val runnable = Runnable {
             invoke {
-                val isProjectActive = captureProjectState(Type.IdeState)
+                val isProjectActive = captureIdeState()
                 if (!isProjectActive) {
                     logger.debug("state PROJECT_INACTIVE")
                 }
@@ -95,38 +94,37 @@ class ActivityTracker(
         }
     }
 
-    private fun startIDEListener(parentDisposable: Disposable, trackKeyboard: Boolean,
-                                 trackMouse: Boolean, mouseMoveEventsThresholdMs: Long) {
+    private fun startIDEListener(parentDisposable: Disposable, mouseMoveEventsThresholdMs: Long) {
         var lastMouseMoveTimestamp = 0L
 
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
             var isMouseOrKeyboardActive = false
 
-            if (trackMouse && awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
-                isMouseOrKeyboardActive = captureProjectState(Type.MouseEvent)
+            if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
+                isMouseOrKeyboardActive = captureIdeState()
                 logger.debug("state MOUSE_CLICKED $isMouseOrKeyboardActive")
             }
 
-            if (trackMouse && awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
+            if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
-                    isMouseOrKeyboardActive = captureProjectState(Type.MouseEvent)
+                    isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
                     logger.debug("state MOUSE_MOVED $isMouseOrKeyboardActive")
                 }
             }
 
-            if (trackMouse && awtEvent is MouseWheelEvent && awtEvent.id == MouseEvent.MOUSE_WHEEL) {
+            if (awtEvent is MouseWheelEvent && awtEvent.id == MouseEvent.MOUSE_WHEEL) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
-                    isMouseOrKeyboardActive = captureProjectState(Type.MouseEvent)
+                    isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
                     logger.debug("state MOUSE_WHEEL $isMouseOrKeyboardActive")
                 }
             }
 
-            if (trackKeyboard && awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
-                isMouseOrKeyboardActive = captureProjectState(Type.KeyEvent)
+            if (awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
+                isMouseOrKeyboardActive = captureIdeState()
                 logger.debug("state keyboard $isMouseOrKeyboardActive")
             }
 
@@ -147,13 +145,29 @@ class ActivityTracker(
         }, parentDisposable)
     }
 
-    private fun captureProjectState(eventType: Type): Boolean {
+    private fun captureIdeState(): Boolean {
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
+            val focusOwner = ideFocusManager.focusOwner
+
+            // this might also work: ApplicationManager.application.isActive(), ApplicationActivationListener
+            val window = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow
+
+            var ideHasFocus = window?.isActive
+            if (!ideHasFocus!!) {
+                @Suppress("UnstableApiUsage")
+                val ideFrame = findParentComponent<IdeFrameImpl?>(focusOwner) { it is IdeFrameImpl }
+                ideHasFocus = ideFrame != null && ideFrame.isActive
+            }
+
+            if (!ideHasFocus) {
+                return false
+            }
 
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
             val project = ideFocusManager.lastFocusedFrame?.project
-            if (eventType == Type.IdeState && project?.isDefault != false) {
+
+            if (project == null || project.isDefault) {
                 if (project != null) {
                     val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
                     TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
@@ -161,12 +175,28 @@ class ActivityTracker(
                 }
                 return false
             }
-            return true
+            val editor = currentEditorIn(project)
+            if (editor != null) {
+                return true
+            }
+            return false
 
         } catch (e: Exception) {
             return false
         }
     }
+
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> findParentComponent(component: Component?, matches: (Component) -> Boolean): T? =
+            when {
+                component == null  -> null
+                matches(component) -> component as T?
+                else               -> findParentComponent(component.parent, matches)
+            }
+
+    private fun currentEditorIn(project: Project): Editor? =
+            (FileEditorManagerEx.getInstance(project) as FileEditorManagerEx).selectedTextEditor
 
     override fun dispose() {
         if (trackingDisposable != null) {

@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -27,22 +28,19 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     var state = 0
 
+    // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("                         Date:")
     private val datePicker = JXDatePicker()
     private var idLabel = JBLabel("                        Issue:")
-    private var idComboBox =  JComboBox(arrayOf<String>())
-
+    // TODO: another comboBoxes
+    private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox =  JComboBox(arrayOf<String>("Development"))
-
     private var timeLabel = JBLabel("    Time (hh/mm):")
 
     private lateinit var commentPanel: JPanel
-
     private lateinit var typePanel: JPanel
-
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
-
 
     private var commentLabel= JBLabel("             Comment:")
     private var typeLabel = JBLabel(" Work item type:")
@@ -51,7 +49,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private var notifier = JBLabel("" )
 
     private val ids = IssuesRestClient(repo).getFormattedUniqueIssueIds()
-
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds  = mutableListOf<String>()
 
@@ -68,7 +65,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         val picker = JXDatePicker()
         picker.isEditable = true
-//        picker.date = Date()
         picker.date = Calendar.getInstance().time
         picker.setFormats(SimpleDateFormat("dd.MM.yyyy"))
 
@@ -102,7 +98,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         minutesSpinner = JSpinner(minutesModel)
 
         commentTextField = JBTextField("")
-        //TODO
         commentTextField.preferredSize = Dimension(390, 28)
 
 

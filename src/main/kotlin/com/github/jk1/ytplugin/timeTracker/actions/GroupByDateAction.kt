@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.WorkItemsList
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
@@ -19,7 +18,7 @@ class GroupByDateAction : IssueAction() {
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
             val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
-            val workItemsList = repo.let { WorkItemsList(it) }
+            val workItemsList = WorkItemsList(repo)
             logger.debug("Spent time grouping by date for ${repo.url}")
             workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = false
             ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)

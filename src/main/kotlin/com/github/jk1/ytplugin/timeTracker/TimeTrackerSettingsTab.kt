@@ -60,7 +60,6 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
         isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
 
-
         scheduledHour = JBTextField("19")
         scheduledMinutes = JBTextField("00")
 
@@ -197,6 +196,5 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     fun getScheduledHours(): String = scheduledHour.text
     fun getScheduledMinutes(): String = scheduledMinutes.text
     fun getComment(): String = commentTextField.text
-
 
 }

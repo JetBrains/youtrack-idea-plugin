@@ -19,7 +19,6 @@ class ResetTrackerAction  : AnAction(
             val project = event.project
             if (project != null) {
                 val myTimer = ComponentAware.of(event.project!!).timeTrackerComponent
-
                 if (myTimer.isRunning) {
                     myTimer.isRunning = false
                     myTimer.isPaused = false

@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.timeTracker
 
-import com.github.jk1.ytplugin.timeTracker.IssueWorkItemStore
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer

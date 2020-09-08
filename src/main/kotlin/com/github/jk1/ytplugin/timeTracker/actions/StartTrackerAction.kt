@@ -51,6 +51,7 @@ class StartTrackerAction : AnAction(
                         bar?.addWidget(ClockWidget(myTimer))
                     }
                     myTimer.start(activeTask.id)
+                    // case for ctivity tracker enabled
                     if (myTimer.isAutoTrackingEnable) {
                         val application = ApplicationManager.getApplication()
                         myTimer.activityTracker = ActivityTracker(
@@ -59,7 +60,6 @@ class StartTrackerAction : AnAction(
                                 inactivityPeriod = myTimer.inactivityPeriodInMills,
                                 project = project
                         )
-
                         myTimer.activityTracker!!.startTracking()
                         myTimer.isAutoTrackingEnable = true
                     }

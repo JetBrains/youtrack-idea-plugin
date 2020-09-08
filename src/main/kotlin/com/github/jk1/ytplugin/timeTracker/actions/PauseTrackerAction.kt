@@ -14,7 +14,6 @@ class PauseTrackerAction  : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
-
             val project = event.project
             if (project != null) {
                 val timer = ComponentAware.of(event.project!!).timeTrackerComponent

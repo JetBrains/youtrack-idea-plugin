@@ -14,7 +14,6 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import javax.swing.JList
 import javax.swing.JPanel
-import javax.swing.JTextField
 import javax.swing.ListCellRenderer
 
 

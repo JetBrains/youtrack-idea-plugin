@@ -30,7 +30,6 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
     fun stop(): String {
         val trackerNote = TrackerNotification()
-
         return if (isRunning) {
             if (!isPaused) {
                 timeInMills += (System.currentTimeMillis() - startTime)
