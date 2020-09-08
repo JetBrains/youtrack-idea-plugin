@@ -26,14 +26,14 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
-        ToggleStartAndPauseTrackerAction().getStartState(!ComponentAware.of(project).timeTrackerComponent.isAutoTrackingEnable)
     }
 
     private fun createActionPanel(): JComponent {
         val group = IssueActionGroup(this)
         group.add(RefreshWorkItemsAction(repo))
         group.add(ManualEntryAction())
-        group.add(ToggleStartAndPauseTrackerAction())
+        group.add(StartTrackerAction())
+        group.add(PauseTrackerAction())
         group.add(ResetTrackerAction())
         group.add(StopTrackerAction())
         group.add(ToggleGroupByAction())

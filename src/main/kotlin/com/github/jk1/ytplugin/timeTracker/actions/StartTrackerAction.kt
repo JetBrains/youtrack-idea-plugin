@@ -32,7 +32,7 @@ class StartTrackerAction : AnAction(
     }
 
 
-    fun startTracking(project: Project) {
+    private fun startTracking(project: Project) {
         val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
         val myTimer = ComponentAware.of(project).timeTrackerComponent
 
@@ -44,7 +44,7 @@ class StartTrackerAction : AnAction(
                 myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
                 if (myTimer.issueId == "0") {
                     val trackerNote = TrackerNotification()
-                    trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.WARNING)
+                    trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
                 } else {
                     val bar = WindowManager.getInstance().getStatusBar(project)
                     if (bar?.getWidget("Time Tracking Clock") == null) {
@@ -66,7 +66,7 @@ class StartTrackerAction : AnAction(
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is already running", NotificationType.WARNING)
+                trackerNote.notify("Work timer is already running", NotificationType.ERROR)
             }
         }
     }

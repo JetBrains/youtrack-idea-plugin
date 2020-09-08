@@ -58,10 +58,16 @@
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
         </action>
 
-
-        <action id="com.github.jk1.ytplugin.timeTracker.actions.ToggleStartAndPauseTrackerAction"
-                class="com.github.jk1.ytplugin.timeTracker.actions.ToggleStartAndPauseTrackerAction">
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction">
             <keyboard-shortcut first-keystroke="control shift M" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift P" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
         </action>
