@@ -1,9 +1,13 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.*
+import com.intellij.openapi.project.Project
+import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
@@ -25,6 +29,31 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
                 "author(name,login)),summary,wikifiedDescription,customFields(name,color,value(name,minutes,presentation,color(background,foreground))," +
                 "id,projectCustomField(emptyFieldText)),resolved,attachments(name,url),reporter(login)"
+
+
+        fun getEntityIdByIssueId(issueId: String, project: Project): String {
+            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+            val myQuery = NameValuePair("fields", "id")
+            val url = "${repo.url}/api/issues/${issueId}"
+
+            val client = HttpClient()
+            val method = GetMethod(url)
+            method.setQueryString(arrayOf(myQuery))
+            method.setRequestHeader("Authorization", "Bearer " + repo.password)
+
+            try {
+                val status = client.executeMethod(method)
+                return if (status == 200) {
+                    val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
+                    json.get("id").asString
+                } else {
+                    "0"
+                }
+            } catch (e: Exception) {
+                logger.debug("unable to get entity id by issue id")
+            }
+            return "0"
+        }
     }
 
     override fun createDraft(summary: String): String {
@@ -56,8 +85,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
             val fullIssues = parseIssues(issuesWithWorkItems)
             fullIssues[0]
-        }
-        else
+        } else
             null
     }
 
@@ -119,11 +147,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             val workItems = getWorkItems(id)
 
             var workItemsJson: String
-            if (workItems.size == 0){
-                workItemsJson  = "\"workItems\": []"
+            if (workItems.size == 0) {
+                workItemsJson = "\"workItems\": []"
             } else {
-                workItemsJson  = "\"workItems\": ["
-                for (x in 0..(workItems.size - 2)){
+                workItemsJson = "\"workItems\": ["
+                for (x in 0..(workItems.size - 2)) {
                     workItemsJson += "${workItems[x].json},"
                 }
                 workItemsJson += "${workItems.last().json}]"
@@ -133,23 +161,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             newIssues.add(JsonParser.parseString(issueString) as JsonElement)
         }
         return newIssues
-    }
-
-    fun getEntityIdByIssueId(issueId: String): String {
-        val myQuery = NameValuePair("fields", "id")
-        val url = "${repository.url}/api/issues/${issueId}"
-        val method = GetMethod(url)
-        method.setQueryString(arrayOf(myQuery))
-
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
-                json.get("id").asString
-            } else {
-                "0"
-            }
-        }
     }
 
     fun getFormattedUniqueIssueIds(): List<NameValuePair> {
@@ -164,7 +175,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 for (item in json) {
                     var summary = item.asJsonObject.get("summary").asString
-                    if (summary.length > SUMMARY_LENGTH_MAX){
+                    if (summary.length > SUMMARY_LENGTH_MAX) {
                         summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
                     }
                     val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,

@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -12,7 +13,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var issueId: String = "Default"
     var inactivityPeriodInMills: Long = 600000
     var type: String = "None"
-    var scheduledPeriod: String = ""
+    var scheduledPeriod: String = "19:00"
     var recordedTime: String = ""
     var timeInMills: Long = 0
     var startTime: Long = 0
@@ -27,6 +28,11 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var isAutoTrackingTemporaryDisabled = false
     var activityTracker: ActivityTracker? = null
 
+    init {
+        if (isAutoTrackingEnable){
+            StartTrackerAction().startAutomatedTracking(project, this)
+        }
+    }
 
     fun stop(): String {
         val trackerNote = TrackerNotification()

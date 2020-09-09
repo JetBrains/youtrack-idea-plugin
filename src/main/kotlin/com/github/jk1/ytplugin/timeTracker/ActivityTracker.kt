@@ -132,7 +132,7 @@ class ActivityTracker(
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
                     val action = StartTrackerAction()
-                    action.startAutomatedTracking(project)
+                    action.startAutomatedTracking(project, timer)
                 }
             }
             false

@@ -53,17 +53,18 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
 
     init{
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent
+
         val timePanel = JPanel(FlowLayout(3))
         val inactivityTimePanel = JPanel(FlowLayout(3))
 
         isAutoTrackingEnabledCheckBox = JBCheckBox()
-        val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
         isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
         isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
 
-        scheduledHour = JBTextField("19")
-        scheduledMinutes = JBTextField("00")
+        scheduledHour = JBTextField(timer.scheduledPeriod.substring(0, 2))
+        scheduledMinutes = JBTextField(timer.scheduledPeriod.substring(3, 5))
 
         val inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.inactivityPeriodInMills)
 

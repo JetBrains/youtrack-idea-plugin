@@ -304,7 +304,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                     timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule, inactivityTime)
 
             if (timer.isAutoTrackingEnable){
-                StartTrackerAction().startAutomatedTracking(project)
+                StartTrackerAction().startAutomatedTracking(project, timer)
             }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)

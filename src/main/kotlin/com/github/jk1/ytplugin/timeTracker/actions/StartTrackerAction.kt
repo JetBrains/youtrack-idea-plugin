@@ -18,15 +18,16 @@ class StartTrackerAction : AnAction(
         "Start work timer",
         AllIcons.Actions.Profile) {
 
-    fun startAutomatedTracking(project: Project) {
-        startTracking(project)
+    fun startAutomatedTracking(project: Project, timer: TimeTracker) {
+        startTracking(project, timer)
     }
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
             if (event.project != null) {
+                val timer = ComponentAware.of(event.project!!).timeTrackerComponent
                 ComponentAware.of(event.project!!).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-                startTracking(event.project!!)
+                startTracking(event.project!!, timer)
             }
         }
     }
@@ -40,16 +41,13 @@ class StartTrackerAction : AnAction(
     }
 
 
-    private fun startTracking(project: Project) {
-        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-        val myTimer = ComponentAware.of(project).timeTrackerComponent
-
+    private fun startTracking(project: Project, myTimer: TimeTracker) {
         val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
 
         if (!myTimer.isAutoTrackingTemporaryDisabled) {
             if (!myTimer.isRunning || myTimer.isPaused) {
-                myTimer.issueId = IssuesRestClient(repo).getEntityIdByIssueId(activeTask.id)
+                myTimer.issueId = IssuesRestClient.getEntityIdByIssueId(activeTask.id, project)
                 if (myTimer.issueId == "0") {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
