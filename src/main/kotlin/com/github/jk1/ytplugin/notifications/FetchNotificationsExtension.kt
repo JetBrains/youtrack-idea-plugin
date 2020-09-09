@@ -41,7 +41,7 @@ class FetchNotificationsExtension : StartupActivity.Background {
                     val unseen = notifications.filterUnseen()
                     logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
                     unseen.forEach { notification -> handleNotification(notification, project) }
-                    saveAsSeen(notifications, project)
+                    saveAsSeen(notifications)
                 }  catch (e: Exception) {
                     logger.warn("Failed to fetch notifications from YouTrack server: ${e.message}" )
                     logger.debug(e)
@@ -66,8 +66,8 @@ class FetchNotificationsExtension : StartupActivity.Background {
         }
     }
 
-    private fun saveAsSeen(notifications: List<YouTrackNotification>, project: Project) {
-        PropertiesComponent.getInstance(project).setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
+    private fun saveAsSeen(notifications: List<YouTrackNotification>) {
+        PropertiesComponent.getInstance().setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
     }
 
     private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification> {
