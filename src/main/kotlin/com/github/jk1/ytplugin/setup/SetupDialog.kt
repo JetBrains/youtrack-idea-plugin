@@ -305,6 +305,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             if (timer.isAutoTrackingEnable){
                 StartTrackerAction().startAutomatedTracking(project, timer)
+            } else {
+                timer.activityTracker?.dispose()
             }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)
