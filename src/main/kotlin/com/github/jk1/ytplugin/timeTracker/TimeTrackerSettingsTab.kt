@@ -9,6 +9,8 @@ import org.apache.commons.httpclient.NameValuePair
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.JComboBox
 import javax.swing.JPanel
@@ -193,8 +195,14 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     fun getInactivityMinutes(): String = inactivityMinutesInputField.text
     fun getManualModeCheckbox() = isManualModeCheckbox
     fun getScheduledCheckbox() = isScheduledCheckbox
-    fun getScheduledHours(): String = scheduledHour.text
-    fun getScheduledMinutes(): String = scheduledMinutes.text
+    fun getScheduledHours(): String {
+        val formatter = SimpleDateFormat("hh")
+        return formatter.format(SimpleDateFormat("hh").parse(scheduledHour.text))
+    }
+    fun getScheduledMinutes(): String {
+        val formatter = SimpleDateFormat("mm")
+        return formatter.format(SimpleDateFormat("mm").parse(scheduledMinutes.text))
+    }
     fun getComment(): String = commentTextField.text
 
 }

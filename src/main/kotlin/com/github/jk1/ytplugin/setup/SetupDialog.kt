@@ -293,8 +293,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
 
-            val timeToSchedule =   TimeUnit.HOURS.toMillis(timeTrackingTab.getScheduledHours().toLong()) +
-                    TimeUnit.MINUTES.toMillis(timeTrackingTab.getScheduledMinutes().toLong())
+            val timeToSchedule =   timeTrackingTab.getScheduledHours() + ":" +
+                    timeTrackingTab.getScheduledMinutes() + ":00"
 
             val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                     TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())

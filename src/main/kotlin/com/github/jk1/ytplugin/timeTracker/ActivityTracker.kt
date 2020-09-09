@@ -4,7 +4,9 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
@@ -19,6 +21,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.lang.System.currentTimeMillis
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -35,13 +38,13 @@ class ActivityTracker(
     private var myInactivityTime: Long = 0
     var startInactivityTime: Long = currentTimeMillis()
 
-
     fun startTracking() {
         if (trackingDisposable != null) {
             return
         }
         trackingDisposable = newDisposable(parentDisposable)
         startIDEListener(trackingDisposable!!, 1000)
+        scheduleListener(trackingDisposable!!)
     }
 
 
@@ -70,13 +73,31 @@ class ActivityTracker(
         return disposable
     }
 
+    private fun scheduleListener(parentDisposable: Disposable) {
+        IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
+
+            val formatter = SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z")
+            val date = Date(currentTimeMillis())
+            // select time only
+            val time = formatter.format(date).substring(formatter.format(date).length - 12, formatter.format(date).length - 4)
+            if (timer.isScheduledUnabled && (time == timer.scheduledPeriod)){
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Scheduled time posting", NotificationType.INFORMATION)
+                StopTrackerAction().stopTimer(project)
+                Thread.sleep(1000)
+            }
+
+            false
+        }, parentDisposable)
+    }
+
 
     private fun startIDEListener(parentDisposable: Disposable, mouseMoveEventsThresholdMs: Long) {
         var lastMouseMoveTimestamp = 0L
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
+
             var isMouseOrKeyboardActive = false
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
-                val eventData = "click:" + awtEvent.button + ":" + awtEvent.clickCount + ":" + awtEvent.modifiers
                 isMouseOrKeyboardActive = captureIdeState()
                 logger.debug("state MOUSE_CLICKED " + isMouseOrKeyboardActive)
             }
@@ -121,6 +142,18 @@ class ActivityTracker(
     private fun captureIdeState(): Boolean {
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
+            // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
+            val project = ideFocusManager.lastFocusedFrame?.project
+            val repo = project?.let { ComponentAware.of(it).taskManagerComponent.getActiveYouTrackRepository() }
+
+            if (project == null || project.isDefault) {
+                if (repo != null) {
+                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
+                            timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                }
+                return false
+            }
+
             val focusOwner = ideFocusManager.focusOwner
 
             // this might also work: ApplicationManager.application.isActive(), ApplicationActivationListener
@@ -134,18 +167,6 @@ class ActivityTracker(
             }
 
             if (!ideHasFocus) {
-                return false
-            }
-
-            // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
-            val project = ideFocusManager.lastFocusedFrame?.project
-            val repo = project?.let { ComponentAware.of(it).taskManagerComponent.getActiveYouTrackRepository() }
-
-            if (project == null || project.isDefault) {
-                if (repo != null) {
-                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
-                            timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
-                }
                 return false
             }
 

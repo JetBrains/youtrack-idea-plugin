@@ -12,7 +12,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var issueId: String = "Default"
     var inactivityPeriodInMills: Long = 600000
     var type: String = "None"
-    var scheduledPeriod: Long = 0
+    var scheduledPeriod: String = ""
     var recordedTime: String = ""
     var timeInMills: Long = 0
     var startTime: Long = 0
@@ -93,7 +93,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     }
 
     fun setupTimer(myComment: String, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: Long, inactivityTime: Long ){
+                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long ){
         comment = myComment
         isAutoTrackingEnable = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
