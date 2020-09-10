@@ -38,7 +38,7 @@ class TimeTrackerStore(@Volatile private var tracker: String = "a"){
                 tracker = timer.isAutoTrackingEnable.toString() + " " + timer.isManualTrackingEnable.toString() + " " +
                         timer.inactivityPeriodInMills + " " + timer.comment + " " +
                         timer.isScheduledUnabled.toString() + " " + timer.scheduledPeriod + " " +
-                        timer.type + " " + timer.timeInMills + " " + timer.isRunning.toString()
+                        timer.type + " " + timer.timeInMills + " " + timer.recordedTime + " " + timer.isRunning.toString()
 
             } catch (e: SocketTimeoutException) {
                 displayErrorMessage("Failed to updated issues from YouTrack server. Request timed out.", e)

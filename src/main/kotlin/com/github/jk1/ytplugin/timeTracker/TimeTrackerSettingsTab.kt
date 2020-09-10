@@ -84,7 +84,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         postWhenCommitCheckbox.isSelected = timer.isPostAfterCommitUnabled
 
         postWhenProjectClosedCheckbox = JBCheckBox()
-        postWhenProjectClosedCheckbox.isSelected = timer.isPostAfterCommitUnabled
+        postWhenProjectClosedCheckbox.isSelected = timer.isWhenProjectClosedUnabled
 
         timePanel.add(scheduledHour)
         timePanel.add(JBLabel(":"))
@@ -207,5 +207,6 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         return formatter.format(SimpleDateFormat("mm").parse(scheduledMinutes.text))
     }
     fun getComment(): String = commentTextField.text
+    fun getPostOnClose() = postWhenProjectClosedCheckbox
 
 }

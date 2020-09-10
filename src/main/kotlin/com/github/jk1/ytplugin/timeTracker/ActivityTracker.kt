@@ -144,16 +144,19 @@ class ActivityTracker(
 
     private fun captureIdeState(): Boolean {
         try {
-
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
             var currentProject = ideFocusManager.lastFocusedFrame?.project
 
             if (currentProject == null || currentProject.isDefault) {
                 if (!isPostedOnClose){
-                    timer.stop()
-                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
-                            timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                    if (timer.isWhenProjectClosedUnabled){
+                        timer.stop()
+                        TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
+                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                    } else {
+                        timer.saveState()
+                    }
                     isPostedOnClose = true
                 }
                 return false

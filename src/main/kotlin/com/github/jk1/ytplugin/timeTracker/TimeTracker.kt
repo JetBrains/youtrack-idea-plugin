@@ -14,7 +14,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var inactivityPeriodInMills: Long = 600000
     var type: String = "None"
     var scheduledPeriod: String = "19:00"
-    var recordedTime: String = ""
+    var recordedTime: String = "0"
     var timeInMills: Long = 0
     var startTime: Long = 0
     var comment: String = "default comment"
@@ -48,10 +48,10 @@ class TimeTracker(override val project: Project) : ComponentAware{
 //    tracker = timer.isAutoTrackingEnable.toString() + " " + timer.isManualTrackingEnable.toString() + " " +
 //    timer.inactivityPeriodInMills + " " + timer.comment + " " +
 //    timer.isScheduledUnabled.toString() + " " + timer.scheduledPeriod + " " +
-//    timer.type + " " + timer.timeInMills + " " + timer.isRunning.toString()
+//    timer.type + " " + timer.timeInMills + " " timer.recordedTimr + " " + timer.isRunning.toString()
 
     fun setupTimerFromStored(parameters: List<String>){
-        if (parameters.size == 9){
+        if (parameters.size == 10){
             inactivityPeriodInMills  = parameters[2].toLong()
             type = parameters[6]
             if (parameters[4] == "false"){
@@ -61,6 +61,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
             }
             comment = parameters[3]
             timeInMills = parameters[7].toLong()
+            recordedTime = parameters[8]
             isPaused = true
 
             if (parameters[0] == "false"){
@@ -70,6 +71,15 @@ class TimeTracker(override val project: Project) : ComponentAware{
                 isManualTrackingEnable = false
             }
         }
+    }
+
+    fun saveState() {
+        if (!isPaused) {
+            timeInMills += (System.currentTimeMillis() - startTime)
+        }
+        recordedTime = formatTimePeriod(timeInMills)
+        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+        timeTrackerStoreComponent[repo].update(repo)
     }
 
     fun stop(): String {
@@ -136,11 +146,12 @@ class TimeTracker(override val project: Project) : ComponentAware{
     }
 
     fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long ){
+                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean ){
         comment = myComment
         isPostAfterCommitUnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
+        isWhenProjectClosedUnabled = isPostOnClosed
         type = myType
         isManualTrackingEnable = isManualMode
         if (isScheduled){

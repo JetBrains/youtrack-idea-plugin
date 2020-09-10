@@ -302,7 +302,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getPostWhenCommitCheckbox().isSelected,
                     timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
                     timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
-                    timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule, inactivityTime)
+                    timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule,
+                    inactivityTime, timeTrackingTab.getPostOnClose().isSelected)
 
             if (timer.isAutoTrackingEnable){
                 StartTrackerAction().startAutomatedTracking(project, timer)
