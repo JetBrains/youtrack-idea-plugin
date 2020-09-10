@@ -21,7 +21,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var isManualTrackingEnable = true
     var isScheduledUnabled = true
     var isWhenProjectClosedUnabled = true
-    var isPostAfterCommitUnabled = false
+    var isPostAfterCommitUnabled = true
     var isAutoTrackingEnable = true
     var isRunning = false
     var isPaused = false
@@ -135,9 +135,10 @@ class TimeTracker(override val project: Project) : ComponentAware{
             "0"
     }
 
-    fun setupTimer(myComment: String, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
+    fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
                    isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long ){
         comment = myComment
+        isPostAfterCommitUnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
         type = myType

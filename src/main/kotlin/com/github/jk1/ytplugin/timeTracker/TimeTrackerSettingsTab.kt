@@ -196,6 +196,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     fun getInactivityMinutes(): String = inactivityMinutesInputField.text
     fun getManualModeCheckbox() = isManualModeCheckbox
     fun getScheduledCheckbox() = isScheduledCheckbox
+    fun getPostWhenCommitCheckbox() = postWhenCommitCheckbox
+
     fun getScheduledHours(): String {
         val formatter = SimpleDateFormat("hh")
         return formatter.format(SimpleDateFormat("hh").parse(scheduledHour.text))

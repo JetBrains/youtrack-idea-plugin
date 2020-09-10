@@ -299,7 +299,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                     TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
 
-            timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
+            timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getPostWhenCommitCheckbox().isSelected,
+                    timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
                     timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
                     timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule, inactivityTime)
 

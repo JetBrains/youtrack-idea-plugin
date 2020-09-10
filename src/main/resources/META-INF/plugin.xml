@@ -111,5 +111,7 @@
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
+        <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
+
     </extensions>
 </idea-plugin>
