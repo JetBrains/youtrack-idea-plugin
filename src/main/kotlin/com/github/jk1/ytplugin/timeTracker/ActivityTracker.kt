@@ -38,6 +38,9 @@ class ActivityTracker(
     private var myInactivityTime: Long = 0
     var startInactivityTime: Long = currentTimeMillis()
 
+    private val repo = project.let { ComponentAware.of(it).taskManagerComponent.getActiveYouTrackRepository() }
+    private var isPostedOnClose = false
+
     fun startTracking() {
         if (trackingDisposable != null) {
             return
@@ -141,17 +144,21 @@ class ActivityTracker(
 
     private fun captureIdeState(): Boolean {
         try {
+
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
-            val project = ideFocusManager.lastFocusedFrame?.project
-            val repo = project?.let { ComponentAware.of(it).taskManagerComponent.getActiveYouTrackRepository() }
+            var currentProject = ideFocusManager.lastFocusedFrame?.project
 
-            if (project == null || project.isDefault) {
-                if (repo != null) {
+            if (currentProject == null || currentProject.isDefault) {
+                if (!isPostedOnClose){
+                    timer.stop()
                     TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
                             timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                    isPostedOnClose = true
                 }
                 return false
+            } else {
+                isPostedOnClose = false
             }
 
             val focusOwner = ideFocusManager.focusOwner
@@ -161,7 +168,6 @@ class ActivityTracker(
 
             var ideHasFocus = window?.isActive
             if (!ideHasFocus!!) {
-                @Suppress("UnstableApiUsage")
                 val ideFrame = findParentComponent<IdeFrameImpl?>(focusOwner) { it is IdeFrameImpl }
                 ideHasFocus = ideFrame != null && ideFrame.isActive
             }
@@ -178,8 +184,9 @@ class ActivityTracker(
             return false
 
         } catch (e: Exception) {
-            return false
+            logger.debug("IDE state exception: ${e.message}")
         }
+        return false
     }
 
     @Suppress("UNCHECKED_CAST")
