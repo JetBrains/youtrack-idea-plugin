@@ -30,7 +30,45 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
     init {
         if (isAutoTrackingEnable){
+            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+            timeTrackerStoreComponent[repo].update(repo)
+            val storedTimer = timeTrackerStoreComponent[repo].getTracker()
+            val listOfParameters = parseTimerParameters(storedTimer)
+            setupTimerFromStored(listOfParameters)
+
             StartTrackerAction().startAutomatedTracking(project, this)
+        }
+    }
+
+
+    fun parseTimerParameters(timerString: String) : List<String>{
+        return timerString.split(" ")
+    }
+
+//    tracker = timer.isAutoTrackingEnable.toString() + " " + timer.isManualTrackingEnable.toString() + " " +
+//    timer.inactivityPeriodInMills + " " + timer.comment + " " +
+//    timer.isScheduledUnabled.toString() + " " + timer.scheduledPeriod + " " +
+//    timer.type + " " + timer.timeInMills + " " + timer.isRunning.toString()
+
+    fun setupTimerFromStored(parameters: List<String>){
+        if (parameters.size == 9){
+            inactivityPeriodInMills  = parameters[2].toLong()
+            type = parameters[6]
+            if (parameters[4] == "false"){
+                isScheduledUnabled = false
+            } else {
+                scheduledPeriod = parameters[5]
+            }
+            comment = parameters[3]
+            timeInMills = parameters[7].toLong()
+            isPaused = true
+
+            if (parameters[0] == "false"){
+                isAutoTrackingEnable = false
+            }
+            if (parameters[1] == "false"){
+                isManualTrackingEnable = false
+            }
         }
     }
 
@@ -50,7 +88,6 @@ class TimeTracker(override val project: Project) : ComponentAware{
             "0"
         }
     }
-
 
     fun pause() {
         val trackerNote = TrackerNotification()
@@ -109,6 +146,10 @@ class TimeTracker(override val project: Project) : ComponentAware{
             scheduledPeriod = timeToSchedule
         }
         inactivityPeriodInMills = inactivityTime
+
+        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+        timeTrackerStoreComponent[repo].update(repo)
+
     }
 
     fun getRecordedTimeInMills() = timeInMills

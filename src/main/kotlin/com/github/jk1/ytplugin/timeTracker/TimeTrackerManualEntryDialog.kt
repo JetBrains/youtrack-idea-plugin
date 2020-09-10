@@ -159,7 +159,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     inner class OkAction(name: String) : AbstractAction(name) {
         override fun actionPerformed(e: ActionEvent) {
             var status = 0
-            var date: Date?
+            val date: Date
 
             val hours = hoursSpinner.value.toString()
             val minutes = minutesSpinner.value.toString()
@@ -174,7 +174,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 date = sdf.parse(datePicker.date.format())
                 typeComboBox.getItemAt(typeComboBox.selectedIndex)?.let {
                     status = TimeTrackerRestClient(repo).postNewWorkItem(selectedId,
-                            time.toString(), it, commentTextField.text, date?.time.toString())
+                            time.toString(), it, commentTextField.text, date.time.toString())
                 }
                 state = status
                 if (status == 200) {
