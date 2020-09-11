@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.whenActive
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import javax.swing.JLabel
 
 
 class ManualEntryAction  : AnAction(
@@ -26,7 +27,10 @@ class ManualEntryAction  : AnAction(
                 // TODO why not bubble
                 val trackerNote = TrackerNotification()
                 if (dialog.state == 200){
-                    trackerNote.notify("Time was successfully posted on server", NotificationType.INFORMATION)
+                    val postedTIme = dialog.getTime()
+                    val postedId = dialog.getId()
+                    trackerNote.notify("Time $postedTIme was successfully posted on server for issue $postedId",
+                            NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 } else {
                     trackerNote.notify("Time was not posted, please check your input", NotificationType.WARNING)

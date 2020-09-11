@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit
 class TimeTracker(override val project: Project) : ComponentAware{
 
     var issueId: String = "Default"
+    var issueIdReadable: String = "Default"
     var inactivityPeriodInMills: Long = 600000
     var type: String = "None"
     var scheduledPeriod: String = "19:00"
@@ -54,11 +55,11 @@ class TimeTracker(override val project: Project) : ComponentAware{
         if (parameters.size == 10){
             inactivityPeriodInMills  = parameters[2].toLong()
             type = parameters[6]
-            if (parameters[4] == "false"){
-                isScheduledUnabled = false
-            } else {
-                scheduledPeriod = parameters[5]
-            }
+//            if (parameters[4] == "false"){
+//                isScheduledUnabled = false
+//            } else {
+//                scheduledPeriod = parameters[5]
+//            }
             comment = parameters[3]
             timeInMills = parameters[7].toLong()
             recordedTime = parameters[8]
@@ -102,12 +103,12 @@ class TimeTracker(override val project: Project) : ComponentAware{
     fun pause() {
         val trackerNote = TrackerNotification()
         if (isPaused) {
-            trackerNote.notify("Timer already paused", NotificationType.WARNING)
+            trackerNote.notify("Timer already paused for issue $issueIdReadable", NotificationType.WARNING)
         } else {
             if (isRunning) {
                 timeInMills += (System.currentTimeMillis() - startTime)
                 isPaused = true
-                trackerNote.notify("Work timer paused", NotificationType.INFORMATION)
+                trackerNote.notify("Work timer paused for issue $issueIdReadable", NotificationType.INFORMATION)
             } else {
                 trackerNote.notify("Could not pause - timer is not started", NotificationType.WARNING)
             }
@@ -130,7 +131,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
             timeInMills = 0
             startTime = System.currentTimeMillis()
             val trackerNote = TrackerNotification()
-            trackerNote.notify("Work timer reset", NotificationType.INFORMATION)
+            trackerNote.notify("Work timer reset for issue $issueIdReadable", NotificationType.INFORMATION)
         } else {
             val trackerNote = TrackerNotification()
             trackerNote.notify("Could not reset - timer is not started", NotificationType.WARNING)

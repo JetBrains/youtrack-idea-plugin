@@ -32,6 +32,7 @@ class StopTrackerAction : AnAction(
         if (project != null) {
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isEnabled = timer.isRunning
+            event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
         }
     }
 
@@ -56,7 +57,8 @@ class StopTrackerAction : AnAction(
             if (status != 200)
                 trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
             else {
-                trackerNote.notify("Work timer stopped, time posted on server", NotificationType.INFORMATION)
+                trackerNote.notify("Work timer stopped, time ${timer.recordedTime} " +
+                        "posted on server for issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
                 ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
             }
         }

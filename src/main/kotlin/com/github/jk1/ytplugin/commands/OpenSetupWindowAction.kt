@@ -27,7 +27,6 @@ class OpenSetupWindowAction(repo: YouTrackServer) : AnAction(
         if (project != null && project.isInitialized) {
             try {
                 SetupDialog(project, repository).show()
-
             } catch (exception: YouTrackPluginException) {
                 exception.showAsNotificationBalloon(project)
             }

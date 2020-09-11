@@ -188,5 +188,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         }
     }
 
+    fun getId() = ids[idComboBox.selectedIndex].name
+    fun getTime() = hoursSpinner.value.toString() + ":" + minutesSpinner.value.toString()
+
 }
 

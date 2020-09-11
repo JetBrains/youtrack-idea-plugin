@@ -30,7 +30,9 @@ class PauseTrackerAction  : AnAction(
         val project = event.project
         if (project != null) {
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
-            event.presentation.isVisible = (!timer.isPaused && timer.isRunning) && !timer.isAutoTrackingTemporaryDisabled
+            event.presentation.isVisible = (!timer.isPaused && timer.isRunning
+                    && (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) &&
+                    !timer.isAutoTrackingTemporaryDisabled
         }
     }
 }

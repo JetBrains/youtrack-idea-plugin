@@ -199,8 +199,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     fun getPostWhenCommitCheckbox() = postWhenCommitCheckbox
 
     fun getScheduledHours(): String {
-        val formatter = SimpleDateFormat("hh")
-        return formatter.format(SimpleDateFormat("hh").parse(scheduledHour.text))
+        val formatter = SimpleDateFormat("mm")
+        return formatter.format(SimpleDateFormat("mm").parse(scheduledHour.text))
     }
     fun getScheduledMinutes(): String {
         val formatter = SimpleDateFormat("mm")

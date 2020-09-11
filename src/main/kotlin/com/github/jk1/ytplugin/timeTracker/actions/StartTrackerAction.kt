@@ -19,7 +19,9 @@ class StartTrackerAction : AnAction(
         AllIcons.Actions.Profile) {
 
     fun startAutomatedTracking(project: Project, timer: TimeTracker) {
-        startTracking(project, timer)
+        if (timer.isAutoTrackingEnable){
+            startTracking(project, timer)
+        }
     }
 
     override fun actionPerformed(event: AnActionEvent) {
@@ -36,7 +38,8 @@ class StartTrackerAction : AnAction(
         val project = event.project
         if (project != null) {
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
-            event.presentation.isVisible = timer.isPaused || !timer.isRunning || timer.isAutoTrackingTemporaryDisabled
+            event.presentation.isVisible = (timer.isPaused || !timer.isRunning || timer.isAutoTrackingTemporaryDisabled)
+                    && (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
         }
     }
 
@@ -48,6 +51,7 @@ class StartTrackerAction : AnAction(
         if (!myTimer.isAutoTrackingTemporaryDisabled) {
             if (!myTimer.isRunning || myTimer.isPaused) {
                 myTimer.issueId = IssuesRestClient.getEntityIdByIssueId(activeTask.id, project)
+                myTimer.issueIdReadable = activeTask.id
                 if (myTimer.issueId == "0") {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
@@ -72,7 +76,7 @@ class StartTrackerAction : AnAction(
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is already running", NotificationType.ERROR)
+                trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.ERROR)
             }
         }
     }

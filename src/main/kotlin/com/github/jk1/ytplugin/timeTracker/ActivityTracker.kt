@@ -85,7 +85,7 @@ class ActivityTracker(
             val time = formatter.format(date).substring(formatter.format(date).length - 12, formatter.format(date).length - 4)
             if (timer.isScheduledUnabled && (time == timer.scheduledPeriod)){
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Scheduled time posting", NotificationType.INFORMATION)
+                trackerNote.notify("Scheduled time posting at ${timer.scheduledPeriod}", NotificationType.INFORMATION)
                 StopTrackerAction().stopTimer(project)
                 Thread.sleep(1000)
             }
