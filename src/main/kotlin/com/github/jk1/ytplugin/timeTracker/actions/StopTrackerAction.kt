@@ -2,8 +2,8 @@ package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
-import com.github.jk1.ytplugin.timeTracker.IconLoader
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,7 +16,7 @@ import java.util.*
 class StopTrackerAction : AnAction(
         "Stop work timer",
         "Stop work timer",
-        IconLoader.loadIcon("icons/time_tracker_stop_dark.png")){
+        YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER){
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {

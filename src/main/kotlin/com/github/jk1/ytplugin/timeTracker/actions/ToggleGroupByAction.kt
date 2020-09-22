@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.IconLoader
 import com.github.jk1.ytplugin.ui.WorkItemsList
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons

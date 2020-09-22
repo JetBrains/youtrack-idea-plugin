@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.timeTracker.IconLoader
+import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class PauseTrackerAction  : AnAction(
         "Pause work timer",
         "Pause work timer",
-        IconLoader.loadIcon("icons/time_tracker_pause_dark.png")){
+        YouTrackPluginIcons.YOUTRACK_PAUSE_TIME_TRACKER){
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
