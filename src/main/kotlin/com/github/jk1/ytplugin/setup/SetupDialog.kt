@@ -4,7 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
-import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
+import com.github.jk1.ytplugin.timeTracker.TimerConnector
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
@@ -19,7 +19,6 @@ import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
-import java.util.concurrent.TimeUnit
 import java.net.URL
 import javax.swing.*
 import javax.swing.text.AttributeSet
@@ -290,26 +289,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            val timer = ComponentAware.of(repo.project).timeTrackerComponent
+            val timerConnector = TimerConnector()
+            timerConnector.prepareConnectedTab(timeTrackingTab, repo, project)
 
-
-            val timeToSchedule =   timeTrackingTab.getScheduledHours() + ":" +
-                    timeTrackingTab.getScheduledMinutes() + ":00"
-
-            val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
-                    TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
-
-            timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getPostWhenCommitCheckbox().isSelected,
-                    timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
-                    timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
-                    timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule,
-                    inactivityTime, timeTrackingTab.getPostOnClose().isSelected, repo)
-
-            if (timer.isAutoTrackingEnable){
-                StartTrackerAction().startAutomatedTracking(project, timer)
-            } else {
-                timer.activityTracker?.dispose()
-            }
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
                 this@SetupDialog.close(0)
             }

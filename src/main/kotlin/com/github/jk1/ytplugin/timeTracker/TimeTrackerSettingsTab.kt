@@ -1,15 +1,12 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
-import org.apache.commons.httpclient.NameValuePair
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.JComboBox
@@ -18,73 +15,151 @@ import javax.swing.JPanel
 
 class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JBPanel<JBPanelWithEmptyText>() {
 
-    private var scheduledHour: JBTextField
-    private var scheduledMinutes: JBTextField
+    private lateinit var scheduledHour: JBTextField
+    private lateinit var scheduledMinutes: JBTextField
 
-    private var isAutoTrackingEnabledCheckBox: JBCheckBox
+    private lateinit var isAutoTrackingEnabledCheckBox: JBCheckBox
     private var autoTrackingEnabledTextField = JBLabel("Enable automated mode      ")
 
-    private var inactivityHourInputField: JBTextField
-    private var inactivityMinutesInputField: JBTextField
+    private lateinit var inactivityHourInputField: JBTextField
+    private lateinit var inactivityMinutesInputField: JBTextField
     private var inactivityTextField = JBLabel(" Inactivity period (hh/mm): ")
 
+    private lateinit var isScheduledCheckbox: JBCheckBox
     private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm)")
-    private var isScheduledCheckbox: JBCheckBox
 
-    private var isManualModeCheckbox: JBCheckBox
+    private lateinit var isManualModeCheckbox: JBCheckBox
     private var manualModeTextField = JBLabel("Enable manual mode")
 
-    private var postWhenProjectClosedCheckbox: JBCheckBox
-    private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
+    private lateinit var postWhenProjectClosedCheckbox: JBCheckBox
+    private lateinit var postWhenCommitCheckbox: JBCheckBox
 
-    private var postWhenCommitCheckbox: JBCheckBox
+    private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
-    private val postWhenPanel: JPanel
-    private val typePanel: JPanel
 
-    private var commentLabel= JBLabel(" Comment:")
+    private var commentLabel = JBLabel(" Comment:")
     private var typeLabel = JBLabel(" Spent time type:")
-    private var commentTextField: JBTextField
+    private lateinit var commentTextField: JBTextField
 
-    val workItemsTypes= arrayOf<String?>("Development")
+    private val workItemsTypes = arrayOf<String?>("Development")
 
-    private var typeComboBox =  JComboBox(workItemsTypes)
+    private var typeComboBox = JComboBox(workItemsTypes)
 
 
-    init{
+    init {
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
-        val timePanel = JPanel(FlowLayout(3))
-        val inactivityTimePanel = JPanel(FlowLayout(3))
+        val inactivityPeriodPanel = createInactivityPeriodPanel(timer)
 
-        isAutoTrackingEnabledCheckBox = JBCheckBox()
+        val trackingModePanel = createTrackingModePanel(timer)
 
-        isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
-        isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
+        val schedulePanel = createScheduledPanel(timer)
 
-        scheduledHour = JBTextField(timer.scheduledPeriod.substring(0, 2))
-        scheduledMinutes = JBTextField(timer.scheduledPeriod.substring(3, 5))
+        val typePanel = createTypePanel(repo)
 
-        val inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.inactivityPeriodInMills)
+        val postWhenPanel = createPostWhenPanel(timer)
 
-        val inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.inactivityPeriodInMills -
-        TimeUnit.HOURS.toMillis(inactivityHours))
+        val commentPanel = createCommentPanel(timer, height, width)
 
-        inactivityHourInputField = JBTextField(inactivityHours.toString())
-        inactivityMinutesInputField = JBTextField(inactivityMinutes.toString())
+        layout = VerticalLayout(7)
+        add(trackingModePanel)
+        add(postWhenPanel)
+        add(schedulePanel)
+        add(inactivityPeriodPanel)
+        add(typePanel)
+        add(commentPanel)
+    }
 
-        isScheduledCheckbox = JBCheckBox()
-        isScheduledCheckbox.isSelected = timer.isScheduledUnabled
+    private fun createCommentPanel(timer: TimeTracker, height: Int, width: Int): JPanel {
 
-        isManualModeCheckbox = JBCheckBox()
-        isManualModeCheckbox.isSelected = timer.isManualTrackingEnable
+        commentTextField = JBTextField(timer.comment)
+        commentTextField.preferredSize = Dimension((0.8 * width).toInt(), (0.0875 * height).toInt())
+        val commentPanel = JPanel(FlowLayout(2))
+        commentPanel.add(commentLabel)
+        commentPanel.add(commentTextField)
+
+        return commentPanel
+
+    }
+
+    private fun createTypePanel(repo: YouTrackServer): JPanel {
+
+        val typePanel = JPanel(FlowLayout(2))
+        val timerConnector = TimerConnector()
+        val types = timerConnector.getAvailableWorkItemsTypes(repo)
+
+        if (types.isNotEmpty()) {
+            typeComboBox = JComboBox(types.toTypedArray())
+        }
+        typeComboBox.selectedIndex = 0
+        typeComboBox.isEditable = true
+
+        typePanel.add(typeLabel)
+        typePanel.add(typeComboBox)
+
+        return typePanel
+    }
+
+    private fun createPostWhenPanel(timer: TimeTracker): JPanel {
+
+        val postWhenPanel = JPanel(FlowLayout(5))
 
         postWhenCommitCheckbox = JBCheckBox()
         postWhenCommitCheckbox.isSelected = timer.isPostAfterCommitUnabled
 
         postWhenProjectClosedCheckbox = JBCheckBox()
         postWhenProjectClosedCheckbox.isSelected = timer.isWhenProjectClosedUnabled
+        postWhenPanel.add(postWhenProjectClosedCheckbox)
+        postWhenPanel.add(postWhenProjectClosedTextField)
+
+        // TODO: remove hardcode
+        val separator2 = JBLabel("")
+        separator2.preferredSize = Dimension((0.1 * width).toInt(), (0.0875 * height).toInt())
+        postWhenPanel.add(separator2)
+
+        postWhenPanel.add(postWhenCommitCheckbox)
+        postWhenPanel.add(mpostWhenCommitTextField)
+
+        return postWhenPanel
+    }
+
+    private fun createTrackingModePanel(timer: TimeTracker): JPanel {
+
+        isAutoTrackingEnabledCheckBox = JBCheckBox()
+        isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
+        isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
+
+        isManualModeCheckbox = JBCheckBox()
+        isManualModeCheckbox.isSelected = timer.isManualTrackingEnable
+
+        val enableAutoTrackingPanel = JPanel(FlowLayout(2))
+        val enableManualTrackingPanel = JPanel(FlowLayout(2))
+        enableAutoTrackingPanel.add(isAutoTrackingEnabledCheckBox)
+        enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
+        enableManualTrackingPanel.add(isManualModeCheckbox)
+        enableManualTrackingPanel.add(manualModeTextField)
+
+        val trackingModePanel = JPanel(BorderLayout())
+        val separator1 = JBLabel("")
+        separator1.preferredSize = Dimension((0.32 * width).toInt(), (0.0875 * height).toInt())
+        trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.EAST)
+        trackingModePanel.add(separator1, BorderLayout.CENTER)
+        trackingModePanel.add(enableManualTrackingPanel, BorderLayout.WEST)
+
+        return trackingModePanel
+    }
+
+
+    private fun createScheduledPanel(timer: TimeTracker): JPanel {
+
+        val timePanel = JPanel(FlowLayout(3))
+
+        scheduledHour = JBTextField(timer.scheduledPeriod.substring(0, 2))
+        scheduledMinutes = JBTextField(timer.scheduledPeriod.substring(3, 5))
+
+        isScheduledCheckbox = JBCheckBox()
+        isScheduledCheckbox.isSelected = timer.isScheduledUnabled
 
         timePanel.add(scheduledHour)
         timePanel.add(JBLabel(":"))
@@ -99,6 +174,20 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         bigScheduledPanel.add(isScheduledCheckbox)
         bigScheduledPanel.add(scheduledPanel)
 
+        return bigScheduledPanel
+    }
+
+    private fun createInactivityPeriodPanel(timer: TimeTracker): JPanel {
+
+        val inactivityTimePanel = JPanel(FlowLayout(3))
+
+        val inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.inactivityPeriodInMills)
+        val inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.inactivityPeriodInMills -
+                TimeUnit.HOURS.toMillis(inactivityHours))
+
+        inactivityHourInputField = JBTextField(inactivityHours.toString())
+        inactivityMinutesInputField = JBTextField(inactivityMinutes.toString())
+
         inactivityTimePanel.add(inactivityHourInputField)
         inactivityTimePanel.add(JBLabel(":"))
         inactivityTimePanel.add(inactivityMinutesInputField)
@@ -108,65 +197,9 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         inactivityPeriodPanel.add(inactivityTextField)
         inactivityPeriodPanel.add(inactivityTimePanel)
 
-        val enableAutoTrackingPanel = JPanel(FlowLayout(2))
-        val enableManualTrackingPanel = JPanel(FlowLayout(2))
-        enableAutoTrackingPanel.add(isAutoTrackingEnabledCheckBox)
-        enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
-        enableManualTrackingPanel.add(isManualModeCheckbox)
-        enableManualTrackingPanel.add(manualModeTextField)
-
-        val bigTrackingPanel = JPanel(BorderLayout())
-        val separator1 = JBLabel("")
-        separator1.preferredSize = Dimension((0.32 * width).toInt(), (0.0875 * height).toInt())
-        bigTrackingPanel.add(enableAutoTrackingPanel, BorderLayout.EAST)
-        bigTrackingPanel.add(separator1, BorderLayout.CENTER)
-        bigTrackingPanel.add(enableManualTrackingPanel, BorderLayout.WEST)
-
-
-        postWhenPanel = JPanel(FlowLayout(5))
-        postWhenPanel.add(postWhenProjectClosedCheckbox)
-        postWhenPanel.add(postWhenProjectClosedTextField)
-        // TODO: remove hardcode
-        val separator2 = JBLabel("")
-        separator2.preferredSize = Dimension((0.1 * width).toInt(), (0.0875 * height).toInt())
-        postWhenPanel.add(separator2)
-
-        postWhenPanel.add(postWhenCommitCheckbox)
-        postWhenPanel.add(mpostWhenCommitTextField)
-
-
-        commentTextField = JBTextField(timer.comment)
-        commentTextField.preferredSize = Dimension((0.8 * width).toInt(), (0.0875 * height).toInt())
-
-        val types = mutableListOf<String>()
-        val typesReceived  : List<NameValuePair> = TimeTrackerRestClient(repo).getAvailableWorkItemTypes()
-        if (typesReceived.isNotEmpty()){
-            typesReceived.map { types.add(it.name) }
-        }
-
-        if (types.isNotEmpty()){
-            typeComboBox =  JComboBox(types.toTypedArray())
-        }
-        typeComboBox.selectedIndex = 0
-        typeComboBox.isEditable = true
-
-        typePanel = JPanel(FlowLayout(2))
-        typePanel.add(typeLabel)
-        typePanel.add(typeComboBox)
-
-        val commentPanel = JPanel(FlowLayout(2))
-        commentPanel.add(commentLabel)
-        commentPanel.add(commentTextField)
-
-        layout = VerticalLayout(7)
-        add(bigTrackingPanel)
-        add(postWhenPanel)
-        add(bigScheduledPanel)
-        add(bigScheduledPanel)
-        add(inactivityPeriodPanel)
-        add(typePanel)
-        add(commentPanel)
+        return inactivityPeriodPanel
     }
+
 
     private fun isAutoTrackingChanged(enabled: Boolean) {
 
@@ -202,10 +235,12 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         val formatter = SimpleDateFormat("mm")
         return formatter.format(SimpleDateFormat("mm").parse(scheduledHour.text))
     }
+
     fun getScheduledMinutes(): String {
         val formatter = SimpleDateFormat("mm")
         return formatter.format(SimpleDateFormat("mm").parse(scheduledMinutes.text))
     }
+
     fun getComment(): String = commentTextField.text
     fun getPostOnClose() = postWhenProjectClosedCheckbox
 
