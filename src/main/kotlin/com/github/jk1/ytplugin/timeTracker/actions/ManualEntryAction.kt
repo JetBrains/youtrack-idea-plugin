@@ -9,6 +9,7 @@ import com.github.jk1.ytplugin.whenActive
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import java.net.UnknownHostException
 import javax.swing.JLabel
 
 
@@ -22,23 +23,29 @@ class ManualEntryAction  : AnAction(
             val project = event.project
             val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
 
-            val dialog = repo?.let { it1 -> TimeTrackerManualEntryDialog(project, it1) }
-            if (dialog != null){
-                dialog.show()
-                // TODO why not bubble
-                val trackerNote = TrackerNotification()
-                if (dialog.state == 200){
-                    val postedTIme = dialog.getTime()
-                    val postedId = dialog.getId()
-                    trackerNote.notify("Time $postedTIme was successfully posted on server for issue $postedId",
-                            NotificationType.INFORMATION)
-                    ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+            try{
+                val dialog = repo?.let { it1 -> TimeTrackerManualEntryDialog(project, it1) }
+                if (dialog != null){
+                    dialog.show()
+                    // TODO why not bubble
+                    val trackerNote = TrackerNotification()
+                    if (dialog.state == 200){
+                        val postedTIme = dialog.getTime()
+                        val postedId = dialog.getId()
+                        trackerNote.notify("Time $postedTIme was successfully posted on server for issue $postedId",
+                                NotificationType.INFORMATION)
+                        ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+                    } else {
+                        trackerNote.notify("Time was not posted, please check your input", NotificationType.WARNING)
+                    }
                 } else {
-                    trackerNote.notify("Time was not posted, please check your input", NotificationType.WARNING)
+                    val trackerNote = TrackerNotification()
+                    trackerNote.notify("Unable to add spent time manually" , NotificationType.WARNING)
                 }
-            } else {
+            }
+            catch (e: UnknownHostException){
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Unable to add spent time manually" , NotificationType.WARNING)
+                trackerNote.notify("Network error, please check your connection", NotificationType.WARNING)
             }
         }
     }

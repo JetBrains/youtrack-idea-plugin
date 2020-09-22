@@ -30,19 +30,19 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("                         Date:")
     private val datePicker = JXDatePicker()
-    private var idLabel = JBLabel("                        Issue:")
+    private var idLabel = JBLabel("                       Issue:")
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox =  JComboBox(arrayOf<String>("Development"))
-    private var timeLabel = JBLabel("    Time (hh/mm):")
+    private var timeLabel = JBLabel("     Time (hh/mm):")
 
     private lateinit var commentPanel: JPanel
     private lateinit var typePanel: JPanel
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
 
-    private var commentLabel= JBLabel("             Comment:")
-    private var typeLabel = JBLabel(" Work item type:")
+    private var commentLabel= JBLabel("              Comment:")
+    private var typeLabel = JBLabel("   Work item type:")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("" )
