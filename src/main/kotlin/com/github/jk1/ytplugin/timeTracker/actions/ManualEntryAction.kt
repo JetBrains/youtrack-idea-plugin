@@ -27,17 +27,6 @@ class ManualEntryAction  : AnAction(
                 val dialog = repo?.let { it1 -> TimeTrackerManualEntryDialog(project, it1) }
                 if (dialog != null){
                     dialog.show()
-                    // TODO why not bubble
-                    val trackerNote = TrackerNotification()
-                    if (dialog.state == 200){
-                        val postedTIme = dialog.getTime()
-                        val postedId = dialog.getId()
-                        trackerNote.notify("Time $postedTIme was successfully posted on server for issue $postedId",
-                                NotificationType.INFORMATION)
-                        ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
-                    } else {
-                        trackerNote.notify("Time was not posted, please check your input", NotificationType.WARNING)
-                    }
                 } else {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Unable to add spent time manually" , NotificationType.WARNING)
