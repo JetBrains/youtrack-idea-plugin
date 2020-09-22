@@ -95,7 +95,7 @@ class TaskManagerProxyService(val project: Project) : Disposable {
         }
     }
 
-    private fun getTaskManager(): TaskManager {
+    fun getTaskManager(): TaskManager {
         return TaskManager.getManager(project)
                 ?: throw TaskManagementDisabledException()
     }

@@ -3,13 +3,14 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.IssueAction
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.IconLoader
 import com.github.jk1.ytplugin.ui.WorkItemsList
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 
-class ToggleGroupByAction : IssueAction() {
+class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
     override val text = "Group spent time by issue"
     override val description = "Group spent time by issue"
     override val icon = AllIcons.Actions.GroupBy
@@ -27,7 +28,7 @@ class ToggleGroupByAction : IssueAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
+//            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             val workItemsList = WorkItemsList(repo)
             logger.debug("Spent time grouping by date for ${repo.url}")
             if (GROUP_BY_DATE) {
@@ -51,7 +52,6 @@ class ToggleGroupByAction : IssueAction() {
     override fun update(event: AnActionEvent) {
         val project = event.project
         if (project != null){
-            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             event.presentation.isEnabled = project.isInitialized &&
                     !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
         }

@@ -1,17 +1,12 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
-import sun.security.ec.point.ProjectivePoint
-import java.io.InputStreamReader
-import java.nio.charset.StandardCharsets
+
 
 
 /**

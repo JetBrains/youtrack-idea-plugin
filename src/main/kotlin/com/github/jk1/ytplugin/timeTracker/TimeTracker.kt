@@ -1,10 +1,14 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.impl.BaseRepository
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -19,11 +23,11 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var timeInMills: Long = 0
     var startTime: Long = 0
     var comment: String = "default comment"
-    var isManualTrackingEnable = true
+    var isManualTrackingEnable = false
     var isScheduledUnabled = true
     var isWhenProjectClosedUnabled = true
     var isPostAfterCommitUnabled = true
-    var isAutoTrackingEnable = true
+    var isAutoTrackingEnable = false
     var isRunning = false
     var isPaused = false
     var isAutoTrackingTemporaryDisabled = false
@@ -31,13 +35,15 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
     init {
         if (isAutoTrackingEnable){
-            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-            timeTrackerStoreComponent[repo].update(repo)
-            val storedTimer = timeTrackerStoreComponent[repo].getTracker()
-            val listOfParameters = parseTimerParameters(storedTimer)
-            setupTimerFromStored(listOfParameters)
-
-            StartTrackerAction().startAutomatedTracking(project, this)
+            val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
+            if (task.isIssue) {
+                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+                timeTrackerStoreComponent[repo].update(repo)
+                val storedTimer = timeTrackerStoreComponent[repo].getTracker()
+                val listOfParameters = parseTimerParameters(storedTimer)
+                setupTimerFromStored(listOfParameters)
+                StartTrackerAction().startAutomatedTracking(project, this)
+            }
         }
     }
 
@@ -147,7 +153,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     }
 
     fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean ){
+                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer ){
         comment = myComment
         isPostAfterCommitUnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking
@@ -160,9 +166,11 @@ class TimeTracker(override val project: Project) : ComponentAware{
         }
         inactivityPeriodInMills = inactivityTime
 
-        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-        timeTrackerStoreComponent[repo].update(repo)
-
+        val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
+        if (task.isIssue) {
+            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+            timeTrackerStoreComponent[repo].update(repo)
+        }
     }
 
     fun getRecordedTimeInMills() = timeInMills

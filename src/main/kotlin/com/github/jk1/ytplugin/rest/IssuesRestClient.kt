@@ -5,7 +5,9 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.*
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
@@ -32,6 +34,13 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
 
         fun getEntityIdByIssueId(issueId: String, project: Project): String {
+            val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
+            if (!task.isIssue) {
+                logger.debug("No valid YouTrack active task selected, ${task.id} is selected")
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Please select active task", NotificationType.WARNING)
+                return "0"
+            }
             val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
             val myQuery = NameValuePair("fields", "id")
             val url = "${repo.url}/api/issues/${issueId}"
@@ -50,7 +59,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                     "0"
                 }
             } catch (e: Exception) {
-                logger.debug("unable to get entity id by issue id")
+                logger.debug("unable to get entity id by issue id with response body ${method.responseBodyAsString}")
             }
             return "0"
         }

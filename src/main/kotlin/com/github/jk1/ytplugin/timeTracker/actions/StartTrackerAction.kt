@@ -54,14 +54,14 @@ class StartTrackerAction : AnAction(
                 myTimer.issueIdReadable = activeTask.id
                 if (myTimer.issueId == "0") {
                     val trackerNote = TrackerNotification()
-                    trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.ERROR)
+                    trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.WARNING)
                 } else {
                     val bar = WindowManager.getInstance().getStatusBar(project)
                     if (bar?.getWidget("Time Tracking Clock") == null) {
                         bar?.addWidget(ClockWidget(myTimer))
                     }
                     myTimer.start(activeTask.id)
-                    // case for ctivity tracker enabled
+                    // case for activity tracker enabled
                     if (myTimer.isAutoTrackingEnable) {
                         val application = ApplicationManager.getApplication()
                         myTimer.activityTracker = ActivityTracker(
@@ -76,7 +76,7 @@ class StartTrackerAction : AnAction(
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.ERROR)
+                trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.WARNING)
             }
         }
     }
