@@ -43,7 +43,7 @@ class WorkItemsListCellRenderer(
                                               issueWorkItem: IssueWorkItem, index: Int,
                                               isSelected: Boolean, cellHasFocus: Boolean): Component {
 
-        background = UIUtil.getListBackground(false)
+        background = UIUtil.getListBackground(false, false)
         fillTrackingInfoLine(issueWorkItem, fgColor)
         return this
     }

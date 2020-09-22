@@ -43,10 +43,12 @@ class ActivityTracker(
 
     fun startTracking() {
         if (trackingDisposable != null) {
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Could not start autonomous tracking at the moment", NotificationType.WARNING)
             return
         }
         trackingDisposable = newDisposable(parentDisposable)
-        startIDEListener(trackingDisposable!!, 1000)
+        startIDEListener(trackingDisposable!!)
         scheduleListener(trackingDisposable!!)
     }
 
@@ -69,16 +71,18 @@ class ActivityTracker(
         parents.forEach { parent ->
             // can't use here "Disposer.register(parent, disposable)"
             // because Disposer only allows one parent to one child registration of Disposable objects
-            Disposer.register(parent, Disposable {
-                Disposer.dispose(disposable)
-            })
+            Disposer.register(
+                    parent,
+                    Disposable {
+                        Disposer.dispose(disposable)
+                    }
+            )
         }
         return disposable
     }
 
     private fun scheduleListener(parentDisposable: Disposable) {
-        IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
-
+        IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher {
             val formatter = SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z")
             val date = Date(currentTimeMillis())
             // select time only
@@ -89,27 +93,27 @@ class ActivityTracker(
                 StopTrackerAction().stopTimer(project)
                 Thread.sleep(1000)
             }
-
             false
         }, parentDisposable)
     }
 
 
-    private fun startIDEListener(parentDisposable: Disposable, mouseMoveEventsThresholdMs: Long) {
+    private fun startIDEListener(parentDisposable: Disposable) {
         var lastMouseMoveTimestamp = 0L
+        val mouseMoveEventsThresholdMs = 1000
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
 
             var isMouseOrKeyboardActive = false
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state MOUSE_CLICKED " + isMouseOrKeyboardActive)
+                logger.debug("state MOUSE_CLICKED $isMouseOrKeyboardActive")
             }
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
-                    logger.debug("state MOUSE_MOVED" + isMouseOrKeyboardActive)
+                    logger.debug("state MOUSE_MOVED$isMouseOrKeyboardActive")
 
                 }
             }
@@ -118,12 +122,12 @@ class ActivityTracker(
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
-                    logger.debug("state MOUSE_WHEEL " + isMouseOrKeyboardActive)
+                    logger.debug("state MOUSE_WHEEL $isMouseOrKeyboardActive")
                 }
             }
             if (awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state keyboard " + isMouseOrKeyboardActive)
+                logger.debug("state keyboard $isMouseOrKeyboardActive")
             }
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
@@ -146,7 +150,7 @@ class ActivityTracker(
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
-            var currentProject = ideFocusManager.lastFocusedFrame?.project
+            val currentProject = ideFocusManager.lastFocusedFrame?.project
 
             if (currentProject == null || currentProject.isDefault) {
                 if (!isPostedOnClose){
