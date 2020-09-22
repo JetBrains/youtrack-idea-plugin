@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
 /**
- * Manages timed issueWorkItems store updates for active projects
+ * Manages timed Time tracker store updates for active projects
  * todo: the service is initialized lazily, so it's only behave as expected because of a #subscribe call
  * todo: convert into a post startup activity
  */

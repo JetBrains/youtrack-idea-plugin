@@ -1,14 +1,13 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.rest.IssuesRestClient
-import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.impl.BaseRepository
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -27,56 +26,43 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var isScheduledUnabled = true
     var isWhenProjectClosedUnabled = true
     var isPostAfterCommitUnabled = true
-    var isAutoTrackingEnable = false
+    var isAutoTrackingEnable = true
     var isRunning = false
     var isPaused = false
     var isAutoTrackingTemporaryDisabled = false
     var activityTracker: ActivityTracker? = null
 
     init {
-        if (isAutoTrackingEnable){
-            val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
-            if (task.isIssue) {
-                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-                timeTrackerStoreComponent[repo].update(repo)
-                val storedTimer = timeTrackerStoreComponent[repo].getTracker()
-                val listOfParameters = parseTimerParameters(storedTimer)
-                setupTimerFromStored(listOfParameters)
-                StartTrackerAction().startAutomatedTracking(project, this)
-            }
+        val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
+        if (task.isIssue) {
+            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+            timeTrackerStoreComponent[repo].update(repo)
+            val storedTimer = timeTrackerStoreComponent[repo].getTrackerJson()
+            setupTimerFromStored(storedTimer)
+            StartTrackerAction().startAutomatedTracking(project, this)
         }
+
     }
 
 
-    fun parseTimerParameters(timerString: String) : List<String>{
-        return timerString.split(" ")
-    }
-
-//    tracker = timer.isAutoTrackingEnable.toString() + " " + timer.isManualTrackingEnable.toString() + " " +
-//    timer.inactivityPeriodInMills + " " + timer.comment + " " +
-//    timer.isScheduledUnabled.toString() + " " + timer.scheduledPeriod + " " +
-//    timer.type + " " + timer.timeInMills + " " timer.recordedTimr + " " + timer.isRunning.toString()
-
-    fun setupTimerFromStored(parameters: List<String>){
-        if (parameters.size == 10){
-            inactivityPeriodInMills  = parameters[2].toLong()
-            type = parameters[6]
-//            if (parameters[4] == "false"){
-//                isScheduledUnabled = false
-//            } else {
-//                scheduledPeriod = parameters[5]
-//            }
-            comment = parameters[3]
-            timeInMills = parameters[7].toLong()
-            recordedTime = parameters[8]
-            isPaused = true
-
-            if (parameters[0] == "false"){
-                isAutoTrackingEnable = false
-            }
-            if (parameters[1] == "false"){
-                isManualTrackingEnable = false
-            }
+    fun setupTimerFromStored(parameters: String){
+        if (parameters != "0") {
+            val json: JsonObject = JsonParser.parseString(parameters) as JsonObject
+            json.asJsonObject.get("type").asString
+            issueId = json.asJsonObject.get("issueId").asString
+            issueIdReadable = json.asJsonObject.get("issueIdReadable").asString
+            inactivityPeriodInMills = json.asJsonObject.get("inactivityPeriodInMills").asLong
+            type = json.asJsonObject.get("type").asString
+            scheduledPeriod = json.asJsonObject.get("scheduledPeriod").asString
+            recordedTime = json.asJsonObject.get("recordedTime").asString
+            timeInMills = json.asJsonObject.get("timeInMills").asLong
+            startTime = json.asJsonObject.get("startTime").asLong
+            comment = json.asJsonObject.get("comment").asString
+            isManualTrackingEnable = json.asJsonObject.get("isManualTrackingEnable").asBoolean
+            isScheduledUnabled = json.asJsonObject.get("isScheduledUnabled").asBoolean
+            isWhenProjectClosedUnabled = json.asJsonObject.get("isWhenProjectClosedUnabled").asBoolean
+            isPostAfterCommitUnabled = json.asJsonObject.get("isPostAfterCommitUnabled").asBoolean
+            isAutoTrackingEnable = json.asJsonObject.get("isAutoTrackingEnable").asBoolean
         }
     }
 
@@ -153,7 +139,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     }
 
     fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer ){
+                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer){
         comment = myComment
         isPostAfterCommitUnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking
@@ -167,14 +153,12 @@ class TimeTracker(override val project: Project) : ComponentAware{
         inactivityPeriodInMills = inactivityTime
 
         val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
+
         if (task.isIssue) {
-            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-            timeTrackerStoreComponent[repo].update(repo)
+            timeTrackerStoreComponent[repository].update(repository)
         }
     }
 
     fun getRecordedTimeInMills() = timeInMills
 
 }
-
-

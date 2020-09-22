@@ -1,0 +1,16 @@
+{
+  "issueId":  "{issueId}",
+  "issueIdReadable": "{issueIdReadable}",
+  "inactivityPeriodInMills": "{inactivityPeriodInMills}",
+  "type": "{type}",
+  "scheduledPeriod": "{scheduledPeriod}",
+  "recordedTime": "{recordedTime}",
+  "timeInMills": "{timeInMills}",
+  "startTime": "{startTime}",
+  "comment": "{comment}",
+  "isManualTrackingEnable": "{isManualTrackingEnable}",
+  "isScheduledUnabled": "{isScheduledUnabled}",
+  "isWhenProjectClosedUnabled": "{isWhenProjectClosedUnabled}",
+  "isPostAfterCommitUnabled": "{isPostAfterCommitUnabled}",
+  "isAutoTrackingEnable": "{isAutoTrackingEnable}"
+}

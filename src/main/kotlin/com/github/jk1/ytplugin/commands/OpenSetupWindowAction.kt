@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

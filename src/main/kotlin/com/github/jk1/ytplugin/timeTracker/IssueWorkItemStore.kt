@@ -56,7 +56,8 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
                 val list = UserRestClient(repo).getWorkItemsForUser(search)
                 workItems = if (searchQuery != "")
                     filterWorkItems(searchQuery, list)
-                else list
+                else
+                    list
                 workItems = if (withGrouping)
                     workItems.sortedWith(compareBy { it.issueId })
                 else workItems
