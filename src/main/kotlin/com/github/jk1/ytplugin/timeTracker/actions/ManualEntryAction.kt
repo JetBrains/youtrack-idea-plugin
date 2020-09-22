@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.timeTracker.IconLoader
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerManualEntryDialog
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
@@ -38,6 +39,19 @@ class ManualEntryAction  : AnAction(
             } else {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Unable to add spent time manually" , NotificationType.WARNING)
+            }
+        }
+    }
+
+    override fun update(event: AnActionEvent) {
+        val project = event.project
+        if (project != null ) {
+            try {
+                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+                event.presentation.isVisible = repo.getRepo().isConfigured
+            }
+            catch(e: NoActiveYouTrackTaskException) {
+                event.presentation.isVisible = false
             }
         }
     }
