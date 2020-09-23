@@ -46,8 +46,7 @@ class TimerConnector {
     fun prepareConnectedTab(timeTrackingTab: TimeTrackerSettingsTab, repo: YouTrackServer, project: Project) {
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
-        val timeToSchedule = timeTrackingTab.getScheduledHours() + ":" +
-                timeTrackingTab.getScheduledMinutes() + ":0"
+        val timeToSchedule = timeTrackingTab.getScheduledTime()
 
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())

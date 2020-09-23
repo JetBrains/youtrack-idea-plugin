@@ -232,14 +232,10 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     fun getScheduledCheckbox() = isScheduledCheckbox
     fun getPostWhenCommitCheckbox() = postWhenCommitCheckbox
 
-    fun getScheduledHours(): String {
+    fun getScheduledTime(): String {
         val formatter = SimpleDateFormat("mm")
-        return formatter.format(SimpleDateFormat("mm").parse(scheduledHour.text))
-    }
-
-    fun getScheduledMinutes(): String {
-        val formatter = SimpleDateFormat("mm")
-        return formatter.format(SimpleDateFormat("mm").parse(scheduledMinutes.text))
+        val hours = formatter.format(SimpleDateFormat("mm").parse(scheduledHour.text))
+        return "$hours:${formatter.format(SimpleDateFormat("mm").parse(scheduledMinutes.text))}:0"
     }
 
     fun getComment(): String = commentTextField.text

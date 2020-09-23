@@ -86,22 +86,23 @@ class ActivityTracker(
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher {
 
             val currentTime = LocalDateTime.now()
-
             val formatter = SimpleDateFormat("mm")
             val hour = formatter.format(SimpleDateFormat("mm").parse(currentTime.hour.toString()))
             val minute = formatter.format(SimpleDateFormat("mm").parse(currentTime.minute.toString()))
             val time = hour + ":" + minute + ":" + currentTime.second.toString()
-            println("time: " + time + " selected: " + timer.scheduledPeriod + " " + timer.isPostedScheduled )
 
-            if (timer.isScheduledUnabled && (time == timer.scheduledPeriod) && !timer.isPostedScheduled){
-                val trackerNote = TrackerNotification()
-                trackerNote.notify("Scheduled time posting at ${timer.scheduledPeriod}", NotificationType.INFORMATION)
-                timer.isPostedScheduled = true
-                StopTrackerAction().stopTimer(project)
+            if (timer.isScheduledUnabled && (time == timer.scheduledPeriod)){
+                if (!timer.isPostedScheduled) {
+                    val trackerNote = TrackerNotification()
+                    trackerNote.notify("Scheduled time posting at $time:0", NotificationType.INFORMATION)
+
+                    timer.isPostedScheduled = true
+                    StopTrackerAction().stopTimer(project)
+                }
             } else {
                 timer.isPostedScheduled = false
             }
-
+            logger.debug("scheduleListener: stop the propagation of an event to other listeners")
             false
         }, parentDisposable)
     }
@@ -151,6 +152,7 @@ class ActivityTracker(
                     action.startAutomatedTracking(project, timer)
                 }
             }
+            logger.debug("startIDEListener: stop the propagation of an event to other listeners")
             false
         }, parentDisposable)
     }
