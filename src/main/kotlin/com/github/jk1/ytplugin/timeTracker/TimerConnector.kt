@@ -47,7 +47,7 @@ class TimerConnector {
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
         val timeToSchedule = timeTrackingTab.getScheduledHours() + ":" +
-                timeTrackingTab.getScheduledMinutes() + ":00"
+                timeTrackingTab.getScheduledMinutes() + ":0"
 
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())

@@ -17,7 +17,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var issueIdReadable: String = "Default"
     var inactivityPeriodInMills: Long = 600000
     var type: String = "None"
-    var scheduledPeriod: String = "19:00"
+    var scheduledPeriod: String = "19:00:0"
     var recordedTime: String = "0"
     var timeInMills: Long = 0
     var startTime: Long = 0
@@ -31,6 +31,8 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var isPaused = false
     var isAutoTrackingTemporaryDisabled = false
     var activityTracker: ActivityTracker? = null
+    var isPostedScheduled = true
+
 
     init {
         val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask

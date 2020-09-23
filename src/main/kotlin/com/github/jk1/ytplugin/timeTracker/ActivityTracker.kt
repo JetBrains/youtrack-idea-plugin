@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -83,16 +84,24 @@ class ActivityTracker(
 
     private fun scheduleListener(parentDisposable: Disposable) {
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher {
-            val formatter = SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z")
-            val date = Date(currentTimeMillis())
-            // select time only
-            val time = formatter.format(date).substring(formatter.format(date).length - 12, formatter.format(date).length - 4)
-            if (timer.isScheduledUnabled && (time == timer.scheduledPeriod)){
+
+            val currentTime = LocalDateTime.now()
+
+            val formatter = SimpleDateFormat("mm")
+            val hour = formatter.format(SimpleDateFormat("mm").parse(currentTime.hour.toString()))
+            val minute = formatter.format(SimpleDateFormat("mm").parse(currentTime.minute.toString()))
+            val time = hour + ":" + minute + ":" + currentTime.second.toString()
+            println("time: " + time + " selected: " + timer.scheduledPeriod + " " + timer.isPostedScheduled )
+
+            if (timer.isScheduledUnabled && (time == timer.scheduledPeriod) && !timer.isPostedScheduled){
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Scheduled time posting at ${timer.scheduledPeriod}", NotificationType.INFORMATION)
+                timer.isPostedScheduled = true
                 StopTrackerAction().stopTimer(project)
-                Thread.sleep(1000)
+            } else {
+                timer.isPostedScheduled = false
             }
+
             false
         }, parentDisposable)
     }

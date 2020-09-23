@@ -27,6 +27,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
     init {
         val root = item.asJsonObject
         json = item.toString()
+        println("json " + json)
         id = root.get("idReadable").asString
 
         entityId = root.get("id").asString
