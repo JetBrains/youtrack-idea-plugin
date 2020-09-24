@@ -21,7 +21,11 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
         return currentCallback
     }
 
-    fun isUpdating() = !currentCallback.isDone
+    fun storeTime(repo: YouTrackServer){
+        RefreshIssuesTask(currentCallback, repo).fillTimeToStore(ComponentAware.of(repo.project).timeTrackerComponent)
+    }
+
+    private fun isUpdating() = !currentCallback.isDone
 
     fun getTrackerJson() = trackerJson
 
@@ -39,9 +43,14 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
             }
         }
 
+        fun fillTimeToStore(timer: TimeTracker): String {
+            trackerJson = fillTrackerJson(timer)
+            logger.debug("Filled in time to store on project close")
+            return trackerJson
+        }
+
         private fun fillTrackerJson(timer: TimeTracker): String {
             val res: URL? = this::class.java.classLoader.getResource("time_tracker_stored.json")
-
             return res?.readText()
                     ?.replace("{issueId}", timer.issueId, true)
                     ?.replace("{issueIdReadable}", timer.issueIdReadable, true)

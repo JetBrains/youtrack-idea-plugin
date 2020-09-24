@@ -168,17 +168,20 @@ class ActivityTracker(
             if (currentProject == null) {
                 if (!isPostedOnClose){
                     if (timer.isWhenProjectClosedUnabled){
-                        println("hello")
-                        val time = timer.stop()
+                        timer.stop()
                         val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                         bar?.removeWidget("Time Tracking Clock")
                         TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                         dispose()
-                        logger.debug("time tracker stopped on project close with time $time")
                     } else {
-                        timer.saveState()
+                        val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+                        bar?.removeWidget("Time Tracking Clock")
+                        timer.saveState(repo)
+                        dispose()
+
                     }
+                    logger.debug("time tracker stopped on project close with time ${timer.timeInMills}")
                     isPostedOnClose = true
                 }
                 return false

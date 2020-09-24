@@ -70,13 +70,14 @@ class TimeTracker(override val project: Project) : ComponentAware{
         }
     }
 
-    fun saveState() {
+    fun saveState(repository: YouTrackServer) {
         if (!isPaused) {
             timeInMills += (System.currentTimeMillis() - startTime)
+            isPaused = true
         }
         recordedTime = formatTimePeriod(timeInMills)
-        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-        timeTrackerStoreComponent[repo].update(repo)
+        timeTrackerStoreComponent[repository].storeTime(repository)
+
     }
 
     fun stop(): String {
