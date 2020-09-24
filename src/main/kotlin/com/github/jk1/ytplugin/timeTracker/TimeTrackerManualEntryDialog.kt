@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.swing.*
 
 
@@ -202,7 +203,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
             val hours = hoursSpinner.value.toString()
             val minutes = minutesSpinner.value.toString()
-            val time = hours.toInt() * 60 + minutes.toInt()
+            val time = TimeUnit.HOURS.toMinutes(hours.toLong()) + minutes.toLong()
 
             if (datePicker.date == null) {
                 notifier.foreground = Color.red

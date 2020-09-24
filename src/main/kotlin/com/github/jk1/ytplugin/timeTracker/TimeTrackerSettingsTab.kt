@@ -19,9 +19,6 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     private lateinit var scheduledHour: JBTextField
     private lateinit var scheduledMinutes: JBTextField
 
-    private lateinit var isAutoTrackingEnabledCheckBox: JBCheckBox
-    private var autoTrackingEnabledTextField = JBLabel("Enable automated mode      ")
-
     private lateinit var inactivityHourInputField: JBTextField
     private lateinit var inactivityMinutesInputField: JBTextField
     private var inactivityTextField = JBLabel(" Inactivity period (hh/mm): ")
@@ -30,7 +27,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm)")
 
     private lateinit var isManualModeCheckbox: JBCheckBox
-    private var manualModeTextField = JBLabel("Enable manual mode")
+    private var manualModeTextField = JBLabel("Enable manual mode          ")
 
     private lateinit var postWhenProjectClosedCheckbox: JBCheckBox
     private lateinit var postWhenCommitCheckbox: JBCheckBox
@@ -38,6 +35,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
+    private lateinit var isAutoTrackingEnabledCheckBox: JBCheckBox
+    private var autoTrackingEnabledTextField = JBLabel("Enable automated mode")
 
     private var commentLabel = JBLabel(" Comment:")
     private var typeLabel = JBLabel(" Spent time type:")
@@ -53,13 +52,13 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
         val inactivityPeriodPanel = createInactivityPeriodPanel(timer)
 
-        val trackingModePanel = createTrackingModePanel(timer)
+        val trackingModePanel = createTrackingModePanel(timer, height, width)
 
         val schedulePanel = createScheduledPanel(timer)
 
         val typePanel = createTypePanel(timer, repo)
 
-        val postWhenPanel = createPostWhenPanel(timer)
+        val postWhenPanel = createPostWhenPanel(timer, width, height)
 
         val commentPanel = createCommentPanel(timer, height, width)
 
@@ -105,7 +104,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         return typePanel
     }
 
-    private fun createPostWhenPanel(timer: TimeTracker): JPanel {
+    private fun createPostWhenPanel(timer: TimeTracker, width: Int, height: Int): JPanel {
 
         val postWhenPanel = JPanel(FlowLayout(5))
 
@@ -117,7 +116,6 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         postWhenPanel.add(postWhenProjectClosedCheckbox)
         postWhenPanel.add(postWhenProjectClosedTextField)
 
-        // TODO: remove hardcode
         val separator2 = JBLabel("")
         separator2.preferredSize = Dimension((0.1 * width).toInt(), (0.0875 * height).toInt())
         postWhenPanel.add(separator2)
@@ -128,7 +126,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         return postWhenPanel
     }
 
-    private fun createTrackingModePanel(timer: TimeTracker): JPanel {
+    private fun createTrackingModePanel(timer: TimeTracker, height: Int, width: Int): JPanel {
 
         isAutoTrackingEnabledCheckBox = JBCheckBox()
         isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
@@ -146,10 +144,10 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
         val trackingModePanel = JPanel(BorderLayout())
         val separator1 = JBLabel("")
-        separator1.preferredSize = Dimension((0.32 * width).toInt(), (0.0875 * height).toInt())
-        trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.EAST)
+        separator1.preferredSize = Dimension((0.195 * width).toInt(), (0.0875 * height).toInt())
+        trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
         trackingModePanel.add(separator1, BorderLayout.CENTER)
-        trackingModePanel.add(enableManualTrackingPanel, BorderLayout.WEST)
+        trackingModePanel.add(enableManualTrackingPanel, BorderLayout.EAST)
 
         return trackingModePanel
     }
