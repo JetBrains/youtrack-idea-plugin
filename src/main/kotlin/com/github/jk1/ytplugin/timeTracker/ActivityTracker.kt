@@ -13,6 +13,7 @@ import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
 import java.awt.AWTEvent
@@ -164,12 +165,17 @@ class ActivityTracker(
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
             val currentProject = ideFocusManager.lastFocusedFrame?.project
 
-            if (currentProject == null || currentProject.isDefault) {
+            if (currentProject == null) {
                 if (!isPostedOnClose){
                     if (timer.isWhenProjectClosedUnabled){
-                        timer.stop()
+                        println("hello")
+                        val time = timer.stop()
+                        val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+                        bar?.removeWidget("Time Tracking Clock")
                         TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                        dispose()
+                        logger.debug("time tracker stopped on project close with time $time")
                     } else {
                         timer.saveState()
                     }
