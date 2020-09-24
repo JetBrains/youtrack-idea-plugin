@@ -57,7 +57,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
         val schedulePanel = createScheduledPanel(timer)
 
-        val typePanel = createTypePanel(repo)
+        val typePanel = createTypePanel(timer, repo)
 
         val postWhenPanel = createPostWhenPanel(timer)
 
@@ -84,16 +84,19 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
     }
 
-    private fun createTypePanel(repo: YouTrackServer): JPanel {
+    private fun createTypePanel(timer: TimeTracker, repo: YouTrackServer): JPanel {
 
         val typePanel = JPanel(FlowLayout(2))
         val timerConnector = TimerConnector()
         val types = timerConnector.getAvailableWorkItemsTypes(repo)
 
+        var idx = 0
         if (types.isNotEmpty()) {
             typeComboBox = JComboBox(types.toTypedArray())
+            types.mapIndexed { index, value -> if (value == timer.type) { idx = index } }
         }
-        typeComboBox.selectedIndex = 0
+
+        typeComboBox.selectedIndex = idx
         typeComboBox.isEditable = true
 
         typePanel.add(typeLabel)

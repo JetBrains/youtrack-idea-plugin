@@ -1,6 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.google.gson.JsonObject
@@ -35,15 +37,15 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
 
     init {
-        val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
-        if (task.isIssue) {
+        try {
             val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
             timeTrackerStoreComponent[repo].update(repo)
             val storedTimer = timeTrackerStoreComponent[repo].getTrackerJson()
             setupTimerFromStored(storedTimer)
             StartTrackerAction().startAutomatedTracking(project, this)
+        } catch (e: NoActiveYouTrackTaskException) {
+            logger.debug("Loading time tracker... Active YouTrack repository is not found: ${e.message}")
         }
-
     }
 
 

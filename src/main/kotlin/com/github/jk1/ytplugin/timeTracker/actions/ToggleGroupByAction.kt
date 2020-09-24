@@ -27,17 +27,17 @@ class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-//            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             val workItemsList = WorkItemsList(repo)
-            logger.debug("Spent time grouping by date for ${repo.url}")
             if (GROUP_BY_DATE) {
-                workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = false
+                logger.debug("Spent time grouping by date for ${repo.url}")
+                workItemsList.issueWorkItemsStoreComponent[repo].withGroupingByIssue = false
                 GROUP_BY_DATE = false
                 event.presentation.icon = AllIcons.Actions.GroupBy
                 event.presentation.text = "Group spent time by issue"
                 event.presentation.description = "Group spent time by issue"
             } else {
-                workItemsList.issueWorkItemsStoreComponent[repo].withGrouping = true
+                logger.debug("Spent time grouping by issue for ${repo.url}")
+                workItemsList.issueWorkItemsStoreComponent[repo].withGroupingByIssue = true
                 GROUP_BY_DATE = true
                 event.presentation.icon = AllIcons.Actions.GroupByPrefix
                 event.presentation.text = "Group spent time by date"

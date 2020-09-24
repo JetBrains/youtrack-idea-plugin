@@ -46,6 +46,7 @@ class ActivityTracker(
         if (trackingDisposable != null) {
             val trackerNote = TrackerNotification()
             trackerNote.notify("Could not start autonomous tracking at the moment", NotificationType.WARNING)
+            logger.debug("Activity tracker is unable to start tracking at the moment: trackingDisposable is not null")
             return
         }
         trackingDisposable = newDisposable(parentDisposable)
@@ -137,7 +138,7 @@ class ActivityTracker(
             }
             if (awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state keyboard $isMouseOrKeyboardActive")
+                logger.debug("state KEYBOARD $isMouseOrKeyboardActive")
             }
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
@@ -189,7 +190,6 @@ class ActivityTracker(
                 val ideFrame = findParentComponent<IdeFrameImpl?>(focusOwner) { it is IdeFrameImpl }
                 ideHasFocus = ideFrame != null && ideFrame.isActive
             }
-
             if (!ideHasFocus) {
                 return false
             }
@@ -198,7 +198,6 @@ class ActivityTracker(
             if (editor != null) {
                 return true
             }
-
             return false
 
         } catch (e: Exception) {
@@ -207,7 +206,6 @@ class ActivityTracker(
         return false
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun <T> findParentComponent(component: Component?, matches: (Component) -> Boolean): T? =
             when {
                 component == null -> null

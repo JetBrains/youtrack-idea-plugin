@@ -14,7 +14,7 @@ import java.net.SocketTimeoutException
 class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = listOf()) : Iterable<IssueWorkItem> {
 
     private var currentCallback: ActionCallback = ActionCallback.Done()
-    var withGrouping = false
+    var withGroupingByIssue = false
     var searchQuery = ""
 
 
@@ -58,7 +58,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
                     filterWorkItems(searchQuery, list)
                 else
                     list
-                workItems = if (withGrouping)
+                workItems = if (withGroupingByIssue)
                     workItems.sortedWith(compareBy { it.issueId })
                 else workItems
             } catch (e: SocketTimeoutException) {

@@ -16,7 +16,7 @@ class TimerConnector {
         val types = mutableListOf<String>()
         val typesReceived =  TimeTrackerRestClient(repo).getAvailableWorkItemTypes()
         if (typesReceived.isNotEmpty()) {
-            typesReceived.map { types.add(it.name) }
+            typesReceived.forEach { types.add(it.name) }
         }
         return types
     }
@@ -29,7 +29,6 @@ class TimerConnector {
         val status =  TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType,
                 comment, date.time.toString())
 
-        // TODO why not bubble
         val trackerNote = TrackerNotification()
         if (status == 200){
             val postedTIme = date.time.toString()
@@ -43,7 +42,7 @@ class TimerConnector {
         return (status == 200)
     }
 
-    fun prepareConnectedTab(timeTrackingTab: TimeTrackerSettingsTab, repo: YouTrackServer, project: Project) {
+    fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, repo: YouTrackServer, project: Project) {
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
         val timeToSchedule = timeTrackingTab.getScheduledTime()
