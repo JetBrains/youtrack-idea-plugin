@@ -17,7 +17,7 @@ class VcsCommitsHandler : CheckinHandlerFactory() {
                 val message = panel.commitMessage
                 val project = panel.project
                 val timer = ComponentAware.of(project).timeTrackerComponent
-                if (timer.isPostAfterCommitUnabled){
+                if (timer.isPostAfterCommitEnabled){
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Stop timer on commit \"${message}\"", NotificationType.INFORMATION)
                     StopTrackerAction().stopTimer(project)

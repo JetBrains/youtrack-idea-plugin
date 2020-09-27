@@ -9,8 +9,8 @@
   "startTime": "{startTime}",
   "comment": "{comment}",
   "isManualTrackingEnable": "{isManualTrackingEnable}",
-  "isScheduledUnabled": "{isScheduledUnabled}",
-  "isWhenProjectClosedUnabled": "{isWhenProjectClosedUnabled}",
-  "isPostAfterCommitUnabled": "{isPostAfterCommitUnabled}",
+  "isScheduledEnabled": "{isScheduledEnabled}",
+  "isWhenProjectClosedEnabled": "{isWhenProjectClosedEnabled}",
+  "isPostAfterCommitEnabled": "{isPostAfterCommitEnabled}",
   "isAutoTrackingEnable": "{isAutoTrackingEnable}"
 }

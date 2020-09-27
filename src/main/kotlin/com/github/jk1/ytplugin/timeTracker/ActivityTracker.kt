@@ -93,7 +93,7 @@ class ActivityTracker(
             val minute = formatter.format(SimpleDateFormat("mm").parse(currentTime.minute.toString()))
             val time = hour + ":" + minute + ":" + currentTime.second.toString()
 
-            if (timer.isScheduledUnabled && (time == timer.scheduledPeriod)){
+            if (timer.isScheduledEnabled && (time == timer.scheduledPeriod)){
                 if (!timer.isPostedScheduled) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Scheduled time posting at $time:0", NotificationType.INFORMATION)
@@ -167,7 +167,8 @@ class ActivityTracker(
 
             if (currentProject == null) {
                 if (!isPostedOnClose){
-                    if (timer.isWhenProjectClosedUnabled){
+                    if (timer.isWhenProjectClosedEnabled){
+                        logger.debug("state PROJECT_CLOSE with posting enabled")
                         timer.stop()
                         val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                         bar?.removeWidget("Time Tracking Clock")
@@ -175,13 +176,14 @@ class ActivityTracker(
                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                         dispose()
                     } else {
+                        logger.debug("state PROJECT_CLOSE with posting disabled")
                         val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                         bar?.removeWidget("Time Tracking Clock")
                         timer.saveState(repo)
                         dispose()
 
                     }
-                    logger.debug("time tracker stopped on project close with time ${timer.timeInMills}")
+                    logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
                     isPostedOnClose = true
                 }
                 return false

@@ -25,9 +25,9 @@ class TimeTracker(override val project: Project) : ComponentAware{
     var startTime: Long = 0
     var comment: String = "default comment"
     var isManualTrackingEnable = false
-    var isScheduledUnabled = true
-    var isWhenProjectClosedUnabled = true
-    var isPostAfterCommitUnabled = true
+    var isScheduledEnabled = true
+    var isWhenProjectClosedEnabled = true
+    var isPostAfterCommitEnabled = true
     var isAutoTrackingEnable = true
     var isRunning = false
     var isPaused = false
@@ -63,9 +63,9 @@ class TimeTracker(override val project: Project) : ComponentAware{
             startTime = json.asJsonObject.get("startTime").asLong
             comment = json.asJsonObject.get("comment").asString
             isManualTrackingEnable = json.asJsonObject.get("isManualTrackingEnable").asBoolean
-            isScheduledUnabled = json.asJsonObject.get("isScheduledUnabled").asBoolean
-            isWhenProjectClosedUnabled = json.asJsonObject.get("isWhenProjectClosedUnabled").asBoolean
-            isPostAfterCommitUnabled = json.asJsonObject.get("isPostAfterCommitUnabled").asBoolean
+            isScheduledEnabled = json.asJsonObject.get("isScheduledEnabled").asBoolean
+            isWhenProjectClosedEnabled = json.asJsonObject.get("isWhenProjectClosedEnabled").asBoolean
+            isPostAfterCommitEnabled = json.asJsonObject.get("isPostAfterCommitEnabled").asBoolean
             isAutoTrackingEnable = json.asJsonObject.get("isAutoTrackingEnable").asBoolean
         }
     }
@@ -146,10 +146,10 @@ class TimeTracker(override val project: Project) : ComponentAware{
     fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
                    isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer){
         comment = myComment
-        isPostAfterCommitUnabled = isPostWhenCommitEnabled
+        isPostAfterCommitEnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
-        isWhenProjectClosedUnabled = isPostOnClosed
+        isWhenProjectClosedEnabled = isPostOnClosed
         type = myType
         isManualTrackingEnable = isManualMode
         if (isScheduled){

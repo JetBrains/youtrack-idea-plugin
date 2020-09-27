@@ -8,7 +8,6 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.text.SimpleDateFormat
-import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import javax.swing.JComboBox
 import javax.swing.JPanel
@@ -109,10 +108,10 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         val postWhenPanel = JPanel(FlowLayout(5))
 
         postWhenCommitCheckbox = JBCheckBox()
-        postWhenCommitCheckbox.isSelected = timer.isPostAfterCommitUnabled
+        postWhenCommitCheckbox.isSelected = timer.isPostAfterCommitEnabled
 
         postWhenProjectClosedCheckbox = JBCheckBox()
-        postWhenProjectClosedCheckbox.isSelected = timer.isWhenProjectClosedUnabled
+        postWhenProjectClosedCheckbox.isSelected = timer.isWhenProjectClosedEnabled
         postWhenPanel.add(postWhenProjectClosedCheckbox)
         postWhenPanel.add(postWhenProjectClosedTextField)
 
@@ -161,7 +160,7 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         scheduledMinutes = JBTextField(timer.scheduledPeriod.substring(3, 5))
 
         isScheduledCheckbox = JBCheckBox()
-        isScheduledCheckbox.isSelected = timer.isScheduledUnabled
+        isScheduledCheckbox.isSelected = timer.isScheduledEnabled
 
         timePanel.add(scheduledHour)
         timePanel.add(JBLabel(":"))

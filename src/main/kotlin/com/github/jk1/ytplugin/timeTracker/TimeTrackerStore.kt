@@ -62,9 +62,9 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
                     ?.replace("\"{startTime}\"", timer.startTime.toString(), true)
                     ?.replace("{comment}", timer.comment, true)
                     ?.replace("\"{isManualTrackingEnable}\"", timer.isManualTrackingEnable.toString(), true)
-                    ?.replace("\"{isScheduledUnabled}\"", timer.isScheduledUnabled.toString(), true)
-                    ?.replace("\"{isWhenProjectClosedUnabled}\"", timer.isWhenProjectClosedUnabled.toString(), true)
-                    ?.replace("\"{isPostAfterCommitUnabled}\"", timer.isPostAfterCommitUnabled.toString(), true)
+                    ?.replace("\"{isScheduledEnabled}\"", timer.isScheduledEnabled.toString(), true)
+                    ?.replace("\"{isWhenProjectClosedEnabled}\"", timer.isWhenProjectClosedEnabled.toString(), true)
+                    ?.replace("\"{isPostAfterCommitEnabled}\"", timer.isPostAfterCommitEnabled.toString(), true)
                     ?.replace("\"{isAutoTrackingEnable}\"", timer.isAutoTrackingEnable.toString(), true) ?: "0"
         }
 
