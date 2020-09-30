@@ -160,7 +160,7 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
         val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
-        val viewportWidth = 70
+        val viewportWidth = 60
 
 
         val header = SimpleColoredComponent()
@@ -174,7 +174,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         value.icon = AllIcons.Vcs.History
 
         value =  createValueWithEnding(" +", value,
-                workItem.value.split(" ").iterator(), viewportWidth)
+                workItem.value, viewportWidth)
 
 
         val slash = SimpleColoredComponent()
@@ -193,7 +193,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         var comment = SimpleColoredComponent()
         if (workItem.comment != null) {
             comment = createValueWithEnding(" ...", comment,
-                    workItem.comment.split(" ").iterator(), viewportWidth)
+                    workItem.comment, viewportWidth)
             workItemsPanel.add(slash2)
             workItemsPanel.add(comment)
         } else {
@@ -206,15 +206,24 @@ class IssueViewer : JPanel(BorderLayout()) {
         return workItemsPanel
     }
 
-    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, parts: Iterator<String>, viewportWidth: Int)
+
+
+
+
+    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
             : SimpleColoredComponent{
 
+        val parts =  item.split(" ").iterator()
         while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
             value.append(" ${parts.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }
-        if (parts.hasNext()) {
-            value.append(ending, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+
+        if (item != "") {
+            if (parts.hasNext() && parts.next() != "") {
+                value.append(ending, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            }
         }
+
         return value
     }
 }
