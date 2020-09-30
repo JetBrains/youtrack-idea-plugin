@@ -116,7 +116,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addCommentsTab(comments: List<IssueComment>, tabs: JBTabbedPane){
+    private fun addCommentsTab(comments: List<IssueComment>, tabs: JBTabbedPane) {
         if (comments.isNotEmpty()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
@@ -126,7 +126,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane){
+    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane) {
         if (workItems.isNotEmpty()) {
             val workItemsPanel = JPanel()
             workItemsPanel.layout = BoxLayout(workItemsPanel, BoxLayout.Y_AXIS)
@@ -160,6 +160,8 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
         val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
+        val viewportWidth = 70
+
 
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
@@ -168,17 +170,11 @@ class IssueViewer : JPanel(BorderLayout()) {
         val date = SimpleColoredComponent()
         date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
 
-        val value = SimpleColoredComponent()
+        var value = SimpleColoredComponent()
         value.icon = AllIcons.Vcs.History
-        val viewportWidth = 70
 
-        val items = workItem.value.split(" ").iterator()
-        while (items.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
-            value.append(" ${items.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        }
-        if (items.hasNext()) {
-            value.append(" …", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-        }
+        value =  createValueWithEnding(" +", value,
+                workItem.value.split(" ").iterator(), viewportWidth)
 
 
         val slash = SimpleColoredComponent()
@@ -194,13 +190,13 @@ class IssueViewer : JPanel(BorderLayout()) {
         workItemsPanel.add(slash1)
         workItemsPanel.add(value)
 
-        val comment = SimpleColoredComponent()
-        if (workItem.comment != null){
-            comment.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        var comment = SimpleColoredComponent()
+        if (workItem.comment != null) {
+            comment = createValueWithEnding(" ...", comment,
+                    workItem.comment.split(" ").iterator(), viewportWidth)
             workItemsPanel.add(slash2)
             workItemsPanel.add(comment)
-        }
-        else{
+        } else {
             workItemsPanel.add(JLabel(""))  // for empty cell
             workItemsPanel.add(JLabel(""))  // for empty cell
         }
@@ -208,5 +204,17 @@ class IssueViewer : JPanel(BorderLayout()) {
         workItemsPanel.add(JLabel(""))  // for empty cell
 
         return workItemsPanel
+    }
+
+    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, parts: Iterator<String>, viewportWidth: Int)
+            : SimpleColoredComponent{
+
+        while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
+            value.append(" ${parts.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        }
+        if (parts.hasNext()) {
+            value.append(ending, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        }
+        return value
     }
 }
