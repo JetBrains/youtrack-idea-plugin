@@ -67,7 +67,9 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
                 for (item in workItems) {
                     val issue: MutableList<Issue> = issues.filter { it.id == item.issueId }.toMutableList()
-                    issue[0].workItems.add(item)
+                    if (issue.isNotEmpty()){
+                        issue[0].workItems.add(item)
+                    }
                 }
                 issues
             } else {
@@ -82,7 +84,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val method = GetMethod(url)
         val myQuery = NameValuePair("query", query)
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
-
         method.setQueryString(arrayOf(myQuery, myFields))
         val issues = method.connect {
             val status = httpClient.executeMethod(method)
