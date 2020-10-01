@@ -56,6 +56,29 @@ class ActivityTracker(
     }
 
 
+    companion object {
+       fun newDisposable(vararg parents: Disposable, callback: () -> Any = {}): Disposable {
+            val isDisposed = AtomicBoolean(false)
+            val disposable = Disposable {
+                if (!isDisposed.get()) {
+                    isDisposed.set(true)
+                    callback()
+                }
+            }
+            parents.forEach { parent ->
+                // can't use here "Disposer.register(parent, disposable)"
+                // because Disposer only allows one parent to one child registration of Disposable objects
+                Disposer.register(
+                        parent,
+                        Disposable {
+                            Disposer.dispose(disposable)
+                        }
+                )
+            }
+            return disposable
+        }
+    }
+
     override fun dispose() {
         if (trackingDisposable != null) {
             Disposer.dispose(trackingDisposable!!)
@@ -63,26 +86,6 @@ class ActivityTracker(
         }
     }
 
-    private fun newDisposable(vararg parents: Disposable, callback: () -> Any = {}): Disposable {
-        val isDisposed = AtomicBoolean(false)
-        val disposable = Disposable {
-            if (!isDisposed.get()) {
-                isDisposed.set(true)
-                callback()
-            }
-        }
-        parents.forEach { parent ->
-            // can't use here "Disposer.register(parent, disposable)"
-            // because Disposer only allows one parent to one child registration of Disposable objects
-            Disposer.register(
-                    parent,
-                    Disposable {
-                        Disposer.dispose(disposable)
-                    }
-            )
-        }
-        return disposable
-    }
 
     private fun scheduleListener(parentDisposable: Disposable) {
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher {
@@ -172,6 +175,7 @@ class ActivityTracker(
                         timer.stop()
                         val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                         bar?.removeWidget("Time Tracking Clock")
+
                         TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                         dispose()

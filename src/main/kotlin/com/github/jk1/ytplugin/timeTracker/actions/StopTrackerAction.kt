@@ -9,7 +9,9 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetUsagesCollector
 import java.util.*
 
 
