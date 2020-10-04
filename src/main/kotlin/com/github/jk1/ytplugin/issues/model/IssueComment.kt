@@ -13,6 +13,7 @@ class IssueComment(item: JsonElement) {
     val authorName: String = item.asJsonObject.get("author").asJsonObject.get("name").asString
     val text: String = item.asJsonObject.get("textPreview").asString
     val created: Date = Date(item.asJsonObject.get("created").asLong)
+    val deleted = item.asJsonObject.get("deleted").asBoolean
     val updated: Date? = when (item.asJsonObject.get("updated")) {
         is JsonNull -> null
         else -> Date(item.asJsonObject.get("updated").asLong)

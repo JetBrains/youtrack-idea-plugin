@@ -59,6 +59,9 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             if (selectedIssue == null) {
                 splitter.collapse()
             } else if (selectedIssue != viewer.currentIssue) {
+                if (splitter.isCollapsedState()){
+                    splitter.expand()
+                }
                 viewer.showIssue(selectedIssue)
             }
         }

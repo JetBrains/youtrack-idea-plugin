@@ -14,6 +14,7 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
+import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
@@ -83,7 +84,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val proxy = HttpConfigurable.getInstance()
         if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
             connectedRepository.isUseProxy = useProxyCheckBox.isSelected
-            if(inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()){
+            if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
                 repoConnector.testConnection(connectedRepository, project)
             }
         } else {
@@ -95,7 +96,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
         if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
             repoConnector.noteState = NotifierState.EMPTY_FIELD
-        }  else if (!repoConnector.isValidToken(connectedRepository.password)) {
+        } else if (!repoConnector.isValidToken(connectedRepository.password)) {
             repoConnector.noteState = NotifierState.INVALID_TOKEN
         }
 
@@ -125,9 +126,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         }
     }
 
-    private fun prepareTabbedPane(): JTabbedPane {
+
+    private fun createServerPane() : JPanel{
         val serverUrlLabel = JBLabel("Server URL:")
-        serverUrlLabel.setBounds(65, 61, 100, 22)
         inputUrlTextPane.apply {
             layout = BorderLayout()
             border = BorderFactory.createLineBorder(Color.LIGHT_GRAY)
@@ -160,50 +161,80 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                     repaint()
                 }
             })
-            setBounds(152, 60, 374, 28)
+            preferredSize = Dimension(382, 28)
         }
 
+        val serverPanel = JPanel(FlowLayout(2))
+        serverPanel.add(serverUrlLabel)
+        serverPanel.add(inputUrlTextPane)
+
+        return serverPanel
+    }
+
+    private fun createTokenPane() : JPanel {
         tokenLabel = JBLabel("Permanent Token:")
-        tokenLabel.setBounds(15, 122, 150, 22)
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            setBounds(150, 120, 378, 31)
+            preferredSize = Dimension(384, 31)
         }
+        val tokenPanel = JPanel(FlowLayout(2))
+        tokenPanel.add(tokenLabel)
+        tokenPanel.add(inputTokenField)
 
+        return tokenPanel
+    }
+
+    fun createCheckboxesPane() : JPanel {
+        shareUrlCheckBox = JBCheckBox("Share Url", repo.getRepo().isShared)
+        useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
+
+        val checkboxesPanel = JPanel(FlowLayout(2))
+        checkboxesPanel.add(shareUrlCheckBox)
+        checkboxesPanel.add(useProxyCheckBox)
+
+        return checkboxesPanel
+    }
+
+    private fun createAdvertiserPane() : JPanel{
         val advertiserLabel = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
-        advertiserLabel.setBounds(240, 30, 300, 17)
+        val advertiserPane = JPanel(BorderLayout())
+        advertiserPane.add(advertiserLabel, BorderLayout.EAST)
+        return advertiserPane
+    }
 
+    private fun createInfoPane() : JPanel{
         val getTokenInfoLabel = HyperlinkLabel("Get token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
-        getTokenInfoLabel.setBounds(457, 155, 100, 17)
 
         notifyFieldLabel = JBLabel("").apply {
             foreground = Color.red
-            setBounds(150, 158, 400, 36)
         }
 
-        shareUrlCheckBox = JBCheckBox("Share Url", repo.getRepo().isShared)
-        shareUrlCheckBox.setBounds(440, 95, 100, 17)
+        val sep = JBLabel("").apply {
+            preferredSize = Dimension(55, 20)
+        }
 
-        useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
-        useProxyCheckBox.setBounds(330, 95, 100, 17)
+        val tokenInfoPane = JPanel(FlowLayout(2))
+        tokenInfoPane.add(notifyFieldLabel)
+        tokenInfoPane.add(sep)
+        tokenInfoPane.add(getTokenInfoLabel)
+
+        return tokenInfoPane
+    }
+
+    private fun prepareTabbedPane(): JTabbedPane {
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
         val connectionTab = JBPanel<JBPanelWithEmptyText>().apply {
-            setBounds(100, 100, 580, 300)
-            layout = null
-            add(shareUrlCheckBox)
-            add(advertiserLabel)
-            add(serverUrlLabel)
-            add(inputUrlTextPane)
-            add(tokenLabel)
-            add(inputTokenField)
-            add(getTokenInfoLabel)
-            add(notifyFieldLabel)
-            add(useProxyCheckBox)
+            layout = VerticalLayout(5)
+            add(createAdvertiserPane())
+            add(createServerPane())
+            add(createCheckboxesPane())
+            add(createTokenPane())
+            add(createInfoPane())
         }
 
         mainPane = JBTabbedPane().apply {
@@ -225,11 +256,11 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
     private fun drawAutoCorrection(fontColor: Color) {
         fun getColor(closure: () -> Boolean) = if (closure.invoke()) fontColor else Color.GREEN
-        if (repoConnector.noteState == NotifierState.SUCCESS)  {
+        if (repoConnector.noteState == NotifierState.SUCCESS) {
             logger.info("YouTrack repository ${connectedRepository.url} connected")
             val oldAddress = inputUrlTextPane.text
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
-            val oldUrl = URL(if (oldAddress.startsWith("http")) oldAddress else  "http://$oldAddress")
+            val oldUrl = URL(if (oldAddress.startsWith("http")) oldAddress else "http://$oldAddress")
             val fixedUrl = URL(connectedRepository.url)
             inputUrlTextPane.text = ""
             val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol }
@@ -293,7 +324,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                 timerConnector.configureTimerForTracking(timeTrackingTab, repo, project)
             }
 
-            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST){
+            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST) {
                 this@SetupDialog.close(0)
             }
         }

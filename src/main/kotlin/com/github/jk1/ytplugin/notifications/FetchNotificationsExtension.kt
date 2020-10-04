@@ -37,11 +37,13 @@ class FetchNotificationsExtension : StartupActivity.Background {
             ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().forEach {
                 logger.debug("Fetching notifications from YouTrack server ${it.url}")
                 try {
-                    val notifications = NotificationsRestClient(it).getNotifications()
-                    val unseen = notifications.filterUnseen()
-                    logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
-                    unseen.forEach { notification -> handleNotification(notification, project) }
-                    saveAsSeen(notifications, project)
+                    val notifications = NotificationsRestClient(it).getNotifications().filterGuest()
+                    if (notifications.isNotEmpty()) {
+                        val unseen = notifications.filterUnseen()
+                        logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
+                        unseen.forEach { notification -> handleNotification(notification, project) }
+                        saveAsSeen(notifications)
+                    }
                 }  catch (e: Exception) {
                     logger.warn("Failed to fetch notifications from YouTrack server: ${e.message}" )
                     logger.debug(e)
@@ -66,8 +68,12 @@ class FetchNotificationsExtension : StartupActivity.Background {
         }
     }
 
-    private fun saveAsSeen(notifications: List<YouTrackNotification>, project: Project) {
-        PropertiesComponent.getInstance(project).setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
+    private fun saveAsSeen(notifications: List<YouTrackNotification>) {
+        PropertiesComponent.getInstance().setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
+    }
+
+    private fun List<YouTrackNotification>.filterGuest(): List<YouTrackNotification> {
+        return filterNot { it.recipient == "guest" }
     }
 
     private fun List<YouTrackNotification>.filterUnseen(): List<YouTrackNotification> {

@@ -57,7 +57,6 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createHeaderPanel(issue: Issue): JPanel {
         val panel = JPanel(BorderLayout())
-        // todo: strikeout resolved issue ids
         val textArea = JTextArea()
         textArea.text = "${issue.id} ${issue.summary}"
         textArea.wrapStyleWord = true
@@ -122,7 +121,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
             tabs.addTab("Comments (${comments.size})", commentsPanel)
             tabs.isFocusable = false
-            comments.forEach { commentsPanel.add(createCommentPanel(it)) }
+            comments.filterNot { it.deleted }.forEach { commentsPanel.add(createCommentPanel(it)) }
         }
     }
 

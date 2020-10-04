@@ -29,7 +29,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
-                "author(name,login)),summary,wikifiedDescription,customFields(name,color,value(name,minutes,presentation,color(background,foreground))," +
+                "author(name,login),deleted),summary,wikifiedDescription,customFields(name,color," +
+                "value(name,minutes,presentation,color(background,foreground))," +
                 "id,projectCustomField(emptyFieldText)),resolved,attachments(name,url),reporter(login)"
 
 
@@ -156,7 +157,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             val workItems = getWorkItems(id)
 
             var workItemsJson: String
-            if (workItems.size == 0) {
+            if (workItems.isEmpty()) {
                 workItemsJson = "\"workItems\": []"
             } else {
                 workItemsJson = "\"workItems\": ["
