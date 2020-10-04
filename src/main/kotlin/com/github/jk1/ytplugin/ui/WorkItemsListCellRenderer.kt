@@ -12,9 +12,12 @@ import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
+import java.util.*
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
+import javax.swing.UIManager
+import javax.swing.plaf.FontUIResource
 
 
 class WorkItemsListCellRenderer(
@@ -73,17 +76,64 @@ class WorkItemsListCellRenderer(
 
         prepareCommentsForDisplaying(issueWorkItem)
 
-        val panel = JPanel(GridLayout(1, 6, 0, 0))
+        val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.isOpaque = false
-        panel.preferredSize = Dimension(9 * viewportWidthProvider.invoke() / 10, viewportWidthProvider.invoke() / 50)
-        panel.add(date)
-        panel.add(value)
-        panel.add(issueLink)
-        panel.add(type)
-        panel.add(trackingComments)
+        val panelWidth = 9 * viewportWidthProvider.invoke() / 10
+        val panelHeight = 32
+
+        panel.preferredSize = Dimension(panelWidth, panelHeight)
+        val datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
+        datePanel.add(date)
+
+        value.alignmentX = Component.RIGHT_ALIGNMENT
+        val valuePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+
+        valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
+        valuePanel.alignmentX = Component.RIGHT_ALIGNMENT
+
+        val issueLinkPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        issueLinkPanel.add(issueLink)
+        issueLinkPanel.preferredSize = Dimension((0.078 * panelWidth).toInt(), panelHeight + 10)
+
+
+        if (panelWidth > 1000) {
+            datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
+            valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
+            issueLinkPanel.preferredSize = Dimension((0.078 * panelWidth).toInt(), panelHeight + 10)
+
+        } else {
+            datePanel.preferredSize = Dimension((0.3 * panelWidth).toInt(), panelHeight)
+            valuePanel.preferredSize = Dimension((0.4 * panelWidth).toInt(), panelHeight)
+            issueLinkPanel.preferredSize = Dimension((0.2 * panelWidth).toInt(), panelHeight)
+
+        }
+
+        datePanel.add(date)
+        valuePanel.add(value)
+        panel.add(datePanel)
+        panel.add(valuePanel)
+
+        if (panelWidth > 500) {
+
+            panel.add(issueLinkPanel)
+
+            if (panelWidth > 1000) {
+                val typePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+                typePanel.add(type)
+                typePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
+                panel.add(typePanel)
+
+                val trackingCommentsPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+                trackingCommentsPanel.add(trackingComments)
+                trackingCommentsPanel.preferredSize = Dimension((0.274 * panelWidth).toInt(), panelHeight + 10)
+                panel.add(trackingCommentsPanel)
+            }
+        }
 
         summaryPanel.add(panel, BorderLayout.CENTER)
     }
+
 
     private fun prepareCommentsForDisplaying(issueWorkItem: IssueWorkItem) {
         val viewportWidth = viewportWidthProvider.invoke() / 8
