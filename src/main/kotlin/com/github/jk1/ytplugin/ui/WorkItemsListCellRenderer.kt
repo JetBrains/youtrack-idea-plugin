@@ -16,8 +16,6 @@ import java.util.*
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
-import javax.swing.UIManager
-import javax.swing.plaf.FontUIResource
 
 
 class WorkItemsListCellRenderer(

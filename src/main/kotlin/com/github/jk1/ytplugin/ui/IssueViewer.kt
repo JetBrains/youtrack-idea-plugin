@@ -183,24 +183,32 @@ class IssueViewer : JPanel(BorderLayout()) {
         val slash2 = SimpleColoredComponent()
         slash2.append("                  |")
 
-        workItemsPanel.add(header)
-        workItemsPanel.add(slash)
-        workItemsPanel.add(date)
-        workItemsPanel.add(slash1)
-        workItemsPanel.add(value)
-
-        var comment = SimpleColoredComponent()
-        if (workItem.comment != null) {
-            comment = createValueWithEnding(" ...", comment,
-                    workItem.comment, viewportWidth)
-            workItemsPanel.add(slash2)
-            workItemsPanel.add(comment)
+        val panelWidth = rootPane.width
+        if (panelWidth < 500){
+            workItemsPanel.add(date)
+            workItemsPanel.add(slash1)
+            workItemsPanel.add(value)
         } else {
-            workItemsPanel.add(JLabel(""))  // for empty cell
+            workItemsPanel.add(header)
+            workItemsPanel.add(slash)
+            workItemsPanel.add(date)
+            workItemsPanel.add(slash1)
+            workItemsPanel.add(value)
+
+            var comment = SimpleColoredComponent()
+            if (workItem.comment != null) {
+                comment = createValueWithEnding(" ...", comment,
+                        workItem.comment, viewportWidth)
+                workItemsPanel.add(slash2)
+                workItemsPanel.add(comment)
+            } else {
+                workItemsPanel.add(JLabel(""))  // for empty cell
+                workItemsPanel.add(JLabel(""))  // for empty cell
+            }
+
             workItemsPanel.add(JLabel(""))  // for empty cell
         }
 
-        workItemsPanel.add(JLabel(""))  // for empty cell
 
         return workItemsPanel
     }
