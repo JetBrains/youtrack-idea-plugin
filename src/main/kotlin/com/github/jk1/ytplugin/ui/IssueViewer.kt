@@ -15,7 +15,6 @@ import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
-
 class IssueViewer : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null
@@ -167,6 +166,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
 
         val date = SimpleColoredComponent()
+        // post date without time
         date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
 
         var value = SimpleColoredComponent()
@@ -177,11 +177,11 @@ class IssueViewer : JPanel(BorderLayout()) {
 
 
         val slash = SimpleColoredComponent()
-        slash.append("                   |")
+        slash.append("            |")
         val slash1 = SimpleColoredComponent()
-        slash1.append("                  |")
+        slash1.append("           |")
         val slash2 = SimpleColoredComponent()
-        slash2.append("                  |")
+        slash2.append("           |")
 
         val panelWidth = rootPane.width
         if (panelWidth < 500){
@@ -212,7 +212,6 @@ class IssueViewer : JPanel(BorderLayout()) {
 
         return workItemsPanel
     }
-
 
 
 

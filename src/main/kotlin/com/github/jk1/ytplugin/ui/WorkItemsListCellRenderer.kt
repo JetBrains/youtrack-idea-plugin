@@ -12,7 +12,6 @@ import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
-import java.util.*
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
