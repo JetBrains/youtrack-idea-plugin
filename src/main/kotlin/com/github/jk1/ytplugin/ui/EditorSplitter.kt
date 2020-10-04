@@ -19,6 +19,9 @@ class EditorSplitter(vertical: Boolean) : Splitter(vertical) {
 
     private var previewCollapsed = true
 
+    fun isCollapsedState() = previewCollapsed
+
+
     init {
         isShowDividerControls = true
         isShowDividerIcon = true
