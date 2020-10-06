@@ -10,6 +10,7 @@ import com.google.gson.JsonParser
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -80,9 +81,8 @@ class TimeTracker(override val project: Project) : ComponentAware{
 
     }
 
-    fun stop(): String {
-        val trackerNote = TrackerNotification()
-        return if (isRunning) {
+    fun stop() {
+        if (isRunning) {
             if (!isPaused) {
                 timeInMills += (System.currentTimeMillis() - startTime)
             }
@@ -90,10 +90,8 @@ class TimeTracker(override val project: Project) : ComponentAware{
             timeInMills = 0
             isRunning = false
             isPaused = false
-            recordedTime
         } else {
-            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
-            "0"
+            throw IllegalStateException()
         }
     }
 

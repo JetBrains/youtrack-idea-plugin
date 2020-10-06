@@ -12,16 +12,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetUsagesCollector
+import java.lang.IllegalStateException
 import java.util.*
 
 
 class StopTrackerAction : AnAction(
         "Stop work timer",
         "Post recorded time to YouTrack server and reset timer",
-        YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER){
+        YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER) {
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {project ->
+        event.whenActive { project ->
             stopTimer(project)
         }
     }
@@ -35,31 +36,36 @@ class StopTrackerAction : AnAction(
         }
     }
 
-    fun stopTimer(project: Project){
+    fun stopTimer(project: Project) {
+        val trackerNote = TrackerNotification()
+
         val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
         val timer = ComponentAware.of(project).timeTrackerComponent
 
-        val time = timer.stop()
+        try {
+            timer.stop()
+            val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+            bar?.removeWidget("Time Tracking Clock")
 
-        val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
-        bar?.removeWidget("Time Tracking Clock")
-
-        val trackerNote = TrackerNotification()
-
-        if (time == "0")
-            trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.WARNING)
-        else {
-            val status = repo.let { it1 ->
-                TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
-                        timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
-            }
-            if (status != 200)
-                trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
+            println("time: " + timer.recordedTime)
+            if (timer.recordedTime == "0")
+                trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.WARNING)
             else {
-                trackerNote.notify("Work timer stopped, time ${timer.recordedTime} " +
-                        "posted on server for issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
-                ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+                val status = repo.let { it1 ->
+                    TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+                            timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                }
+                if (status != 200)
+                    trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
+                else {
+                    trackerNote.notify("Work timer stopped, time ${timer.recordedTime} " +
+                            "posted on server for issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
+                    ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+                }
             }
+        } catch (e: IllegalStateException) {
+            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
         }
+
     }
 }

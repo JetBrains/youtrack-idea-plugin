@@ -21,6 +21,7 @@ import java.awt.Component
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
+import java.lang.IllegalStateException
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -172,7 +173,12 @@ class ActivityTracker(
                 if (!isPostedOnClose){
                     if (timer.isWhenProjectClosedEnabled){
                         logger.debug("state PROJECT_CLOSE with posting enabled")
-                        timer.stop()
+                        try {
+                            timer.stop()
+                        } catch (e: IllegalStateException){
+                            val trackerNote = TrackerNotification()
+                            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
+                        }
                         val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                         bar?.removeWidget("Time Tracking Clock")
 

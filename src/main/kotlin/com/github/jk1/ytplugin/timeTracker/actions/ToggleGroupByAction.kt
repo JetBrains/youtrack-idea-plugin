@@ -49,10 +49,8 @@ class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
     }
 
     override fun update(event: AnActionEvent) {
-        val project = event.project
-        if (project != null){
-            event.presentation.isEnabled = project.isInitialized &&
-                    !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
+        event.whenActive { project ->
+            event.presentation.isEnabled = !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
         }
     }
 }

@@ -9,7 +9,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 
 /**
- * Starts async issue store update from a remote server
+ * Starts async work items store update from a remote server
  */
 class RefreshWorkItemsAction(val repo: YouTrackServer) : IssueAction() {
 
@@ -26,8 +26,8 @@ class RefreshWorkItemsAction(val repo: YouTrackServer) : IssueAction() {
     }
 
     override fun update(event: AnActionEvent) {
-        val project = event.project
-        event.presentation.isEnabled = project != null && project.isInitialized &&
-                !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
+        event.whenActive { project ->
+            event.presentation.isEnabled = !ComponentAware.of(project).issueWorkItemsStoreComponent[repo].isUpdating()
+        }
     }
 }
