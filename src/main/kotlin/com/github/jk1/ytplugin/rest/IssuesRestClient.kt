@@ -104,17 +104,21 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     private fun parseWorkItems(method: GetMethod): List<IssueWorkItem> {
-        return method.connect {
+        val workItems = mutableListOf<IssueWorkItem>()
+        try {
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
             if (status == 200) {
-                val workItems = mutableListOf<IssueWorkItem>()
+                logger.debug("Successfully parsed work items: $status")
                 json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
-                workItems
             } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
+                logger.debug("Unable to parse work items: ${method.responseBodyAsLoggedString()}")
             }
+        } catch (e: Exception){
+            logger.debug("Unable to parse work items: ${e.message}")
         }
+
+        return workItems
     }
 
 
@@ -182,6 +186,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully got formatted unique issue ids: $status")
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 for (item in json) {
                     var summary = item.asJsonObject.get("summary").asString
@@ -194,6 +199,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 }
                 result
             } else {
+                logger.debug("Unable to get formatted unique issue ids: ${method.responseBodyAsLoggedString()}")
                 result
             }
         }
