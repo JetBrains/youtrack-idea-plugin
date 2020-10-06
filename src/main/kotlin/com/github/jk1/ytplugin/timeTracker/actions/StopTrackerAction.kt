@@ -17,15 +17,12 @@ import java.util.*
 
 class StopTrackerAction : AnAction(
         "Stop work timer",
-        "Stop work timer",
+        "Post recorded time to YouTrack server and reset timer",
         YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER){
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            val project = event.project
-            if (project != null) {
-                stopTimer(project)
-            }
+        event.whenActive {project ->
+            stopTimer(project)
         }
     }
 

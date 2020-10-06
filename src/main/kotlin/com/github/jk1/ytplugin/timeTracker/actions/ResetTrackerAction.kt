@@ -9,19 +9,15 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 class ResetTrackerAction : AnAction(
         "Reset work timer",
-        "Reset work timer",
+        "Reset work timer for ongoing task tracking",
         YouTrackPluginIcons.YOUTRACK_RESET_TIME_TRACKER) {
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            val project = event.project
-            if (project != null) {
-                val timer = ComponentAware.of(project).timeTrackerComponent
-                timer.reset()
-            }
+        event.whenActive { project ->
+            val timer = project.let { it1 -> ComponentAware.of(it1).timeTrackerComponent }
+            timer.reset()
         }
     }
-
 
     override fun update(event: AnActionEvent) {
         val project = event.project

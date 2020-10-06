@@ -19,7 +19,7 @@ import com.intellij.tasks.TaskManager
 
 class StartTrackerAction : AnAction(
         "Start work timer",
-        "Start work timer",
+        "Start work timer for selected active task",
         AllIcons.Actions.Profile) {
 
     fun startAutomatedTracking(project: Project, timer: TimeTracker) {
@@ -29,12 +29,10 @@ class StartTrackerAction : AnAction(
     }
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            if (event.project != null) {
-                val timer = ComponentAware.of(event.project!!).timeTrackerComponent
-                ComponentAware.of(event.project!!).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-                startTracking(event.project!!, timer)
-            }
+        event.whenActive {project ->
+            val timer = ComponentAware.of(project).timeTrackerComponent
+            ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
+            startTracking(project, timer)
         }
     }
 

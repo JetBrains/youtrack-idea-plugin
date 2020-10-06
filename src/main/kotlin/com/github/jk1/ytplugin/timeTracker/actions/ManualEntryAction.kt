@@ -14,22 +14,15 @@ import java.net.UnknownHostException
 
 class ManualEntryAction  : AnAction(
         "Add spent time",
-        "Add spent time",
+        "Create a new spent time item and post it to YouTrack server",
         YouTrackPluginIcons.YOUTRACK_MANUAL_ADD_TIME_TRACKER){
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            val project = event.project
-            val repo = project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
-
+        event.whenActive { project ->
+            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
             try{
-                val dialog = repo?.let { it1 -> TimeTrackerManualEntryDialog(project, it1) }
-                if (dialog != null){
-                    dialog.show()
-                } else {
-                    val trackerNote = TrackerNotification()
-                    trackerNote.notify("Unable to add spent time manually" , NotificationType.WARNING)
-                }
+                val dialog = repo.let { it1 -> TimeTrackerManualEntryDialog(project, it1) }
+                dialog.show()
             }
             catch (e: UnknownHostException){
                 val trackerNote = TrackerNotification()

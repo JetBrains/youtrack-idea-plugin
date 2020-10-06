@@ -7,22 +7,19 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
 
-class PauseTrackerAction  : AnAction(
+class PauseTrackerAction : AnAction(
         "Pause work timer",
-        "Pause work timer",
-        YouTrackPluginIcons.YOUTRACK_PAUSE_TIME_TRACKER){
+        "Pause work timer for ongoing task tracking",
+        YouTrackPluginIcons.YOUTRACK_PAUSE_TIME_TRACKER) {
 
     override fun actionPerformed(event: AnActionEvent) {
-        event.whenActive {
-            val project = event.project
-            if (project != null) {
-                val timer = ComponentAware.of(event.project!!).timeTrackerComponent
-                if (timer.isAutoTrackingEnable){
-                    timer.startTime = timer.activityTracker?.startInactivityTime!!
-                    timer.isAutoTrackingTemporaryDisabled = true
-                }
-                timer.pause()
+        event.whenActive {project ->
+            val timer = ComponentAware.of(project).timeTrackerComponent
+            if (timer.isAutoTrackingEnable) {
+                timer.startTime = timer.activityTracker?.startInactivityTime!!
+                timer.isAutoTrackingTemporaryDisabled = true
             }
+            timer.pause()
         }
     }
 
