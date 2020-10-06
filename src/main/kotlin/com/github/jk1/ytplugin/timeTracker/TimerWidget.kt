@@ -10,7 +10,7 @@ import javax.swing.JLabel
 import javax.swing.Timer
 import kotlin.jvm.internal.Intrinsics
 
-class ClockWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable) : CustomStatusBarWidget {
+class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable) : CustomStatusBarWidget {
 
     val label = JLabel(time())
     private val timer = Timer(1000, ActionListener { label.text = time() })
@@ -31,7 +31,6 @@ class ClockWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
     }
 
     override fun install(statusBar: StatusBar) {
-        Intrinsics.checkParameterIsNotNull(statusBar, "statusBar")
         label.text = "Time spent: 00:00"
         trackingDisposable = ActivityTracker.newDisposable(parentDisposable)
         timer.start()

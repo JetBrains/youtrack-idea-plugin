@@ -3,7 +3,7 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.timeTracker.ActivityTracker
-import com.github.jk1.ytplugin.timeTracker.ClockWidget
+import com.github.jk1.ytplugin.timeTracker.TimerWidget
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
@@ -11,12 +11,6 @@ import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.impl.EditorImpl
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
@@ -69,7 +63,7 @@ class StartTrackerAction : AnAction(
                 } else {
                     val bar = WindowManager.getInstance().getStatusBar(project)
                     if (bar?.getWidget("Time Tracking Clock") == null) {
-                        bar?.addWidget(ClockWidget(myTimer, parentDisposable), parentDisposable)
+                        bar?.addWidget(TimerWidget(myTimer, parentDisposable), parentDisposable)
                     }
 
                     myTimer.start(activeTask.id)

@@ -1,6 +1,6 @@
 package com.github.jk1.ytplugin.workItems
 
-import com.github.jk1.ytplugin.timeTracker.ClockWidget
+import com.github.jk1.ytplugin.timeTracker.TimerWidget
 import com.intellij.mock.MockProjectEx
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.wm.impl.TestWindowManager
@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.jvm.internal.Intrinsics
 import kotlin.test.assertNotEquals
 
-class ClockWidgetTest : PlatformLiteFixture() {
-    private var widget: ClockWidget? = null
+class TimerWidgetTest : PlatformLiteFixture() {
+    private var widget: TimerWidget? = null
     @Throws(Exception::class)
     public override fun setUp() {
         super.setUp()
@@ -23,17 +23,17 @@ class ClockWidgetTest : PlatformLiteFixture() {
         val statusBar = windowManager.getStatusBar(myProject)
         val statusBarWidget = statusBar.getWidget("Time Tracking Clock")
         if (statusBarWidget == null) {
-            throw TypeCastException("null cannot be cast to non-null type clock.ClockWidget")
+            throw TypeCastException("null cannot be cast to non-null type clock.TimerWidget")
         } else {
-            widget = statusBarWidget as ClockWidget?
-            val widget: ClockWidget? = widget
+            widget = statusBarWidget as TimerWidget?
+            val widget: TimerWidget? = widget
             widget?.install(statusBar)
         }
     }
 
     @Throws(InterruptedException::class)
     fun testTimeChanges() {
-        val widget: ClockWidget? = widget
+        val widget: TimerWidget? = widget
         if (widget == null) {
             Intrinsics.throwNpe()
         }
