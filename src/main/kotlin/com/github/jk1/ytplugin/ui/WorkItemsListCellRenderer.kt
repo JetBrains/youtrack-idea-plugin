@@ -18,7 +18,7 @@ import javax.swing.ListCellRenderer
 
 
 class WorkItemsListCellRenderer(
-        private val viewportWidthProvider: () -> Int, repo: YouTrackRepository) : JPanel(BorderLayout()), ListCellRenderer<IssueWorkItem> {
+        private val viewportWidthProvider: () -> Int,  private val viewportHeightProvider: () -> Int, repo: YouTrackRepository) : JPanel(BorderLayout()), ListCellRenderer<IssueWorkItem> {
 
     private val myRepository = repo
     private val topPanel = JPanel(BorderLayout())
@@ -76,7 +76,7 @@ class WorkItemsListCellRenderer(
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.isOpaque = false
         val panelWidth = 9 * viewportWidthProvider.invoke() / 10
-        val panelHeight = 32
+        val panelHeight = viewportHeightProvider.invoke() / 13
 
         panel.preferredSize = Dimension(panelWidth, panelHeight)
         val datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
