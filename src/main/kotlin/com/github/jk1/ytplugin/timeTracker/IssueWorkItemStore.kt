@@ -52,7 +52,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issuesWorkItems for the search query")
-                val search = repo.defaultSearch + "#{Assigned to me}"
+                val search = repo.defaultSearch + ""
                 val list = UserRestClient(repo).getWorkItemsForUser(search)
                 workItems = if (searchQuery != "")
                     filterWorkItems(searchQuery, list)
@@ -61,6 +61,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
                 workItems = if (withGroupingByIssue)
                     workItems.sortedWith(compareBy { it.issueId })
                 else workItems
+
             } catch (e: SocketTimeoutException) {
                 displayErrorMessage("Failed to updated issueWorkItems from YouTrack server. Request timed out.", e)
             } catch (e: Exception) {

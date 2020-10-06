@@ -15,7 +15,6 @@ import org.apache.commons.httpclient.methods.GetMethod
 class UserRestClient(override val repository: YouTrackServer) : RestClientTrait {
 
     private fun parseWorkItems(method: GetMethod): MutableList<IssueWorkItem> {
-
         return method.connect {
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
