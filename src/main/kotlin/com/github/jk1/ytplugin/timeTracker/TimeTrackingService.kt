@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
 
-class TimerConnector {
+class TimeTrackingService {
 
     fun getAvailableWorkItemsTypes(repo: YouTrackServer) : MutableList<String> {
         val types = mutableListOf<String>()

@@ -4,7 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
-import com.github.jk1.ytplugin.timeTracker.TimerConnector
+import com.github.jk1.ytplugin.timeTracker.TimeTrackingService
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
@@ -320,8 +320,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
             if (repoConnector.noteState == NotifierState.SUCCESS){
-                val timerConnector = TimerConnector()
-                timerConnector.configureTimerForTracking(timeTrackingTab, repo, project)
+                val timerService = TimeTrackingService()
+                timerService.configureTimerForTracking(timeTrackingTab, repo, project)
             }
 
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST) {

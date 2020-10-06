@@ -95,8 +95,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     private fun createTypePanel(): JPanel {
 
-        val timerConnector = TimerConnector()
-        val types = timerConnector.getAvailableWorkItemsTypes(repo)
+        val timerService = TimeTrackingService()
+        val types = timerService.getAvailableWorkItemsTypes(repo)
 
         typeComboBox = JComboBox(types.toTypedArray())
         typeComboBox.selectedIndex = 0
@@ -210,8 +210,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 notifier.text = "Date is not specified"
             } else {
                 val selectedId = ids[idComboBox.selectedIndex].name
-                val connector = TimerConnector()
-                val successOnPost = connector.postNewWorkItem(datePicker.date.format(),
+                val timerService = TimeTrackingService()
+                val successOnPost = timerService.postNewWorkItem(datePicker.date.format(),
                         typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
                         commentTextField.text, time.toString())
                 if (successOnPost) {

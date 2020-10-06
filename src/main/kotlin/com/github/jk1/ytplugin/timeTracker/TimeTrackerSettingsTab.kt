@@ -85,8 +85,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     private fun createTypePanel(timer: TimeTracker, repo: YouTrackServer): JPanel {
 
         val typePanel = JPanel(FlowLayout(2))
-        val timerConnector = TimerConnector()
-        val types = timerConnector.getAvailableWorkItemsTypes(repo)
+        val timerService = TimeTrackingService()
+        val types = timerService.getAvailableWorkItemsTypes(repo)
 
         var idx = 0
         if (types.isNotEmpty()) {
