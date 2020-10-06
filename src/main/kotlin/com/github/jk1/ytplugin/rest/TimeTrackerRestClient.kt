@@ -30,23 +30,30 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
 
-        val status = httpClient.executeMethod(method)
-        when (status) {
-                200 -> {
-                    logger.debug("Successfully posted")
-                }
+        try {
+            val status = httpClient.executeMethod(method)
+            if (status == 200){
+                logger.debug("Successfully posted work item ${findWorkItemId(type)} for issue $issueId with code $status")
+            } else {
+                logger.debug("Work item ${findWorkItemId(type)}, posting failed with code $status: " + method.responseBodyAsLoggedString())
             }
-        return status
+            return status
+        } catch (e: Exception){
+            logger.debug("Unable to post work item ${findWorkItemId(type)}, posting failed: ${e.message}")
+        }
+        return 0
+
     }
 
-    // todo edge case - no such work item
     private fun findWorkItemId(name: String) : String {
         val types = getAvailableWorkItemTypes()
         for (type in types) {
             if (type.name == name) {
+                logger.debug("$name work item id found: ${type.value}")
                 return type.value
             }
         }
+        logger.debug("No such work item id found: $name")
         return ""
     }
 
@@ -56,14 +63,21 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         val myFields = NameValuePair("fields","name,id")
         method.setQueryString(arrayOf( myFields))
         val result = mutableListOf<NameValuePair>()
-        val status = httpClient.executeMethod(method)
-        if (status == 200) {
-            val types: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-            for (type in types){
-                val currentType = type.asJsonObject
-                val pair = NameValuePair(currentType.asJsonObject.get("name").asString, currentType.asJsonObject.get("id").asString)
-                result.add(pair)
+        try {
+            val status = httpClient.executeMethod(method)
+            if (status == 200) {
+                val types: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+                for (type in types){
+                    val currentType = type.asJsonObject
+                    val pair = NameValuePair(currentType.asJsonObject.get("name").asString, currentType.asJsonObject.get("id").asString)
+                    result.add(pair)
+                }
+                logger.debug("Successfully fetched available work items types: code $status")
+            } else {
+                logger.debug("Unable to fetch available work items types: ${method.responseBodyAsLoggedString()}")
             }
+        } catch (e: Exception){
+            logger.debug("Unable to fetch available work items types: ${e.message}")
         }
         return result
     }
