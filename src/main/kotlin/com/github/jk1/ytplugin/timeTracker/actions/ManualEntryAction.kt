@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerManualEntryDialog
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
@@ -38,7 +39,7 @@ class ManualEntryAction  : AnAction(
                 val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
                 event.presentation.isVisible = repo.getRepo().isConfigured
             }
-            catch(e: NoActiveYouTrackTaskException) {
+            catch(e: NoYouTrackRepositoryException) {
                 event.presentation.isVisible = false
             }
         }

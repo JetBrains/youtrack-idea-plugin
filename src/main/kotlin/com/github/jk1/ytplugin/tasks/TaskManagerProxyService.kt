@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.logger
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -66,10 +67,15 @@ class TaskManagerProxyService(val project: Project) : Disposable {
     }
 
     fun getActiveYouTrackRepository(): YouTrackServer {
-        val repository = getActiveYouTrackTask().repository as BaseRepository
-        if (repository.isConfigured && repository.isYouTrack()) {
-            return YouTrackServer(repository as YouTrackRepository, project)
-        } else {
+        try {
+            val repository = getActiveYouTrackTask().repository as BaseRepository
+            if (repository.isConfigured && repository.isYouTrack()) {
+                return YouTrackServer(repository as YouTrackRepository, project)
+            } else {
+                throw NoYouTrackRepositoryException()
+            }
+        } catch (e: NoActiveYouTrackTaskException){
+            logger.debug("No active YouTrack task detected: ${e.message}")
             throw NoYouTrackRepositoryException()
         }
     }
