@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.ActionCallback
@@ -37,37 +38,21 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
             try {
                 logger.debug("Fetching time tracker for  ${repo.defaultSearch}")
                 val timer = ComponentAware.of(project).timeTrackerComponent
-                trackerJson = fillTrackerJson(timer)
+                val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+                store.saveFields(timer)
+                println("hey: " + store.getValue("timeTracker.timeInMills"))
             } catch (e: Exception) {
                 displayErrorMessage("Error while loading time tracker", e)
             }
         }
 
         fun fillTimeToStore(timer: TimeTracker): String {
-            trackerJson = fillTrackerJson(timer)
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+            store.saveFields(timer)
+            store.setValue("inactivityPeriodInMills", timer.inactivityPeriodInMills.toString())
             logger.debug("Filled in time to store on project close")
             return trackerJson
         }
-
-        private fun fillTrackerJson(timer: TimeTracker): String {
-            val res: URL? = this::class.java.classLoader.getResource("time_tracker_stored.json")
-            return res?.readText()
-                    ?.replace("{issueId}", timer.issueId, true)
-                    ?.replace("{issueIdReadable}", timer.issueIdReadable, true)
-                    ?.replace("\"{inactivityPeriodInMills}\"", timer.inactivityPeriodInMills.toString(), true)
-                    ?.replace("{type}", timer.type, true)
-                    ?.replace("{scheduledPeriod}", timer.scheduledPeriod, true)
-                    ?.replace("{recordedTime}", timer.recordedTime, true)
-                    ?.replace("\"{timeInMills}\"", timer.timeInMills.toString(), true)
-                    ?.replace("\"{startTime}\"", timer.startTime.toString(), true)
-                    ?.replace("{comment}", timer.comment, true)
-                    ?.replace("\"{isManualTrackingEnable}\"", timer.isManualTrackingEnable.toString(), true)
-                    ?.replace("\"{isScheduledEnabled}\"", timer.isScheduledEnabled.toString(), true)
-                    ?.replace("\"{isWhenProjectClosedEnabled}\"", timer.isWhenProjectClosedEnabled.toString(), true)
-                    ?.replace("\"{isPostAfterCommitEnabled}\"", timer.isPostAfterCommitEnabled.toString(), true)
-                    ?.replace("\"{isAutoTrackingEnable}\"", timer.isAutoTrackingEnable.toString(), true) ?: "0"
-        }
-
 
         private fun displayErrorMessage(message: String, exception: Exception) {
             logger.info("Time tracker refresh failed: ${exception.message}")

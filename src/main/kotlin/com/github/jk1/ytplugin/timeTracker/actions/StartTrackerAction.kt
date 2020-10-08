@@ -54,6 +54,11 @@ class StartTrackerAction : AnAction(
         val parentDisposable = project.getService(StatusBarWidgetsManager::class.java)
 
         if (!myTimer.isAutoTrackingTemporaryDisabled) {
+            val bar = WindowManager.getInstance().getStatusBar(project)
+            if (bar?.getWidget("Time Tracking Clock") == null) {
+                bar?.addWidget(TimerWidget(myTimer, parentDisposable), parentDisposable)
+            }
+
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
                     myTimer.issueId = IssuesRestClient.getEntityIdByIssueId(activeTask.id, project)
@@ -62,11 +67,6 @@ class StartTrackerAction : AnAction(
                         val trackerNote = TrackerNotification()
                         trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.WARNING)
                     } else {
-                        val bar = WindowManager.getInstance().getStatusBar(project)
-                        if (bar?.getWidget("Time Tracking Clock") == null) {
-                            bar?.addWidget(TimerWidget(myTimer, parentDisposable), parentDisposable)
-                        }
-
                         myTimer.start(activeTask.id)
                         // case for activity tracker enabled
                         if (myTimer.isAutoTrackingEnable) {
@@ -87,7 +87,7 @@ class StartTrackerAction : AnAction(
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.WARNING)
+                trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.INFORMATION)
             }
         }
     }
