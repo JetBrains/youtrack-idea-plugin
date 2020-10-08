@@ -21,7 +21,10 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         val recordedTime = if (timeTracker.isPaused){
             timeTracker.getRecordedTimeInMills()
         } else {
-            timeTracker.getRecordedTimeInMills() + System.currentTimeMillis() - timeTracker.startTime
+            println("timeTracker.getRecordedTimeInMills() " + timeTracker.getRecordedTimeInMills())
+//            timeTracker.getRecordedTimeInMills() + System.currentTimeMillis() - timeTracker.startTime
+            timeTracker.getRecordedTimeInMills()
+
         }
         val time = String.format("%02d:%02d",
         TimeUnit.MILLISECONDS.toHours(recordedTime),

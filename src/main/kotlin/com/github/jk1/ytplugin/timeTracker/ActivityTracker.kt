@@ -6,6 +6,7 @@ import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
+import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
@@ -38,10 +39,16 @@ class ActivityTracker(
 
 ) : Disposable {
     private var trackingDisposable: Disposable? = null
+
+    @PropertyName("activityTracker.myInactivityTime")
     private var myInactivityTime: Long = 0
+
+    @PropertyName("activityTracker.startInactivityTime")
     var startInactivityTime: Long = currentTimeMillis()
 
     private val repo = project.let { ComponentAware.of(it).taskManagerComponent.getActiveYouTrackRepository() }
+
+    @PropertyName("activityTracker.isPostedOnClose")
     private var isPostedOnClose = false
 
     fun startTracking() {
@@ -101,7 +108,6 @@ class ActivityTracker(
                 if (!timer.isPostedScheduled) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Scheduled time posting at $time:0", NotificationType.INFORMATION)
-
                     timer.isPostedScheduled = true
                     StopTrackerAction().stopTimer(project)
                 }
@@ -118,6 +124,10 @@ class ActivityTracker(
         var lastMouseMoveTimestamp = 0L
         val mouseMoveEventsThresholdMs = 1000
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
+
+
+            timer.timeInMills = currentTimeMillis() - timer.startTime - timer.pausedTime
+            timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
 
             var isMouseOrKeyboardActive = false
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
@@ -147,11 +157,19 @@ class ActivityTracker(
             }
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
+                if (timer.isPaused){
+                    timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
+                } else {
+                    timer.pausedTime = 0
+                }
+                println("hello " + timer.pausedTime)
                 if ((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused) {
                     timer.pause()
                 }
             } else if (isMouseOrKeyboardActive) {
                 myInactivityTime = 0
+
+                println("here")
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
                     val action = StartTrackerAction()
@@ -175,16 +193,13 @@ class ActivityTracker(
                         println("here2")
                         logger.debug("state PROJECT_CLOSE with posting enabled")
                         try {
-                            timer.stop()
+                            StopTrackerAction().stopTimer(project)
                         } catch (e: IllegalStateException){
                             val trackerNote = TrackerNotification()
                             trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
                         }
                         val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
                         bar?.removeWidget("Time Tracking Clock")
-
-                        TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
-                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                         dispose()
                     } else {
                         println("here")

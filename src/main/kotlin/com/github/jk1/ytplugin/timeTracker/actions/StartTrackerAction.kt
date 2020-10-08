@@ -9,6 +9,7 @@ import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
+import com.intellij.internal.performance.currentLatencyRecordKey
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -61,8 +62,11 @@ class StartTrackerAction : AnAction(
 
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
+                    myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
                     myTimer.issueId = IssuesRestClient.getEntityIdByIssueId(activeTask.id, project)
                     myTimer.issueIdReadable = activeTask.id
+                    myTimer.startTime = System.currentTimeMillis()
+//                    myTimer.startTime = System.currentTimeMillis()
                     if (myTimer.issueId == "0") {
                         val trackerNote = TrackerNotification()
                         trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.WARNING)
@@ -91,6 +95,5 @@ class StartTrackerAction : AnAction(
             }
         }
     }
-
 
 }

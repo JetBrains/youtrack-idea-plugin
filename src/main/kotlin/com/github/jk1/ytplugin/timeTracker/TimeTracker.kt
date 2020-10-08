@@ -27,6 +27,9 @@ class TimeTracker(override val project: Project) : ComponentAware{
     @PropertyName("timeTracker.inactivityPeriodInMills")
     var inactivityPeriodInMills: Long = 600000
 
+    @PropertyName("timeTracker.pausedTime")
+    var pausedTime: Long = 0
+
     @PropertyName("timeTracker.type")
     var type: String = "None"
 
@@ -82,7 +85,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
             timeTrackerStoreComponent[repo].update(repo)
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.loadFields(this)
-            println("hey2: " + timeInMills)
+            println("hey2: " + timeInMills + " " + isWhenProjectClosedEnabled + " " + startTime + isPaused)
 
             StartTrackerAction().startAutomatedTracking(project, this)
         } catch (e: NoYouTrackRepositoryException) {
@@ -99,19 +102,22 @@ class TimeTracker(override val project: Project) : ComponentAware{
         recordedTime = formatTimePeriod(timeInMills)
         val store: PropertiesComponent = PropertiesComponent.getInstance(project)
         store.saveFields(this)
-        println("save: " + store.getValue("timeTracker.timeInMills") + ' ' + store.getValue("timeTracker.timeInMills")
-                + ' ' + store.getValue("timeTracker.isPostedOnClose"))
+        this.activityTracker?.let { store.saveFields(it) }
+        println("save: " + store.getValue("timeTracker.timeInMills") + ' ' +
+                store.getValue("timeTracker.timeInMills") + ' ' + store.getValue("activityTracker.startInactivityTime")  )
     }
 
     fun stop() {
         if (isRunning) {
-            if (!isPaused) {
-                timeInMills += (System.currentTimeMillis() - startTime)
-            }
+//            if (!isPaused) {
+//                timeInMills += (System.currentTimeMillis() - startTime)
+//            }
             recordedTime = formatTimePeriod(timeInMills)
+            println("recorded: " + recordedTime + " in mills " + timeInMills)
             timeInMills = 0
             isRunning = false
             isPaused = false
+            pausedTime = 0
         } else {
             throw IllegalStateException()
         }
@@ -123,8 +129,10 @@ class TimeTracker(override val project: Project) : ComponentAware{
             trackerNote.notify("Timer already paused for issue $issueIdReadable", NotificationType.WARNING)
         } else {
             if (isRunning) {
-                timeInMills += (System.currentTimeMillis() - startTime)
+//                timeInMills += (System.currentTimeMillis() - startTime)
+                recordedTime = formatTimePeriod(timeInMills)
                 isPaused = true
+                pausedTime = 0
                 trackerNote.notify("Work timer paused for issue $issueIdReadable", NotificationType.INFORMATION)
             } else {
                 trackerNote.notify("Could not pause - timer is not started", NotificationType.WARNING)
@@ -155,7 +163,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
         }
     }
 
-    private fun formatTimePeriod(timeInMilSec: Long): String {
+    fun formatTimePeriod(timeInMilSec: Long): String {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
         return if (minutes > 0)
             minutes.toString()

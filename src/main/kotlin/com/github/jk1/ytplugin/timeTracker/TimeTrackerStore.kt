@@ -40,7 +40,9 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
                 val timer = ComponentAware.of(project).timeTrackerComponent
                 val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                 store.saveFields(timer)
-                println("hey: " + store.getValue("timeTracker.timeInMills"))
+                timer.activityTracker?.let { store.saveFields(it) }
+                println("hey: " + store.getValue("timeTracker.timeInMills") + " " +
+                        store.getValue("activityTracker.startInactivityTime"))
             } catch (e: Exception) {
                 displayErrorMessage("Error while loading time tracker", e)
             }
