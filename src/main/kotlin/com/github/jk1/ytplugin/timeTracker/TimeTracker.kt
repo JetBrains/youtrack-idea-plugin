@@ -79,7 +79,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     init {
         try {
             val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-            timeTrackerStoreComponent[repo].update(repo)
+//            timeTrackerStoreComponent[repo].update(repo)
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.loadFields(this)
             StartTrackerAction().startAutomatedTracking(project, this)
@@ -167,7 +167,9 @@ class TimeTracker(override val project: Project) : ComponentAware {
         inactivityPeriodInMills = inactivityTime
 
         try {
-            timeTrackerStoreComponent[repository].update(repository)
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+            store.saveFields(this)
+//            timeTrackerStoreComponent[repository].update(repository)
         } catch (e: NoActiveYouTrackTaskException) {
             logger.debug("Unable to update repository when setting up the timer: ${e.message}")
         }

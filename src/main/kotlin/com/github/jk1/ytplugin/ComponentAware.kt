@@ -50,11 +50,11 @@ interface ComponentAware {
     val pluginApiComponent: YouTrackPluginApiService
         get() = project.getService(YouTrackPluginApiService::class.java) as YouTrackPluginApiService
 
-    val timeTrackerStoreComponent: PersistentTimeTrackerStore
-        get() = ApplicationManager.getApplication().getService(PersistentTimeTrackerStore::class.java)!!
+//    val timeTrackerStoreComponent: PersistentTimeTrackerStore
+//        get() = ApplicationManager.getApplication().getService(PersistentTimeTrackerStore::class.java)!!
 
-    val timeTrackerUpdaterComponent: TimeTrackerStoreUpdaterService
-        get() = project.getService(TimeTrackerStoreUpdaterService::class.java)!!
+//    val timeTrackerUpdaterComponent: TimeTrackerStoreUpdaterService
+//        get() = project.getService(TimeTrackerStoreUpdaterService::class.java)!!
 
     val timeTrackerComponent: TimeTracker
         get() = project.getService(TimeTracker::class.java)!!
