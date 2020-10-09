@@ -76,7 +76,7 @@ class WorkItemsListCellRenderer(
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.isOpaque = false
         val panelWidth = 9 * viewportWidthProvider.invoke() / 10
-        val panelHeight = viewportHeightProvider.invoke() / 17
+        val panelHeight = 32
 
         panel.preferredSize = Dimension(panelWidth, panelHeight)
         val datePanel = JPanel(FlowLayout(FlowLayout.LEFT))

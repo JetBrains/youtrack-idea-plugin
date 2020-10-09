@@ -6,8 +6,6 @@ import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
@@ -16,7 +14,7 @@ import com.intellij.openapi.project.Project
 import java.util.concurrent.TimeUnit
 
 @Service
-class TimeTracker(override val project: Project) : ComponentAware{
+class TimeTracker(override val project: Project) : ComponentAware {
 
     @PropertyName("timeTracker.issueId")
     var issueId: String = "Default"
@@ -78,46 +76,30 @@ class TimeTracker(override val project: Project) : ComponentAware{
     @PropertyName("timeTracker.isPostedScheduled")
     var isPostedScheduled = true
 
-
     init {
         try {
             val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
             timeTrackerStoreComponent[repo].update(repo)
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.loadFields(this)
-            println("hey2: " + timeInMills + " " + isWhenProjectClosedEnabled + " " + startTime + isPaused)
-
             StartTrackerAction().startAutomatedTracking(project, this)
         } catch (e: NoYouTrackRepositoryException) {
             logger.debug("Loading time tracker... Active YouTrack repository is not found: ${e.message}")
         }
     }
 
-
-    fun saveState() {
-        if (!isPaused) {
-            timeInMills += (System.currentTimeMillis() - startTime)
-            isPaused = true
-        }
-        recordedTime = formatTimePeriod(timeInMills)
-        val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-        store.saveFields(this)
-        this.activityTracker?.let { store.saveFields(it) }
-        println("save: " + store.getValue("timeTracker.timeInMills") + ' ' +
-                store.getValue("timeTracker.timeInMills") + ' ' + store.getValue("activityTracker.startInactivityTime")  )
-    }
-
     fun stop() {
         if (isRunning) {
-//            if (!isPaused) {
-//                timeInMills += (System.currentTimeMillis() - startTime)
-//            }
+            timeInMills = System.currentTimeMillis() - startTime - pausedTime
+            // to be used for the post request later
             recordedTime = formatTimePeriod(timeInMills)
-            println("recorded: " + recordedTime + " in mills " + timeInMills)
+
+            startTime = System.currentTimeMillis()
             timeInMills = 0
+            pausedTime = 0
             isRunning = false
             isPaused = false
-            pausedTime = 0
+            isAutoTrackingTemporaryDisabled = false
         } else {
             throw IllegalStateException()
         }
@@ -129,10 +111,9 @@ class TimeTracker(override val project: Project) : ComponentAware{
             trackerNote.notify("Timer already paused for issue $issueIdReadable", NotificationType.WARNING)
         } else {
             if (isRunning) {
-//                timeInMills += (System.currentTimeMillis() - startTime)
+                timeInMills = System.currentTimeMillis() - startTime - pausedTime
                 recordedTime = formatTimePeriod(timeInMills)
                 isPaused = true
-                pausedTime = 0
                 trackerNote.notify("Work timer paused for issue $issueIdReadable", NotificationType.INFORMATION)
             } else {
                 trackerNote.notify("Could not pause - timer is not started", NotificationType.WARNING)
@@ -143,7 +124,6 @@ class TimeTracker(override val project: Project) : ComponentAware{
     fun start(idReadable: String) {
         val trackerNote = TrackerNotification()
         trackerNote.notify("Work timer started for Issue $idReadable", NotificationType.INFORMATION)
-        startTime = System.currentTimeMillis()
         isRunning = true
         isPaused = false
     }
@@ -154,6 +134,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
             isPaused = false
             recordedTime = "0"
             timeInMills = 0
+            pausedTime = 0
             startTime = System.currentTimeMillis()
             val trackerNote = TrackerNotification()
             trackerNote.notify("Work timer reset for issue $issueIdReadable", NotificationType.INFORMATION)
@@ -172,7 +153,7 @@ class TimeTracker(override val project: Project) : ComponentAware{
     }
 
     fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer){
+                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer) {
         comment = myComment
         isPostAfterCommitEnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking
@@ -180,14 +161,14 @@ class TimeTracker(override val project: Project) : ComponentAware{
         isWhenProjectClosedEnabled = isPostOnClosed
         type = myType
         isManualTrackingEnable = isManualMode
-        if (isScheduled){
+        if (isScheduled) {
             scheduledPeriod = timeToSchedule
         }
         inactivityPeriodInMills = inactivityTime
 
         try {
             timeTrackerStoreComponent[repository].update(repository)
-        } catch (e: NoActiveYouTrackTaskException){
+        } catch (e: NoActiveYouTrackTaskException) {
             logger.debug("Unable to update repository when setting up the timer: ${e.message}")
         }
     }

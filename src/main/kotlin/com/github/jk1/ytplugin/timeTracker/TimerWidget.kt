@@ -8,7 +8,6 @@ import java.awt.event.ActionListener
 import java.util.concurrent.TimeUnit
 import javax.swing.JLabel
 import javax.swing.Timer
-import kotlin.jvm.internal.Intrinsics
 
 class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable) : CustomStatusBarWidget {
 
@@ -21,10 +20,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         val recordedTime = if (timeTracker.isPaused){
             timeTracker.getRecordedTimeInMills()
         } else {
-            println("timeTracker.getRecordedTimeInMills() " + timeTracker.getRecordedTimeInMills())
-//            timeTracker.getRecordedTimeInMills() + System.currentTimeMillis() - timeTracker.startTime
-            timeTracker.getRecordedTimeInMills()
-
+            System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime
         }
         val time = String.format("%02d:%02d",
         TimeUnit.MILLISECONDS.toHours(recordedTime),

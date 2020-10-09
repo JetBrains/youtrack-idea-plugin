@@ -22,7 +22,7 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
         return currentCallback
     }
 
-    fun storeTime(repo: YouTrackServer){
+    fun storeTime(repo: YouTrackServer) {
         RefreshIssuesTask(currentCallback, repo).fillTimeToStore(ComponentAware.of(repo.project).timeTrackerComponent)
     }
 
@@ -41,8 +41,6 @@ class TimeTrackerStore(@Volatile private var trackerJson: String = "") {
                 val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                 store.saveFields(timer)
                 timer.activityTracker?.let { store.saveFields(it) }
-                println("hey: " + store.getValue("timeTracker.timeInMills") + " " +
-                        store.getValue("activityTracker.startInactivityTime"))
             } catch (e: Exception) {
                 displayErrorMessage("Error while loading time tracker", e)
             }

@@ -27,5 +27,4 @@ class ResetTrackerAction : AnAction(
             event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
         }
     }
-
 }
