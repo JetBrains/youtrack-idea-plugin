@@ -54,13 +54,15 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             try {
                 val status = client.executeMethod(method)
                 return if (status == 200) {
+                    logger.debug("Successfully found entity Id by issue Id: status $status")
                     val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
                     json.get("id").asString
                 } else {
+                    logger.debug("Failed to find entity Id by issue Id: code $status, ${method.responseBodyAsString}")
                     "0"
                 }
             } catch (e: Exception) {
-                logger.debug("unable to get entity id by issue id with response body ${method.responseBodyAsString}")
+                logger.debug("Failed to get entity Id by issue Id: ${e.message}")
             }
             return "0"
         }
@@ -77,9 +79,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully created draft: status $status")
                 val stream = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
                 JsonParser.parseReader(stream).asJsonObject.get("id").asString
             } else {
+                logger.debug("Failed to create draft: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
@@ -91,12 +95,15 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         method.setQueryString(arrayOf(fields))
         val status = httpClient.executeMethod(method)
         return if (status == 200) {
+            logger.debug("Successfully fetched issue: status $status")
             val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader).asJsonArray
             val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
             val fullIssues = parseIssues(issuesWithWorkItems)
             fullIssues[0]
-        } else
+        } else {
+            logger.debug("Failed to fetch issue with id $id: ${method.responseBodyAsLoggedString()}")
             null
+        }
     }
 
     private fun parseIssues(json: List<JsonElement>): List<Issue> {
@@ -132,10 +139,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         method.setQueryString(arrayOf(myQuery, myFields))
         val status = httpClient.executeMethod(method)
         if (status == 200) {
+            logger.debug("Successfully fetched issues : $status")
             val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
             val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
             fullIssues = parseIssues(issuesWithWorkItems)
         } else {
+            logger.debug("Failed to fetch issues for query $query, issues: {}: ${method.responseBodyAsLoggedString()}")
             throw RuntimeException(method.responseBodyAsLoggedString())
         }
         return fullIssues

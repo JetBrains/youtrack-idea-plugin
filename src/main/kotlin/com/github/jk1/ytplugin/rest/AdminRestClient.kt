@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -27,13 +28,17 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
-            when (httpClient.executeMethod(method)) {
+            when (val status = httpClient.executeMethod(method)) {
                 200 -> {
+                    logger.debug("Successfully fetched visibility groups in AdminRestClient: code $status")
                     listOf("All Users") +
                             parseGroupNames(method, "recommendedGroups") +
                             parseGroupNames(method, "groupsWithoutRecommended")
                 }
-                else -> throw RuntimeException(method.responseBodyAsLoggedString())
+                else -> {
+                    logger.debug("Runtime Exception for fetching visibility groups in AdminRestClient, code $status: ${method.responseBodyAsLoggedString()}")
+                    throw RuntimeException(method.responseBodyAsLoggedString())
+                }
             }
         }
     }
@@ -50,10 +55,14 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         method.setQueryString(arrayOf(fields))
 
         return method.connect {
-            if (httpClient.executeMethod(method) == 200) {
+            val status = httpClient.executeMethod(method)
+            if (status == 200) {
+                logger.debug("Successfully got accessible projects in AdminRestClient: code $status")
                 val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
                 json.map { it.asJsonObject.get("shortName").asString }
             } else {
+                logger.debug("Runtime Exception for fetching accessible projects in AdminRestClient," +
+                        " code $status: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }

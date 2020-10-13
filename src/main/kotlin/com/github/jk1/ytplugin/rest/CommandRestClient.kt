@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
@@ -33,8 +34,11 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully posted assist command in CommandRestClient: code $status")
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
+                logger.debug("Runtime Exception while posting assist command in CommandRestClient. " +
+                        "\"HTTP $status: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException("HTTP $status: ${method.responseBodyAsLoggedString()}")
             }
         }
@@ -46,12 +50,15 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val status = httpClient.executeMethod(getMethod)
         val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
         return if (status == 200) {
+            logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
             if (command.commentVisibleGroup == "All Users") {
                 response.first { it.asJsonObject.get("allUsersGroup").asBoolean }
             } else {
                 response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }
             }.asJsonObject.get("id").asString
         } else {
+            logger.debug("Failed to fetch Group Id in CommandRestClient: " +
+                    "code $status ${getMethod.responseBodyAsLoggedString()}")
             "" // todo: doesnt really work, need to omit the field in json
         }
     }
@@ -74,9 +81,12 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         return postMethod.connect {
             val status = httpClient.executeMethod(postMethod)
             if (status != 200) {
+                logger.debug("Failed to fetch execute command in CommandRestClient: " +
+                        "code $status ${postMethod.responseBodyAsLoggedString()}")
                 val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
                 CommandExecutionResponse(errors = listOf("Workflow: $error"))
             } else {
+                logger.debug("Successfully fetched execute command in CommandRestClient: code $status")
                 postMethod.responseBodyAsLoggedString()
                 CommandExecutionResponse()
             }

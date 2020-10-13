@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
 import com.intellij.openapi.util.JDOMUtil
-import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.HttpMethodBase
 import java.io.ByteArrayInputStream
 import java.io.IOException

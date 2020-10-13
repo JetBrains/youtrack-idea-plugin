@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
@@ -8,10 +9,6 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 
 
-
-/**
- * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
- */
 class UserRestClient(override val repository: YouTrackServer) : RestClientTrait {
 
     private fun parseWorkItems(method: GetMethod): MutableList<IssueWorkItem> {
@@ -23,8 +20,10 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
             workItems.sort()
 
             if (status == 200) {
+                logger.debug("Successfully parsed ${workItems.size} work items: $status")
                 workItems
             } else {
+                logger.debug("Failed to parse work items: $status, ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
