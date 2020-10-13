@@ -172,7 +172,6 @@ class ActivityTracker(
             if (currentProject == null) {
                 if (!isPostedOnClose){
                     if (timer.isWhenProjectClosedEnabled){
-                        println("here2")
                         logger.debug("state PROJECT_CLOSE with posting enabled")
                         try {
                             timer.stop()
@@ -187,10 +186,7 @@ class ActivityTracker(
                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                         dispose()
                     } else {
-                        println("here")
                         logger.debug("state PROJECT_CLOSE with posting disabled")
-//                        val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
-//                        bar?.removeWidget("Time Tracking Clock")
                         timer.saveState()
                         dispose()
 

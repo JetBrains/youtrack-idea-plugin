@@ -47,7 +47,6 @@ class StopTrackerAction : AnAction(
             val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
             bar?.removeWidget("Time Tracking Clock")
 
-            println("time: " + timer.recordedTime)
             if (timer.recordedTime == "0")
                 trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.WARNING)
             else {
