@@ -40,7 +40,6 @@ class StopTrackerAction : AnAction(
 
         val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
         val timer = ComponentAware.of(project).timeTrackerComponent
-
         try {
             timer.stop()
             val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
@@ -53,6 +52,7 @@ class StopTrackerAction : AnAction(
                     TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
                             timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                 }
+
                 if (status != 200)
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
                 else {

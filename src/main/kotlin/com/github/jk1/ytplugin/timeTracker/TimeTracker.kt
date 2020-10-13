@@ -78,10 +78,9 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     init {
         try {
-            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-//            timeTrackerStoreComponent[repo].update(repo)
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.loadFields(this)
+            isPaused = true
             StartTrackerAction().startAutomatedTracking(project, this)
         } catch (e: NoYouTrackRepositoryException) {
             logger.debug("Loading time tracker... Active YouTrack repository is not found: ${e.message}")
@@ -169,7 +168,6 @@ class TimeTracker(override val project: Project) : ComponentAware {
         try {
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(this)
-//            timeTrackerStoreComponent[repository].update(repository)
         } catch (e: NoActiveYouTrackTaskException) {
             logger.debug("Unable to update repository when setting up the timer: ${e.message}")
         }

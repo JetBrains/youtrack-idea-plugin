@@ -1,6 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
@@ -17,12 +19,11 @@ import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
 import java.awt.AWTEvent
 import java.awt.Component
-import java.awt.event.KeyEvent
-import java.awt.event.MouseEvent
-import java.awt.event.MouseWheelEvent
+import java.awt.event.*
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ActivityTracker(
@@ -40,6 +41,8 @@ class ActivityTracker(
 
     @PropertyName("activityTracker.startInactivityTime")
     var startInactivityTime: Long = currentTimeMillis()
+
+    val myStore: PropertiesComponent = PropertiesComponent.getInstance(project)
 
     private var isPostedOnClose = false
 
@@ -117,6 +120,40 @@ class ActivityTracker(
         val mouseMoveEventsThresholdMs = 1000
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
 
+            val ideFocusManager = IdeFocusManager.getGlobalInstance()
+            val window = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow
+            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+
+            window?.addWindowListener(object : WindowAdapter() {
+                override fun windowClosed(windowEvent: WindowEvent) {
+                    if (!isPostedOnClose) {
+                        if (timer.isWhenProjectClosedEnabled) {
+                            logger.debug("state PROJECT_CLOSE with posting enabled")
+                            try {
+                                    timer.stop()
+                                    val status = repo.let { it1 ->
+                                        TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+                                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                                    }
+
+                            } catch (e: IllegalStateException) {
+                                logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+                            }
+                        } else {
+                            try {
+                                saveState(store)
+                            } catch (e: IllegalStateException) {
+                                logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+                            }
+                            logger.debug("state PROJECT_CLOSE with posting disabled")
+                        }
+                        logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
+                        isPostedOnClose = true
+                    }
+                }
+            })
+            isPostedOnClose = false
             if (timer.isPaused) {
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
             } else {
@@ -124,7 +161,6 @@ class ActivityTracker(
                 timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
             }
             // instant caching
-            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(timer)
 
             var isMouseOrKeyboardActive = false
@@ -171,40 +207,24 @@ class ActivityTracker(
         }, parentDisposable)
     }
 
+    private fun saveState(myStore: PropertiesComponent ) {
+        if (timer.isAutoTrackingEnable) {
+            timer.isAutoTrackingTemporaryDisabled = true
+        }
+        if (!timer.isPaused && timer.isRunning) {
+            timer.timeInMills = currentTimeMillis() - timer.startTime - timer.pausedTime
+            timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
+            timer.isPaused = true
+        }
+        timer.tmp = false
+        myStore.saveFields(timer)
+    }
+
     private fun captureIdeState(): Boolean {
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
             // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
-            val currentProject = ideFocusManager.lastFocusedFrame?.project
 
-            if (currentProject == null || currentProject.isDefault || !currentProject.isOpen || currentProject.isDisposed) {
-                if (!isPostedOnClose) {
-                    if (timer.isWhenProjectClosedEnabled) {
-                        logger.debug("state PROJECT_CLOSE with posting enabled")
-                        try {
-                            if (currentProject != null) {
-                                StopTrackerAction().stopTimer(currentProject)
-                            }
-                        } catch (e: IllegalStateException) {
-                            logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-                        }
-                    } else {
-                        try {
-                            if (currentProject != null) {
-                                StopTrackerAction().stopTimer(currentProject)
-                            }
-                        } catch (e: IllegalStateException) {
-                            logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-                        }
-                        logger.debug("state PROJECT_CLOSE with posting disabled")
-                    }
-                    logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
-                    isPostedOnClose = true
-                }
-                return false
-            } else {
-                isPostedOnClose = false
-            }
 
             val focusOwner = ideFocusManager.focusOwner
 

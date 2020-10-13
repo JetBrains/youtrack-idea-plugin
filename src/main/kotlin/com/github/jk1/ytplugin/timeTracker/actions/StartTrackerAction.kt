@@ -63,6 +63,16 @@ class StartTrackerAction : AnAction(
                 bar?.addWidget(TimerWidget(myTimer, parentDisposable), parentDisposable)
             }
 
+            if (myTimer.isAutoTrackingEnable) {
+                myTimer.activityTracker = ActivityTracker(
+                        parentDisposable = parentDisposable,
+                        timer = myTimer,
+                        inactivityPeriod = myTimer.inactivityPeriodInMills,
+                        project = project
+                )
+                myTimer.activityTracker!!.startTracking()
+            }
+
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
                     myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
@@ -74,15 +84,6 @@ class StartTrackerAction : AnAction(
                     } else {
                         myTimer.start(activeTask.id)
                         // case for activity tracker enabled
-                        if (myTimer.isAutoTrackingEnable) {
-                            myTimer.activityTracker = ActivityTracker(
-                                    parentDisposable = parentDisposable,
-                                    timer = myTimer,
-                                    inactivityPeriod = myTimer.inactivityPeriodInMills,
-                                    project = project
-                            )
-                            myTimer.activityTracker!!.startTracking()
-                        }
                     }
 
                 } catch (e: NoYouTrackRepositoryException) {
