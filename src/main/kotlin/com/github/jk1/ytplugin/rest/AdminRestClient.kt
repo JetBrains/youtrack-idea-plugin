@@ -36,7 +36,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                             parseGroupNames(method, "groupsWithoutRecommended")
                 }
                 else -> {
-                    logger.debug("Runtime Exception for fetching visibility groups in AdminRestClient, code $status: ${method.responseBodyAsLoggedString()}")
+                    logger.debug("Failed to fetch visibility groups in AdminRestClient, code $status: ${method.responseBodyAsLoggedString()}")
                     throw RuntimeException(method.responseBodyAsLoggedString())
                 }
             }

@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import org.apache.commons.httpclient.methods.GetMethod
 import org.jdom.input.SAXBuilder
@@ -16,14 +17,17 @@ class AdminOldRestClient(override val repository: YouTrackServer) : AdminRestCli
             val defaultGroups = listOf("All Users")
             when (status) {
                 200 -> {
+                    logger.debug("Successfully fetched visibility groups in AdminRestClient: code $status")
                     val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
                     val groupElements = root.rootElement.children
                     defaultGroups + groupElements.map {
                         it.getAttribute("name").value
                     }
                 }
-                404 -> // YouTrack 5.2 has no rest method to get visibility groups
+                404 -> {                // YouTrack 5.2 has no rest method to get visibility groups
+                    logger.debug("Failed to fetch visibility groups in AdminRestClient, code $status: ${method.responseBodyAsLoggedString()}")
                     defaultGroups
+                }
                 else -> throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
@@ -34,12 +38,14 @@ class AdminOldRestClient(override val repository: YouTrackServer) : AdminRestCli
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully fetched accessible projects in AdminRestClient: code $status")
                 val root = SAXBuilder().build(method.responseBodyAsLoggedStream())
                 val projectElements = root.rootElement.children
                 projectElements.map {
                     it.getAttribute("id").value
                 }
             }  else {
+                logger.debug("Failed to fetch accessible projects in AdminRestClient, code $status: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
