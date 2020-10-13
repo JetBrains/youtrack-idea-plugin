@@ -9,6 +9,7 @@ import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -95,8 +96,9 @@ class StartTrackerAction : AnAction(
             }
 
             myTimer.isAutoTrackingTemporaryDisabled = false
-
         }
+        val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+        store.saveFields(myTimer)
     }
 
 }

@@ -13,7 +13,6 @@ import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
 import java.awt.AWTEvent
@@ -21,13 +20,10 @@ import java.awt.Component
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
-import java.lang.IllegalStateException
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-
 
 class ActivityTracker(
 
@@ -120,12 +116,14 @@ class ActivityTracker(
         var lastMouseMoveTimestamp = 0L
         val mouseMoveEventsThresholdMs = 1000
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
+
             if (timer.isPaused) {
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
             } else {
                 timer.timeInMills = currentTimeMillis() - timer.startTime - timer.pausedTime
                 timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
             }
+            // instant caching
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(timer)
 
@@ -184,13 +182,17 @@ class ActivityTracker(
                     if (timer.isWhenProjectClosedEnabled) {
                         logger.debug("state PROJECT_CLOSE with posting enabled")
                         try {
-                            StopTrackerAction().stopTimer(project)
+                            if (currentProject != null) {
+                                StopTrackerAction().stopTimer(currentProject)
+                            }
                         } catch (e: IllegalStateException) {
                             logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                         }
                     } else {
                         try {
-                            StopTrackerAction().stopTimer(project)
+                            if (currentProject != null) {
+                                StopTrackerAction().stopTimer(currentProject)
+                            }
                         } catch (e: IllegalStateException) {
                             logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                         }
