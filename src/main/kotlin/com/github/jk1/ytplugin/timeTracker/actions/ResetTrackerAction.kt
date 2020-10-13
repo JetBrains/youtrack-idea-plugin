@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
@@ -16,6 +17,8 @@ class ResetTrackerAction : AnAction(
         event.whenActive { project ->
             val timer = project.let { it1 -> ComponentAware.of(it1).timeTrackerComponent }
             timer.reset()
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+            store.saveFields(timer)
         }
     }
 
@@ -27,5 +30,4 @@ class ResetTrackerAction : AnAction(
             event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
         }
     }
-
 }

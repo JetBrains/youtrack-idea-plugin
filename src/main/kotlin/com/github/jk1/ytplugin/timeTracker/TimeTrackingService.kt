@@ -12,9 +12,9 @@ import java.util.concurrent.TimeUnit
 
 class TimeTrackingService {
 
-    fun getAvailableWorkItemsTypes(repo: YouTrackServer) : MutableList<String> {
+    fun getAvailableWorkItemsTypes(repo: YouTrackServer): MutableList<String> {
         val types = mutableListOf<String>()
-        val typesReceived =  TimeTrackerRestClient(repo).getAvailableWorkItemTypes()
+        val typesReceived = TimeTrackerRestClient(repo).getAvailableWorkItemTypes()
         if (typesReceived.isNotEmpty()) {
             typesReceived.forEach { types.add(it.name) }
         }
@@ -22,15 +22,15 @@ class TimeTrackingService {
     }
 
     fun postNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
-                        repo: YouTrackServer, comment: String, time: String) : Boolean{
+                        repo: YouTrackServer, comment: String, time: String): Boolean {
 
         val sdf = SimpleDateFormat("dd MMM yyyy")
         val date = sdf.parse(dateNotFormatted)
-        val status =  TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType,
+        val status = TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType,
                 comment, date.time.toString())
 
         val trackerNote = TrackerNotification()
-        if (status == 200){
+        if (status == 200) {
             val postedTIme = date.time.toString()
             trackerNote.notify("Time $postedTIme was successfully posted on server for issue $selectedId",
                     NotificationType.INFORMATION)
@@ -55,6 +55,8 @@ class TimeTrackingService {
                 timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
                 timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule,
                 inactivityTime, timeTrackingTab.getPostOnClose().isSelected, repo)
+        timer.timeInMills = 0
+        timer.pausedTime = 0
 
         if (timer.isAutoTrackingEnable) {
             StartTrackerAction().startAutomatedTracking(project, timer)

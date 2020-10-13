@@ -5,13 +5,12 @@ import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetUsagesCollector
 import java.lang.IllegalStateException
 import java.util.*
 
@@ -60,6 +59,8 @@ class StopTrackerAction : AnAction(
                     trackerNote.notify("Work timer stopped, time ${timer.recordedTime} " +
                             "posted on server for issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+                    val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+                    store.saveFields(timer)
                 }
             }
         } catch (e: IllegalStateException) {

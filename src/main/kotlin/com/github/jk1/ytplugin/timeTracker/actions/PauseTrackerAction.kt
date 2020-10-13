@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
@@ -16,10 +17,11 @@ class PauseTrackerAction : AnAction(
         event.whenActive {project ->
             val timer = ComponentAware.of(project).timeTrackerComponent
             if (timer.isAutoTrackingEnable) {
-                timer.startTime = timer.activityTracker?.startInactivityTime ?: System.currentTimeMillis()
                 timer.isAutoTrackingTemporaryDisabled = true
             }
             timer.pause()
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+            store.saveFields(timer)
         }
     }
 
