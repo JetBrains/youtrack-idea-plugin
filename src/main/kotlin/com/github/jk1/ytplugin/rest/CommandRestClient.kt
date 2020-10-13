@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.commands.model.CommandAssistResponse
 import com.github.jk1.ytplugin.commands.model.CommandExecutionResponse
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
@@ -14,6 +15,20 @@ import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.net.URL
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
+
+
+    companion object {
+        const val COMMANDS_GROUP_VISIBILITY =  ",\n" +
+                "  \"visibility\": {\n" +
+                "    \"\$type\": \"CommandLimitedVisibility\",\n" +
+                "    \"permittedGroups\": [\n" +
+                "      {\n" +
+                "        \"id\": \"{groupId}\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}"
+    }
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val method = PostMethod("${repository.url}/api/commands/assist")
@@ -33,8 +48,11 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully posted assist command in CommandRestClient: code $status")
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
+                logger.debug("Runtime Exception while posting assist command in CommandRestClient. " +
+                        "\"HTTP $status: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException("HTTP $status: ${method.responseBodyAsLoggedString()}")
             }
         }
@@ -43,17 +61,27 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     private fun getGroupId(command: YouTrackCommandExecution): String {
         val execUrl = "${repository.url}/api/groups?fields=name,id,allUsersGroup"
         val getMethod = GetMethod(execUrl)
-        val status = httpClient.executeMethod(getMethod)
-        val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
-        return if (status == 200) {
-            if (command.commentVisibleGroup == "All Users") {
-                response.first { it.asJsonObject.get("allUsersGroup").asBoolean }
+        try {
+            val status = httpClient.executeMethod(getMethod)
+            val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
+            return if (status == 200) {
+                logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
+                if (command.commentVisibleGroup == "All Users") {
+                    response.first { it.asJsonObject.get("allUsersGroup").asBoolean }
+                } else {
+                    response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }
+                }.asJsonObject.get("id").asString
             } else {
-                response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }
-            }.asJsonObject.get("id").asString
-        } else {
-            "" // todo: doesnt really work, need to omit the field in json
+                logger.debug("Failed to fetch Group Id in CommandRestClient: " +
+                        "code $status ${getMethod.responseBodyAsLoggedString()}")
+                ""
+            }
+        } catch (e: ClassCastException){
+            logger.debug("Failed to fetch Group Id in CommandRestClient: attempt to cast JsonObject to JsonArray: " +
+                    " ${e.message}")
+            logger.debug("Note: access might be forbidden")
         }
+        return ""
     }
 
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
@@ -64,21 +92,38 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val comment = command.comment ?: ""
 
         val res: URL? = this::class.java.classLoader.getResource("command_execution_rest.json")
-        val jsonBody = res?.readText()?.replace("{groupId}", groupId, true)
-                ?.replace("{idReadable}", command.issue.id, true)
+        var jsonBody = res?.readText()
+        if (groupId != ""){
+            jsonBody += COMMANDS_GROUP_VISIBILITY
+            jsonBody = jsonBody?.replace("{groupId}", groupId, true)
+        }
+        else {
+            jsonBody += "\n}"
+        }
+
+        jsonBody = jsonBody?.replace("{idReadable}", command.issue.id, true)
                 ?.replace("true", command.silent.toString(), true)
                 ?.replace("{comment}", comment, true)
                 ?.replace("{query}", command.command, true)
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
         return postMethod.connect {
-            val status = httpClient.executeMethod(postMethod)
-            if (status != 200) {
-                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
+            try {
+                val status = httpClient.executeMethod(postMethod)
+                if (status != 200) {
+                    logger.debug("Failed to fetch execute command in CommandRestClient: " +
+                            "code $status ${postMethod.responseBodyAsLoggedString()}")
+                    val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
+                    CommandExecutionResponse(errors = listOf("Workflow: $error"))
+                } else {
+                    logger.debug("Successfully fetched execute command in CommandRestClient: code $status")
+                    postMethod.responseBodyAsLoggedString()
+                    CommandExecutionResponse()
+                }
+            } catch (e: IllegalStateException){
+                logger.debug("Failed to fetch execute command in CommandRestClient: ${e.message}" )
+                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("error_description").asString
                 CommandExecutionResponse(errors = listOf("Workflow: $error"))
-            } else {
-                postMethod.responseBodyAsLoggedString()
-                CommandExecutionResponse()
             }
         }
     }
