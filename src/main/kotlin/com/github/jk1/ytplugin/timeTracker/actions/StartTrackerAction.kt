@@ -9,7 +9,6 @@ import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
-import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -52,7 +51,11 @@ class StartTrackerAction : AnAction(
         val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
         val parentDisposable = project.getService(StatusBarWidgetsManager::class.java)
+        if (!myTimer.isRunning) {
+            myTimer.startTime = System.currentTimeMillis()
+        }
 
+        //  after manual pause only manual start is supported
         if (!myTimer.isAutoTrackingTemporaryDisabled) {
             val bar = WindowManager.getInstance().getStatusBar(project)
             if (bar?.getWidget("Time Tracking Clock") == null) {
@@ -61,6 +64,7 @@ class StartTrackerAction : AnAction(
 
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
+                    myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
                     myTimer.issueId = IssuesRestClient.getEntityIdByIssueId(activeTask.id, project)
                     myTimer.issueIdReadable = activeTask.id
                     if (myTimer.issueId == "0") {
@@ -77,9 +81,9 @@ class StartTrackerAction : AnAction(
                                     project = project
                             )
                             myTimer.activityTracker!!.startTracking()
-                            myTimer.isAutoTrackingEnable = true
                         }
                     }
+
                 } catch (e: NoYouTrackRepositoryException) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Unable to start automatic time tracking, please select" +
@@ -89,8 +93,10 @@ class StartTrackerAction : AnAction(
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.INFORMATION)
             }
+
+            myTimer.isAutoTrackingTemporaryDisabled = false
+
         }
     }
-
 
 }
