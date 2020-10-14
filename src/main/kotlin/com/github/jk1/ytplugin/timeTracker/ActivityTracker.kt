@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
+import com.intellij.serviceContainer.AlreadyDisposedException
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.event.*
@@ -114,7 +115,7 @@ class ActivityTracker(
         }, parentDisposable)
     }
 
-
+    @Suppress
     private fun startIDEListener(parentDisposable: Disposable) {
         var lastMouseMoveTimestamp = 0L
         val mouseMoveEventsThresholdMs = 1000
@@ -131,17 +132,19 @@ class ActivityTracker(
                             logger.debug("state PROJECT_CLOSE with posting enabled")
                             try {
                                     timer.stop()
-                                    val status = repo.let { it1 ->
+                                    repo.let { it1 ->
                                         TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
                                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                                     }
-
+                                     dispose()
                             } catch (e: IllegalStateException) {
                                 logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                             }
                         } else {
                             try {
                                 saveState(store)
+                                dispose()
+
                             } catch (e: IllegalStateException) {
                                 logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                             }
@@ -218,9 +221,6 @@ class ActivityTracker(
     private fun captureIdeState(): Boolean {
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
-            // use "lastFocusedFrame" to be able to obtain project in cases when some dialog is open (e.g. "override" or "project settings")
-
-
             val focusOwner = ideFocusManager.focusOwner
 
             // this might also work: ApplicationManager.application.isActive(), ApplicationActivationListener
