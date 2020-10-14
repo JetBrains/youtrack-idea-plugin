@@ -81,7 +81,10 @@ class TimeTracker(override val project: Project) : ComponentAware {
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.loadFields(this)
             isPaused = true
-            StartTrackerAction().startAutomatedTracking(project, this)
+            isAutoTrackingTemporaryDisabled = false
+            if (isAutoTrackingEnable){
+                StartTrackerAction().startAutomatedTracking(project, this)
+            }
         } catch (e: NoYouTrackRepositoryException) {
             logger.debug("Loading time tracker... Active YouTrack repository is not found: ${e.message}")
         }

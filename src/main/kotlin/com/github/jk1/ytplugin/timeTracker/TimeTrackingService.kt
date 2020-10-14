@@ -57,8 +57,7 @@ class TimeTrackingService {
                 inactivityTime, timeTrackingTab.getPostOnClose().isSelected, repo)
         timer.timeInMills = 0
         timer.pausedTime = 0
-        timer.isPaused = false
-
+        timer.isAutoTrackingTemporaryDisabled = false
         if (timer.isAutoTrackingEnable) {
             StartTrackerAction().startAutomatedTracking(project, timer)
         } else {

@@ -120,7 +120,6 @@ class ActivityTracker(
         val mouseMoveEventsThresholdMs = 1000
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
 
-            val ideFocusManager = IdeFocusManager.getGlobalInstance()
             val window = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow
             val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
@@ -208,15 +207,11 @@ class ActivityTracker(
     }
 
     private fun saveState(myStore: PropertiesComponent ) {
-        if (timer.isAutoTrackingEnable) {
-            timer.isAutoTrackingTemporaryDisabled = true
-        }
-        if (!timer.isPaused && timer.isRunning) {
+     if (!timer.isPaused && timer.isRunning) {
             timer.timeInMills = currentTimeMillis() - timer.startTime - timer.pausedTime
             timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
             timer.isPaused = true
         }
-        timer.tmp = false
         myStore.saveFields(timer)
     }
 
