@@ -17,7 +17,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
-import com.intellij.serviceContainer.AlreadyDisposedException
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.event.*
