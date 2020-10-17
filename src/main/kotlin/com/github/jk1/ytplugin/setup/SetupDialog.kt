@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
+import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -53,6 +54,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     }
 
     private fun testConnectionAction() {
+
+        val isRememberPassword = PasswordSafe.instance.isRememberPasswordByDefault
+        if (!isRememberPassword) {
+            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
+        }
+
         val fontColor = inputTokenField.foreground
 
         val myRepositoryType = YouTrackRepositoryType()
@@ -82,6 +89,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             repoConnector.noteState = NotifierState.EMPTY_FIELD
         } else if (!repoConnector.isValidToken(connectedRepository.password)) {
             repoConnector.noteState = NotifierState.INVALID_TOKEN
+        } else if (PasswordSafe.instance.isMemoryOnly) {
+            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
@@ -287,7 +296,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
 
-            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST) {
+            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED ) {
                 this@SetupDialog.close(0)
             }
         }
