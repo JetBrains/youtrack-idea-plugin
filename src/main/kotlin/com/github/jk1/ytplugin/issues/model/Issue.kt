@@ -64,7 +64,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         url = "$repoUrl/issue/$id"
 
-        if (!root.getAsJsonArray(("workItems")).isJsonNull && root.getAsJsonArray(("workItems")) != null){
+        if (root.getAsJsonArray(("workItems")) != null && !root.getAsJsonArray(("workItems")).isJsonNull){
             val workItemsJson: JsonArray = root.getAsJsonArray(("workItems"))
             workItemsJson.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
         }
