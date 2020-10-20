@@ -15,6 +15,7 @@ import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
+
 class IssueViewer : JPanel(BorderLayout()) {
 
     var currentIssue: Issue? = null

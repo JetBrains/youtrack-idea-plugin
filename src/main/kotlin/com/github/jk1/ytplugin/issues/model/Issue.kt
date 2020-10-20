@@ -42,7 +42,11 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         resolved = (!root.get("resolved").isJsonNull && root.get("resolved") != null)
 
-        customFields = root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
+        customFields = if (root.getAsJsonArray("customFields") != null && !root.getAsJsonArray(("customFields")).isJsonNull){
+            root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
+        } else {
+            root.getAsJsonArray("fields").mapNotNull { IssueJsonParser.parseCustomField(it) }
+        }
 
         comments = root.getAsJsonArray("comments").mapNotNull { IssueJsonParser.parseComment(it) }
 

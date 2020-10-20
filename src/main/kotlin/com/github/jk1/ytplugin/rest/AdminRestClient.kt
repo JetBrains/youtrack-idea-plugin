@@ -36,8 +36,8 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                             parseGroupNames(method, "groupsWithoutRecommended")
                 }
                 else -> {
-                    logger.debug("Failed to fetch visibility groups in AdminRestClient, code $status: ${method.responseBodyAsLoggedString()}")
-                    throw RuntimeException(method.responseBodyAsLoggedString())
+                    logger.warn("failed to fetch visibility groups: ${method.responseBodyAsLoggedString()}")
+                    throw RuntimeException()
                 }
             }
         }
@@ -55,15 +55,13 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         method.setQueryString(arrayOf(fields))
 
         return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                logger.debug("Successfully got accessible projects in AdminRestClient: code $status")
-                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+            if (httpClient.executeMethod(method) == 200) {
+                logger.debug("Successfully fetched accessible projects")
+                val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 json.map { it.asJsonObject.get("shortName").asString }
             } else {
-                logger.debug("Runtime Exception for fetching accessible projects in AdminRestClient," +
-                        " code $status: ${method.responseBodyAsLoggedString()}")
-                throw RuntimeException(method.responseBodyAsLoggedString())
+                logger.warn("failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
+                throw RuntimeException()
             }
         }
     }

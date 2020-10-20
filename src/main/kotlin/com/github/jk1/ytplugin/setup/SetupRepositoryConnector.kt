@@ -44,6 +44,7 @@ class SetupRepositoryConnector {
                 note.text = "Logged in as a guest"
             }
             NotifierState.EMPTY_FIELD -> note.text =  "Url and token fields are mandatory"
+            NotifierState.PASSWORD_NOT_STORED -> note.text =  "Please check if password persistence is permitted in System Settings "
             NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
             NotifierState.UNKNOWN_ERROR -> note.text = "Unknown error"
             NotifierState.UNKNOWN_HOST -> note.text = "Unknown host"
@@ -187,5 +188,6 @@ enum class NotifierState {
     INCORRECT_CERTIFICATE,
     UNAUTHORIZED,
     EMPTY_FIELD,
-    GUEST_LOGIN
+    GUEST_LOGIN,
+    PASSWORD_NOT_STORED
 }

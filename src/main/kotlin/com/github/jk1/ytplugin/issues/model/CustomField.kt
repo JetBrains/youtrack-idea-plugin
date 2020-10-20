@@ -16,15 +16,22 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
 
 
     init {
-        name = item.asJsonObject.get("name").asString
+        name = if (item.asJsonObject.get("name") != null && !item.asJsonObject.get(("name")).isJsonNull){
+            item.asJsonObject.get("name").asString
+        } else {
+            item.asJsonObject.get("projectCustomField").asJsonObject.get("field").asJsonObject.get("name").asString
+        }
         valueId = mutableListOf()
         valueId.add(item.asJsonObject.get("id").asString)
+
         val valueItem = item.asJsonObject.get("value")
+
         if (valueItem == null || valueItem.isJsonNull || (valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
             value = listOf(item.asJsonObject.get("projectCustomField").asJsonObject.get("emptyFieldText").asString)
         } else {
             if (valueItem.isJsonArray) {
                 value = mutableListOf()
+
                 for (currValue in valueItem.asJsonArray) {
                     value.add(currValue.asJsonObject.get("name").asString)
                     if (currValue.asJsonObject.get("color") != null) {

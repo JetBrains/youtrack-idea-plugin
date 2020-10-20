@@ -16,18 +16,19 @@ import java.net.URL
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
+    private var visibilityState = VisibilityState.NO_VISIBILITY_RESTRICTIONS
 
     companion object {
-        const val COMMANDS_GROUP_VISIBILITY =  ",\n" +
-                "  \"visibility\": {\n" +
-                "    \"\$type\": \"CommandLimitedVisibility\",\n" +
-                "    \"permittedGroups\": [\n" +
-                "      {\n" +
-                "        \"id\": \"{groupId}\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "}"
+        const val COMMANDS_GROUP_VISIBILITY = """,
+              "visibility": {
+                "${"$"}type": "CommandLimitedVisibility",
+                "permittedGroups": [
+                  {
+                    "id": "{groupId}"
+                  }
+                ]
+              }
+            }"""
     }
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
@@ -36,12 +37,14 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                 "suggestions(caret,completionEnd,completionStart,description,matchingEnd,matchingStart,option,prefix,suffix)")
         method.setQueryString(arrayOf(fields))
         val caret = command.caret - 1
-        val res: URL? = this::class.java.classLoader.getResource("get_command_body.json")
+        val res = this::class.java.classLoader.getResource("get_command_body.json")
+                ?: throw IllegalStateException("Resource 'get_command_body.json' file is missing")
+
         val id = command.issue.id
-        val jsonBody = res?.readText()
-                ?.replace("{query}", command.command, true)
-                ?.replace("0", caret.toString(), true)
-                ?.replace("{id}", id, true)
+        val jsonBody = res.readText()
+                .replace("{query}", command.command, true)
+                .replace("0", caret.toString(), true)
+                .replace("{id}", id, true)
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
 
@@ -51,9 +54,9 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                 logger.debug("Successfully posted assist command in CommandRestClient: code $status")
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
-                logger.debug("Runtime Exception while posting assist command in CommandRestClient. " +
-                        "\"HTTP $status: ${method.responseBodyAsLoggedString()}")
-                throw RuntimeException("HTTP $status: ${method.responseBodyAsLoggedString()}")
+                method.responseBodyAsLoggedString()
+                logger.error("Runtime Exception while posting assist command in CommandRestClient.")
+                throw RuntimeException("HTTP $status")
             }
         }
     }
@@ -61,70 +64,71 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     private fun getGroupId(command: YouTrackCommandExecution): String {
         val execUrl = "${repository.url}/api/groups?fields=name,id,allUsersGroup"
         val getMethod = GetMethod(execUrl)
-        try {
-            val status = httpClient.executeMethod(getMethod)
-            val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
-            return if (status == 200) {
+        val status = httpClient.executeMethod(getMethod)
+        return if (JsonParser.parseString(getMethod.responseBodyAsLoggedString()).isJsonArray ){
+            val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsLoggedString()) as JsonArray
+            if (status == 200) {
                 logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
-                if (command.commentVisibleGroup == "All Users") {
-                    response.first { it.asJsonObject.get("allUsersGroup").asBoolean }
-                } else {
-                    response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }
-                }.asJsonObject.get("id").asString
+                visibilityState = VisibilityState.VISIBILITY_RESTRICTED
+                response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }.asJsonObject.get("id").asString
             } else {
-                logger.debug("Failed to fetch Group Id in CommandRestClient: " +
-                        "code $status ${getMethod.responseBodyAsLoggedString()}")
+                logger.warn("Failed to fetch Group Id in CommandRestClient")
                 ""
             }
-        } catch (e: ClassCastException){
-            logger.debug("Failed to fetch Group Id in CommandRestClient: attempt to cast JsonObject to JsonArray: " +
-                    " ${e.message}")
-            logger.debug("Note: access might be forbidden")
+        } else {
+            logger.warn("Failed to fetch possible groups ids in CommandRestClient ")
+            ""
         }
-        return ""
+
+    }
+
+    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution) : String {
+        val res = this::class.java.classLoader.getResource("command_execution_rest.json")
+                ?: throw IllegalStateException("Resource 'command_execution_rest.json' file is missing")
+
+        var jsonBody = res.readText()
+        if (command.commentVisibleGroup == "All Users") {
+            jsonBody += "\n}"
+        } else {
+            val groupId: String = getGroupId(command)
+            if (visibilityState == VisibilityState.VISIBILITY_RESTRICTED) {
+                jsonBody += COMMANDS_GROUP_VISIBILITY
+                jsonBody = jsonBody.replace("{groupId}", groupId, true)
+            } else {
+                jsonBody += "\n}"
+            }
+        }
+        val comment = command.comment ?: ""
+
+        jsonBody = jsonBody.replace("{idReadable}", command.issue.id, true)
+                .replace("true", command.silent.toString(), true)
+                .replace("{comment}", comment, true)
+                .replace("{query}", command.command, true)
+
+        return jsonBody
     }
 
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
-        val groupId: String = getGroupId(command)
+
         val execPostUrl = "${repository.url}/api/commands"
         val postMethod = PostMethod(execPostUrl)
-
-        val comment = command.comment ?: ""
-
-        val res: URL? = this::class.java.classLoader.getResource("command_execution_rest.json")
-        var jsonBody = res?.readText()
-        if (groupId != ""){
-            jsonBody += COMMANDS_GROUP_VISIBILITY
-            jsonBody = jsonBody?.replace("{groupId}", groupId, true)
-        }
-        else {
-            jsonBody += "\n}"
-        }
-
-        jsonBody = jsonBody?.replace("{idReadable}", command.issue.id, true)
-                ?.replace("true", command.silent.toString(), true)
-                ?.replace("{comment}", comment, true)
-                ?.replace("{query}", command.command, true)
+        val jsonBody = constructJsonForCommandExecution(command)
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
         return postMethod.connect {
-            try {
-                val status = httpClient.executeMethod(postMethod)
-                if (status != 200) {
-                    logger.debug("Failed to fetch execute command in CommandRestClient: " +
-                            "code $status ${postMethod.responseBodyAsLoggedString()}")
-                    val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
-                    CommandExecutionResponse(errors = listOf("Workflow: $error"))
-                } else {
-                    logger.debug("Successfully fetched execute command in CommandRestClient: code $status")
-                    postMethod.responseBodyAsLoggedString()
-                    CommandExecutionResponse()
-                }
-            } catch (e: IllegalStateException){
-                logger.debug("Failed to fetch execute command in CommandRestClient: ${e.message}" )
-                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("error_description").asString
+            val status = httpClient.executeMethod(postMethod)
+            if (status != 200) {
+                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
                 CommandExecutionResponse(errors = listOf("Workflow: $error"))
+            } else {
+                postMethod.responseBodyAsLoggedString()
+                CommandExecutionResponse()
             }
         }
     }
+}
+
+enum class VisibilityState {
+    NO_VISIBILITY_RESTRICTIONS,
+    VISIBILITY_RESTRICTED
 }

@@ -13,15 +13,14 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
         val method = GetMethod("${repository.url}/api/users/notifications?fields=id,recipient(login),content,metadata")
         method.setRequestHeader("Accept", "application/json")
         return method.connect {
-            when (val status = httpClient.executeMethod(it)) {
+            when (httpClient.executeMethod(it)) {
                 200 -> {
-                    logger.debug("Successfully fetched notifications: status $status")
+                    logger.debug("Successfully fetched notifications")
                     val streamReader = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
                     JsonParser.parseReader(streamReader).asJsonArray.map { YouTrackNotification(it, repository.url) }
                 }
                 404 -> {
-                    logger.debug("Failed to fetch notifications: status $status, ${method.responseBodyAsLoggedString()}")
-                    logger.debug("possible cause of the issue: persistent notifications are supported starting from YouTrack 2018.1")
+                    logger.warn("fail to fetch notifications: ${method.responseBodyAsLoggedString()}")
                     // persistent notifications are supported starting from YouTrack 2018.1
                     listOf()
                 }

@@ -36,7 +36,7 @@ class SetupVariationsTest : SetupManagerTrait, IssueRestTrait, IdeaProjectTrait,
             issueStoreComponent[repository].update(repository).waitFor(5000)
 
             assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-            assertEquals(1, issueStoreComponent[repository].getAllIssues().size)
+            assertEquals(10, issueStoreComponent[repository].getAllIssues().size)
         } finally {
             deleteIssue(issueId)
         }
