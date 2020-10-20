@@ -79,7 +79,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                     if (issue.isNotEmpty()){
                         issue[0].workItems.add(item)
                     } else {
-                        logger.warn("Unable to find issue corresponding to work item ${item.id}")
+                        logger.debug("Unable to find issue corresponding to work item ${item.id}")
                     }
                 }
                 issues

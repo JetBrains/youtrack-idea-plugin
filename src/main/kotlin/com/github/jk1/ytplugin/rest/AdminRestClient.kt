@@ -35,7 +35,10 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                             parseGroupNames(method, "recommendedGroups") +
                             parseGroupNames(method, "groupsWithoutRecommended")
                 }
-                else -> throw RuntimeException(method.responseBodyAsLoggedString())
+                else -> {
+                    logger.warn("failed to fetch visibility groups: ${method.responseBodyAsLoggedString()}")
+                    throw RuntimeException()
+                }
             }
         }
     }
@@ -57,7 +60,8 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 json.map { it.asJsonObject.get("shortName").asString }
             } else {
-                throw RuntimeException("fail to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
+                logger.warn("failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
+                throw RuntimeException()
             }
         }
     }
