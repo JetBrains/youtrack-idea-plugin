@@ -115,7 +115,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addCommentsTab(comments: List<IssueComment>, tabs: JBTabbedPane){
+    private fun addCommentsTab(comments: List<IssueComment>, tabs: JBTabbedPane) {
         if (comments.isNotEmpty()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
@@ -125,7 +125,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane){
+    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane) {
         if (workItems.isNotEmpty()) {
             val workItemsPanel = JPanel()
             workItemsPanel.layout = BoxLayout(workItemsPanel, BoxLayout.Y_AXIS)
@@ -159,48 +159,73 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
         val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
+        val viewportWidth = 60
+
 
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
 
         val date = SimpleColoredComponent()
+        // post date without time
         date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
 
-        val value = SimpleColoredComponent()
-        value.append(workItem.value, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        var value = SimpleColoredComponent()
         value.icon = AllIcons.Vcs.History
-        value.append("    ")
+
+        value = createValueWithEnding(" +", value,
+                workItem.value, viewportWidth)
+
 
         val slash = SimpleColoredComponent()
-        slash.append("                   |")
+        slash.append("            |")
         val slash1 = SimpleColoredComponent()
-        slash1.append("                  |")
+        slash1.append("           |")
         val slash2 = SimpleColoredComponent()
-        slash2.append("                  |")
+        slash2.append("           |")
 
-        workItemsPanel.add(header)
-        workItemsPanel.add(slash)
-        workItemsPanel.add(date)
-        workItemsPanel.add(slash1)
-        workItemsPanel.add(value)
+        val panelWidth = rootPane.width
+        if (panelWidth < 500) {
+            workItemsPanel.add(date)
+            workItemsPanel.add(slash1)
+            workItemsPanel.add(value)
+        } else {
+            workItemsPanel.add(header)
+            workItemsPanel.add(slash)
+            workItemsPanel.add(date)
+            workItemsPanel.add(slash1)
+            workItemsPanel.add(value)
 
-        val comment = SimpleColoredComponent()
-        if (workItem.comment != null){
-            comment.append(workItem.comment, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-            workItemsPanel.add(slash2)
-            workItemsPanel.add(comment)
-        }
-        else{
+            var comment = SimpleColoredComponent()
+            if (workItem.comment != null) {
+                comment = createValueWithEnding(" ...", comment,
+                        workItem.comment, viewportWidth)
+                workItemsPanel.add(slash2)
+                workItemsPanel.add(comment)
+            } else {
+                workItemsPanel.add(JLabel(""))  // for empty cell
+                workItemsPanel.add(JLabel(""))  // for empty cell
+            }
+
             workItemsPanel.add(JLabel(""))  // for empty cell
-            workItemsPanel.add(JLabel(""))  // for empty cell
+        }
+        return workItemsPanel
+    }
+
+    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
+            : SimpleColoredComponent {
+
+        val parts = item.split(" ").iterator()
+        while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
+            value.append(" ${parts.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }
 
-        workItemsPanel.add(JLabel(""))  // for empty cell
+        if (item != "") {
+            if (parts.hasNext() && parts.next() != "") {
+                value.append(ending, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            }
+        }
 
-        val panel = JPanel(BorderLayout())
-        panel.add(workItemsPanel, BorderLayout.NORTH)
-
-        return panel
+        return value
     }
 }
