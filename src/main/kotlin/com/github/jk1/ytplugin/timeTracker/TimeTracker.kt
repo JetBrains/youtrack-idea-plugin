@@ -59,7 +59,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var isPostAfterCommitEnabled = true
 
     @PropertyName("timeTracker.isAutoTrackingEnable")
-    var isAutoTrackingEnable = true
+    var isAutoTrackingEnable = false
 
     @PropertyName("timeTracker.isRunning")
     var isRunning = false

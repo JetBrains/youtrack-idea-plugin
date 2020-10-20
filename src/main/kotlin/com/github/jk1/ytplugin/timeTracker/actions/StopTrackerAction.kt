@@ -1,7 +1,10 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
@@ -11,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.tasks.youtrack.YouTrackRepository
 import java.lang.IllegalStateException
 import java.util.*
 
@@ -37,9 +41,16 @@ class StopTrackerAction : AnAction(
 
     fun stopTimer(project: Project) {
         val trackerNote = TrackerNotification()
-
-        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+        val repo: YouTrackServer?
+        try {
+             repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+             logger.debug("YouTrack server integration is configured")
+        } catch (e: NoYouTrackRepositoryException){
+            logger.debug("YouTrack server integration is not configured yet")
+            return
+        }
         val timer = ComponentAware.of(project).timeTrackerComponent
+
         try {
             timer.stop()
             val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
