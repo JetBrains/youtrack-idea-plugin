@@ -22,6 +22,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     companion object {
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
+                "fields(id,name,projectCustomField(emptyFieldText,field(name)),value(color(background,foreground),minutes,name,presentation))," +
                 "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
                 "author(name,login),deleted),summary,wikifiedDescription,customFields(name,color," +
@@ -78,7 +79,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                     if (issue.isNotEmpty()){
                         issue[0].workItems.add(item)
                     } else {
-                        logger.warn("Unable to find issue corresponding to work item")
+                        logger.warn("Unable to find issue corresponding to work item ${item.id}")
                     }
                 }
                 issues
