@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.YouTrackNotification
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
@@ -14,10 +15,12 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
         return method.connect {
             when (httpClient.executeMethod(it)) {
                 200 -> {
+                    logger.debug("Successfully fetched notifications")
                     val streamReader = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
                     JsonParser.parseReader(streamReader).asJsonArray.map { YouTrackNotification(it, repository.url) }
                 }
                 404 -> {
+                    logger.warn("fail to fetch notifications: ${method.responseBodyAsLoggedString()}")
                     // persistent notifications are supported starting from YouTrack 2018.1
                     listOf()
                 }

@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
@@ -39,9 +40,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully created draft: status $status")
                 val stream = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
                 JsonParser.parseReader(stream).asJsonObject.get("id").asString
             } else {
+                logger.error("Failed to create draft")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
@@ -52,27 +55,35 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val fields = NameValuePair("fields", ISSUE_FIELDS)
         method.setQueryString(arrayOf(fields))
         val issue = method.execute { IssueJsonParser.parseIssue(it, repository.url) }
-        return if (issue != null)
+        return if (issue != null) {
+            logger.debug("Successfully fetched issue")
             getWorkItemsForIssues(issue.issueId, mutableListOf(issue))[0]
-        else
+        }
+        else{
+            logger.warn("Failed to fetch issue with id $id: ${method.responseBodyAsLoggedString()}")
             null
+        }
     }
 
     private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<Issue> {
         return method.connect {
             val status = httpClient.executeMethod(method)
-            val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+            val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
             if (status == 200) {
+                logger.debug("Successfully parsed work items: $status")
                 val workItems = mutableListOf<IssueWorkItem>()
                 json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
                 for (item in workItems) {
                     val issue: MutableList<Issue> = issues.filter { it.id == item.issueId }.toMutableList()
                     if (issue.isNotEmpty()){
                         issue[0].workItems.add(item)
+                    } else {
+                        logger.warn("Unable to find issue corresponding to work item")
                     }
                 }
                 issues
             } else {
+                logger.error("Unable to parse work items")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
@@ -88,9 +99,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val issues = method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
+                logger.debug("Successfully fetched issues : $status")
                 val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
                 json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
             } else {
+                logger.error("Failed to fetch issues for query $query, issues: {}: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }

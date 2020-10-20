@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -29,6 +30,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         return method.connect {
             when (httpClient.executeMethod(method)) {
                 200 -> {
+                    logger.debug("Successfully fetched visibility groups")
                     listOf("All Users") +
                             parseGroupNames(method, "recommendedGroups") +
                             parseGroupNames(method, "groupsWithoutRecommended")
@@ -51,10 +53,11 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         return method.connect {
             if (httpClient.executeMethod(method) == 200) {
-                val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+                logger.debug("Successfully fetched accessible projects")
+                val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 json.map { it.asJsonObject.get("shortName").asString }
             } else {
-                throw RuntimeException(method.responseBodyAsLoggedString())
+                throw RuntimeException("fail to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
             }
         }
     }
