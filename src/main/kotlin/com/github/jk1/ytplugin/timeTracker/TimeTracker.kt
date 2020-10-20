@@ -155,7 +155,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
     fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean, repository: YouTrackServer) {
+                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean) {
         comment = myComment
         isPostAfterCommitEnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking

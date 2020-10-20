@@ -54,7 +54,7 @@ class TimeTrackingService {
                 timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
                 timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
                 timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule,
-                inactivityTime, timeTrackingTab.getPostOnClose().isSelected, repo)
+                inactivityTime, timeTrackingTab.getPostOnClose().isSelected)
         timer.timeInMills = 0
         timer.pausedTime = 0
         timer.isAutoTrackingTemporaryDisabled = false
