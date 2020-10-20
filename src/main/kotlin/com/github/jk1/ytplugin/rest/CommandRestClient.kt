@@ -18,16 +18,16 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
 
     companion object {
-        const val COMMANDS_GROUP_VISIBILITY =  ",\n" +
-                "  \"visibility\": {\n" +
-                "    \"\$type\": \"CommandLimitedVisibility\",\n" +
-                "    \"permittedGroups\": [\n" +
-                "      {\n" +
-                "        \"id\": \"{groupId}\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "}"
+        const val COMMANDS_GROUP_VISIBILITY = """,
+  "visibility": {
+    "${"$"}type": "CommandLimitedVisibility",
+    "permittedGroups": [
+      {
+        "id": "{groupId}"
+      }
+    ]
+  }
+}"""
     }
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
@@ -63,7 +63,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val getMethod = GetMethod(execUrl)
         try {
             val status = httpClient.executeMethod(getMethod)
-            val response: JsonArray = JsonParser.parseReader(getMethod.responseBodyAsReader) as JsonArray
+            val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsLoggedString()) as JsonArray
             return if (status == 200) {
                 logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
                 if (command.commentVisibleGroup == "All Users") {
@@ -72,8 +72,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                     response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }
                 }.asJsonObject.get("id").asString
             } else {
-                logger.debug("Failed to fetch Group Id in CommandRestClient: " +
-                        "code $status ${getMethod.responseBodyAsLoggedString()}")
+                logger.warn("Failed to fetch Group Id in CommandRestClient ")
                 ""
             }
         } catch (e: ClassCastException){
@@ -85,26 +84,28 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     }
 
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
-        val groupId: String = getGroupId(command)
         val execPostUrl = "${repository.url}/api/commands"
         val postMethod = PostMethod(execPostUrl)
-
         val comment = command.comment ?: ""
-
-        val res: URL? = this::class.java.classLoader.getResource("command_execution_rest.json")
-        var jsonBody = res?.readText()
-        if (groupId != ""){
-            jsonBody += COMMANDS_GROUP_VISIBILITY
-            jsonBody = jsonBody?.replace("{groupId}", groupId, true)
-        }
-        else {
+        val res = this::class.java.classLoader.getResource("command_execution_rest.json")
+                ?: throw IllegalStateException("Resource 'command_execution_rest.json' file is missing")
+        var jsonBody = res.readText()
+        if (command.commentVisibleGroup == "All Users") {
             jsonBody += "\n}"
+        } else {
+            val groupId: String = getGroupId(command)
+            if (groupId != ""){
+                jsonBody += COMMANDS_GROUP_VISIBILITY
+                jsonBody = jsonBody.replace("{groupId}", groupId, true)
+            } else {
+                jsonBody += "\n}"
+            }
         }
 
-        jsonBody = jsonBody?.replace("{idReadable}", command.issue.id, true)
-                ?.replace("true", command.silent.toString(), true)
-                ?.replace("{comment}", comment, true)
-                ?.replace("{query}", command.command, true)
+        jsonBody = jsonBody.replace("{idReadable}", command.issue.id, true)
+                .replace("true", command.silent.toString(), true)
+                .replace("{comment}", comment, true)
+                .replace("{query}", command.command, true)
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
         return postMethod.connect {
