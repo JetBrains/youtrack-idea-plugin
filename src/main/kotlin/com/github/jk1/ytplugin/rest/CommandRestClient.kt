@@ -81,11 +81,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
     }
 
-    override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
-
-        val execPostUrl = "${repository.url}/api/commands"
-        val postMethod = PostMethod(execPostUrl)
-        val comment = command.comment ?: ""
+    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution) : String {
         val res = this::class.java.classLoader.getResource("command_execution_rest.json")
                 ?: throw IllegalStateException("Resource 'command_execution_rest.json' file is missing")
 
@@ -101,11 +97,22 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                 jsonBody += "\n}"
             }
         }
+        val comment = command.comment ?: ""
 
         jsonBody = jsonBody.replace("{idReadable}", command.issue.id, true)
                 .replace("true", command.silent.toString(), true)
                 .replace("{comment}", comment, true)
                 .replace("{query}", command.command, true)
+
+        return jsonBody
+    }
+
+
+    override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
+
+        val execPostUrl = "${repository.url}/api/commands"
+        val postMethod = PostMethod(execPostUrl)
+        val jsonBody = constructJsonForCommandExecution(command)
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
         return postMethod.connect {
