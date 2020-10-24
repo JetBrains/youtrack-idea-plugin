@@ -83,6 +83,32 @@ class ActivityTracker(
     }
 
     override fun dispose() {
+        val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+
+        if (!isPostedOnClose) {
+            if (timer.isWhenProjectClosedEnabled) {
+                logger.debug("state PROJECT_CLOSE with posting enabled")
+                try {
+                    timer.stop()
+                    repo.let { it1 ->
+                        TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                    }
+                } catch (e: IllegalStateException) {
+                    logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+                }
+            } else {
+                try {
+                    saveState(store)
+                } catch (e: IllegalStateException) {
+                    logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+                }
+                logger.debug("state PROJECT_CLOSE with posting disabled")
+            }
+            logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
+            isPostedOnClose = true
+        }
         if (trackingDisposable != null) {
             Disposer.dispose(trackingDisposable!!)
             trackingDisposable = null
@@ -114,46 +140,13 @@ class ActivityTracker(
         }, parentDisposable)
     }
 
-    @Suppress
     private fun startIDEListener(parentDisposable: Disposable) {
         var lastMouseMoveTimestamp = 0L
         val mouseMoveEventsThresholdMs = 1000
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
 
-//            val window = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow
-//            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
 
-//            window?.addWindowListener(object : WindowAdapter() {
-//                override fun windowClosed(windowEvent: WindowEvent) {
-//                    if (!isPostedOnClose) {
-//                        if (timer.isWhenProjectClosedEnabled) {
-//                            logger.debug("state PROJECT_CLOSE with posting enabled")
-//                            try {
-//                                    timer.stop()
-//                                    repo.let { it1 ->
-//                                        TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
-//                                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
-//                                    }
-//                                     dispose()
-//                            } catch (e: IllegalStateException) {
-//                                logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-//                            }
-//                        } else {
-//                            try {
-//                                saveState(store)
-//                                dispose()
-//
-//                            } catch (e: IllegalStateException) {
-//                                logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-//                            }
-//                            logger.debug("state PROJECT_CLOSE with posting disabled")
-//                        }
-//                        logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
-//                        isPostedOnClose = true
-//                    }
-//                }
-//            })
             isPostedOnClose = false
             if (timer.isPaused) {
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
@@ -197,6 +190,7 @@ class ActivityTracker(
                 }
             } else if (isMouseOrKeyboardActive) {
                 myInactivityTime = 0
+
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
                     val action = StartTrackerAction()
