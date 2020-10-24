@@ -39,7 +39,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val res = this::class.java.classLoader.getResource("get_command_body.json")
                 ?: throw IllegalStateException("Resource 'get_command_body.json' file is missing")
 
-        val id = command.issue.id
+        val id = command.issue.entityId
         val jsonBody = res.readText()
                 .replace("{query}", command.command, true)
                 .replace("0", caret.toString(), true)

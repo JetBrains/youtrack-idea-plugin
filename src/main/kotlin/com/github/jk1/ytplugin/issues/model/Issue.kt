@@ -43,6 +43,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
         customFields = if (root.getAsJsonArray("customFields") != null && !root.getAsJsonArray(("customFields")).isJsonNull){
             root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
         } else {
+            // YouTrack 2018.X has no 'customFields' yet
             root.getAsJsonArray("fields").mapNotNull { IssueJsonParser.parseCustomField(it) }
         }
 

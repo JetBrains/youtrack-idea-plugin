@@ -19,6 +19,7 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
         name = if (item.asJsonObject.get("name") != null && !item.asJsonObject.get(("name")).isJsonNull){
             item.asJsonObject.get("name").asString
         } else {
+            // YouTack 2018.X fallback
             item.asJsonObject.get("projectCustomField").asJsonObject.get("field").asJsonObject.get("name").asString
         }
         valueId = mutableListOf()
