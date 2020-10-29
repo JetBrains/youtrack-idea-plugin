@@ -204,9 +204,6 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
     private fun isAutoTrackingChanged(enabled: Boolean) {
 
-        typeComboBox.isEnabled = enabled
-        typeLabel.isEnabled = enabled
-
         scheduledHour.isEnabled = enabled
         scheduledMinutes.isEnabled = enabled
 
