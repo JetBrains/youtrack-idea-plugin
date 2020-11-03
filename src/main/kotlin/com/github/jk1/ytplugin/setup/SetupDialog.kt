@@ -186,7 +186,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
     fun createCheckboxesPane() : JPanel {
-        shareUrlCheckBox = JBCheckBox("Share Url", repo.getRepo().isShared)
+        shareUrlCheckBox = JBCheckBox("Share URL", repo.getRepo().isShared)
         useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
 
         val checkboxesPanel = JPanel(FlowLayout(2))
