@@ -134,17 +134,21 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
         var fullIssues: List<Issue>
         method.setQueryString(arrayOf(myQuery, myFields))
-        val status = httpClient.executeMethod(method)
-        if (status == 200) {
-            logger.debug("Successfully fetched issues : $status")
-            val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
-            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
-            fullIssues = parseIssues(issuesWithWorkItems)
-        } else {
-            logger.debug("Failed to fetch issues for query $query, issues: {}: ${method.responseBodyAsLoggedString()}")
-            throw RuntimeException(method.responseBodyAsLoggedString())
+
+        return method.connect2 {
+            val status = httpClient.executeMethod(method)
+            if (status == 200) {
+                logger.debug("Successfully fetched issues : $status")
+                val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
+                val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
+                fullIssues = parseIssues(issuesWithWorkItems)
+                fullIssues
+            } else {
+                logger.debug("Failed to fetch issues for query $query, issues: {}: ${method.responseBodyAsLoggedString()}")
+                throw RuntimeException(method.responseBodyAsLoggedString())
+            }
         }
-        return fullIssues
+
     }
 
 
@@ -160,7 +164,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     private fun mapWorkItemsWithIssues(issues: JsonArray): List<JsonElement> {
-
         val newIssues = mutableListOf<JsonElement>()
         for (issue in issues) {
             val id = issue.asJsonObject.get("idReadable").asString
