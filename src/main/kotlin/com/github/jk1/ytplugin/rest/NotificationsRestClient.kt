@@ -12,8 +12,9 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
     fun getNotifications(): List<YouTrackNotification> {
         val method = GetMethod("${repository.url}/api/users/notifications?fields=id,recipient(login),content,metadata")
         method.setRequestHeader("Accept", "application/json")
-        return method.connect { it ->
-            when (httpClient.executeMethod(it)) {
+
+        return method.connect2 { it ->
+            when (httpClient.executeMethod(method)) {
                 200 -> {
                     val streamReader = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
                     JsonParser.parseReader(streamReader).asJsonArray

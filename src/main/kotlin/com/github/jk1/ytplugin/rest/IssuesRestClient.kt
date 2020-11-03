@@ -67,7 +67,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     private fun parseWorkItems(method: GetMethod, issues: List<Issue>): List<Issue> {
-        return method.connect {
+        return method.connect2 {
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
             if (status == 200) {
@@ -84,7 +84,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 }
                 issues
             } else {
-                logger.error("Unable to parse work items")
+                logger.warn("Unable to parse work items")
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
@@ -97,7 +97,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val myQuery = NameValuePair("query", query)
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
         method.setQueryString(arrayOf(myQuery, myFields))
-        val issues = method.connect {
+
+        val issues = method.connect2 {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
                 logger.debug("Successfully fetched issues : $status")
@@ -108,7 +109,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 throw RuntimeException(method.responseBodyAsLoggedString())
             }
         }
-
         return getWorkItemsForIssues(query, issues)
     }
 
