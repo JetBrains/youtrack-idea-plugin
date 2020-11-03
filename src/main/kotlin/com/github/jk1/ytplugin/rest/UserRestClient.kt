@@ -12,13 +12,13 @@ import org.apache.commons.httpclient.methods.GetMethod
 class UserRestClient(override val repository: YouTrackServer) : RestClientTrait {
 
     private fun parseWorkItems(method: GetMethod): MutableList<IssueWorkItem> {
-        return method.connect {
+
+        return method.connect2 {
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
             val workItems = mutableListOf<IssueWorkItem>()
             json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
             workItems.sort()
-
             if (status == 200) {
                 logger.debug("Successfully parsed ${workItems.size} work items: $status")
                 workItems
@@ -33,6 +33,7 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
+
         val myFields = NameValuePair("fields", "text,issue(idReadable),type(name),created," +
                 "duration(presentation,minutes),author(name),creator(name),date,id")
         method.setQueryString(arrayOf(myQuery, myFields))
