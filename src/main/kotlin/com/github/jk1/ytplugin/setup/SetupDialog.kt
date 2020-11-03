@@ -128,14 +128,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         tp.replaceSelection(msg)
     }
 
-    private fun enableButtons() {
-        this.useProxyCheckBox.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
-        if (!HttpConfigurable.getInstance().USE_HTTP_PROXY) {
-            this.useProxyCheckBox.isSelected = false
-        }
-    }
-
-
     private fun createServerPane() : JPanel{
         val serverUrlLabel = JBLabel("Server URL:")
         inputUrlTextPane.apply {
@@ -348,7 +340,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     inner class OpenProxySettingsAction : AbstractAction("Proxy settings...") {
         override fun actionPerformed(e: ActionEvent) {
             HttpConfigurable.editConfigurable(controlPanel)
-            enableButtons()
         }
     }
 }
