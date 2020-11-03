@@ -111,21 +111,18 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     private fun parseWorkItems(method: GetMethod): List<IssueWorkItem> {
-        val workItems = mutableListOf<IssueWorkItem>()
-        try {
+        return method.connect2 {
+            val workItems = mutableListOf<IssueWorkItem>()
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
             if (status == 200) {
                 logger.debug("Successfully parsed work items: $status")
                 json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
+                workItems
             } else {
-                logger.debug("Unable to parse work items: ${method.responseBodyAsLoggedString()}")
+                throw RuntimeException("Unable to parse work items: ${method.responseBodyAsLoggedString()}")
             }
-        } catch (e: Exception){
-            logger.debug("Unable to parse work items: ${e.message}")
         }
-
-        return workItems
     }
 
 
