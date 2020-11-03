@@ -60,8 +60,8 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
                 json.map { it.asJsonObject.get("shortName").asString }
             } else {
-                logger.warn("failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
-                throw RuntimeException()
+                logger.warn("Failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
+                throw RuntimeException("Failed to fetch accessible projects")
             }
         }
     }

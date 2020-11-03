@@ -3,7 +3,8 @@
   "caret": 0,
   "issues": [
     {
-      "idReadable": "{id}"
+      "$type": "Issue",
+      "id": "{id}"
     }
   ]
 }

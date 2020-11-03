@@ -302,6 +302,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
 
     inner class OkAction(name: String) : AbstractAction(name) {
+
         override fun actionPerformed(e: ActionEvent) {
 
             if (!isConnectionTested) {
