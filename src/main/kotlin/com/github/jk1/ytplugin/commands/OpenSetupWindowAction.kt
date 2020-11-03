@@ -13,7 +13,7 @@ import com.intellij.openapi.project.DumbAware
  *
  * Dumb aware actions can be executed when IDE is rebuilding indexes.
  */
-class OpenSetupWindowAction(repo: YouTrackServer) : AnAction(
+class OpenSetupWindowAction(repo: YouTrackServer, private val fromTracker: Boolean) : AnAction(
         "Open Setup Dialog",
         "Open configuration settings",
         AllIcons.General.Settings), DumbAware, IdeNotificationsTrait {
@@ -25,7 +25,7 @@ class OpenSetupWindowAction(repo: YouTrackServer) : AnAction(
         val project = event.project
         if (project != null && project.isInitialized) {
             try {
-                SetupDialog(project, repository).show()
+                SetupDialog(project, repository, fromTracker).show()
             } catch (exception: YouTrackPluginException) {
                 exception.showAsNotificationBalloon(project)
             }

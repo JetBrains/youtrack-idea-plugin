@@ -29,7 +29,7 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 
-open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+open class SetupDialog(override val project: Project, val repo: YouTrackServer, val fromTracker: Boolean) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
     private lateinit var mainPane: JBTabbedPane
@@ -55,8 +55,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     override fun init() {
         title = "YouTrack"
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
-
-        if (timer.isRunning || timer.isPaused){
+        if (timer.isRunning){
             StopTrackerAction().stopTimer(project)
             timer.isAutoTrackingTemporaryDisabled = true
         }
@@ -242,7 +241,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
             addTab("Time Tracking", null, timeTrackingTab, null)
+
             setMnemonicAt(0, KeyEvent.VK_1)
+            selectedIndex = if (fromTracker) 1 else 0
+
         }
 
         //TODO

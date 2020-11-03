@@ -37,7 +37,7 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         group.add(ResetTrackerAction())
         group.add(StopTrackerAction())
         group.add(ToggleGroupByAction(repo))
-        group.addConfigureTaskServerAction(repo)
+        group.addConfigureTaskServerAction(repo, true)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }

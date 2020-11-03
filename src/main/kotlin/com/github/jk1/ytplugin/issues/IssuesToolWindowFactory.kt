@@ -101,7 +101,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { SetupDialog(project, repo).show() }
+        val configureLabel = createLink("Configure") { SetupDialog(project, repo, false).show() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)
