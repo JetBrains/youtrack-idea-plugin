@@ -79,7 +79,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
                 repos.forEach {
                     val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     val timeTrackerPanel = TimeTrackerToolWindowContent(!toolWindow.anchor.isHorizontal, it)
-                    contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
+                    contentManager.addContent("${it.url.split("//").last()}   |   Issues", panel)
                     contentManager.addContent("Time Tracking", timeTrackerPanel)
 
                 }

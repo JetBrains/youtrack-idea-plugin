@@ -48,7 +48,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
 
-        return method.connect {
+        return method.connect2 {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
                 logger.debug("Successfully posted assist command in CommandRestClient: code $status")
