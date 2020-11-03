@@ -119,6 +119,8 @@
   },
   attachments: [
     {
+      url: "/youtrack/api/files/7-1?sign=MTYwMzQxMTIwMDAwMHwxLTF8Ny0xfElKcElwdXJiLUMxV3VGSkFodHpIRjhEbUFOZjljQl83QU9X%0D%0AQUZWMlJpSHMNCg%0D%0A&updated=1603226559296",
+      name: "Screenshot from 2020-09-23 18-08-20.png",
       $type: "IssueAttachment"
     }
   ],
@@ -129,10 +131,11 @@
         name: "root",
         $type: "User"
       },
-      text: "hello",
-      created: 1596129050513,
+      deleted: false,
+      textPreview: "hello",
+      created: 1603226593036,
       updated: null,
-      id: "4-0",
+      id: "4-19",
       $type: "IssueComment"
     }
   ],
@@ -150,6 +153,7 @@
   customFields: [
     {
       projectCustomField: {
+        emptyFieldText: "No Priority",
         $type: "EnumProjectCustomField"
       },
       value: {
@@ -162,6 +166,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "No Type",
         $type: "EnumProjectCustomField"
       },
       value: {
@@ -174,6 +179,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "No State",
         $type: "StateProjectCustomField"
       },
       value: {
@@ -186,6 +192,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "Unassigned",
         $type: "UserProjectCustomField"
       },
       value: {
@@ -198,6 +205,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "No Subsystem",
         $type: "OwnedProjectCustomField"
       },
       value: {
@@ -210,6 +218,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "Unscheduled",
         $type: "VersionProjectCustomField"
       },
       value: [],
@@ -219,6 +228,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "Unknown",
         $type: "VersionProjectCustomField"
       },
       value: [],
@@ -228,6 +238,7 @@
     },
     {
       projectCustomField: {
+        emptyFieldText: "Next Build",
         $type: "BuildProjectCustomField"
       },
       value: null,

@@ -173,7 +173,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         var value = SimpleColoredComponent()
         value.icon = AllIcons.Vcs.History
 
-        value = createValueWithEnding(" +", value,
+        value =  createValueWithEnding(" +", value,
                 workItem.value, viewportWidth)
 
 
@@ -185,7 +185,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         slash2.append("           |")
 
         val panelWidth = rootPane.width
-        if (panelWidth < 500) {
+        if (panelWidth < 500){
             workItemsPanel.add(date)
             workItemsPanel.add(slash1)
             workItemsPanel.add(value)
@@ -209,13 +209,18 @@ class IssueViewer : JPanel(BorderLayout()) {
 
             workItemsPanel.add(JLabel(""))  // for empty cell
         }
+
+
         return workItemsPanel
     }
 
-    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
-            : SimpleColoredComponent {
 
-        val parts = item.split(" ").iterator()
+
+
+    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
+            : SimpleColoredComponent{
+
+        val parts =  item.split(" ").iterator()
         while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
             value.append(" ${parts.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }

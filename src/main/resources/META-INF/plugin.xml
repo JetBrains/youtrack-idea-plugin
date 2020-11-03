@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>1.0.4</version>
+    <version>2.0.0</version>
     <vendor>JetBrains</vendor>
 
     <description><![CDATA[
@@ -57,6 +57,42 @@
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
         </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift M" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift P" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift N" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift L" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction">
+            <keyboard-shortcut first-keystroke="control shift I" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -75,5 +111,7 @@
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
+        <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
+
     </extensions>
 </idea-plugin>

@@ -4,7 +4,9 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
+import com.github.jk1.ytplugin.ui.TimeTrackerToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbAware
@@ -35,6 +37,7 @@ import javax.swing.SwingUtilities
  * DumbAware tool window can be opened in a "dumb mode", when no IDE index is available.
  */
 class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
+
 
     override fun init(toolWindow: ToolWindow) {
         toolWindow.setIcon(YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW) // loaded via IconLoader, thus adaptive
@@ -75,7 +78,10 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             else -> {
                 repos.forEach {
                     val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
+                    val timeTrackerPanel = TimeTrackerToolWindowContent(!toolWindow.anchor.isHorizontal, it)
                     contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
+                    contentManager.addContent("Time Tracking", timeTrackerPanel)
+
                 }
                 Disposer.register(project, Disposable {
                     contentManager.removeAllContents(true)

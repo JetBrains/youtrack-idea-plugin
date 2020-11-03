@@ -28,9 +28,9 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
-            when (httpClient.executeMethod(method)) {
+            when (val status = httpClient.executeMethod(method)) {
                 200 -> {
-                    logger.debug("Successfully fetched visibility groups")
+                    logger.debug("Successfully fetched visibility groups in AdminRestClient: code $status")
                     listOf("All Users") +
                             parseGroupNames(method, "recommendedGroups") +
                             parseGroupNames(method, "groupsWithoutRecommended")

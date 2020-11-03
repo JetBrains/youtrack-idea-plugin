@@ -3,6 +3,9 @@ package com.github.jk1.ytplugin.setup
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
+import com.github.jk1.ytplugin.timeTracker.TimeTrackingService
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
@@ -29,6 +32,7 @@ import javax.swing.text.StyleContext
 open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
+    private lateinit var mainPane: JBTabbedPane
 
     private lateinit var tokenLabel: JBLabel
     private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
@@ -41,10 +45,22 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
+    private val myHeight = 340
+    private val myWidth = 540
+
+    private val timeTrackingTab =  TimeTrackerSettingsTab(repo, myHeight, myWidth)
+
     private var isConnectionTested = false
 
     override fun init() {
         title = "YouTrack"
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent
+
+        if (timer.isRunning || timer.isPaused){
+            StopTrackerAction().stopTimer(project)
+            timer.isAutoTrackingTemporaryDisabled = true
+        }
+
         super.init()
     }
 
@@ -65,7 +81,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val myRepositoryType = YouTrackRepositoryType()
         connectedRepository.url = inputUrlTextPane.text
         connectedRepository.password = String(inputTokenField.password)
-        connectedRepository.username = "Token-based authentication" // ignored by YouTrack anyway when token is sent as password
+        connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
         connectedRepository.repositoryType = myRepositoryType
         connectedRepository.storeCredentials()
 
@@ -93,6 +109,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
         }
 
+        if (repoConnector.noteState != NotifierState.SUCCESS){
+            mainPane.setEnabledAt(1, false)
+        } else {
+            mainPane.setEnabledAt(1, true)
+        }
+
         repoConnector.setNotifier(notifyFieldLabel)
         isConnectionTested = true
     }
@@ -105,14 +127,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         tp.setCharacterAttributes(aset, false)
         tp.replaceSelection(msg)
     }
-
-    private fun enableButtons() {
-        this.useProxyCheckBox.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
-        if (!HttpConfigurable.getInstance().USE_HTTP_PROXY) {
-            this.useProxyCheckBox.isSelected = false
-        }
-    }
-
 
     private fun createServerPane() : JPanel{
         val serverUrlLabel = JBLabel("Server URL:")
@@ -224,11 +238,21 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             add(createInfoPane())
         }
 
-        return JBTabbedPane().apply {
+        mainPane = JBTabbedPane().apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
+            addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
         }
+
+        //TODO
+        if (!repo.getRepo().isConfigured){
+            mainPane.setEnabledAt(1, false)
+        } else {
+            mainPane.setEnabledAt(1, true)
+        }
+
+        return mainPane
     }
 
     private fun drawAutoCorrection(fontColor: Color) {
@@ -269,14 +293,16 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         val contextPane = JPanel(GridLayout())
         val tabbedPane = prepareTabbedPane()
         contextPane.apply {
-            preferredSize = Dimension(540, 230)
+            preferredSize = Dimension(myWidth, myHeight)
             minimumSize = preferredSize
             add(tabbedPane)
         }
         return contextPane
     }
 
+
     inner class OkAction(name: String) : AbstractAction(name) {
+
         override fun actionPerformed(e: ActionEvent) {
 
             if (!isConnectionTested) {
@@ -295,6 +321,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             myRepository.isLoginAnonymously = false
 
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
+            if (repoConnector.noteState == NotifierState.SUCCESS){
+                val timerService = TimeTrackingService()
+                timerService.configureTimerForTracking(timeTrackingTab, repo, project)
+            }
 
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED ) {
                 this@SetupDialog.close(0)
@@ -311,7 +341,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     inner class OpenProxySettingsAction : AbstractAction("Proxy settings...") {
         override fun actionPerformed(e: ActionEvent) {
             HttpConfigurable.editConfigurable(controlPanel)
-            enableButtons()
         }
     }
 }

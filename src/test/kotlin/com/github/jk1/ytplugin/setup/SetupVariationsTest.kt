@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
-import org.apache.commons.httpclient.HttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
