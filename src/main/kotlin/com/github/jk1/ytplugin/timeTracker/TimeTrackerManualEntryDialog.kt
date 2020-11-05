@@ -163,12 +163,15 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 100,  //max
                 1)
         hoursSpinner = JSpinner(hoursModel)
+        hoursSpinner.editor = JSpinner.NumberEditor(hoursSpinner, "00")
 
-        val minutesModel: SpinnerModel = SpinnerNumberModel(30,  //initial value
+
+        val minutesModel: SpinnerModel = SpinnerNumberModel(0,  //initial value
                 0,  //min
                 60,  //max
                 1)
         minutesSpinner = JSpinner(minutesModel)
+        minutesSpinner.editor = JSpinner.NumberEditor(minutesSpinner, "00")
 
 
         val inputTimePanel = JPanel(FlowLayout(3))
