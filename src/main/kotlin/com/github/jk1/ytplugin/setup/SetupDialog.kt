@@ -2,13 +2,16 @@ package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
 import com.github.jk1.ytplugin.timeTracker.TimeTrackingService
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.youtrack.YouTrackRepository
@@ -326,6 +329,19 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             if (repoConnector.noteState == NotifierState.SUCCESS){
                 val timerService = TimeTrackingService()
                 timerService.configureTimerForTracking(timeTrackingTab, repo, project)
+            }
+
+            val trackerNote = TrackerNotification()
+            try {
+                val timer = ComponentAware.of(repo.project).timeTrackerComponent
+                if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
+                        (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)){
+                    trackerNote.notify("To start using time tracking please select active task on the toolbar" +
+                            " or by pressing Shift + Alt + T", NotificationType.INFORMATION)
+                }
+            } catch  (e: NoActiveYouTrackTaskException){
+                trackerNote.notify("To start using time tracking please select active task on the toolbar " +
+                        "or by pressing Shift + Alt + T", NotificationType.INFORMATION)
             }
 
             if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED ) {

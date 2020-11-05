@@ -82,7 +82,7 @@ class StartTrackerAction : AnAction(
                     myTimer.issueIdReadable = activeTask.id
                     if (myTimer.issueId == "0") {
                         val trackerNote = TrackerNotification()
-                        trackerNote.notify("Could not post time: not a YouTrack issue", NotificationType.WARNING)
+                        trackerNote.notify("Could not record time: not a YouTrack issue", NotificationType.WARNING)
                     } else {
                         myTimer.start(activeTask.id)
                         // case for activity tracker enabled

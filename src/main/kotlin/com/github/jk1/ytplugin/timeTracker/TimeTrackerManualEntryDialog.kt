@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.format
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
@@ -99,7 +100,12 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val types = timerService.getAvailableWorkItemsTypes(repo)
 
         typeComboBox = JComboBox(types.toTypedArray())
-        typeComboBox.selectedIndex = 0
+        try {
+            typeComboBox.selectedIndex = 0
+        } catch (e: IllegalArgumentException){
+            typeComboBox.selectedIndex = -1
+            logger.warn("Failed to fetch work items types")
+        }
         typeComboBox.isEditable = true
 
         val typePanel = JPanel(FlowLayout(2))

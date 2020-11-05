@@ -35,8 +35,8 @@ class ManualEntryAction  : AnAction(
         val project = event.project
         if (project != null ) {
             try {
-                val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-                event.presentation.isVisible = repo.getRepo().isConfigured
+                ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+                event.presentation.isVisible = true
             }
             catch(e: NoYouTrackRepositoryException) {
                 event.presentation.isVisible = false

@@ -38,8 +38,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
             if (!task.isIssue) {
                 logger.debug("No valid YouTrack active task selected, ${task.id} is selected")
-                val trackerNote = TrackerNotification()
-                trackerNote.notify("Please select active task", NotificationType.WARNING)
                 return "0"
             }
             val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
