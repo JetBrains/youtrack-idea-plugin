@@ -285,7 +285,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
     override fun createActions(): Array<out Action> =
-            arrayOf(TestConnectionAction(), OpenProxySettingsAction(), OkAction("Ok"), cancelAction)
+            arrayOf(TestConnectionAction(), OpenProxySettingsAction(), OkAction("OK"), cancelAction)
 
     override fun createJButtonForAction(action: Action): JButton {
         val button = super.createJButtonForAction(action)
