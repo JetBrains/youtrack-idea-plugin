@@ -6,6 +6,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.WindowManager
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
@@ -61,6 +62,8 @@ class TimeTrackingService {
         if (timer.isAutoTrackingEnable) {
             StartTrackerAction().startAutomatedTracking(project, timer)
         } else {
+            val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+            bar?.removeWidget("Time Tracking Clock")
             timer.activityTracker?.dispose()
         }
     }

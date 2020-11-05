@@ -75,6 +75,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         commentTextField = JBTextField(timer.comment)
         commentTextField.preferredSize = Dimension((0.8 * width).toInt(), (0.0875 * height).toInt())
         val commentPanel = JPanel(FlowLayout(2))
+        commentLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
+        commentTextField.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
         commentPanel.add(commentLabel)
         commentPanel.add(commentTextField)
 
@@ -96,6 +98,9 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
         typeComboBox.selectedIndex = idx
         typeComboBox.isEditable = true
+        typeComboBox.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
+        typeLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
+
 
         typePanel.add(typeLabel)
         typePanel.add(typeComboBox)
@@ -115,12 +120,18 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         postWhenPanel.add(postWhenProjectClosedCheckbox)
         postWhenPanel.add(postWhenProjectClosedTextField)
 
+
         val separator2 = JBLabel("")
         separator2.preferredSize = Dimension((0.1 * width).toInt(), (0.0875 * height).toInt())
         postWhenPanel.add(separator2)
 
         postWhenPanel.add(postWhenCommitCheckbox)
         postWhenPanel.add(mpostWhenCommitTextField)
+
+        postWhenProjectClosedCheckbox.isEnabled = timer.isAutoTrackingEnable
+        postWhenProjectClosedTextField.isEnabled = timer.isAutoTrackingEnable
+        postWhenCommitCheckbox.isEnabled = timer.isAutoTrackingEnable
+        mpostWhenCommitTextField.isEnabled = timer.isAutoTrackingEnable
 
         return postWhenPanel
     }
@@ -129,10 +140,13 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
         isAutoTrackingEnabledCheckBox = JBCheckBox()
         isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
-        isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected) }
+        isAutoTrackingEnabledCheckBox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected,
+                isManualModeCheckbox.isSelected) }
 
         isManualModeCheckbox = JBCheckBox()
         isManualModeCheckbox.isSelected = timer.isManualTrackingEnable
+        isManualModeCheckbox.addActionListener { isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected,
+                isManualModeCheckbox.isSelected) }
 
         val enableAutoTrackingPanel = JPanel(FlowLayout(2))
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
@@ -169,6 +183,11 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         val bigScheduledPanel = JPanel(FlowLayout(2))
         val scheduledPanel = JPanel(FlowLayout(2))
 
+        scheduledTextField.isEnabled = timer.isAutoTrackingEnable
+        isScheduledCheckbox.isEnabled = timer.isAutoTrackingEnable
+        scheduledHour.isEnabled = timer.isAutoTrackingEnable
+        scheduledMinutes.isEnabled = timer.isAutoTrackingEnable
+
         scheduledPanel.add(scheduledTextField)
         scheduledPanel.add(timePanel)
 
@@ -193,6 +212,10 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         inactivityTimePanel.add(JBLabel(":"))
         inactivityTimePanel.add(inactivityMinutesInputField)
 
+        inactivityHourInputField.isEnabled = timer.isAutoTrackingEnable
+        inactivityMinutesInputField.isEnabled = timer.isAutoTrackingEnable
+        inactivityTextField.isEnabled = timer.isAutoTrackingEnable
+
         val inactivityPeriodPanel = JPanel(FlowLayout(2))
 
         inactivityPeriodPanel.add(inactivityTextField)
@@ -202,23 +225,29 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
     }
 
 
-    private fun isAutoTrackingChanged(enabled: Boolean) {
+    private fun isAutoTrackingChanged(autoTrackEnabled: Boolean, manualTrackEnabled: Boolean) {
 
-        scheduledHour.isEnabled = enabled
-        scheduledMinutes.isEnabled = enabled
+        scheduledHour.isEnabled = autoTrackEnabled
+        scheduledMinutes.isEnabled = autoTrackEnabled
 
-        inactivityHourInputField.isEnabled = enabled
-        inactivityMinutesInputField.isEnabled = enabled
-        inactivityTextField.isEnabled = enabled
+        inactivityHourInputField.isEnabled = autoTrackEnabled
+        inactivityMinutesInputField.isEnabled = autoTrackEnabled
+        inactivityTextField.isEnabled = autoTrackEnabled
 
-        scheduledTextField.isEnabled = enabled
-        isScheduledCheckbox.isEnabled = enabled
+        scheduledTextField.isEnabled = autoTrackEnabled
+        isScheduledCheckbox.isEnabled = autoTrackEnabled
 
-        postWhenProjectClosedCheckbox.isEnabled = enabled
-        postWhenProjectClosedTextField.isEnabled = enabled
+        postWhenProjectClosedCheckbox.isEnabled = autoTrackEnabled
+        postWhenProjectClosedTextField.isEnabled = autoTrackEnabled
 
-        postWhenCommitCheckbox.isEnabled = enabled
-        mpostWhenCommitTextField.isEnabled = enabled
+        postWhenCommitCheckbox.isEnabled = autoTrackEnabled
+        mpostWhenCommitTextField.isEnabled = autoTrackEnabled
+
+        commentLabel.isEnabled = autoTrackEnabled || manualTrackEnabled
+        commentTextField.isEnabled = autoTrackEnabled || manualTrackEnabled
+        typeLabel.isEnabled = autoTrackEnabled || manualTrackEnabled
+        typeComboBox.isEnabled  = autoTrackEnabled || manualTrackEnabled
+
     }
 
     fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledCheckBox

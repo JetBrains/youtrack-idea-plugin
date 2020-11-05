@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
@@ -84,30 +85,34 @@ class ActivityTracker(
 
     override fun dispose() {
         val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+        try {
+            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
 
-        if (!isPostedOnClose) {
-            if (timer.isWhenProjectClosedEnabled) {
-                logger.debug("state PROJECT_CLOSE with posting enabled")
-                try {
-                    timer.stop()
-                    repo.let { it1 ->
-                        TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
-                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+            if (!isPostedOnClose) {
+                if (timer.isWhenProjectClosedEnabled) {
+                    logger.debug("state PROJECT_CLOSE with posting enabled")
+                    try {
+                        timer.stop()
+                        repo.let { it1 ->
+                            TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+                                    timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                        }
+                    } catch (e: IllegalStateException) {
+                        logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                     }
-                } catch (e: IllegalStateException) {
-                    logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+                } else {
+                    try {
+                        saveState(store)
+                    } catch (e: IllegalStateException) {
+                        logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+                    }
+                    logger.debug("state PROJECT_CLOSE with posting disabled")
                 }
-            } else {
-                try {
-                    saveState(store)
-                } catch (e: IllegalStateException) {
-                    logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-                }
-                logger.debug("state PROJECT_CLOSE with posting disabled")
+                logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
+                isPostedOnClose = true
             }
-            logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
-            isPostedOnClose = true
+        } catch (e: NoYouTrackRepositoryException) {
+            logger.warn("NoYouTrackRepository:  ${e.message}")
         }
         if (trackingDisposable != null) {
             Disposer.dispose(trackingDisposable!!)
@@ -202,8 +207,8 @@ class ActivityTracker(
         }, parentDisposable)
     }
 
-    private fun saveState(myStore: PropertiesComponent ) {
-     if (!timer.isPaused && timer.isRunning) {
+    private fun saveState(myStore: PropertiesComponent) {
+        if (!timer.isPaused && timer.isRunning) {
             timer.timeInMills = currentTimeMillis() - timer.startTime - timer.pausedTime
             timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
             timer.isPaused = true
