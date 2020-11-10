@@ -35,6 +35,7 @@ import javax.swing.text.StyleContext
 open class SetupDialog(override val project: Project, val repo: YouTrackServer, val fromTracker: Boolean) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
+
     private lateinit var mainPane: JBTabbedPane
 
     private lateinit var tokenLabel: JBLabel
@@ -48,7 +49,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    private val myHeight = 340
+    private val myHeight = 380
     private val myWidth = 540
 
     private val timeTrackingTab =  TimeTrackerSettingsTab(repo, myHeight, myWidth)
@@ -118,6 +119,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
+        repoConnector.setNotifier(timeTrackingTab.notifyFieldLabel)
+
         isConnectionTested = true
     }
 
@@ -211,9 +214,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         val getTokenInfoLabel = HyperlinkLabel("Get token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
 
-        notifyFieldLabel = JBLabel("").apply {
-            foreground = Color.red
-        }
+        notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
 
         val sep = JBLabel("").apply {
             preferredSize = Dimension(55, 20)
@@ -244,7 +245,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
             addTab("Time Tracking", null, timeTrackingTab, null)
-
             setMnemonicAt(0, KeyEvent.VK_1)
             selectedIndex = if (fromTracker) 1 else 0
 

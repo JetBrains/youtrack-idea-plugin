@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.text.SimpleDateFormat
@@ -17,6 +18,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
     private lateinit var scheduledHour: JBTextField
     private lateinit var scheduledMinutes: JBTextField
+
+    lateinit var notifyFieldLabel: JBLabel
 
     private lateinit var inactivityHourInputField: JBTextField
     private lateinit var inactivityMinutesInputField: JBTextField
@@ -61,6 +64,9 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
 
         val commentPanel = createCommentPanel(timer, height, width)
 
+        val notePanel = createNotifierPanel(height, width)
+
+
         layout = VerticalLayout(7)
         add(trackingModePanel)
         add(postWhenPanel)
@@ -68,6 +74,8 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         add(inactivityPeriodPanel)
         add(typePanel)
         add(commentPanel)
+        add(notePanel)
+
     }
 
     private fun createCommentPanel(timer: TimeTracker, height: Int, width: Int): JPanel {
@@ -81,6 +89,16 @@ class TimeTrackerSettingsTab(repo: YouTrackServer, height: Int, width: Int) : JB
         commentPanel.add(commentTextField)
 
         return commentPanel
+    }
+
+    private fun createNotifierPanel(height: Int, width: Int): JPanel {
+        notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
+        val spaceField = JBLabel("")
+        val notePanel = JPanel(FlowLayout(2))
+        notePanel.add(notifyFieldLabel)
+        notePanel.add(spaceField)
+
+        return notePanel
 
     }
 
