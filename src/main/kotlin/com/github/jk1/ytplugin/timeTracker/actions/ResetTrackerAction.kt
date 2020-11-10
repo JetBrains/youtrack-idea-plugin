@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 
 class ResetTrackerAction : AnAction(
-        "Reset work timer",
+        "Reset Work Timer",
         "Reset work timer for ongoing task tracking",
         YouTrackPluginIcons.YOUTRACK_RESET_TIME_TRACKER) {
 

@@ -10,7 +10,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 
 class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
-    override val text = "Group spent time by issue"
+    override val text = "Group By Issue"
     override val description = "Group spent time by issue id"
     override val icon = AllIcons.Actions.GroupBy
     override val shortcut = "control alt shift Q"
@@ -33,14 +33,14 @@ class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
                 workItemsList.issueWorkItemsStoreComponent[repo].withGroupingByIssue = false
                 GROUP_BY_DATE = false
                 event.presentation.icon = AllIcons.Actions.GroupBy
-                event.presentation.text = "Group spent time by issue"
+                event.presentation.text = "Group By Issue"
                 event.presentation.description = "Group spent time by issue id"
             } else {
                 logger.debug("Spent time grouping by issue for ${repo.url}")
                 workItemsList.issueWorkItemsStoreComponent[repo].withGroupingByIssue = true
                 GROUP_BY_DATE = true
                 event.presentation.icon = AllIcons.Actions.GroupByPrefix
-                event.presentation.text = "Group spent time by date"
+                event.presentation.text = "Group By Date"
                 event.presentation.description = "Group spent time by date of recording"
             }
 

@@ -13,7 +13,7 @@ import java.net.UnknownHostException
 
 
 class ManualEntryAction  : AnAction(
-        "Add spent time",
+        "Add Spent Time",
         "Create a new spent time item and post it to YouTrack server",
         YouTrackPluginIcons.YOUTRACK_MANUAL_ADD_TIME_TRACKER){
 

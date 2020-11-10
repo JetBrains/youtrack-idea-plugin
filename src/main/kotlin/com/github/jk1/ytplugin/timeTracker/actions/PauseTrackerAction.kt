@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 
 class PauseTrackerAction : AnAction(
-        "Pause work timer",
+        "Pause Work Timer",
         "Pause work timer for ongoing task tracking",
         YouTrackPluginIcons.YOUTRACK_PAUSE_TIME_TRACKER) {
 

@@ -20,7 +20,7 @@ import java.util.*
 
 
 class StopTrackerAction : AnAction(
-        "Stop work timer",
+        "Stop Work Timer",
         "Post recorded time to YouTrack server and reset timer",
         YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER) {
 

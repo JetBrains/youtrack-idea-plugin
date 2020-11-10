@@ -22,7 +22,7 @@ import com.intellij.tasks.TaskManager
 
 
 class StartTrackerAction : AnAction(
-        "Start work timer",
+        "Start Work Timer",
         "Start work timer for selected active task",
         AllIcons.Actions.Profile) {
 
