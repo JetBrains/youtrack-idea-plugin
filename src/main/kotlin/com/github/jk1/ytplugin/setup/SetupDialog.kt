@@ -325,8 +325,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             myRepository.isUseProxy = connectedRepository.isUseProxy
             myRepository.isLoginAnonymously = false
 
-            repoConnector.showIssuesForConnectedRepo(myRepository, project)
             if (repoConnector.noteState == NotifierState.SUCCESS){
+                repoConnector.showIssuesForConnectedRepo(myRepository, project)
                 val timerService = TimeTrackingService()
                 timerService.configureTimerForTracking(timeTrackingTab, repo, project)
             }
