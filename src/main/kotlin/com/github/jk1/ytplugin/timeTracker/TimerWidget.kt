@@ -22,15 +22,15 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         } else {
             System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime
         }
-        val time = String.format("%02d:%02d",
+        val time = String.format("%02dh %02dm",
         TimeUnit.MILLISECONDS.toHours(recordedTime),
         TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
                 TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
-        return "Time spent (hh:mm): $time"
+        return "Time spent: $time"
     }
 
     override fun install(statusBar: StatusBar) {
-        label.text = "Time spent: 00:00"
+        label.text = "Time spent: 00h 00m"
         trackingDisposable = ActivityTracker.newDisposable(parentDisposable)
         timer.start()
     }
