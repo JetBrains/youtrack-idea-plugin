@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.CustomStatusBarWidget
 import com.intellij.openapi.wm.StatusBar
+import java.awt.Font
 import java.awt.event.ActionListener
 import java.util.concurrent.TimeUnit
 import javax.swing.JLabel
@@ -12,6 +13,7 @@ import javax.swing.Timer
 class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable) : CustomStatusBarWidget {
 
     val label = JLabel(time())
+    val f: Font = label.font
     private val timer = Timer(1000, ActionListener { label.text = time() })
     private var trackingDisposable: Disposable? = null
 
@@ -23,14 +25,16 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
             System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime
         }
         val time = String.format("%02dh %02dm",
-        TimeUnit.MILLISECONDS.toHours(recordedTime),
-        TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
-                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
+                TimeUnit.MILLISECONDS.toHours(recordedTime),
+                TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
         return "Time spent: $time"
     }
 
     override fun install(statusBar: StatusBar) {
         label.text = "Time spent: 00h 00m"
+        val f: Font = label.font
+        label.font = f.deriveFont(f.style or Font.BOLD)
         trackingDisposable = ActivityTracker.newDisposable(parentDisposable)
         timer.start()
     }
