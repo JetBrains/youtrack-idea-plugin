@@ -12,6 +12,8 @@ import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
+import java.lang.Integer.max
+import java.lang.Math.min
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
@@ -30,6 +32,7 @@ class WorkItemsListCellRenderer(
     private val fgColor = Color(75, 107, 244)
     private val idStyle = STYLE_BOLD
 
+    private var maxIssueIdWidth = 0
 
     init {
         summaryPanel.isOpaque = false
@@ -72,11 +75,15 @@ class WorkItemsListCellRenderer(
                 "${myRepository.url}/issue/${issueWorkItem.issueId}")
         issueLink.icon = AllIcons.Actions.MoveTo2
 
+        if (issueWorkItem.issueId.length > maxIssueIdWidth){
+            maxIssueIdWidth = issueWorkItem.issueId.length
+        }
+
         prepareCommentsForDisplaying(issueWorkItem)
 
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.isOpaque = false
-        val panelWidth = 9 * viewportWidthProvider.invoke() / 10
+        val panelWidth = viewportWidthProvider.invoke()
         val panelHeight = 32
 
         panel.preferredSize = Dimension(panelWidth, panelHeight)
@@ -92,13 +99,14 @@ class WorkItemsListCellRenderer(
 
         val issueLinkPanel = JPanel(FlowLayout(FlowLayout.LEFT))
         issueLinkPanel.add(issueLink)
-        issueLinkPanel.preferredSize = Dimension((0.078 * panelWidth).toInt(), panelHeight + 10)
+        issueLinkPanel.preferredSize = Dimension((0.078 * panelWidth / 10 * maxIssueIdWidth).toInt(), panelHeight + 10)
+        val minIssueIdWidth = (0.078 * panelWidth).toInt()
 
 
         if (panelWidth > 1000) {
             datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
             valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
-            issueLinkPanel.preferredSize = Dimension((0.078 * panelWidth).toInt(), panelHeight + 10)
+            issueLinkPanel.preferredSize = Dimension(max((0.078 * panelWidth / 10 * maxIssueIdWidth).toInt(), minIssueIdWidth), panelHeight + 10)
 
         } else {
             datePanel.preferredSize = Dimension((0.3 * panelWidth).toInt(), panelHeight)
@@ -124,7 +132,10 @@ class WorkItemsListCellRenderer(
 
                 val trackingCommentsPanel = JPanel(FlowLayout(FlowLayout.LEFT))
                 trackingCommentsPanel.add(trackingComments)
-                trackingCommentsPanel.preferredSize = Dimension((0.274 * panelWidth).toInt(), panelHeight + 10)
+                val commentsWidth = (0.274 * panelWidth).toInt() +
+                        minIssueIdWidth - (0.078 * panelWidth / 10 * maxIssueIdWidth).toInt()
+                trackingCommentsPanel.preferredSize = Dimension(min(commentsWidth, (0.274 * panelWidth).toInt()), panelHeight + 10)
+
                 panel.add(trackingCommentsPanel)
             }
         }
