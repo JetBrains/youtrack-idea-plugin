@@ -30,7 +30,7 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
 
     init {
         searchField.border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
-        searchField.setPlaceholder("Search by date, time, issue, type or comment")
+        searchField.setPlaceholder("Search by date, time, short project name, issue, type or comment")
         actionGroup.add(SearchIssueAnAction())
         add(searchField, BorderLayout.CENTER)
         add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
