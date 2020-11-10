@@ -65,7 +65,8 @@ class WorkItemsListCellRenderer(
         val type = SimpleColoredComponent()
         type.isOpaque = false
         type.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-        type.append(issueWorkItem.type, SimpleTextAttributes(idStyle, complimentaryColor))
+        type.append(if (issueWorkItem.type == "None") "No type" else issueWorkItem.type, SimpleTextAttributes(idStyle, complimentaryColor))
+
 
         issueLink = HyperlinkLabel(issueWorkItem.issueId,
                 "${myRepository.url}/issue/${issueWorkItem.issueId}")
