@@ -26,7 +26,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         TimeUnit.MILLISECONDS.toHours(recordedTime),
         TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
                 TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
-        return "Time spent: $time"
+        return "Time spent (hh:mm): $time"
     }
 
     override fun install(statusBar: StatusBar) {
