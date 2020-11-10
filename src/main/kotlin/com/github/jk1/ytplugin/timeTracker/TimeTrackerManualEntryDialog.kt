@@ -33,7 +33,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
-    private var typeComboBox = JComboBox(arrayOf<String>("Development"))
+    private var typeComboBox = JComboBox(arrayOf("Development"))
     private var timeLabel = JBLabel("     Time (hh/mm):")
 
     private lateinit var hoursSpinner: JSpinner
@@ -127,6 +127,9 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             tasksIds.add(id.name)
         }
         idComboBox = JComboBox(tasksIdRepresentation.toTypedArray())
+
+        idComboBox.preferredSize = Dimension(390, typeComboBox.preferredSize.height)
+
         idComboBox.selectedIndex = tasksIds.indexOf(TaskManager.getManager(project).activeTask.id)
 
         idPanel.add(idLabel)
@@ -146,7 +149,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     private fun createCommentPanel(): JPanel {
         commentTextField = JBTextField("")
-        commentTextField.preferredSize = Dimension(390, 28)
+        commentTextField.preferredSize = Dimension(390, typeComboBox.preferredSize.height)
 
         val commentPanel = JPanel(FlowLayout(2))
         commentPanel.add(commentLabel)
