@@ -38,6 +38,10 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         val file = PsiDocumentManager.getInstance(project).getPsiFile(searchField.document)
         file?.putUserData(INTELLISENSE_KEY, server.getSearchCompletionProvider())
         // key bindings
+
+        // show placeholder on empty query
+        searchField.setShowPlaceholderWhenFocused(true)
+
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(e: DocumentEvent) {

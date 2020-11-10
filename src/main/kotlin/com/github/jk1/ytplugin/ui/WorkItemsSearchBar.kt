@@ -35,6 +35,9 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         add(searchField, BorderLayout.CENTER)
         add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
 
+        // show placeholder on empty query
+        searchField.setShowPlaceholderWhenFocused(true)
+
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(e: DocumentEvent) {
