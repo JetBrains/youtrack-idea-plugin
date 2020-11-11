@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <vendor>JetBrains</vendor>
 
     <description><![CDATA[
@@ -14,7 +14,7 @@
             <li> Recognizes YouTrack issue ids in Java code comments and VCS history </li>
             <li> Displays issue tracker notifications in IDE </li>
         </ul>
-        <p>Compatibility: YouTrack 2017.1+<p/>
+        <p>Compatibility: YouTrack 2018.1+<p/>
         <p>Four minute plugin demo <a href="https://www.youtube.com/watch?v=gGVEwlZpvj8">on YouTube</a></p>
         <br>
         <p>If you like this plugin, you can support it:<p/>
@@ -22,7 +22,7 @@
             <li>Spread it: Tell your friends who are using YouTrack about this plugin</li>
             <li>Vote for it: Write your review and vote for it at the IntelliJ plugin repository</li>
             <li>Star it: Star it <a href="https://github.com/jk1/youtrack-idea-plugin">at GitHub</a></li>
-            <li>Improve it: Report bugs or feature requests. Or even fix / implement them by yourself - everything is open source!</li>
+            <li>Improve it: Report bugs or feature requests. Or even fix / implement them by yourself - pull requests are welcome</li>
         </ul>
     ]]></description>
 
