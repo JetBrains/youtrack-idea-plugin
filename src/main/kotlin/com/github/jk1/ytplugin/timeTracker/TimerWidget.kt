@@ -28,11 +28,20 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
                 TimeUnit.MILLISECONDS.toHours(recordedTime),
                 TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
                         TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
-        return "Time spent: $time"
+        return mode() + "Time spent: $time"
+    }
+
+    fun mode(): String {
+        return if (timeTracker.isAutoTrackingEnable && timeTracker.isManualTrackingEnable)
+            "Automatic and Manual tracking mode is on. "
+        else if (timeTracker.isAutoTrackingEnable)
+            "Automatic tracking mode is on. "
+        else
+            "Manual tracking mode is on. "
     }
 
     override fun install(statusBar: StatusBar) {
-        label.text = "Time spent: 00h 00m"
+
         val f: Font = label.font
         label.font = f.deriveFont(f.style or Font.BOLD)
         trackingDisposable = ActivityTracker.newDisposable(parentDisposable)
