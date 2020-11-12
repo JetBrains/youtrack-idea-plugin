@@ -63,9 +63,10 @@ class StopTrackerAction : AnAction(
                     TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
                             timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                 }
-
-                if (status != 200)
+                if (status != 200){
+                    logger.warn("Time tracking might not be enabled: $status")
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
+                }
                 else {
                     trackerNote.notify("Work timer stopped, time ${timer.recordedTime} " +
                             "posted on server for issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
@@ -75,6 +76,7 @@ class StopTrackerAction : AnAction(
                 }
             }
         } catch (e: IllegalStateException) {
+            logger.warn("Time tracking exception: ${e.message}")
             trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
         }
 
