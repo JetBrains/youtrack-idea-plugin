@@ -20,12 +20,13 @@ import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
-import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
 import java.net.URL
 import javax.swing.*
+import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
@@ -35,13 +36,17 @@ import javax.swing.text.StyleContext
 open class SetupDialog(override val project: Project, val repo: YouTrackServer, val fromTracker: Boolean) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
+    val okButton = JButton("OK")
 
-    private lateinit var mainPane: JBTabbedPane
+    private var mainPane = JBTabbedPane()
 
     private lateinit var tokenLabel: JBLabel
     private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var shareUrlCheckBox: JBCheckBox
     private lateinit var useProxyCheckBox: JBCheckBox
+
+    private lateinit var testConnectionButton: JButton
+    private lateinit var proxyButton: JButton
 
     private var inputUrlTextPane = JTextPane()
     private var inputTokenField = JBPasswordField()
@@ -49,21 +54,21 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    private val myHeight = 380
+    private val myHeight = 390
     private val myWidth = 540
 
-    private val timeTrackingTab =  TimeTrackerSettingsTab(repo, myHeight, myWidth)
+    private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
     private var isConnectionTested = false
 
     override fun init() {
         title = "YouTrack"
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
-        if (timer.isRunning){
+        if (timer.isRunning) {
             StopTrackerAction().stopTimer(project)
             timer.isAutoTrackingTemporaryDisabled = true
         }
-
+        rootPane.defaultButton =  okButton
         super.init()
     }
 
@@ -112,14 +117,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
         }
 
-        if (repoConnector.noteState != NotifierState.SUCCESS){
+        if (repoConnector.noteState != NotifierState.SUCCESS) {
             mainPane.setEnabledAt(1, false)
         } else {
             mainPane.setEnabledAt(1, true)
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
-        repoConnector.setNotifier(timeTrackingTab.notifyFieldLabel)
 
         isConnectionTested = true
     }
@@ -133,7 +137,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         tp.replaceSelection(msg)
     }
 
-    private fun createServerPane() : JPanel{
+    private fun createServerPane(): JPanel {
         val serverUrlLabel = JBLabel("Server URL:")
         inputUrlTextPane.apply {
             layout = BorderLayout()
@@ -177,7 +181,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return serverPanel
     }
 
-    private fun createTokenPane() : JPanel {
+    private fun createTokenPane(): JPanel {
         tokenLabel = JBLabel("Permanent Token:")
         inputTokenField.apply {
             text = repo.password
@@ -191,7 +195,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return tokenPanel
     }
 
-    fun createCheckboxesPane() : JPanel {
+    fun createCheckboxesPane(): JPanel {
         shareUrlCheckBox = JBCheckBox("Share URL", repo.getRepo().isShared)
         useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
 
@@ -202,7 +206,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return checkboxesPanel
     }
 
-    private fun createAdvertiserPane() : JPanel{
+    private fun createAdvertiserPane(): JPanel {
         val advertiserLabel = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
         val advertiserPane = JPanel(BorderLayout())
@@ -210,7 +214,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return advertiserPane
     }
 
-    private fun createInfoPane() : JPanel{
+    private fun createInfoPane(): JPanel {
         val getTokenInfoLabel = HyperlinkLabel("Get token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
 
@@ -228,30 +232,57 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return tokenInfoPane
     }
 
+    private fun createButtonsPanel(): JPanel {
+        val buttonsPanel = JPanel(FlowLayout(2))
+        testConnectionButton = JButton("Test Connection")
+        testConnectionButton.addActionListener { testConnectionAction() }
+        testConnectionButton.preferredSize = Dimension(150, 31)
+
+        proxyButton = JButton("Proxy settings...")
+        proxyButton.addActionListener { HttpConfigurable.editConfigurable(controlPanel) }
+        proxyButton.preferredSize = Dimension(150, 31)
+
+        okButton.addActionListener { okAction() }
+        okButton.preferredSize = Dimension(90, 31)
+
+        val cancelButton = JButton("Cancel")
+        cancelButton.addActionListener { cancelAction }
+        cancelButton.preferredSize = Dimension(90, 31)
+
+        buttonsPanel.add(testConnectionButton)
+        buttonsPanel.add(proxyButton)
+        buttonsPanel.add(cancelButton)
+        buttonsPanel.add(okButton)
+        return buttonsPanel
+    }
+
     private fun prepareTabbedPane(): JTabbedPane {
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
         val connectionTab = JBPanel<JBPanelWithEmptyText>().apply {
-            layout = VerticalLayout(5)
+            layout = VerticalLayout(13)
             add(createAdvertiserPane())
             add(createServerPane())
             add(createCheckboxesPane())
             add(createTokenPane())
             add(createInfoPane())
+            for (x in 0..6) add(JBLabel(""))
+            add(createButtonsPanel())
         }
 
-        mainPane = JBTabbedPane().apply {
+        mainPane.apply {
             tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
             selectedIndex = if (fromTracker) 1 else 0
-
         }
 
+        mainPane.addChangeListener { rootPane.defaultButton = if (mainPane.selectedIndex == 1) timeTrackingTab.okButton else okButton }
+
         //TODO
-        if (!repo.getRepo().isConfigured){
+        if (!repo.getRepo().isConfigured) {
             mainPane.setEnabledAt(1, false)
         } else {
             mainPane.setEnabledAt(1, true)
@@ -285,7 +316,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
     override fun createActions(): Array<out Action> =
-            arrayOf(TestConnectionAction(), OpenProxySettingsAction(), OkAction("OK"), cancelAction)
+            arrayOf()
 
     override fun createJButtonForAction(action: Action): JButton {
         val button = super.createJButtonForAction(action)
@@ -306,60 +337,46 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
 
-    inner class OkAction(name: String) : AbstractAction(name) {
+    fun okAction() {
 
-        override fun actionPerformed(e: ActionEvent) {
-
-            if (!isConnectionTested) {
-                testConnectionAction()
-            }
-
-            val myRepository: YouTrackRepository = repo.getRepo()
-            myRepository.url = connectedRepository.url
-            myRepository.password = String(inputTokenField.password)
-            myRepository.username = connectedRepository.username
-            myRepository.repositoryType = connectedRepository.repositoryType
-            myRepository.storeCredentials()
-
-            myRepository.isShared = connectedRepository.isShared
-            myRepository.isUseProxy = connectedRepository.isUseProxy
-            myRepository.isLoginAnonymously = false
-
-            if (repoConnector.noteState == NotifierState.SUCCESS){
-                repoConnector.showIssuesForConnectedRepo(myRepository, project)
-                val timerService = TimeTrackingService()
-                timerService.configureTimerForTracking(timeTrackingTab, repo, project)
-            }
-
-            val trackerNote = TrackerNotification()
-            try {
-                val timer = ComponentAware.of(repo.project).timeTrackerComponent
-                if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
-                        (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)){
-                    trackerNote.notify("To start using time tracking please select active task on the toolbar" +
-                            " or by pressing Shift + Alt + T", NotificationType.INFORMATION)
-                }
-            } catch  (e: NoActiveYouTrackTaskException){
-                trackerNote.notify("To start using time tracking please select active task on the toolbar " +
-                        "or by pressing Shift + Alt + T", NotificationType.INFORMATION)
-            }
-
-            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED ) {
-                this@SetupDialog.close(0)
-            }
-        }
-    }
-
-    inner class TestConnectionAction : AbstractAction("Test Connection") {
-        override fun actionPerformed(e: ActionEvent) {
+        if (!isConnectionTested) {
             testConnectionAction()
         }
-    }
 
-    inner class OpenProxySettingsAction : AbstractAction("Proxy settings...") {
-        override fun actionPerformed(e: ActionEvent) {
-            HttpConfigurable.editConfigurable(controlPanel)
+        val myRepository: YouTrackRepository = repo.getRepo()
+        myRepository.url = connectedRepository.url
+        myRepository.password = String(inputTokenField.password)
+        myRepository.username = connectedRepository.username
+        myRepository.repositoryType = connectedRepository.repositoryType
+        myRepository.storeCredentials()
+
+        myRepository.isShared = connectedRepository.isShared
+        myRepository.isUseProxy = connectedRepository.isUseProxy
+        myRepository.isLoginAnonymously = false
+
+        if (repoConnector.noteState == NotifierState.SUCCESS) {
+            repoConnector.showIssuesForConnectedRepo(myRepository, project)
+            val timerService = TimeTrackingService()
+            timerService.configureTimerForTracking(timeTrackingTab, repo, project)
+        }
+
+        val trackerNote = TrackerNotification()
+        try {
+            val timer = ComponentAware.of(repo.project).timeTrackerComponent
+            if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
+                    (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
+                trackerNote.notify("To start using time tracking please select active task on the toolbar" +
+                        " or by pressing Shift + Alt + T", NotificationType.INFORMATION)
+            }
+        } catch (e: NoActiveYouTrackTaskException) {
+            trackerNote.notify("To start using time tracking please select active task on the toolbar " +
+                    "or by pressing Shift + Alt + T", NotificationType.INFORMATION)
+        }
+
+        if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED) {
+            this@SetupDialog.close(0)
         }
     }
+
 }
 
