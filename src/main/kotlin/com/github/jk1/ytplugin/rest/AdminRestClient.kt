@@ -54,7 +54,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         val fields = NameValuePair("fields", "shortName")
         method.setQueryString(arrayOf(fields))
 
-        return method.connect2 {
+        return method.connect {
             if (httpClient.executeMethod(method) == 200) {
                 logger.debug("Successfully fetched accessible projects")
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray

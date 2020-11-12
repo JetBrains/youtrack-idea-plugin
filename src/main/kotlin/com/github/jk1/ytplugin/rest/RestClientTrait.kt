@@ -39,16 +39,6 @@ interface RestClientTrait: ResponseLoggerTrait {
         }
     }
 
-    fun <R> HttpMethodBase.connect2(block: (HttpMethod) -> R): R {
-        try {
-            this.addRequestHeader("Authorization", "Bearer " + repository.password)
-            this.addRequestHeader("User-Agent", "YouTrack IDE Plugin")
-            return block(this)
-        } finally {
-            this.releaseConnection()
-        }
-    }
-
     fun <T> HttpMethodBase.execute(responseParser: (json: JsonElement) -> T): T {
         this.setRequestHeader("Accept", "application/json")
         return connect {

@@ -109,7 +109,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     private fun parseWorkItems(method: GetMethod): List<IssueWorkItem> {
-        return method.connect2 {
+        return method.connect {
             val workItems = mutableListOf<IssueWorkItem>()
             val status = httpClient.executeMethod(method)
             val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
@@ -133,7 +133,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         var fullIssues: List<Issue>
         method.setQueryString(arrayOf(myQuery, myFields))
 
-        return method.connect2 {
+        return method.connect {
             val status = httpClient.executeMethod(method)
             if (status == 200) {
                 logger.debug("Successfully fetched issues : $status")
