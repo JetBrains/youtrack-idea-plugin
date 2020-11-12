@@ -15,7 +15,7 @@ import javax.swing.JComboBox
 import javax.swing.JPanel
 
 
-class TimeTrackerSettingsTab(val repo: YouTrackServer, private val myHeight: Int, private val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
 
     private lateinit var scheduledHour: JBTextField
     private lateinit var scheduledMinutes: JBTextField
@@ -63,8 +63,6 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, private val myHeight: Int
 
         val commentPanel = createCommentPanel(timer, myHeight, myWidth)
 
-        val buttonsPanel = createButtonsPanel()
-
         layout = VerticalLayout(7)
         add(trackingModePanel)
         add(postWhenPanel)
@@ -72,25 +70,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, private val myHeight: Int
         add(inactivityPeriodPanel)
         add(typePanel)
         add(commentPanel)
-        add(buttonsPanel)
 
-    }
-
-    private fun createButtonsPanel(): JPanel {
-        val buttonsPanel = JPanel(FlowLayout(4))
-        okButton.addActionListener { SetupDialog(repo.project, repo, true).okAction() }
-        okButton.preferredSize = Dimension(90, 31)
-
-        val cancelButton = JButton("Cancel")
-        cancelButton.addActionListener { e -> SetupDialog(repo.project, repo, true).doCancelAction(e) }
-        cancelButton.preferredSize = Dimension(90, 31)
-
-        val separator = JBLabel("")
-        separator.preferredSize = Dimension(myWidth - 217, 31)
-        buttonsPanel.add(separator)
-        buttonsPanel.add(cancelButton)
-        buttonsPanel.add(okButton)
-        return buttonsPanel
     }
 
     private fun createCommentPanel(timer: TimeTracker, height: Int, width: Int): JPanel {
@@ -105,7 +85,6 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, private val myHeight: Int
 
         return commentPanel
     }
-
 
     private fun createTypePanel(timer: TimeTracker, repo: YouTrackServer): JPanel {
 

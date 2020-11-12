@@ -25,8 +25,6 @@ import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
 import java.net.URL
 import javax.swing.*
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
@@ -36,7 +34,9 @@ import javax.swing.text.StyleContext
 open class SetupDialog(override val project: Project, val repo: YouTrackServer, val fromTracker: Boolean) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
-    val okButton = JButton("OK")
+
+    private val okButton = JButton("OK")
+    private val cancelButton = JButton("Cancel")
 
     private var mainPane = JBTabbedPane()
 
@@ -51,7 +51,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private var inputUrlTextPane = JTextPane()
     private var inputTokenField = JBPasswordField()
 
-    val repoConnector = SetupRepositoryConnector()
+    private val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
     private val myHeight = 390
@@ -68,64 +68,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             StopTrackerAction().stopTimer(project)
             timer.isAutoTrackingTemporaryDisabled = true
         }
-        rootPane.defaultButton =  okButton
+        rootPane.defaultButton = okButton
         super.init()
     }
 
     override fun show() {
         init()
         super.show()
-    }
-
-    private fun testConnectionAction() {
-
-        val isRememberPassword = PasswordSafe.instance.isRememberPasswordByDefault
-        if (!isRememberPassword) {
-            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
-        }
-
-        val fontColor = inputTokenField.foreground
-
-        val myRepositoryType = YouTrackRepositoryType()
-        connectedRepository.url = inputUrlTextPane.text
-        connectedRepository.password = String(inputTokenField.password)
-        connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
-        connectedRepository.repositoryType = myRepositoryType
-        connectedRepository.storeCredentials()
-
-        connectedRepository.isShared = shareUrlCheckBox.isSelected
-        connectedRepository.isLoginAnonymously = false
-
-        val proxy = HttpConfigurable.getInstance()
-        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
-            connectedRepository.isUseProxy = useProxyCheckBox.isSelected
-            if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
-                repoConnector.testConnection(connectedRepository, project)
-            }
-        } else {
-            repoConnector.noteState = NotifierState.NULL_PROXY_HOST
-            connectedRepository.isUseProxy = false
-        }
-
-        drawAutoCorrection(fontColor)
-
-        if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
-            repoConnector.noteState = NotifierState.EMPTY_FIELD
-        } else if (!repoConnector.isValidToken(connectedRepository.password)) {
-            repoConnector.noteState = NotifierState.INVALID_TOKEN
-        } else if (PasswordSafe.instance.isMemoryOnly) {
-            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
-        }
-
-        if (repoConnector.noteState != NotifierState.SUCCESS) {
-            mainPane.setEnabledAt(1, false)
-        } else {
-            mainPane.setEnabledAt(1, true)
-        }
-
-        repoConnector.setNotifier(notifyFieldLabel)
-
-        isConnectionTested = true
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -195,7 +144,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return tokenPanel
     }
 
-    fun createCheckboxesPane(): JPanel {
+    private fun createCheckboxesPane(): JPanel {
         shareUrlCheckBox = JBCheckBox("Share URL", repo.getRepo().isShared)
         useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
 
@@ -232,30 +181,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return tokenInfoPane
     }
 
-    private fun createButtonsPanel(): JPanel {
-        val buttonsPanel = JPanel(FlowLayout(2))
-        testConnectionButton = JButton("Test Connection")
-        testConnectionButton.addActionListener { testConnectionAction() }
-        testConnectionButton.preferredSize = Dimension(150, 31)
-
-        proxyButton = JButton("Proxy settings...")
-        proxyButton.addActionListener { HttpConfigurable.editConfigurable(controlPanel) }
-        proxyButton.preferredSize = Dimension(150, 31)
-
-        okButton.addActionListener { okAction() }
-        okButton.preferredSize = Dimension(90, 31)
-
-        val cancelButton = JButton("Cancel")
-        cancelButton.addActionListener { cancelAction }
-        cancelButton.preferredSize = Dimension(90, 31)
-
-        buttonsPanel.add(testConnectionButton)
-        buttonsPanel.add(proxyButton)
-        buttonsPanel.add(cancelButton)
-        buttonsPanel.add(okButton)
-        return buttonsPanel
-    }
-
     private fun prepareTabbedPane(): JTabbedPane {
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
@@ -267,8 +192,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             add(createCheckboxesPane())
             add(createTokenPane())
             add(createInfoPane())
-            for (x in 0..6) add(JBLabel(""))
-            add(createButtonsPanel())
+            // to separate from other fields
+            for (x in 0..5) add(JBLabel(""))
         }
 
         mainPane.apply {
@@ -278,8 +203,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             setMnemonicAt(0, KeyEvent.VK_1)
             selectedIndex = if (fromTracker) 1 else 0
         }
-
-        mainPane.addChangeListener { rootPane.defaultButton = if (mainPane.selectedIndex == 1) timeTrackingTab.okButton else okButton }
 
         //TODO
         if (!repo.getRepo().isConfigured) {
@@ -325,19 +248,105 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return button
     }
 
+    private fun createButtonsPanel(): JPanel {
+        val buttonsPanel = JPanel(FlowLayout(2))
+        testConnectionButton = JButton("Test Connection")
+        testConnectionButton.addActionListener { testConnectionAction() }
+        testConnectionButton.preferredSize = Dimension(150, 31)
+
+        proxyButton = JButton("Proxy settings...")
+        proxyButton.addActionListener { HttpConfigurable.editConfigurable(controlPanel) }
+        proxyButton.preferredSize = Dimension(150, 31)
+
+        okButton.addActionListener { okAction() }
+        okButton.preferredSize = Dimension(90, 31)
+
+        cancelButton.addActionListener { doCancelAction() }
+        cancelButton.preferredSize = Dimension(90, 31)
+
+        buttonsPanel.add(testConnectionButton)
+        buttonsPanel.add(proxyButton)
+        buttonsPanel.add(cancelButton)
+        buttonsPanel.add(okButton)
+
+        return buttonsPanel
+    }
+
     override fun createCenterPanel(): JComponent {
-        val contextPane = JPanel(GridLayout())
+        val contextPane = JPanel(VerticalLayout())
         val tabbedPane = prepareTabbedPane()
         contextPane.apply {
             preferredSize = Dimension(myWidth, myHeight)
             minimumSize = preferredSize
             add(tabbedPane)
+            add(createButtonsPanel())
         }
+        mainPane.addChangeListener {
+            if (mainPane.selectedIndex == 1) {
+                proxyButton.isVisible = false
+                testConnectionButton.isVisible = false
+            } else {
+                proxyButton.isVisible = true
+                testConnectionButton.isVisible = true
+            }
+        }
+
         return contextPane
     }
 
 
-    fun okAction() {
+    private fun testConnectionAction() {
+
+        val isRememberPassword = PasswordSafe.instance.isRememberPasswordByDefault
+        if (!isRememberPassword) {
+            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
+        }
+
+        val fontColor = inputTokenField.foreground
+
+        val myRepositoryType = YouTrackRepositoryType()
+        connectedRepository.url = inputUrlTextPane.text
+        connectedRepository.password = String(inputTokenField.password)
+        connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
+        connectedRepository.repositoryType = myRepositoryType
+        connectedRepository.storeCredentials()
+
+        connectedRepository.isShared = shareUrlCheckBox.isSelected
+        connectedRepository.isLoginAnonymously = false
+
+        val proxy = HttpConfigurable.getInstance()
+        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
+            connectedRepository.isUseProxy = useProxyCheckBox.isSelected
+            if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
+                repoConnector.testConnection(connectedRepository, project)
+            }
+        } else {
+            repoConnector.noteState = NotifierState.NULL_PROXY_HOST
+            connectedRepository.isUseProxy = false
+        }
+
+        drawAutoCorrection(fontColor)
+
+        if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
+            repoConnector.noteState = NotifierState.EMPTY_FIELD
+        } else if (!repoConnector.isValidToken(connectedRepository.password)) {
+            repoConnector.noteState = NotifierState.INVALID_TOKEN
+        } else if (PasswordSafe.instance.isMemoryOnly) {
+            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
+        }
+
+        if (repoConnector.noteState != NotifierState.SUCCESS) {
+            mainPane.setEnabledAt(1, false)
+        } else {
+            mainPane.setEnabledAt(1, true)
+        }
+
+        repoConnector.setNotifier(notifyFieldLabel)
+
+        isConnectionTested = true
+    }
+
+    private fun okAction() {
 
         if (!isConnectionTested) {
             testConnectionAction()
