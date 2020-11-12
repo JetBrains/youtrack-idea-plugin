@@ -58,8 +58,6 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
             timer.searchQuery = searchField.text
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(timer)
-            store.saveFields(this)
-
         }
     }
 
