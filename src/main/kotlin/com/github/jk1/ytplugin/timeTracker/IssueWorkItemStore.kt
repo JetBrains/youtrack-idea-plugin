@@ -17,7 +17,6 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
     var withGroupingByIssue = false
     var searchQuery = ""
 
-
     fun update(repo: YouTrackServer): ActionCallback {
         if (!isUpdating()) {
             logger.debug("Issue work item store refresh scheduled for project ${repo.project.name} and YouTrack server ${repo.url}")
@@ -52,8 +51,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issuesWorkItems for the search query")
-                val search = ""
-                val list = UserRestClient(repo).getWorkItemsForUser(search)
+                val list = UserRestClient(repo).getWorkItemsForUser(searchQuery)
                 workItems = if (searchQuery != "")
                     filterWorkItems(searchQuery, list)
                 else
