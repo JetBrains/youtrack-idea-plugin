@@ -36,11 +36,11 @@ class SetupRepositoryConnector {
         note.foreground = Color.red
         when (noteState) {
             NotifierState.SUCCESS -> {
-                note.foreground = Color.green
+                note.foreground = Color(54, 156, 54)
                 note.text = "Successfully connected"
             }
             NotifierState.GUEST_LOGIN -> {
-                note.foreground = Color.green
+                note.foreground = Color(54, 156, 54)
                 note.text = "Logged in as a guest"
             }
             NotifierState.EMPTY_FIELD -> note.text =  "Url and token fields are mandatory"
