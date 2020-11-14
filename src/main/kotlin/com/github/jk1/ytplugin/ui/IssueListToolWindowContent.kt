@@ -3,15 +3,15 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
+import java.awt.event.*
 import java.awt.event.KeyEvent.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import javax.swing.AbstractAction
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
+
 
 class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
@@ -31,6 +31,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
+
     }
 
     private fun createActionPanel(): JComponent {
@@ -66,7 +67,6 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             }
         }
 
-        // keystrokes to expand/collapse issue preview
         issuesList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
         issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
         issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
@@ -78,6 +78,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
                 }
             }
         })
+
         // apply issue search
         searchBar.actionListener = { search ->
             issuesList.startLoading()
