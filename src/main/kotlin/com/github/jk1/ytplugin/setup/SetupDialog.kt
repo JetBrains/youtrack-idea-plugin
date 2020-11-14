@@ -171,8 +171,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private fun createInfoPane(): JPanel {
         val getTokenInfoLabel = HyperlinkLabel("Create a Permanent Token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
-        getTokenInfoLabel.horizontalAlignment = SwingConstants.RIGHT
-
         notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
 
         val sep = JBLabel("").apply {
