@@ -78,7 +78,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 }
                 else -> {
                     logger.warn("Unable to fetch available work items types: ${method.responseBodyAsLoggedString()}")
-                    throw RuntimeException()
+                    mutableListOf()
                 }
             }
         }
