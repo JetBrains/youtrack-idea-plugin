@@ -77,6 +77,11 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         super.show()
     }
 
+    override fun doCancelAction() {
+        startTimer()
+        super.doCancelAction()
+    }
+
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
         val sc = StyleContext.getDefaultStyleContext()
         var aset: AttributeSet? = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c)
@@ -299,7 +304,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return contextPane
     }
 
-
     private fun testConnectionAction() {
 
         val isRememberPassword = PasswordSafe.instance.isRememberPasswordByDefault
@@ -370,26 +374,31 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
         if (repoConnector.noteState == NotifierState.SUCCESS) {
             repoConnector.showIssuesForConnectedRepo(myRepository, project)
-            val timerService = TimeTrackingService()
-            timerService.configureTimerForTracking(timeTrackingTab, repo, project)
         }
-
-        val trackerNote = TrackerNotification()
-        try {
-            val timer = ComponentAware.of(repo.project).timeTrackerComponent
-            if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
-                    (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
-                trackerNote.notify("To start using time tracking please select active task on the toolbar" +
-                        " or by pressing Shift + Alt + T", NotificationType.INFORMATION)
-            }
-        } catch (e: NoActiveYouTrackTaskException) {
-            trackerNote.notify("To start using time tracking please select active task on the toolbar " +
-                    "or by pressing Shift + Alt + T", NotificationType.INFORMATION)
-        }
+        startTimer()
 
         if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED) {
             this@SetupDialog.close(0)
         }
+    }
+
+    private fun startTimer() {
+        val timerService = TimeTrackingService()
+        timerService.configureTimerForTracking(timeTrackingTab, repo, project)
+
+        val trackerNote = TrackerNotification()
+        val note = "To start using time tracking please select active task on the toolbar" +
+                " or by pressing Shift + Alt + T"
+        try {
+            val timer = ComponentAware.of(repo.project).timeTrackerComponent
+            if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
+                    (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
+                trackerNote.notify(note, NotificationType.INFORMATION)
+            }
+        } catch (e: NoActiveYouTrackTaskException) {
+            trackerNote.notify(note, NotificationType.INFORMATION)
+        }
+
     }
 
 }
