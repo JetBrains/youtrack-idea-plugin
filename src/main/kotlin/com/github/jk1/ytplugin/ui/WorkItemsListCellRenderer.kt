@@ -99,20 +99,19 @@ class WorkItemsListCellRenderer(
 
         val issueLinkPanel = JPanel(FlowLayout(FlowLayout.LEFT))
         issueLinkPanel.add(issueLink)
-        issueLinkPanel.preferredSize = Dimension((0.078 * panelWidth / 10 * maxIssueIdWidth).toInt(), panelHeight + 10)
-        val minIssueIdWidth = (0.078 * panelWidth).toInt()
 
+        val minIssueIdWidth = (0.078 * panelWidth).toInt()
+        val unitWidth = 0.078 * panelWidth / 6
 
         if (panelWidth > 1000) {
             datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
             valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
-            issueLinkPanel.preferredSize = Dimension(max((0.078 * panelWidth / 10 * maxIssueIdWidth).toInt(), minIssueIdWidth), panelHeight + 10)
+            issueLinkPanel.preferredSize = Dimension(max((unitWidth * maxIssueIdWidth).toInt(), minIssueIdWidth), panelHeight + 10)
 
         } else {
             datePanel.preferredSize = Dimension((0.3 * panelWidth).toInt(), panelHeight)
             valuePanel.preferredSize = Dimension((0.4 * panelWidth).toInt(), panelHeight)
             issueLinkPanel.preferredSize = Dimension((0.2 * panelWidth).toInt(), panelHeight)
-
         }
 
         datePanel.add(date)
@@ -133,7 +132,7 @@ class WorkItemsListCellRenderer(
                 val trackingCommentsPanel = JPanel(FlowLayout(FlowLayout.LEFT))
                 trackingCommentsPanel.add(trackingComments)
                 val commentsWidth = (0.274 * panelWidth).toInt() +
-                        minIssueIdWidth - (0.078 * panelWidth / 10 * maxIssueIdWidth).toInt()
+                        minIssueIdWidth - (unitWidth * maxIssueIdWidth).toInt()
                 trackingCommentsPanel.preferredSize = Dimension(min(commentsWidth, (0.274 * panelWidth).toInt()), panelHeight + 10)
 
                 panel.add(trackingCommentsPanel)
