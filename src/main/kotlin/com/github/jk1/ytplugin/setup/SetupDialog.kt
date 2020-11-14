@@ -269,6 +269,11 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         buttonsPanel.add(cancelButton)
         buttonsPanel.add(okButton)
 
+        if (fromTracker) {
+            proxyButton.isVisible = false
+            testConnectionButton.isVisible = false
+        }
+
         return buttonsPanel
     }
 
