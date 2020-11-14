@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
@@ -37,6 +38,7 @@ class TimeTrackingService {
                     NotificationType.INFORMATION)
             ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)
         } else {
+            logger.warn("Time was not posted: code $status")
             trackerNote.notify("Time was not posted, please check your connection", NotificationType.WARNING)
         }
 
