@@ -40,7 +40,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, myWidth: I
     private var autoTrackingEnabledTextField = JBLabel("Enable automated mode")
 
     private var commentLabel = JBLabel(" Comment:")
-    private var typeLabel = JBLabel(" Spent time type:")
+    private var typeLabel = JBLabel(" Work Item type:")
     private lateinit var commentTextField: JBTextField
 
     private val workItemsTypes = arrayOf<String?>("Development")
