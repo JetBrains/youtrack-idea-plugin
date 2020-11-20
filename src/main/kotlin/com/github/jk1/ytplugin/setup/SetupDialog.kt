@@ -309,30 +309,33 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         if (!isRememberPassword) {
             repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
         }
-
         val fontColor = inputTokenField.foreground
 
-        val myRepositoryType = YouTrackRepositoryType()
-        connectedRepository.url = inputUrlTextPane.text
-        connectedRepository.password = String(inputTokenField.password)
-        connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
-        connectedRepository.repositoryType = myRepositoryType
-        connectedRepository.storeCredentials()
+        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        if (inputUrlTextPane.text.isNotBlank() && inputTokenField.password.isNotEmpty()) {
 
-        connectedRepository.isShared = shareUrlCheckBox.isSelected
-        connectedRepository.isLoginAnonymously = false
+            val myRepositoryType = YouTrackRepositoryType()
+            connectedRepository.isLoginAnonymously = false
 
-        val proxy = HttpConfigurable.getInstance()
-        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
-            connectedRepository.isUseProxy = useProxyCheckBox.isSelected
-            if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
-                repoConnector.testConnection(connectedRepository, project)
+            connectedRepository.url = inputUrlTextPane.text
+            connectedRepository.password = String(inputTokenField.password)
+            connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
+            connectedRepository.repositoryType = myRepositoryType
+            connectedRepository.storeCredentials()
+
+            connectedRepository.isShared = shareUrlCheckBox.isSelected
+
+            val proxy = HttpConfigurable.getInstance()
+            if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
+                connectedRepository.isUseProxy = useProxyCheckBox.isSelected
+                if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
+                    repoConnector.testConnection(connectedRepository, project)
+                }
+            } else {
+                repoConnector.noteState = NotifierState.NULL_PROXY_HOST
+                connectedRepository.isUseProxy = false
             }
-        } else {
-            repoConnector.noteState = NotifierState.NULL_PROXY_HOST
-            connectedRepository.isUseProxy = false
         }
-
         drawAutoCorrection(fontColor)
 
         if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
@@ -360,23 +363,29 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             testConnectionAction()
         }
 
-        val myRepository: YouTrackRepository = repo.getRepo()
-        myRepository.url = connectedRepository.url
-        myRepository.password = String(inputTokenField.password)
-        myRepository.username = connectedRepository.username
-        myRepository.repositoryType = connectedRepository.repositoryType
-        myRepository.storeCredentials()
+        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        if (repoConnector.noteState != NotifierState.EMPTY_FIELD) {
+            val myRepository: YouTrackRepository = repo.getRepo()
+            myRepository.isLoginAnonymously = false
 
-        myRepository.isShared = connectedRepository.isShared
-        myRepository.isUseProxy = connectedRepository.isUseProxy
-        myRepository.isLoginAnonymously = false
+            myRepository.url = connectedRepository.url
+            myRepository.password = String(inputTokenField.password)
+            myRepository.username = connectedRepository.username
+            myRepository.repositoryType = connectedRepository.repositoryType
+            myRepository.storeCredentials()
 
-        if (repoConnector.noteState == NotifierState.SUCCESS) {
-            repoConnector.showIssuesForConnectedRepo(myRepository, project)
+            myRepository.isShared = connectedRepository.isShared
+            myRepository.isUseProxy = connectedRepository.isUseProxy
+
+            if (repoConnector.noteState == NotifierState.SUCCESS) {
+                repoConnector.showIssuesForConnectedRepo(myRepository, project)
+            }
+
+            startTimer()
         }
-        startTimer()
 
-        if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED) {
+        if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState !=
+                NotifierState.PASSWORD_NOT_STORED && repoConnector.noteState != NotifierState.EMPTY_FIELD) {
             this@SetupDialog.close(0)
         }
     }
