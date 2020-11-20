@@ -8,7 +8,7 @@ import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.SimpleTextAttributes.STYLE_BOLD
+import com.intellij.ui.SimpleTextAttributes.*
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
@@ -30,7 +30,7 @@ class WorkItemsListCellRenderer(
 
     private val complimentaryColor = Color(123, 123, 127)
     private val fgColor = Color(75, 107, 244)
-    private val idStyle = STYLE_BOLD
+    private val idStyle = STYLE_PLAIN
 
     private var maxIssueIdWidth = 0
 
