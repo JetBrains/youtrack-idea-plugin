@@ -22,12 +22,12 @@ class ResetTrackerAction : AnAction(
         }
     }
 
-//    override fun update(event: AnActionEvent) {
-//        val project = event.project
-//        if (project != null) {
-//            val timer = ComponentAware.of(project).timeTrackerComponent
-//            event.presentation.isEnabled = timer.isRunning
-//            event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
-//        }
-//    }
+    override fun update(event: AnActionEvent) {
+        val project = event.project
+        if (project != null) {
+            val timer = ComponentAware.of(project).timeTrackerComponent
+            event.presentation.isEnabled = timer.isRunning
+            event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
+        }
+    }
 }
