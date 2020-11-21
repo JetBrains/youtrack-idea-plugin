@@ -64,13 +64,14 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, myWidth: I
         val commentPanel = createCommentPanel(timer, myHeight, myWidth)
 
         layout = VerticalLayout(7)
+        maximumSize = Dimension(myWidth, myHeight)
+        minimumSize = Dimension(myWidth, myHeight)
         add(trackingModePanel)
         add(postWhenPanel)
         add(schedulePanel)
         add(inactivityPeriodPanel)
         add(typePanel)
         add(commentPanel)
-
     }
 
     private fun createCommentPanel(timer: TimeTracker, height: Int, width: Int): JPanel {
