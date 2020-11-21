@@ -20,7 +20,7 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
     override val project = repo.project
     private val issueWorkItemListModel: IssueWorkItemsListModel = IssueWorkItemsListModel()
     private val issueWorkItemsList: JBList<IssueWorkItem> = JBList()
-    val renderer: WorkItemsListCellRenderer
+    private val renderer: WorkItemsListCellRenderer
 
 
     init {
@@ -30,6 +30,16 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
         add(issueWorkItemsListScrollPane, BorderLayout.CENTER)
         initIssueWorkItemsListModel()
         ListSpeedSearch(issueWorkItemsList)
+    }
+
+    fun getSelectedItem() = when {
+        issueWorkItemsList.selectedIndex == -1 -> null
+        issueWorkItemsList.selectedIndex >= issueWorkItemListModel.size -> null
+        else -> issueWorkItemListModel.getElementAt(issueWorkItemsList.selectedIndex)
+    }
+
+    fun getIssuePosition(): List<Int> {
+        return renderer.getIssuePosition()
     }
 
     private fun initIssueWorkItemsListModel() {

@@ -1,13 +1,21 @@
 package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.actions.*
+import com.github.jk1.ytplugin.issues.actions.HelpAction
+import com.github.jk1.ytplugin.issues.actions.IssueActionGroup
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.*
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
+import java.awt.Desktop
+import java.io.IOException
+import java.net.URI
+import java.net.URISyntaxException
 import javax.swing.JComponent
 import javax.swing.JPanel
+import kotlin.math.log10
+
 
 class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
@@ -17,6 +25,8 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     private val workItemsList = WorkItemsList(repo)
     private val searchBar = WorkItemsSearchBar(repo)
 
+    // flag is required to avoid multiple windows opening
+    var isOpenedOnce = true
 
     init {
         val leftPanel = JPanel(BorderLayout())
@@ -43,6 +53,28 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
     }
 
     private fun setupIssueListActionListeners() {
+
+        workItemsList.addListSelectionListener {
+            val selectedItem = workItemsList.getSelectedItem()
+            if (isOpenedOnce) {
+                if (selectedItem != null) {
+                    val issueIdStart = workItemsList.getIssuePosition()[0]
+                    val issueIdEnd = issueIdStart + workItemsList.getIssuePosition()[1]
+                    if (mousePosition.x in issueIdStart until issueIdEnd) {
+                        try {
+                            Desktop.getDesktop().browse(URI("${repo.url}/issue/${selectedItem.issueId}"))
+                        } catch (e: IOException) {
+                            logger.debug("Error in issue opening in the browser: ${e.message}")
+                        } catch (e: URISyntaxException) {
+                            logger.debug("Error in issue opening in the browser: ${e.message}")
+                        }
+                    }
+                }
+                isOpenedOnce = !isOpenedOnce
+            } else {
+                isOpenedOnce = !isOpenedOnce
+            }
+        }
         searchBar.actionListener = { search ->
             workItemsList.startLoading()
             issueWorkItemsStoreComponent[repo].filter(repo, search)

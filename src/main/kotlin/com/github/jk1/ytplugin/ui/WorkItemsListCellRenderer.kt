@@ -8,7 +8,7 @@ import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.SimpleTextAttributes.*
+import com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN
 import com.intellij.ui.border.CustomLineBorder
 import com.intellij.util.ui.UIUtil
 import java.awt.*
@@ -20,7 +20,7 @@ import javax.swing.ListCellRenderer
 
 
 class WorkItemsListCellRenderer(
-        private val viewportWidthProvider: () -> Int,  private val viewportHeightProvider: () -> Int, repo: YouTrackRepository) : JPanel(BorderLayout()), ListCellRenderer<IssueWorkItem> {
+        private val viewportWidthProvider: () -> Int, private val viewportHeightProvider: () -> Int, repo: YouTrackRepository) : JPanel(BorderLayout()), ListCellRenderer<IssueWorkItem> {
 
     private val myRepository = repo
     private val topPanel = JPanel(BorderLayout())
@@ -32,7 +32,20 @@ class WorkItemsListCellRenderer(
     private val fgColor = Color(75, 107, 244)
     private val idStyle = STYLE_PLAIN
 
+    lateinit var datePanel: JPanel
+    lateinit var valuePanel: JPanel
+
+    fun getValuePanelPosition() = valuePanel.preferredSize.getWidth()
+    fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
+
+
     private var maxIssueIdWidth = 0
+
+    fun getIssuePosition(): List<Int> {
+        val panelWidth = viewportWidthProvider.invoke()
+        //returns start of the x-position of issueId and its length
+        return listOf((getDatePanelPosition() + getValuePanelPosition()).toInt(), (0.2 * panelWidth).toInt())
+    }
 
     init {
         summaryPanel.isOpaque = false
@@ -40,6 +53,7 @@ class WorkItemsListCellRenderer(
         topPanel.isOpaque = false
         topPanel.add(summaryPanel, BorderLayout.WEST)
         add(topPanel, BorderLayout.NORTH)
+        summaryPanel.revalidate()
     }
 
     override fun getListCellRendererComponent(list: JList<out IssueWorkItem>,
@@ -70,12 +84,10 @@ class WorkItemsListCellRenderer(
         type.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
         type.append(if (issueWorkItem.type == "None") "No type" else issueWorkItem.type, SimpleTextAttributes(idStyle, complimentaryColor))
 
-
         issueLink = HyperlinkLabel(issueWorkItem.issueId,
-                "${myRepository.url}/issue/${issueWorkItem.issueId}")
-        issueLink.icon = AllIcons.Actions.MoveTo2
+                "${myRepository.url}/issue/${issueWorkItem.issueId}", AllIcons.Actions.MoveTo2)
 
-        if (issueWorkItem.issueId.length > maxIssueIdWidth){
+        if (issueWorkItem.issueId.length > maxIssueIdWidth) {
             maxIssueIdWidth = issueWorkItem.issueId.length
         }
 
@@ -87,12 +99,12 @@ class WorkItemsListCellRenderer(
         val panelHeight = 32
 
         panel.preferredSize = Dimension(panelWidth, panelHeight)
-        val datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
         datePanel.add(date)
 
         value.alignmentX = Component.RIGHT_ALIGNMENT
-        val valuePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        valuePanel = JPanel(FlowLayout(FlowLayout.LEFT))
 
         valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
         valuePanel.alignmentX = Component.RIGHT_ALIGNMENT
