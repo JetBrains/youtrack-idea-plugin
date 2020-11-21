@@ -27,20 +27,20 @@ import javax.swing.*
 open class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     // TODO is hardcode removable here (for the sake of better look)
-    private var dateLabel = JBLabel("                         Date:")
+    private var dateLabel = JBLabel("Date:")
     private val datePicker = JXDatePicker()
-    private var idLabel = JBLabel("                       Issue:")
+    private var idLabel = JBLabel("Issue:")
 
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox = JComboBox(arrayOf("Development"))
-    private var timeLabel = JBLabel("     Time (hh/mm):")
+    private var timeLabel = JBLabel("Time (hh/mm):")
 
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
 
-    private var commentLabel = JBLabel("              Comment:")
-    private var typeLabel = JBLabel("   Work item type:")
+    private var commentLabel = JBLabel("Comment:")
+    private var typeLabel = JBLabel("Work item type:")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
@@ -48,6 +48,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val ids = IssuesRestClient(repo).getFormattedUniqueIssueIds()
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds = mutableListOf<String>()
+
+    private val labelsMargin = 120
 
     init {
         title = "Add spent time"
@@ -87,7 +89,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val notifierPanel = JPanel(FlowLayout(2))
 
         val notifierLabel = JLabel("")
-        notifierLabel.preferredSize = Dimension(125, 20)
+        notifierLabel.preferredSize = Dimension(labelsMargin, 20)
         notifierPanel.add(notifierLabel)
         notifierPanel.add(notifier)
 
@@ -102,13 +104,14 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         typeComboBox = JComboBox(types.toTypedArray())
         try {
             typeComboBox.selectedIndex = 0
-        } catch (e: IllegalArgumentException){
+        } catch (e: IllegalArgumentException) {
             typeComboBox.selectedIndex = -1
             logger.warn("Failed to fetch work items types")
         }
         typeComboBox.isEditable = true
 
         val typePanel = JPanel(FlowLayout(2))
+        typeLabel.preferredSize = Dimension(labelsMargin, 30)
         typePanel.add(typeLabel)
         typePanel.add(typeComboBox)
 
@@ -132,14 +135,17 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         idComboBox.selectedIndex = tasksIds.indexOf(TaskManager.getManager(project).activeTask.id)
 
+        idLabel.preferredSize = Dimension(labelsMargin, 30)
         idPanel.add(idLabel)
         idPanel.add(idComboBox)
+
 
         return idPanel
     }
 
     private fun createDatePanel(): JPanel {
         val datePanel = JPanel(FlowLayout(2))
+        dateLabel.preferredSize = Dimension(labelsMargin + 3, 30)
 
         datePanel.add(dateLabel)
         datePanel.add(datePicker)
@@ -150,6 +156,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private fun createCommentPanel(): JPanel {
         commentTextField = JBTextField("")
         commentTextField.preferredSize = Dimension(390, typeComboBox.preferredSize.height)
+        commentLabel.preferredSize = Dimension(labelsMargin, 30)
 
         val commentPanel = JPanel(FlowLayout(2))
         commentPanel.add(commentLabel)
@@ -180,6 +187,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         inputTimePanel.add(hoursSpinner)
         inputTimePanel.add(JLabel(":"))
         inputTimePanel.add(minutesSpinner)
+        timeLabel.preferredSize = Dimension(labelsMargin - 5, 30)
 
         timePanel.add(timeLabel)
         timePanel.add(inputTimePanel)

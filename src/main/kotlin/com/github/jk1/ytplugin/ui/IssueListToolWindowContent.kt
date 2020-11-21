@@ -5,9 +5,11 @@ import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
-import java.awt.event.*
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.KeyEvent.*
-import javax.swing.AbstractAction
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
@@ -60,7 +62,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             if (selectedIssue == null) {
                 splitter.collapse()
             } else if (selectedIssue != viewer.currentIssue) {
-                if (splitter.isCollapsedState()){
+                if (splitter.isCollapsedState()) {
                     splitter.expand()
                 }
                 viewer.showIssue(selectedIssue)
@@ -70,7 +72,9 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         issuesList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
         issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
         issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
-        // expand issue preview on click
+        // expand issue preview on clickx-special/nautilus-clipboard
+        //copy
+        //file:///home/alina.boshchenko/WorkJB/intellij-community/java/idea-ui/src/com/intellij/jarRepository/RepositoryAttachDialog.form
         issuesList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 if (issuesList.getIssueCount() > 0) {
