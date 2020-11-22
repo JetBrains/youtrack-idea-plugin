@@ -37,6 +37,8 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         searchField.setPlaceholder("Search by date, time, short project name, issue, type or comment")
         actionGroup.add(SearchWorkItemsAnAction())
         add(searchField, BorderLayout.CENTER)
+        add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
+
 
         searchField.text = timer.searchQuery
         searchField.setShowPlaceholderWhenFocused(true)
