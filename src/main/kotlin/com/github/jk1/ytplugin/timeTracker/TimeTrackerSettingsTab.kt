@@ -232,7 +232,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
         val inactivityPeriodPanel = JPanel(FlowLayout(3))
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.1 * myWidth).toInt() - 1, (0.0875 * height).toInt())
+        sep.preferredSize = Dimension((0.1 * myWidth).toInt() - 2, (0.0875 * height).toInt())
         inactivityPeriodPanel.add(inactivityTextField)
         inactivityPeriodPanel.add(sep)
         inactivityPeriodPanel.add(inactivityTimePanel)
