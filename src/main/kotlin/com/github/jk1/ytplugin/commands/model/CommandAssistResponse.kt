@@ -21,7 +21,9 @@ class CommandAssistResponse(stream: InputStream) {
         val suggests = root.asJsonObject.getAsJsonArray("suggestions")
         val commands = root.asJsonObject.getAsJsonArray("commands")
         highlightRanges = ranges.map { CommandHighlightRange(it) }
-        suggestions = suggests.map { CommandSuggestion(it) }
+        suggestions = suggests.map {
+            CommandSuggestion(it)
+        }
         previews = commands.map { CommandPreview(it) }
     }
 }

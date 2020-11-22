@@ -55,7 +55,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
                 method.responseBodyAsLoggedString()
-                logger.error("Runtime Exception while posting assist command in CommandRestClient.")
+                logger.warn("Runtime Exception while posting assist command in CommandRestClient.")
                 throw RuntimeException("HTTP $status")
             }
         }
@@ -65,7 +65,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val execUrl = "${repository.url}/api/groups?fields=name,id,allUsersGroup"
         val getMethod = GetMethod(execUrl)
         val status = httpClient.executeMethod(getMethod)
-        return if (JsonParser.parseString(getMethod.responseBodyAsLoggedString()).isJsonArray ){
+        return if (JsonParser.parseString(getMethod.responseBodyAsLoggedString()).isJsonArray) {
             val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsLoggedString()) as JsonArray
             if (status == 200) {
                 logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
@@ -82,7 +82,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
     }
 
-    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution) : String {
+    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution): String {
         val res = this::class.java.classLoader.getResource("command_execution_rest.json")
                 ?: throw IllegalStateException("Resource 'command_execution_rest.json' file is missing")
 
