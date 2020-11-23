@@ -1,6 +1,10 @@
 
 /* CSS rules have been modified to make swing css parser understand composite selectors: .wiki .quote -> .wiki quote */
 
+a {
+  color: rgb(87, 120, 173)
+}
+
 .java code title {
   color: gray;
 }
