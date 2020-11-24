@@ -169,6 +169,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
             isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
                     isManualModeRadioButton.isSelected, noTrackingButton.isSelected)
         }
+        noTrackingButton.isSelected = true
 
         val buttonGroup = ButtonGroup()
         buttonGroup.add(isAutoTrackingEnabledRadioButton)
