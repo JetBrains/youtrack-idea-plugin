@@ -12,12 +12,7 @@ import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import org.jdesktop.swingx.JXDatePicker
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.GridLayout
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
+import java.awt.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -39,6 +34,9 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
 
+    private val okButton = JButton("OK")
+    private val cancelButton = JButton("Cancel")
+
     private var commentLabel = JBLabel("Comment:")
     private var typeLabel = JBLabel("Work item type:")
     private lateinit var commentTextField: JBTextField
@@ -53,6 +51,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     init {
         title = "Add spent time"
+        rootPane.defaultButton = okButton
+
     }
 
     override fun show() {
@@ -74,14 +74,17 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         val notifierPanel = createNotifierPanel()
 
+        val buttonsPanel = createButtonsPanel()
+
         return JPanel().apply {
-            layout = VerticalLayout(4)
+            layout = VerticalLayout(7)
             add(timePanel)
             add(idPanel)
             add(typePanel)
             add(commentPanel)
             add(datePanel)
             add(notifierPanel)
+            add(buttonsPanel)
         }
     }
 
@@ -195,50 +198,60 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         return timePanel
     }
 
-    override fun createActions(): Array<out Action> =
-            arrayOf(OkAction("Ok"), cancelAction)
+    override fun createActions(): Array<out Action> = arrayOf()
+
+    private fun createButtonsPanel(): JPanel {
+        val buttonsPanel = JPanel(FlowLayout(2))
+        okButton.addActionListener { okAction() }
+        okButton.preferredSize = Dimension(90, 31)
+
+        cancelButton.addActionListener { doCancelAction() }
+        cancelButton.preferredSize = Dimension(90, 31)
+
+        val sep = JLabel("")
+        sep.preferredSize = Dimension((labelsMargin * 2.7).toInt(), 20)
+        buttonsPanel.add(sep)
+        buttonsPanel.add(okButton)
+        buttonsPanel.add(cancelButton)
+
+        return buttonsPanel
+    }
 
     override fun createJButtonForAction(action: Action): JButton {
-        val button = super.createJButtonForAction(action)
-        button.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
-        button.actionMap.put("apply", action)
-        return button
+        return super.createJButtonForAction(action)
     }
 
     override fun createCenterPanel(): JComponent {
         val contextPane = JPanel(GridLayout())
         val mainPane = prepareMainPane()
         contextPane.apply {
-            preferredSize = Dimension(530, 260)
+            preferredSize = Dimension(530, 320)
             minimumSize = preferredSize
             add(mainPane)
         }
         return contextPane
     }
 
+    private fun okAction() {
+        val hours = hoursSpinner.value.toString()
+        val minutes = minutesSpinner.value.toString()
+        val time = TimeUnit.HOURS.toMinutes(hours.toLong()) + minutes.toLong()
 
-    inner class OkAction(name: String) : AbstractAction(name) {
-        override fun actionPerformed(e: ActionEvent) {
-
-            val hours = hoursSpinner.value.toString()
-            val minutes = minutesSpinner.value.toString()
-            val time = TimeUnit.HOURS.toMinutes(hours.toLong()) + minutes.toLong()
-
-            if (datePicker.date == null) {
-                notifier.foreground = Color.red
-                notifier.text = "Date is not specified"
-            } else {
-                val selectedId = ids[idComboBox.selectedIndex].name
-                val timerService = TimeTrackingService()
-                val successOnPost = timerService.postNewWorkItem(datePicker.date.format(),
-                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
-                        commentTextField.text, time.toString())
-                if (successOnPost) {
-                    this@TimeTrackerManualEntryDialog.close(0)
-                }
+        if (datePicker.date == null) {
+            notifier.foreground = Color.red
+            notifier.text = "Date is not specified"
+        } else {
+            val selectedId = ids[idComboBox.selectedIndex].name
+            val timerService = TimeTrackingService()
+            val successOnPost = timerService.postNewWorkItem(datePicker.date.format(),
+                    typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
+                    commentTextField.text, time.toString())
+            if (successOnPost) {
+                this@TimeTrackerManualEntryDialog.close(0)
             }
         }
     }
+
 
 }
 
