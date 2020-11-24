@@ -29,6 +29,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     private lateinit var isManualModeRadioButton: JBRadioButton
     private var manualModeTextField = JBLabel("Enable manual mode          ")
 
+    private lateinit var noTrackingButton: JBRadioButton
+
     private lateinit var postWhenProjectClosedCheckbox: JBCheckBox
     private lateinit var postWhenCommitCheckbox: JBCheckBox
 
@@ -36,7 +38,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
     private lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
-    private var autoTrackingEnabledTextField = JBLabel("Enable automated mode")
+    private var autoTrackingEnabledTextField = JBLabel("Enable automated mode        ")
 
     private var commentLabel = JBLabel(" Comment:")
     private var typeLabel = JBLabel(" Work Item type:")
@@ -152,19 +154,26 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
         isAutoTrackingEnabledRadioButton.isSelected = timer.isAutoTrackingEnable
         isAutoTrackingEnabledRadioButton.addActionListener {
             isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
-                    isManualModeRadioButton.isSelected)
+                    isManualModeRadioButton.isSelected, noTrackingButton.isSelected)
         }
 
         isManualModeRadioButton = JBRadioButton()
         isManualModeRadioButton.isSelected = timer.isManualTrackingEnable
         isManualModeRadioButton.addActionListener {
             isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
-                    isManualModeRadioButton.isSelected)
+                    isManualModeRadioButton.isSelected, noTrackingButton.isSelected)
+        }
+
+        noTrackingButton = JBRadioButton("None")
+        noTrackingButton.addActionListener {
+            isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
+                    isManualModeRadioButton.isSelected, noTrackingButton.isSelected)
         }
 
         val buttonGroup = ButtonGroup()
         buttonGroup.add(isAutoTrackingEnabledRadioButton)
         buttonGroup.add(isManualModeRadioButton)
+        buttonGroup.add(noTrackingButton)
 
         val enableAutoTrackingPanel = JPanel(FlowLayout(2))
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
@@ -178,8 +187,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
         sep.preferredSize = Dimension((0.195 * width).toInt(), (0.0875 * height).toInt())
 
         trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
-        trackingModePanel.add(sep, BorderLayout.CENTER)
-        trackingModePanel.add(enableManualTrackingPanel, BorderLayout.EAST)
+        trackingModePanel.add(enableManualTrackingPanel, BorderLayout.CENTER)
+        trackingModePanel.add(noTrackingButton, BorderLayout.EAST)
 
         return trackingModePanel
     }
@@ -247,28 +256,28 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     }
 
 
-    private fun isTrackingModeChanged(autoTrackEnabled: Boolean, manualTrackEnabled: Boolean) {
+    private fun isTrackingModeChanged(autoTrackEnabled: Boolean, manualTrackEnabled: Boolean, noTrackingEnabled: Boolean) {
 
         scheduledHour.isEnabled = autoTrackEnabled
         scheduledMinutes.isEnabled = autoTrackEnabled
 
-        inactivityHourInputField.isEnabled = autoTrackEnabled
-        inactivityMinutesInputField.isEnabled = autoTrackEnabled
-        inactivityTextField.isEnabled = autoTrackEnabled
+        inactivityHourInputField.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        inactivityMinutesInputField.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        inactivityTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
-        scheduledTextField.isEnabled = autoTrackEnabled
-        isScheduledCheckbox.isEnabled = autoTrackEnabled
+        scheduledTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        isScheduledCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
-        postWhenProjectClosedCheckbox.isEnabled = autoTrackEnabled
-        postWhenProjectClosedTextField.isEnabled = autoTrackEnabled
+        postWhenProjectClosedCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        postWhenProjectClosedTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
-        postWhenCommitCheckbox.isEnabled = autoTrackEnabled
-        mpostWhenCommitTextField.isEnabled = autoTrackEnabled
+        postWhenCommitCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        mpostWhenCommitTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
-        commentLabel.isEnabled = autoTrackEnabled || manualTrackEnabled
-        commentTextField.isEnabled = autoTrackEnabled || manualTrackEnabled
-        typeLabel.isEnabled = autoTrackEnabled || manualTrackEnabled
-        typeComboBox.isEnabled = autoTrackEnabled || manualTrackEnabled
+        commentLabel.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
+        commentTextField.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
+        typeLabel.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
+        typeComboBox.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
 
     }
 
