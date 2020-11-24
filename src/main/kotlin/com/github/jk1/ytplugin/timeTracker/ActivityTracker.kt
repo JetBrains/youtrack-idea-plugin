@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
+import com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.event.*
@@ -26,6 +27,9 @@ import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.swing.JFrame
+import javax.swing.JOptionPane
+
 
 class ActivityTracker(
 
@@ -83,6 +87,8 @@ class ActivityTracker(
         }
     }
 
+
+
     override fun dispose() {
         val store: PropertiesComponent = PropertiesComponent.getInstance(project)
         try {
@@ -118,7 +124,8 @@ class ActivityTracker(
             Disposer.dispose(trackingDisposable!!)
             trackingDisposable = null
         }
-    }
+
+   }
 
 
     private fun scheduleListener(parentDisposable: Disposable) {
