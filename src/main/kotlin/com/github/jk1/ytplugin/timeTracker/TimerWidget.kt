@@ -19,7 +19,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
 
 
     fun time(): String {
-        val recordedTime = if (timeTracker.isPaused){
+        val recordedTime = if (timeTracker.isPaused) {
             timeTracker.getRecordedTimeInMills()
         } else {
             System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime
@@ -31,7 +31,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         return mode() + "Time spent: $time"
     }
 
-    fun mode(): String {
+    private fun mode(): String {
         return if (timeTracker.isAutoTrackingEnable && timeTracker.isManualTrackingEnable)
             "Automatic and Manual tracking mode is on. "
         else if (timeTracker.isAutoTrackingEnable)

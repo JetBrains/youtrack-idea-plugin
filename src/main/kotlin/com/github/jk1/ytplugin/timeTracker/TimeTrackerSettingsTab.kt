@@ -9,6 +9,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
+import javax.swing.ButtonGroup
 import javax.swing.JComboBox
 import javax.swing.JPanel
 
@@ -25,7 +26,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     private lateinit var isScheduledCheckbox: JBCheckBox
     private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm):")
 
-    private lateinit var isManualModeCheckbox: JBCheckBox
+    private lateinit var isManualModeRadioButton: JBRadioButton
     private var manualModeTextField = JBLabel("Enable manual mode          ")
 
     private lateinit var postWhenProjectClosedCheckbox: JBCheckBox
@@ -34,7 +35,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
-    private lateinit var isAutoTrackingEnabledCheckBox: JBCheckBox
+    private lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
     private var autoTrackingEnabledTextField = JBLabel("Enable automated mode")
 
     private var commentLabel = JBLabel(" Comment:")
@@ -147,30 +148,35 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
 
     private fun createTrackingModePanel(timer: TimeTracker, height: Int, width: Int): JPanel {
 
-        isAutoTrackingEnabledCheckBox = JBCheckBox()
-        isAutoTrackingEnabledCheckBox.isSelected = timer.isAutoTrackingEnable
-        isAutoTrackingEnabledCheckBox.addActionListener {
-            isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected,
-                    isManualModeCheckbox.isSelected)
+        isAutoTrackingEnabledRadioButton = JBRadioButton()
+        isAutoTrackingEnabledRadioButton.isSelected = timer.isAutoTrackingEnable
+        isAutoTrackingEnabledRadioButton.addActionListener {
+            isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
+                    isManualModeRadioButton.isSelected)
         }
 
-        isManualModeCheckbox = JBCheckBox()
-        isManualModeCheckbox.isSelected = timer.isManualTrackingEnable
-        isManualModeCheckbox.addActionListener {
-            isAutoTrackingChanged(isAutoTrackingEnabledCheckBox.isSelected,
-                    isManualModeCheckbox.isSelected)
+        isManualModeRadioButton = JBRadioButton()
+        isManualModeRadioButton.isSelected = timer.isManualTrackingEnable
+        isManualModeRadioButton.addActionListener {
+            isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
+                    isManualModeRadioButton.isSelected)
         }
+
+        val buttonGroup = ButtonGroup()
+        buttonGroup.add(isAutoTrackingEnabledRadioButton)
+        buttonGroup.add(isManualModeRadioButton)
 
         val enableAutoTrackingPanel = JPanel(FlowLayout(2))
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
-        enableAutoTrackingPanel.add(isAutoTrackingEnabledCheckBox)
+        enableAutoTrackingPanel.add(isAutoTrackingEnabledRadioButton)
         enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
-        enableManualTrackingPanel.add(isManualModeCheckbox)
+        enableManualTrackingPanel.add(isManualModeRadioButton)
         enableManualTrackingPanel.add(manualModeTextField)
 
         val trackingModePanel = JPanel(BorderLayout())
         val sep = JBLabel("")
         sep.preferredSize = Dimension((0.195 * width).toInt(), (0.0875 * height).toInt())
+
         trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
         trackingModePanel.add(sep, BorderLayout.CENTER)
         trackingModePanel.add(enableManualTrackingPanel, BorderLayout.EAST)
@@ -241,7 +247,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     }
 
 
-    private fun isAutoTrackingChanged(autoTrackEnabled: Boolean, manualTrackEnabled: Boolean) {
+    private fun isTrackingModeChanged(autoTrackEnabled: Boolean, manualTrackEnabled: Boolean) {
 
         scheduledHour.isEnabled = autoTrackEnabled
         scheduledMinutes.isEnabled = autoTrackEnabled
@@ -266,11 +272,11 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
 
     }
 
-    fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledCheckBox
+    fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledRadioButton
     fun getType() = typeComboBox.getItemAt(typeComboBox.selectedIndex)
     fun getInactivityHours(): String = inactivityHourInputField.text
     fun getInactivityMinutes(): String = inactivityMinutesInputField.text
-    fun getManualModeCheckbox() = isManualModeCheckbox
+    fun getManualModeCheckbox() = isManualModeRadioButton
     fun getScheduledCheckbox() = isScheduledCheckbox
     fun getPostWhenCommitCheckbox() = postWhenCommitCheckbox
 

@@ -27,7 +27,7 @@ class ResetTrackerAction : AnAction(
         if (project != null) {
             val timer = ComponentAware.of(project).timeTrackerComponent
             event.presentation.isEnabled = timer.isRunning
-            event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
+            event.presentation.isVisible = timer.isManualTrackingEnable
         }
     }
 }
