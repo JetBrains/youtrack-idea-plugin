@@ -15,13 +15,13 @@ import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 
+
 class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
 
     override val project = repo.project
     private val issueWorkItemListModel: IssueWorkItemsListModel = IssueWorkItemsListModel()
     private val issueWorkItemsList: JBList<IssueWorkItem> = JBList()
     private val renderer: WorkItemsListCellRenderer
-
 
     init {
         val issueWorkItemsListScrollPane = JBScrollPane(issueWorkItemsList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
