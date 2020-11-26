@@ -23,13 +23,13 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("Date:")
-    private val datePicker = JXDatePicker()
-    private var idLabel = JBLabel("Issue:")
+    private val datePicker = JXDatePicker(Date())
+    private var idLabel = JBLabel("Issue: ")
 
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox = JComboBox(arrayOf("Development"))
-    private var timeLabel = JBLabel("Time (hh/mm):")
+    private var timeLabel = JBLabel("Time (hh/mm): ")
 
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
@@ -37,8 +37,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val okButton = JButton("OK")
     private val cancelButton = JButton("Cancel")
 
-    private var commentLabel = JBLabel("Comment:")
-    private var typeLabel = JBLabel("Work item type:")
+    private var commentLabel = JBLabel("Comment: ")
+    private var typeLabel = JBLabel("Work item type: ")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
@@ -149,7 +149,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private fun createDatePanel(): JPanel {
         val datePanel = JPanel(FlowLayout(2))
         dateLabel.preferredSize = Dimension(labelsMargin + 3, 30)
-
         datePanel.add(dateLabel)
         datePanel.add(datePicker)
 
