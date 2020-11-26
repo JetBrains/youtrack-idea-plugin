@@ -1,12 +1,11 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.YouTrackPluginApiService
+import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
-import com.github.jk1.ytplugin.timeTracker.ActivityTracker
-import com.github.jk1.ytplugin.timeTracker.TimerWidget
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
-import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.github.jk1.ytplugin.timeTracker.*
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
@@ -53,7 +52,7 @@ class StartTrackerAction : AnAction(
     private fun startTracking(project: Project, myTimer: TimeTracker) {
         val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
         val activeTask = taskManager.activeTask
-        val parentDisposable = project.getService(StatusBarWidgetsManager::class.java)
+        val parentDisposable = project.getService(IssueWorkItemsStoreUpdaterService::class.java)
         if (!myTimer.isRunning) {
             myTimer.startTime = System.currentTimeMillis()
         }

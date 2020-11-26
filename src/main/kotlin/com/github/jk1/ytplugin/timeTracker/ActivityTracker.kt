@@ -90,36 +90,53 @@ class ActivityTracker(
 
 
     override fun dispose() {
-        val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-        try {
-            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-
-            if (!isPostedOnClose) {
-                if (timer.isWhenProjectClosedEnabled) {
-                    logger.debug("state PROJECT_CLOSE with posting enabled")
-                    try {
-                        timer.stop()
-                        repo.let { it1 ->
-                            TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
-                                    timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
-                        }
-                    } catch (e: IllegalStateException) {
-                        logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-                    }
-                } else {
-                    try {
-                        saveState(store)
-                    } catch (e: IllegalStateException) {
-                        logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-                    }
-                    logger.debug("state PROJECT_CLOSE with posting disabled")
-                }
-                logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
-                isPostedOnClose = true
-            }
-        } catch (e: NoYouTrackRepositoryException) {
-            logger.warn("NoYouTrackRepository:  ${e.message}")
+        val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+        repo.let { it1 ->
+            TimeTrackerRestClient(it1).postNewWorkItem("TP-1",
+                    "6", "None", " ", (Date().time).toString())
         }
+//        if (timer.isWhenProjectClosedEnabled) {
+//            logger.debug("state PROJECT_CLOSE with posting enabled")
+//            try {
+//                timer.stop()
+//                repo.let { it1 ->
+//                    TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+//                            timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+//                }
+//            } catch (e: IllegalStateException) {
+//                logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+//            }
+//        }
+//        val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+//        try {
+//            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+//
+//            if (!isPostedOnClose) {
+//                if (timer.isWhenProjectClosedEnabled) {
+//                    logger.debug("state PROJECT_CLOSE with posting enabled")
+//                    try {
+//                        timer.stop()
+//                        repo.let { it1 ->
+//                            TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+//                                    timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+//                        }
+//                    } catch (e: IllegalStateException) {
+//                        logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+//                    }
+//                } else {
+//                    try {
+//                        saveState(store)
+//                    } catch (e: IllegalStateException) {
+//                        logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+//                    }
+//                    logger.debug("state PROJECT_CLOSE with posting disabled")
+//                }
+//                logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
+//                isPostedOnClose = true
+//            }
+//        } catch (e: NoYouTrackRepositoryException) {
+//            logger.warn("NoYouTrackRepository:  ${e.message}")
+//        }
         if (trackingDisposable != null) {
             Disposer.dispose(trackingDisposable!!)
             trackingDisposable = null

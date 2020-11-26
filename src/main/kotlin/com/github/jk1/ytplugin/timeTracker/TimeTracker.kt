@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import java.util.concurrent.TimeUnit
