@@ -65,6 +65,7 @@ class StopTrackerAction : AnAction(
                             timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                 }
                 if (status != 200){
+
                     logger.warn("Time tracking might not be enabled: $status")
                     trackerNote.notify("Could not record time: time tracking is disabled (status $status)", NotificationType.WARNING)
                 }
