@@ -53,7 +53,7 @@ class WorkItemsListCellRenderer(
         topPanel.isOpaque = false
         topPanel.add(summaryPanel, BorderLayout.WEST)
         add(topPanel, BorderLayout.NORTH)
-        summaryPanel.revalidate()
+        topPanel.revalidate()
     }
 
     override fun getListCellRendererComponent(list: JList<out IssueWorkItem>,
@@ -96,13 +96,14 @@ class WorkItemsListCellRenderer(
         val layout = FlowLayout(FlowLayout.LEFT)
         layout.hgap = 0
         layout.vgap = 0
-
         val panel = JPanel(layout)
         panel.isOpaque = false
+
         val panelWidth = viewportWidthProvider.invoke()
         val panelHeight = 32
 
         panel.preferredSize = Dimension(panelWidth, panelHeight)
+
         datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
         datePanel.add(date)
