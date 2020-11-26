@@ -67,6 +67,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
         maximumSize = Dimension(myWidth, myHeight)
         minimumSize = Dimension(myWidth, myHeight)
         add(trackingModePanel)
+        add(JBLabel(""))
         add(postWhenPanel)
         add(schedulePanel)
         add(inactivityPeriodPanel)
