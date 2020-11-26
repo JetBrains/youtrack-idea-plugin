@@ -93,7 +93,11 @@ class WorkItemsListCellRenderer(
 
         prepareCommentsForDisplaying(issueWorkItem)
 
-        val panel = JPanel(FlowLayout(FlowLayout.LEFT))
+        val layout = FlowLayout(FlowLayout.LEFT)
+        layout.hgap = 0
+        layout.vgap = 0
+
+        val panel = JPanel(layout)
         panel.isOpaque = false
         val panelWidth = viewportWidthProvider.invoke()
         val panelHeight = 32
