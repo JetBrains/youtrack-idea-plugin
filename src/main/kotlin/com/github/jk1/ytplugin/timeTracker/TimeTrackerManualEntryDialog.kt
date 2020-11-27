@@ -12,7 +12,10 @@ import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import org.jdesktop.swingx.JXDatePicker
-import java.awt.*
+import java.awt.Color
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.GridLayout
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -149,6 +152,9 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private fun createDatePanel(): JPanel {
         val datePanel = JPanel(FlowLayout(2))
         dateLabel.preferredSize = Dimension(labelsMargin + 3, 30)
+        datePicker.preferredSize = Dimension(200, 25)
+        datePicker.getComponent(1).preferredSize = Dimension(30, 30) //JButton
+
         datePanel.add(dateLabel)
         datePanel.add(datePicker)
 
