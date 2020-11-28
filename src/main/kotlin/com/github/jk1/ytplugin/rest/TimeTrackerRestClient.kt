@@ -38,7 +38,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 }
                 else -> {
                     logger.warn("Work item ${findWorkItemId(type)}, posting failed with code $status: " + method.responseBodyAsLoggedString())
-                    0
+                    status
                 }
             }
         }
