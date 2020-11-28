@@ -68,6 +68,8 @@ class WorkItemsListCellRenderer(
     private fun fillTrackingInfoLine(issueWorkItem: IssueWorkItem, fgColor: Color) {
         summaryPanel.removeAll()
 
+        summaryPanel.isOpaque = false
+
         val date = SimpleColoredComponent()
         date.isOpaque = false
         date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
@@ -86,6 +88,7 @@ class WorkItemsListCellRenderer(
 
         issueLink = HyperlinkLabel(issueWorkItem.issueId,
                 "${myRepository.url}/issue/${issueWorkItem.issueId}", AllIcons.Actions.MoveTo2)
+        issueLink.isOpaque = false
 
         if (issueWorkItem.issueId.length > maxIssueIdWidth) {
             maxIssueIdWidth = issueWorkItem.issueId.length
@@ -107,15 +110,18 @@ class WorkItemsListCellRenderer(
         datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
         datePanel.add(date)
+        datePanel.isOpaque = false
 
         value.alignmentX = Component.RIGHT_ALIGNMENT
         valuePanel = JPanel(FlowLayout(FlowLayout.LEFT))
 
         valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
         valuePanel.alignmentX = Component.RIGHT_ALIGNMENT
+        valuePanel.isOpaque = false
 
         val issueLinkPanel = JPanel(FlowLayout(FlowLayout.LEFT))
         issueLinkPanel.add(issueLink)
+        issueLinkPanel.isOpaque = false
 
         val minIssueIdWidth = (0.078 * panelWidth).toInt()
         val unitWidth = 0.078 * panelWidth / 6
@@ -144,6 +150,7 @@ class WorkItemsListCellRenderer(
                 val typePanel = JPanel(FlowLayout(FlowLayout.LEFT))
                 typePanel.add(type)
                 typePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
+                typePanel.isOpaque = false
                 panel.add(typePanel)
 
                 val trackingCommentsPanel = JPanel(FlowLayout(FlowLayout.LEFT))
@@ -152,6 +159,7 @@ class WorkItemsListCellRenderer(
                         minIssueIdWidth - (unitWidth * maxIssueIdWidth).toInt()
                 trackingCommentsPanel.preferredSize = Dimension(min(commentsWidth, (0.274 * panelWidth).toInt()), panelHeight + 10)
 
+                trackingCommentsPanel.isOpaque = false
                 panel.add(trackingCommentsPanel)
             }
         }
