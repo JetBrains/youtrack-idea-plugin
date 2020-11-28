@@ -171,18 +171,19 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private fun createInfoPane(): JPanel {
         val getTokenInfoLabel = HyperlinkLabel("How to create a permanent token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
-        notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
 
-        val sep = JBLabel("").apply {
-            preferredSize = Dimension(55, 20)
-        }
-
-        val tokenInfoPane = JPanel(FlowLayout(2))
-        tokenInfoPane.add(notifyFieldLabel)
-        tokenInfoPane.add(sep)
-        tokenInfoPane.add(getTokenInfoLabel)
-
+        val tokenInfoPane = JPanel(BorderLayout())
+        tokenInfoPane.add(getTokenInfoLabel, BorderLayout.EAST)
         return tokenInfoPane
+    }
+
+    private fun createNotifierPane() : JPanel {
+
+        notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
+        val notifyPane = JPanel(BorderLayout())
+        notifyPane.add(notifyFieldLabel, BorderLayout.CENTER)
+
+        return notifyPane
     }
 
     private fun prepareTabbedPane(): JTabbedPane {
@@ -196,8 +197,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             add(createCheckboxesPane())
             add(createTokenPane())
             add(createInfoPane())
+            add(createNotifierPane())
             // to separate from other fields
-            for (x in 0..5) add(JBLabel(""))
+            for (x in 0..4) add(JBLabel(""))
         }
 
         mainPane.apply {
