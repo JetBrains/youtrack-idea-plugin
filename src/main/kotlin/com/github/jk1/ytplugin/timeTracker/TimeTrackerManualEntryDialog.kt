@@ -28,12 +28,12 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("Date:")
     private val datePicker = JXDatePicker(Date())
-    private var idLabel = JBLabel("Issue:  ")
+    private var idLabel = JBLabel("Issue:   ")
 
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox = JComboBox(arrayOf("Development"))
-    private var timeLabel = JBLabel("Time (hh/mm):   ")
+    private var timeLabel = JBLabel("Time (hh/mm):")
 
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
@@ -41,8 +41,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val okButton = JButton("OK")
     private val cancelButton = JButton("Cancel")
 
-    private var commentLabel = JBLabel("Comment:  ")
-    private var typeLabel = JBLabel("Work item type:   ")
+    private var commentLabel = JBLabel("Comment:")
+    private var typeLabel = JBLabel("Work item type:")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
@@ -51,7 +51,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds = mutableListOf<String>()
 
-    private val labelsMargin = 120
+    private val labelsMargin = 124
 
     init {
         title = "Add spent time"
@@ -220,10 +220,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         buttonsPanel.add(cancelButton)
 
         return buttonsPanel
-    }
-
-    override fun createJButtonForAction(action: Action): JButton {
-        return super.createJButtonForAction(action)
     }
 
     override fun createCenterPanel(): JComponent {
