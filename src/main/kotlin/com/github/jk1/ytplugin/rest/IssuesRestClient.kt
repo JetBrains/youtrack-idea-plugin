@@ -129,9 +129,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         val url = "${repository.url}/api/issues"
         val method = GetMethod(url)
         val myQuery = NameValuePair("query", query)
+        val myTop = NameValuePair("\$top", "100")   // todo: customizable "max" limit
         val myFields = NameValuePair("fields", ISSUE_FIELDS)
         var fullIssues: List<Issue>
-        method.setQueryString(arrayOf(myQuery, myFields))
+        method.setQueryString(arrayOf(myQuery, myFields, myTop))
 
         return method.connect {
             val status = httpClient.executeMethod(method)
@@ -149,14 +150,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
 
     }
 
-
     private fun getWorkItems(query: String): List<IssueWorkItem> {
         val myQuery = NameValuePair("query", query)
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
         val myFields = NameValuePair("fields", "text,type(name),created,issue(idReadable)," +
                 "duration(presentation,minutes),author(name),creator(name),date,id")
-        method.setQueryString(arrayOf(myQuery, myFields))
+        val myTop = NameValuePair("\$top", "100")
+        method.setQueryString(arrayOf(myQuery, myFields, myTop))
 
         return parseWorkItems(method)
     }

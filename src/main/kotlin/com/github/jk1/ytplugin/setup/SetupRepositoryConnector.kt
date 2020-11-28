@@ -109,7 +109,7 @@ class SetupRepositoryConnector {
                     // unloaded instance redirect can't handle /api/* suffix properly
                     checker.check(api = !location.contains("/waitInstanceStartup/"))
                 }
-                403 -> {
+                401, 403 -> {
                     logger.debug("handling response code 403 for the ${repository.url}: UNAUTHORIZED")
                     noteState = NotifierState.UNAUTHORIZED
                 }

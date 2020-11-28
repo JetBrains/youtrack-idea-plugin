@@ -32,7 +32,7 @@ object WikiHtmlPaneFactory {
     }
 
     fun JTextPane.setHtml(html: String){
-        text = "<html><style>a { color: rgb(87, 120, 173) }</style><body>$html</body></html>"
+        text = "<html><body>$html</body></html>"
     }
 
     class EventListener(private val issue: Issue) : HyperlinkListener {
