@@ -31,6 +31,7 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     fun showIssue(issue: Issue) {
         rootPane.removeAll()
+        rootPane.isOpaque = false
         currentIssue = issue
         val container = JPanel()
         container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
@@ -43,6 +44,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             container.add(createLinkPanel(it.key, it.value))
         }
         val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        issuePane.isOpaque = false
         issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
         container.add(issuePane)
         val tabs = JBTabbedPane()
@@ -89,6 +91,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             }
             panel.add(label)
         }
+        panel.isOpaque = false
         return panel
     }
 
@@ -97,6 +100,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         panel.add(JLabel("${role.capitalize()}: "))
         links.forEach { panel.add(HyperlinkLabel(it.value, it.url)) }
+        panel.isOpaque = false
         return panel
     }
 
@@ -147,6 +151,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
         val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        commentPane.isOpaque = false
         commentPane.margin = Insets(2, 4, 0, 0)
         commentPane.setHtml(comment.text)
         commentPanel.add(commentPane, BorderLayout.CENTER)
