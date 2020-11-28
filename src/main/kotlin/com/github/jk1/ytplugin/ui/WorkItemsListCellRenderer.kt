@@ -79,7 +79,7 @@ class WorkItemsListCellRenderer(
         value.isOpaque = false
         value.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
         value.icon = AllIcons.Vcs.History
-        value.append(issueWorkItem.value, SimpleTextAttributes(idStyle, fgColor))
+        value.append(issueWorkItem.value, SimpleTextAttributes(idStyle, complimentaryColor))
 
         val type = SimpleColoredComponent()
         type.isOpaque = false
