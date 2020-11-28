@@ -8,7 +8,6 @@ import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import java.util.concurrent.TimeUnit
@@ -79,13 +78,23 @@ class TimeTracker(override val project: Project) : ComponentAware {
     @PropertyName("timeTracker.query")
     var searchQuery: String = " "
 
+
     init {
         try {
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.loadFields(this)
             isPaused = true
             isAutoTrackingTemporaryDisabled = false
-            if (isAutoTrackingEnable){
+
+            if (isWhenProjectClosedEnabled) {
+                reset()
+            }
+            if (isManualTrackingEnable) {
+                reset()
+                stop()
+            }
+
+            if (isAutoTrackingEnable) {
                 StartTrackerAction().startAutomatedTracking(project, this)
             }
         } catch (e: NoYouTrackRepositoryException) {
@@ -98,13 +107,14 @@ class TimeTracker(override val project: Project) : ComponentAware {
             timeInMills = System.currentTimeMillis() - startTime - pausedTime
             // to be used for the post request later
             recordedTime = formatTimePeriod(timeInMills)
-
             startTime = System.currentTimeMillis()
             timeInMills = 0
             pausedTime = 0
             isRunning = false
             isPaused = false
             isAutoTrackingTemporaryDisabled = false
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+            store.saveFields(this)
         } else {
             throw IllegalStateException()
         }
@@ -133,7 +143,6 @@ class TimeTracker(override val project: Project) : ComponentAware {
         isPaused = false
     }
 
-
     fun reset() {
         if (isRunning) {
             isPaused = false
@@ -141,11 +150,6 @@ class TimeTracker(override val project: Project) : ComponentAware {
             timeInMills = 0
             pausedTime = 0
             startTime = System.currentTimeMillis()
-            val trackerNote = TrackerNotification()
-            trackerNote.notify("Work timer reset for issue $issueIdReadable", NotificationType.INFORMATION)
-        } else {
-            val trackerNote = TrackerNotification()
-            trackerNote.notify("Could not reset - timer is not started", NotificationType.WARNING)
         }
     }
 
