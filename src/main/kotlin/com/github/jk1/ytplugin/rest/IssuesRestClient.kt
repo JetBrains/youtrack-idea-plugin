@@ -185,10 +185,11 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     fun getFormattedUniqueIssueIds(): List<NameValuePair> {
-        val myQuery = NameValuePair("fields", "idReadable,summary")
+        val myFields = NameValuePair("fields", "idReadable,summary")
+        val myQuery = NameValuePair("query", "Assignee: me")
         val url = "${repository.url}/api/issues"
         val method = GetMethod(url)
-        method.setQueryString(arrayOf(myQuery))
+        method.setQueryString(arrayOf(myQuery, myFields))
         val result = mutableListOf<NameValuePair>()
         return method.connect {
             val status = httpClient.executeMethod(method)

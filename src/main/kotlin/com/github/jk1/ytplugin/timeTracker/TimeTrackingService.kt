@@ -24,7 +24,7 @@ class TimeTrackingService {
     }
 
     fun postNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
-                        repo: YouTrackServer, comment: String, time: String): Boolean {
+                        repo: YouTrackServer, comment: String, time: String) : Int {
 
         val sdf = SimpleDateFormat("dd MMM yyyy")
         val date = sdf.parse(dateNotFormatted)
@@ -42,7 +42,7 @@ class TimeTrackingService {
             trackerNote.notify("Time was not posted, please check your connection", NotificationType.WARNING)
         }
 
-        return (status == 200)
+        return status
     }
 
     fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, repo: YouTrackServer, project: Project) {

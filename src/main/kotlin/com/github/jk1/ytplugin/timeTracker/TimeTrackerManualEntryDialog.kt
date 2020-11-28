@@ -8,7 +8,6 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -244,11 +243,15 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         } else {
             val selectedId = ids[idComboBox.selectedIndex].name
             val timerService = TimeTrackingService()
-            val successOnPost = timerService.postNewWorkItem(datePicker.date.format(),
+            val codeOnPost = timerService.postNewWorkItem(datePicker.date.format(),
                     typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
                     commentTextField.text, time.toString())
-            if (successOnPost) {
+            if (codeOnPost == 200) {
                 this@TimeTrackerManualEntryDialog.close(0)
+            }
+            else {
+                notifier.foreground = Color.red
+                notifier.text = "Time could not be posted, code $codeOnPost"
             }
         }
     }
