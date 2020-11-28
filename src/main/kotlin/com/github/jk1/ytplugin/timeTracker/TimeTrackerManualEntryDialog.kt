@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -27,12 +28,12 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("Date:")
     private val datePicker = JXDatePicker(Date())
-    private var idLabel = JBLabel("Issue: ")
+    private var idLabel = JBLabel("Issue:  ")
 
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox = JComboBox(arrayOf("Development"))
-    private var timeLabel = JBLabel("Time (hh/mm): ")
+    private var timeLabel = JBLabel("Time (hh/mm):   ")
 
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
@@ -40,8 +41,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val okButton = JButton("OK")
     private val cancelButton = JButton("Cancel")
 
-    private var commentLabel = JBLabel("Comment: ")
-    private var typeLabel = JBLabel("Work item type: ")
+    private var commentLabel = JBLabel("Comment:  ")
+    private var typeLabel = JBLabel("Work item type:   ")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
@@ -78,9 +79,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val notifierPanel = createNotifierPanel()
 
         val buttonsPanel = createButtonsPanel()
-
         return JPanel().apply {
-            layout = VerticalLayout(7)
+            layout = VerticalLayout(8)
             add(timePanel)
             add(idPanel)
             add(typePanel)
@@ -95,7 +95,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val notifierPanel = JPanel(FlowLayout(2))
 
         val notifierLabel = JLabel("")
-        notifierLabel.preferredSize = Dimension(labelsMargin, 20)
+        notifierLabel.preferredSize = Dimension(labelsMargin, 30)
         notifierPanel.add(notifierLabel)
         notifierPanel.add(notifier)
 
@@ -214,7 +214,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         cancelButton.preferredSize = Dimension(90, 31)
 
         val sep = JLabel("")
-        sep.preferredSize = Dimension((labelsMargin * 2.7).toInt(), 20)
+        sep.preferredSize = Dimension((labelsMargin * 2.7).toInt(), 30)
         buttonsPanel.add(sep)
         buttonsPanel.add(okButton)
         buttonsPanel.add(cancelButton)
@@ -230,7 +230,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val contextPane = JPanel(GridLayout())
         val mainPane = prepareMainPane()
         contextPane.apply {
-            preferredSize = Dimension(530, 320)
+            preferredSize = Dimension(530, 340)
             minimumSize = preferredSize
             add(mainPane)
         }
