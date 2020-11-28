@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
@@ -24,6 +25,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         val jsonBody = res?.readText()
                 ?.replace("\"{minutes}\"", time, true)
                 ?.replace("\"{date}\"", date, true)
+                ?.replace("{authorId}", getMyIdAsAuthor(), true)
                 ?.replace("{type}", type, true)
                 ?.replace("{typeId}", findWorkItemId(type), true)
                 ?.replace("{comment}", comment, true)
@@ -39,6 +41,23 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 else -> {
                     logger.warn("Work item ${findWorkItemId(type)}, posting failed with code $status: " + method.responseBodyAsLoggedString())
                     status
+                }
+            }
+        }
+    }
+
+    private fun getMyIdAsAuthor() : String {
+        val url = "${repository.url}/api/admin/users/me"
+        val method = GetMethod(url)
+        return method.connect {
+            when (val status = httpClient.executeMethod(method)) {
+                200 -> {
+                    logger.debug("Successfully fetched user id")
+                    JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("id").asString
+                }
+                else -> {
+                    logger.warn("Unable to fetch user id, status $status: ${method.responseBodyAsLoggedString()}")
+                    ""
                 }
             }
         }
