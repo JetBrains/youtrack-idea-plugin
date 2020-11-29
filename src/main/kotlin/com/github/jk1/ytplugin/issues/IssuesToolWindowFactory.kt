@@ -81,9 +81,6 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
                     contentManager.addContent("Time Tracking", timeTrackerPanel)
 
                 }
-                Disposer.register(project, Disposable {
-                    contentManager.removeAllContents(true)
-                })
             }
         }
     }

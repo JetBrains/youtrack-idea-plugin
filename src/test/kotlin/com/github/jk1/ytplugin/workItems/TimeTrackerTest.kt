@@ -41,7 +41,6 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
 
     @Test
     fun `test update with zero work items`() {
-        issueWorkItemsStoreComponent[repository].update(repository).waitFor(5000)
         val storedIWorkItems = issueWorkItemsStoreComponent[repository].getAllWorkItems()
         Assert.assertEquals(0, storedIWorkItems.size)
     }
@@ -89,7 +88,6 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
     // TODO better connect time tracking to MT project before run
     @Test
     fun `test post new work item`() {
-        issueWorkItemsStoreComponent[repository].update(repository).waitFor(5000)
         val storedIWorkItems = UserRestClient(repository).getWorkItemsForUser("")
         val size = storedIWorkItems.size
 
@@ -98,7 +96,6 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
             val id = storedIssues[0].id
             TimeTrackerRestClient(repository).postNewWorkItem(id, "20","Testing",
                     "test item", (Date().time).toString())
-            issueWorkItemsStoreComponent[repository].update(repository).waitFor(5000)
             val storedIWorkItemsNew = issueWorkItemsStoreComponent[repository].getAllWorkItems()
             Assert.assertEquals(size + 1, storedIWorkItemsNew.size)
         } else {
