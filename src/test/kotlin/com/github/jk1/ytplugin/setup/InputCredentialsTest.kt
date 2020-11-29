@@ -78,14 +78,14 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
 
     @Test
     fun `test connection with invalid token `() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/"
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
+        assertEquals(NotifierState.UNAUTHORIZED, setupTask.noteState)
     }
 
     @Test
