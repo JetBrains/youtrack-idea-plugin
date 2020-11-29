@@ -81,8 +81,12 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     init {
         try {
-            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-            store.loadFields(this)
+            try {
+                val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+                store.loadFields(this)
+            } catch (e: IllegalStateException){
+                logger.debug("No time tracker is stored yet")
+            }
             isPaused = true
             isAutoTrackingTemporaryDisabled = false
 

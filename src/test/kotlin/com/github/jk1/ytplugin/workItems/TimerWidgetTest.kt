@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.workItems
 
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.TimerWidget
 import com.intellij.mock.MockProjectEx
 import com.intellij.openapi.wm.WindowManager
@@ -10,30 +11,32 @@ import kotlin.jvm.internal.Intrinsics
 import kotlin.test.assertNotEquals
 
 class TimerWidgetTest : PlatformLiteFixture() {
-    private var widget: TimerWidget? = null
+
     @Throws(Exception::class)
     public override fun setUp() {
         super.setUp()
         initApplication()
         myProject = MockProjectEx(this.testRootDisposable)
         val windowManager: WindowManager = TestWindowManager()
+        val statusBar = windowManager.getStatusBar(myProject)
+
         getApplication().registerService(WindowManager::class.java, windowManager)
         val registration = SetUpProject(myProject)
         registration.projectOpened()
-        val statusBar = windowManager.getStatusBar(myProject)
-        val statusBarWidget = statusBar.getWidget("Time Tracking Clock")
-        if (statusBarWidget == null) {
-            throw TypeCastException("null cannot be cast to non-null type clock.TimerWidget")
-        } else {
-            widget = statusBarWidget as TimerWidget?
-            val widget: TimerWidget? = widget
-            widget?.install(statusBar)
+
+        val myTimer = TimeTracker(myProject)
+        myTimer.isRunning = true
+        myTimer.isPaused = false
+        if (statusBar ?.getWidget("Time Tracking Clock") == null) {
+            statusBar ?.addWidget(TimerWidget(myTimer, myProject), myProject)
         }
     }
 
     @Throws(InterruptedException::class)
     fun testTimeChanges() {
-        val widget: TimerWidget? = widget
+        val windowManager: WindowManager = TestWindowManager()
+        val statusBar = windowManager.getStatusBar(myProject)
+        val widget: TimerWidget? = statusBar.getWidget("Time Tracking Clock") as TimerWidget?
         if (widget == null) {
             Intrinsics.throwNpe()
         }
