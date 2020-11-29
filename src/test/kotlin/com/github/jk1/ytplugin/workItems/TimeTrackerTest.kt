@@ -7,16 +7,12 @@ import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.rest.UserRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
-import com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.nio.charset.Charset
 import java.util.*
 
 class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
