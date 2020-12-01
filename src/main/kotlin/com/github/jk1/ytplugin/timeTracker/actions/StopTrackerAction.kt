@@ -70,8 +70,8 @@ class StopTrackerAction : AnAction(
                     trackerNote.notify("Could not record time: time tracking is disabled (status $status)", NotificationType.WARNING)
                 }
                 else {
-                    trackerNote.notify("Work timer stopped, time ${timer.recordedTime} " +
-                            "posted on server for issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
+                    trackerNote.notify("Work timer stopped, time posted on server for" +
+                            "я issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                     val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                     store.saveFields(timer)

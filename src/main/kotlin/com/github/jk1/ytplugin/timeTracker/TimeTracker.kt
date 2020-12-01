@@ -120,7 +120,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(this)
         } else {
-            throw IllegalStateException()
+            logger.debug("Timer is not running to stop")
         }
     }
 

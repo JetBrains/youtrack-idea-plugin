@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
 import com.github.jk1.ytplugin.timeTracker.TimeTrackingService
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
@@ -402,10 +403,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             val timer = ComponentAware.of(repo.project).timeTrackerComponent
             if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
                     (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
-                trackerNote.notify(note, NotificationType.INFORMATION)
+                trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
             }
         } catch (e: NoActiveYouTrackTaskException) {
-            trackerNote.notify(note, NotificationType.INFORMATION)
+            trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
         }
 
     }

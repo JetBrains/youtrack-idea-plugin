@@ -77,8 +77,8 @@ class StartTrackerAction : AnAction(
                     if (myTimer.issueId == "0") {
                         val trackerNote = TrackerNotification()
                         trackerNote.notify("Could not record time: not a valid YouTrack issue", NotificationType.WARNING)
-                        trackerNote.notify("To use time tracking please select valid active task on the toolbar" +
-                                " or by pressing Shift + Alt + T", NotificationType.INFORMATION)
+                        trackerNote.notifyWithHelper("To use time tracking please select valid active task on the toolbar" +
+                                " or by pressing Shift + Alt + T", NotificationType.INFORMATION, OpenActiveTaskSelection())
                     } else {
                         myTimer.start(activeTask.id)
                         // case for activity tracker enabled
