@@ -26,7 +26,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private lateinit var isScheduledCheckbox: JBCheckBox
     private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm):")
 
-    lateinit var isManualModeRadioButton: JBRadioButton
+    private lateinit var isManualModeRadioButton: JBRadioButton
     private var manualModeTextField = JBLabel("Enable manual mode           ")
 
     lateinit var noTrackingButton: JBRadioButton
@@ -37,7 +37,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
-    lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
+    private lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
     private var autoTrackingEnabledTextField = JBLabel("Enable automated mode        ")
 
     private var commentLabel = JBLabel(" Comment:")
@@ -167,10 +167,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
         noTrackingButton = JBRadioButton("None")
         if (!repo.getRepo().isConfigured) {
-            noTrackingButton.isEnabled = false
-            noTrackingButton.isSelected = true
-            isManualModeRadioButton.isEnabled = false
-            isAutoTrackingEnabledRadioButton.isEnabled = false
+            forbidSelection()
+        } else {
+            allowSelection()
         }
         noTrackingButton.addActionListener {
             isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
@@ -285,6 +284,19 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         typeLabel.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
         typeComboBox.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
 
+    }
+    
+    fun forbidSelection(){
+        noTrackingButton.isEnabled = false
+        isAutoTrackingEnabledRadioButton.isEnabled = false
+        isManualModeRadioButton.isEnabled = false
+        noTrackingButton.isSelected = true
+    }
+
+    fun allowSelection(){
+        noTrackingButton.isEnabled = true
+        isAutoTrackingEnabledRadioButton.isEnabled = true
+        isManualModeRadioButton.isEnabled = true
     }
 
     fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledRadioButton

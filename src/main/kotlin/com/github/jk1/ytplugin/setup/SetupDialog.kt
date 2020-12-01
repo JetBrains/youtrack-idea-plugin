@@ -211,6 +211,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             selectedIndex = if (fromTracker) 1 else 0
         }
 
+        if (!repo.getRepo().isConfigured) {
+            timeTrackingTab.forbidSelection()
+        } else {
+            timeTrackingTab.allowSelection()
+        }
+
         return mainPane
     }
 
@@ -343,10 +349,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         }
 
         if (repoConnector.noteState != NotifierState.SUCCESS) {
-            timeTrackingTab.noTrackingButton.isEnabled = false
-            timeTrackingTab.isAutoTrackingEnabledRadioButton.isEnabled = false
-            timeTrackingTab.isManualModeRadioButton.isEnabled = false
-            timeTrackingTab.noTrackingButton.isSelected = true
+            timeTrackingTab.forbidSelection()
+        } else {
+            timeTrackingTab.allowSelection()
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
