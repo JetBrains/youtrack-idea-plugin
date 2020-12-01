@@ -144,7 +144,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         idPanel.add(idLabel)
         idPanel.add(idComboBox)
 
-
         return idPanel
     }
 
@@ -255,7 +254,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             }
         }
     }
-
 
 }
 

@@ -185,8 +185,6 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
         enableManualTrackingPanel.add(manualModeTextField)
 
         val trackingModePanel = JPanel(BorderLayout())
-        val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.195 * width).toInt(), (0.0875 * height).toInt())
 
         trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
         trackingModePanel.add(enableManualTrackingPanel, BorderLayout.CENTER)

@@ -92,7 +92,6 @@ class ActivityTracker(
             Disposer.dispose(trackingDisposable!!)
             trackingDisposable = null
         }
-
     }
 
     private fun scheduleListener(parentDisposable: Disposable) {
@@ -125,7 +124,6 @@ class ActivityTracker(
         IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { awtEvent: AWTEvent ->
 
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-
             isPostedOnClose = false
             if (timer.isPaused) {
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
@@ -147,7 +145,6 @@ class ActivityTracker(
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
                     logger.debug("state MOUSE_MOVED$isMouseOrKeyboardActive")
-
                 }
             }
             if (awtEvent is MouseWheelEvent && awtEvent.id == MouseEvent.MOUSE_WHEEL) {

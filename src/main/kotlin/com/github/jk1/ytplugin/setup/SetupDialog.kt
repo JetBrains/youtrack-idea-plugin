@@ -210,7 +210,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             selectedIndex = if (fromTracker) 1 else 0
         }
 
-        //TODO
         if (!repo.getRepo().isConfigured) {
             mainPane.setEnabledAt(1, false)
         } else {

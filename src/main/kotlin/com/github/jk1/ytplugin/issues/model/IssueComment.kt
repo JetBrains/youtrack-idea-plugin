@@ -9,7 +9,6 @@ import java.util.*
 class IssueComment(item: JsonElement) {
 
     val id: String = item.asJsonObject.get("id").asString
-    val authorLogin: String = item.asJsonObject.get("author").asJsonObject.get("login").asString
     val authorName: String = item.asJsonObject.get("author").asJsonObject.get("name").asString
     val text: String = item.asJsonObject.get("textPreview").asString
     val created: Date = Date(item.asJsonObject.get("created").asLong)
