@@ -106,7 +106,7 @@ class ActivityTracker(
             if (timer.isScheduledEnabled && (time == timer.scheduledPeriod)) {
                 if (!timer.isPostedScheduled) {
                     val trackerNote = TrackerNotification()
-                    trackerNote.notify("Scheduled time posting at $time:0", NotificationType.INFORMATION)
+                    trackerNote.notify("Scheduled time posting at ${time}0", NotificationType.INFORMATION)
                     timer.isPostedScheduled = true
                     StopTrackerAction().stopTimer(project)
                 }
