@@ -14,7 +14,7 @@ import javax.swing.JComboBox
 import javax.swing.JPanel
 
 
-class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
 
     private lateinit var scheduledHour: JBTextField
     private lateinit var scheduledMinutes: JBTextField
@@ -27,7 +27,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm):")
 
     private lateinit var isManualModeRadioButton: JBRadioButton
-    private var manualModeTextField = JBLabel("Enable manual mode          ")
+    private var manualModeTextField = JBLabel("Enable manual mode           ")
 
     private lateinit var noTrackingButton: JBRadioButton
 
@@ -63,7 +63,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
 
         val commentPanel = createCommentPanel(timer, myHeight, myWidth)
 
-        layout = VerticalLayout(7)
+        layout = VerticalLayout(8)
         maximumSize = Dimension(myWidth, myHeight)
         minimumSize = Dimension(myWidth, myHeight)
         add(trackingModePanel)
