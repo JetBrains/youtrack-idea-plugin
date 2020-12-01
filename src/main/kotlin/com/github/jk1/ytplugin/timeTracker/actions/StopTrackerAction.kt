@@ -14,13 +14,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.tasks.youtrack.YouTrackRepository
 import java.lang.IllegalStateException
 import java.util.*
 
 
 class StopTrackerAction : AnAction(
-        "Stop Work Timer",
+        "Post Time",
         "Post recorded time to YouTrack server and reset timer",
         YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER) {
 
@@ -36,7 +35,7 @@ class StopTrackerAction : AnAction(
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isEnabled = timer.isRunning
             event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
-            event.presentation.text = if (timer.isAutoTrackingEnable) "Post current tracking progress" else "Stop Work Timer"
+            event.presentation.text = if (timer.isAutoTrackingEnable) "Post current tracking progress" else "Post Time"
         }
     }
 
