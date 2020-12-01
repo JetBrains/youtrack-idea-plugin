@@ -10,6 +10,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
+import kotlin.time.hours
+import kotlin.time.minutes
+import kotlin.time.seconds
 
 
 class TimeTrackingService {
@@ -33,7 +36,7 @@ class TimeTrackingService {
 
         val trackerNote = TrackerNotification()
         if (status == 200) {
-            val postedTIme = date.time.toString()
+            val postedTIme = (date.time / 3600000).toString() + ":" + ((date.time - date.time / 3600000) /60000).toString()
             trackerNote.notify("Time $postedTIme was successfully posted on server for issue $selectedId",
                     NotificationType.INFORMATION)
             ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)

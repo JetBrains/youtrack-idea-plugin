@@ -26,10 +26,10 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private lateinit var isScheduledCheckbox: JBCheckBox
     private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm):")
 
-    private lateinit var isManualModeRadioButton: JBRadioButton
+    lateinit var isManualModeRadioButton: JBRadioButton
     private var manualModeTextField = JBLabel("Enable manual mode           ")
 
-    private lateinit var noTrackingButton: JBRadioButton
+    lateinit var noTrackingButton: JBRadioButton
 
     private lateinit var postWhenProjectClosedCheckbox: JBCheckBox
     private lateinit var postWhenCommitCheckbox: JBCheckBox
@@ -37,7 +37,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
     private var mpostWhenCommitTextField = JBLabel("Post time after commits")
 
-    private lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
+    lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
     private var autoTrackingEnabledTextField = JBLabel("Enable automated mode        ")
 
     private var commentLabel = JBLabel(" Comment:")
@@ -166,6 +166,12 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         }
 
         noTrackingButton = JBRadioButton("None")
+        if (!repo.getRepo().isConfigured) {
+            noTrackingButton.isEnabled = false
+            noTrackingButton.isSelected = true
+            isManualModeRadioButton.isEnabled = false
+            isAutoTrackingEnabledRadioButton.isEnabled = false
+        }
         noTrackingButton.addActionListener {
             isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
                     isManualModeRadioButton.isSelected, noTrackingButton.isSelected)

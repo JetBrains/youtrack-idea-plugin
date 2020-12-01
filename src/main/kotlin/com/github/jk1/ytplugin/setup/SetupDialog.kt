@@ -178,7 +178,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return tokenInfoPane
     }
 
-    private fun createNotifierPane() : JPanel {
+    private fun createNotifierPane(): JPanel {
 
         notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
         val notifyPane = JPanel(BorderLayout())
@@ -209,12 +209,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
             selectedIndex = if (fromTracker) 1 else 0
-        }
-
-        if (!repo.getRepo().isConfigured) {
-            mainPane.setEnabledAt(1, false)
-        } else {
-            mainPane.setEnabledAt(1, true)
         }
 
         return mainPane
@@ -349,9 +343,10 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         }
 
         if (repoConnector.noteState != NotifierState.SUCCESS) {
-            mainPane.setEnabledAt(1, false)
-        } else {
-            mainPane.setEnabledAt(1, true)
+            timeTrackingTab.noTrackingButton.isEnabled = false
+            timeTrackingTab.isAutoTrackingEnabledRadioButton.isEnabled = false
+            timeTrackingTab.isManualModeRadioButton.isEnabled = false
+            timeTrackingTab.noTrackingButton.isSelected = true
         }
 
         repoConnector.setNotifier(notifyFieldLabel)
