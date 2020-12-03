@@ -11,8 +11,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR
 import com.intellij.openapi.project.DumbAware
 
 class CreateIssueAction : AnAction(
-        "Create YouTrack Issue",
-        "Creates new YouTrack issue draft from a code fragment selected in the editor",
+        "Create Issue",
+        "Create a new issue draft in YouTrack from the selected content",
         YouTrackPluginIcons.YOUTRACK
 ), DumbAware {
 

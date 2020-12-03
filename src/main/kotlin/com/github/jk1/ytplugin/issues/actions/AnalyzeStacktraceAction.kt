@@ -20,7 +20,7 @@ import javax.swing.Icon
 class AnalyzeStacktraceAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
     override val text = "Analyze Stacktrace"
-    override val description = "Open analyze stacktrace dialog for stacktrace from issue description"
+    override val description = "Open the content from the issue description in the Analyze Stack Trace dialog"
     override val icon: Icon = AllIcons.Actions.Lightning
     override val shortcut = "control shift S"
 
