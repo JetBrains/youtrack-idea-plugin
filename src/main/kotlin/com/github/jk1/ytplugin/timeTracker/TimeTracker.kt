@@ -43,7 +43,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var startTime: Long = 0
 
     @PropertyName("timeTracker.comment")
-    var comment: String = "default comment"
+    var comment: String = ""
 
     @PropertyName("timeTracker.isManualTrackingEnable")
     var isManualTrackingEnable = false

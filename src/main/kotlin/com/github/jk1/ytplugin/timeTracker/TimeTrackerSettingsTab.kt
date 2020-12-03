@@ -24,7 +24,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var inactivityTextField = JBLabel(" Inactivity period (hh/mm):")
 
     private lateinit var isScheduledCheckbox: JBCheckBox
-    private var scheduledTextField = JBLabel("Scheduled posting at (hh/mm):")
+    private var scheduledTextField = JBLabel("On a set schedule (hh/mm):")
 
     private lateinit var isManualModeRadioButton: JBRadioButton
     private var manualModeTextField = JBLabel("Enable manual mode           ")
@@ -34,14 +34,14 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private lateinit var postWhenProjectClosedCheckbox: JBCheckBox
     private lateinit var postWhenCommitCheckbox: JBCheckBox
 
-    private var postWhenProjectClosedTextField = JBLabel("Post time when project is closed")
-    private var mpostWhenCommitTextField = JBLabel("Post time after commits")
+    private var postWhenProjectClosedTextField = JBLabel("When closing the project")
+    private var mpostWhenCommitTextField = JBLabel("When committing changes")
 
     private lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
     private var autoTrackingEnabledTextField = JBLabel("Enable automated mode        ")
 
     private var commentLabel = JBLabel(" Comment:")
-    private var typeLabel = JBLabel(" Work Item type:")
+    private var typeLabel = JBLabel(" Work type:")
     private lateinit var commentTextField: JBTextField
 
     private val workItemsTypes = arrayOf<String?>("Development")
