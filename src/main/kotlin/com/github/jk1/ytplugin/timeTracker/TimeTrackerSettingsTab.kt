@@ -4,16 +4,17 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.ui.components.*
-import java.awt.BorderLayout
+import com.jetbrains.rd.swing.textProperty
 import java.awt.Dimension
 import java.awt.FlowLayout
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
+import javax.swing.BorderFactory
 import javax.swing.ButtonGroup
 import javax.swing.JComboBox
 import javax.swing.JPanel
+import javax.swing.border.EtchedBorder
+import javax.swing.border.TitledBorder
 
 
 class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
@@ -29,7 +30,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var scheduledTextField = JBLabel("On a set schedule (hh/mm):")
 
     private lateinit var isManualModeRadioButton: JBRadioButton
-    private var manualModeTextField = JBLabel("Enable manual mode           ")
+    private var manualModeTextField = JBLabel("Manual")
 
     lateinit var noTrackingButton: JBRadioButton
 
@@ -37,12 +38,12 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private lateinit var postWhenCommitCheckbox: JBCheckBox
 
     private var postWhenProjectClosedTextField = JBLabel("When closing the project")
-    private var mpostWhenCommitTextField = JBLabel("When committing changes")
+    private var postWhenCommitTextField = JBLabel("When committing changes  ")
 
     private lateinit var isAutoTrackingEnabledRadioButton: JBRadioButton
-    private var autoTrackingEnabledTextField = JBLabel("Enable automated mode        ")
+    private var autoTrackingEnabledTextField = JBLabel("Automatic")
 
-    private var commentLabel = JBLabel(" Comment:")
+    private var commentLabel = JBLabel(" Comment: ")
     private var typeLabel = JBLabel(" Work type:")
     private lateinit var commentTextField: JBTextField
 
@@ -68,28 +69,40 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         layout = VerticalLayout(8)
         maximumSize = Dimension(myWidth, myHeight)
         minimumSize = Dimension(myWidth, myHeight)
+
+        val autoPanel = JPanel(VerticalLayout(7))
+        val loweredetched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+        val autoPanelBorder = BorderFactory.createTitledBorder(loweredetched, "Automatically create work items")
+        autoPanelBorder.titlePosition = TitledBorder.TOP
+        autoPanel.border = autoPanelBorder
+        autoPanel.add(postWhenPanel)
+        autoPanel.add(schedulePanel)
+
+        val preferencesPanel = JPanel(VerticalLayout(7))
+        val preferencesPanelBorder = BorderFactory.createTitledBorder(loweredetched, "Preferences")
+        preferencesPanelBorder.titlePosition = TitledBorder.TOP
+        preferencesPanel.border = preferencesPanelBorder
+        preferencesPanel.add(inactivityPeriodPanel)
+        preferencesPanel.add(typePanel)
+        preferencesPanel.add(commentPanel)
+
+
         add(trackingModePanel)
         add(JBLabel(""))
-        add(postWhenPanel)
-        add(schedulePanel)
-        add(inactivityPeriodPanel)
-        add(typePanel)
-        add(commentPanel)
+        add(autoPanel)
+        add(preferencesPanel)
     }
 
     private fun createCommentPanel(timer: TimeTracker, height: Int, width: Int): JPanel {
 
         commentTextField = JBTextField(timer.comment)
-        commentTextField.preferredSize = Dimension((0.7 * width).toInt(), (0.0875 * height).toInt())
+        commentTextField.toolTipText = "Enter default comment text"
+        commentTextField.preferredSize = Dimension(401, 30)
         val commentPanel = JPanel(FlowLayout(2))
         commentLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
         commentTextField.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
 
-        val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.065 * myWidth).toInt() - 1, (0.0875 * height).toInt())
-
         commentPanel.add(commentLabel)
-        commentPanel.add(sep)
         commentPanel.add(commentTextField)
 
         return commentPanel
@@ -135,18 +148,17 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         postWhenPanel.add(postWhenProjectClosedCheckbox)
         postWhenPanel.add(postWhenProjectClosedTextField)
 
-
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.1 * width).toInt(), (0.0875 * height).toInt())
-        postWhenPanel.add(sep)
+        sep.preferredSize = Dimension(70, (0.0875 * height).toInt())
 
+        postWhenPanel.add(sep)
         postWhenPanel.add(postWhenCommitCheckbox)
-        postWhenPanel.add(mpostWhenCommitTextField)
+        postWhenPanel.add(postWhenCommitTextField)
 
         postWhenProjectClosedCheckbox.isEnabled = timer.isAutoTrackingEnable
         postWhenProjectClosedTextField.isEnabled = timer.isAutoTrackingEnable
         postWhenCommitCheckbox.isEnabled = timer.isAutoTrackingEnable
-        mpostWhenCommitTextField.isEnabled = timer.isAutoTrackingEnable
+        postWhenCommitTextField.isEnabled = timer.isAutoTrackingEnable
 
         return postWhenPanel
     }
@@ -167,7 +179,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
                     isManualModeRadioButton.isSelected, noTrackingButton.isSelected)
         }
 
-        noTrackingButton = JBRadioButton("None")
+        noTrackingButton = JBRadioButton("Off  ")
         if (!repo.getRepo().isConfigured) {
             forbidSelection()
         } else {
@@ -186,16 +198,29 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
         val enableAutoTrackingPanel = JPanel(FlowLayout(2))
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
+
+        val sep = JBLabel(" ")
+        sep.preferredSize = Dimension(110, 30)
+        val sep2 = JBLabel(" ")
+        sep2.preferredSize = Dimension(110, 30)
         enableAutoTrackingPanel.add(isAutoTrackingEnabledRadioButton)
         enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
         enableManualTrackingPanel.add(isManualModeRadioButton)
         enableManualTrackingPanel.add(manualModeTextField)
 
-        val trackingModePanel = JPanel(BorderLayout())
+        val trackingModePanel = JPanel(FlowLayout(5))
 
-        trackingModePanel.add(enableAutoTrackingPanel, BorderLayout.WEST)
-        trackingModePanel.add(enableManualTrackingPanel, BorderLayout.CENTER)
-        trackingModePanel.add(noTrackingButton, BorderLayout.EAST)
+        trackingModePanel.add(enableAutoTrackingPanel)
+        trackingModePanel.add(sep)
+        trackingModePanel.add(enableManualTrackingPanel)
+        trackingModePanel.add(sep2)
+        trackingModePanel.add(noTrackingButton)
+
+
+        val loweredetched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+        val trackingModeBorder = BorderFactory.createTitledBorder(loweredetched, "Tracking mode")
+        trackingModeBorder.titlePosition = TitledBorder.TOP
+        trackingModePanel.border = trackingModeBorder
 
         return trackingModePanel
     }
@@ -257,7 +282,6 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val sep = JBLabel("")
         sep.preferredSize = Dimension((0.1 * myWidth).toInt() - 2, (0.0875 * height).toInt())
         inactivityPeriodPanel.add(inactivityTextField)
-        inactivityPeriodPanel.add(sep)
         inactivityPeriodPanel.add(inactivityTimePanel)
 
         return inactivityPeriodPanel
@@ -280,7 +304,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         postWhenProjectClosedTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
         postWhenCommitCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
-        mpostWhenCommitTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        postWhenCommitTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
         commentLabel.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
         commentTextField.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled

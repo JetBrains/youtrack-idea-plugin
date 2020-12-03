@@ -55,8 +55,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    private val myHeight = 395
-    private val myWidth = 540
+    private val myHeight = 490
+    private val myWidth = 525
 
     private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
@@ -128,7 +128,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                     repaint()
                 }
             })
-            preferredSize = Dimension(382, 28)
+            preferredSize = Dimension(378, 28)
         }
 
         val serverPanel = JPanel(FlowLayout(2))
@@ -143,7 +143,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            preferredSize = Dimension(384, 31)
+            preferredSize = Dimension(379, 31)
         }
         val tokenPanel = JPanel(FlowLayout(2))
         tokenPanel.add(tokenLabel)
@@ -166,8 +166,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private fun createAdvertiserPane(): JPanel {
         val advertiserLabel = HyperlinkLabel("Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
-        val advertiserPane = JPanel(BorderLayout())
-        advertiserPane.add(advertiserLabel, BorderLayout.EAST)
+        val advertiserPane = JPanel(FlowLayout(FlowLayout.RIGHT))
+        advertiserPane.add(advertiserLabel)
         return advertiserPane
     }
 
@@ -175,8 +175,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         val getTokenInfoLabel = HyperlinkLabel("Learn how to generate a permanent token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
 
-        val tokenInfoPane = JPanel(BorderLayout())
-        tokenInfoPane.add(getTokenInfoLabel, BorderLayout.EAST)
+        val tokenInfoPane = JPanel(FlowLayout(FlowLayout.RIGHT))
+        tokenInfoPane.add(getTokenInfoLabel)
         return tokenInfoPane
     }
 
@@ -272,10 +272,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         cancelButton.addActionListener { doCancelAction() }
         cancelButton.preferredSize = Dimension(90, 31)
 
+        val sep = JLabel("")
+        sep.preferredSize = Dimension(5, 30)
         buttonsPanel.add(testConnectionButton)
         buttonsPanel.add(proxyButton)
         buttonsPanel.add(cancelButton)
         buttonsPanel.add(okButton)
+        buttonsPanel.add(sep)
 
         if (fromTracker) {
             proxyButton.isVisible = false
