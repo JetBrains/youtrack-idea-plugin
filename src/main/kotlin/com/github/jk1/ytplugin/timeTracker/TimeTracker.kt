@@ -76,7 +76,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var isPostedScheduled = true
 
     @PropertyName("timeTracker.query")
-    var searchQuery: String = " "
+    var searchQuery: String = ""
 
 
     init {

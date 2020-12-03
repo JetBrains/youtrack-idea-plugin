@@ -39,8 +39,8 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         add(searchField, BorderLayout.CENTER)
         add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
 
-
         searchField.text = timer.searchQuery
+        searchField.text = searchField.text.trim()
         searchField.setShowPlaceholderWhenFocused(true)
 
         // todo: find a better way to attach onEnter handler to LanguageTextField
