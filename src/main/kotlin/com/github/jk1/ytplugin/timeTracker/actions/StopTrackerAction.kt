@@ -20,7 +20,7 @@ import java.util.*
 
 class StopTrackerAction : AnAction(
         "Post Time",
-        "Post recorded time to YouTrack server and reset timer",
+        "Stop tracking and post spent time to the current issue",
         YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER) {
 
     override fun actionPerformed(event: AnActionEvent) {

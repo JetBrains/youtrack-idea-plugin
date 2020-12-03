@@ -14,7 +14,7 @@ import java.net.UnknownHostException
 
 class ManualEntryAction  : AnAction(
         "Add Spent Time",
-        "Create a new spent time item and post it to YouTrack server",
+        "Post a new work item to your YouTrack server",
         YouTrackPluginIcons.YOUTRACK_MANUAL_ADD_TIME_TRACKER){
 
     override fun actionPerformed(event: AnActionEvent) {

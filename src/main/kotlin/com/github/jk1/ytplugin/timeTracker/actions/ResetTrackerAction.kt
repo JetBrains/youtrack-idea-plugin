@@ -12,7 +12,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 class ResetTrackerAction : AnAction(
         "Reset Work Timer",
-        "Reset work timer for ongoing task tracking",
+        "Reset work timer without post on server",
         YouTrackPluginIcons.YOUTRACK_RESET_TIME_TRACKER) {
 
     override fun actionPerformed(event: AnActionEvent) {

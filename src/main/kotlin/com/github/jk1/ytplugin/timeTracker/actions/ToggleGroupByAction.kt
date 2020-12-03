@@ -11,7 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
     override val text = "Group By Issue"
-    override val description = "Group spent time by issue id"
+    override val description = "Group work items by the issues they were added to"
     override val icon = AllIcons.Actions.GroupBy
     override val shortcut = "control alt shift Q"
 
@@ -34,14 +34,14 @@ class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
                 GROUP_BY_DATE = false
                 event.presentation.icon = AllIcons.Actions.GroupBy
                 event.presentation.text = "Group By Issue"
-                event.presentation.description = "Group spent time by issue id"
+                event.presentation.description = "Group work items by the issues they were added to"
             } else {
                 logger.debug("Spent time grouping by issue for ${repo.url}")
                 workItemsList.issueWorkItemsStoreComponent[repo].withGroupingByIssue = true
                 GROUP_BY_DATE = true
                 event.presentation.icon = AllIcons.Actions.GroupByPrefix
                 event.presentation.text = "Group By Date"
-                event.presentation.description = "Group spent time by date of recording"
+                event.presentation.description = "Group work items by the date they were recorded"
             }
 
             ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)

@@ -60,7 +60,8 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
                 val placeholder = issueWorkItemsList.emptyText
                 placeholder.clear()
                 if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
-                    placeholder.appendText("No spent time found.")
+                    placeholder.appendText("No work items found.")
+                    placeholder.appendLine( "Update your filter criteria and try again.")
                 }
                 issueWorkItemListModel.update()
                 val updatedSelectedIssueWorkItemIndex = issueWorkItemsStoreComponent[repo].indexOf(getSelectedIssueWorkItem())

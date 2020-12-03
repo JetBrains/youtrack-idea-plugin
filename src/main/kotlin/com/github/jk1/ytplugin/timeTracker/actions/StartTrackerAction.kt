@@ -17,7 +17,7 @@ import com.intellij.tasks.TaskManager
 
 class StartTrackerAction : AnAction(
         "Start Work Timer",
-        "Start work timer for selected active task",
+        "Start tracking time for the issue referenced in the active changelist",
         AllIcons.Actions.Profile) {
 
     fun startAutomatedTracking(project: Project, timer: TimeTracker) {

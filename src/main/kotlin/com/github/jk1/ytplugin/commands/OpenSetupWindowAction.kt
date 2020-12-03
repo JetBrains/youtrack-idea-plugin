@@ -22,7 +22,7 @@ import kotlin.reflect.full.isSubclassOf
  */
 class OpenSetupWindowAction(repo: YouTrackServer, private val fromTracker: Boolean) : AnAction(
         "Open Setup Dialog",
-        "Open configuration settings",
+        "View and update plugin settings",
         AllIcons.General.Settings), DumbAware, IdeNotificationsTrait {
 
     val shortcut = "control shift Q"

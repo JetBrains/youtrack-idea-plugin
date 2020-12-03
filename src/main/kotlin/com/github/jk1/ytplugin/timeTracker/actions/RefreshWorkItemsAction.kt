@@ -13,8 +13,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
  */
 class RefreshWorkItemsAction(val repo: YouTrackServer) : IssueAction() {
 
-    override val text = "Refresh Spent Time"
-    override val description = "Update spent time list from YouTrack server"
+    override val text = "Refresh List"
+    override val description = "Pull updates from your YouTrack server"
     override val icon = AllIcons.Actions.Refresh
     override val shortcut = "control alt shift U"
 
