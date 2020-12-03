@@ -7,7 +7,9 @@ import com.intellij.ui.components.*
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import javax.swing.ButtonGroup
 import javax.swing.JComboBox
@@ -238,8 +240,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.inactivityPeriodInMills -
                 TimeUnit.HOURS.toMillis(inactivityHours))
 
-        inactivityHourInputField = JBTextField(inactivityHours.toString())
-        inactivityMinutesInputField = JBTextField(inactivityMinutes.toString())
+        inactivityHourInputField = JBTextField((if (inactivityHours < 10) "0" else "") + inactivityHours.toString())
+        inactivityMinutesInputField = JBTextField((if (inactivityMinutes < 10) "0" else "") + inactivityMinutes.toString())
+
 
         inactivityTimePanel.add(inactivityHourInputField)
         inactivityTimePanel.add(JBLabel(":"))
