@@ -80,6 +80,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val buttonsPanel = createButtonsPanel()
         return JPanel().apply {
             layout = VerticalLayout(8)
+            setResizable(false)
             add(timePanel)
             add(idPanel)
             add(typePanel)
