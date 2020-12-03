@@ -291,6 +291,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         isAutoTrackingEnabledRadioButton.isEnabled = false
         isManualModeRadioButton.isEnabled = false
         noTrackingButton.isSelected = true
+        isTrackingModeChanged(autoTrackEnabled = false, manualTrackEnabled = false, noTrackingEnabled = false)
     }
 
     fun allowSelection(){
