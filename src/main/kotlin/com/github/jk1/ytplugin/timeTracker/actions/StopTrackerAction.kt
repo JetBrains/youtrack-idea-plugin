@@ -70,7 +70,7 @@ class StopTrackerAction : AnAction(
                 }
                 else {
                     trackerNote.notify("Work timer stopped, time posted on server for" +
-                            "я issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
+                            " issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                     val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                     store.saveFields(timer)
