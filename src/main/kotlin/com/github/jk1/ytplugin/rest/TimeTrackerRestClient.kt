@@ -83,6 +83,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         val result = mutableListOf<NameValuePair>()
 
         return method.connect {
+            try{
             when (val status = httpClient.executeMethod(method)) {
                 200 -> {
                     val types: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
@@ -98,6 +99,9 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                     logger.warn("Unable to fetch available work items types: ${method.responseBodyAsLoggedString()}")
                     mutableListOf()
                 }
+            }} catch (e: IllegalArgumentException){
+                logger.warn("Unable to fetch available work items types: ${e.message}")
+                mutableListOf()
             }
         }
     }
