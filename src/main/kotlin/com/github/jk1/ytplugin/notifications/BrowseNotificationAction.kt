@@ -10,7 +10,7 @@ import com.intellij.openapi.project.DumbAware
 
 
 class BrowseNotificationAction(private val notification: YouTrackNotification) :
-        AnAction("Browse", "Navigate to ", AllIcons.General.Web), DumbAware {
+        AnAction("View", "Navigate to ", AllIcons.General.Web), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
