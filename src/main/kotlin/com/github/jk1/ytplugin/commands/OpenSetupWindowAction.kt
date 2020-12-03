@@ -28,24 +28,10 @@ class OpenSetupWindowAction(repo: YouTrackServer, private val fromTracker: Boole
     val shortcut = "control shift Q"
     val repository = repo
 
-    private fun <R> Throwable.multicatchException(vararg classes: KClass<*>, block: () -> R): R {
-        if (classes.any { this::class.isSubclassOf(it) }) {
-            return block()
-        } else throw this
-    }
-
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
-            try {
-                SetupDialog(project, repository, fromTracker).show()
-            } catch (e: Exception) {
-                e.multicatchException(YouTrackPluginException::class, SocketException::class, UnknownHostException::class) {
-                    val trackerNote = TrackerNotification()
-                    trackerNote.notify("Connection to YouTrack server is lost", NotificationType.WARNING)
-                    logger.warn("Connection to YouTrack lost: ${e.message}")
-                }
-            }
+            SetupDialog(project, repository, fromTracker).show()
         } else {
             showError("Can't open YouTrack setup window", "No open project found")
         }

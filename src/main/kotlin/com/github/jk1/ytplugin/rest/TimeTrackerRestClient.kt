@@ -2,14 +2,20 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
+import com.intellij.notification.NotificationType
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
+import java.net.SocketException
 import java.net.URL
+import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
+import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
@@ -102,7 +108,20 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
             }} catch (e: IllegalArgumentException){
                 logger.warn("Unable to fetch available work items types: ${e.message}")
                 mutableListOf()
+            } catch (e: Exception) {
+                e.multicatchException(SocketException::class, UnknownHostException::class) {
+                    val trackerNote = TrackerNotification()
+                    trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
+                    logger.warn("Connection to network lost: ${e.message}")
+                    mutableListOf()
+                }
             }
         }
+    }
+
+    private fun <R> Throwable.multicatchException(vararg classes: KClass<*>, block: () -> R): R {
+        if (classes.any { this::class.isSubclassOf(it) }) {
+            return block()
+        } else throw this
     }
 }
