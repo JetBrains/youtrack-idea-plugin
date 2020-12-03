@@ -159,9 +159,17 @@ class ActivityTracker(
                 isMouseOrKeyboardActive = captureIdeState()
                 logger.debug("state KEYBOARD $isMouseOrKeyboardActive")
             }
+
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
-                if ((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused) {
+
+                println("myInactivityTime = " + myInactivityTime)
+                println("inactivityPeriod = " + inactivityPeriod)
+                println("isAutoMode = " + timer.isAutoTrackingEnable)
+                println("isManMode = " + timer.isManualTrackingEnable)
+
+                if ((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused
+                        && timer.isAutoTrackingEnable) {
                     timer.pause("Work timer paused due to inactivity")
                 }
             } else if (isMouseOrKeyboardActive) {
