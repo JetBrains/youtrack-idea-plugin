@@ -36,11 +36,7 @@ class TimeTrackingService {
 
         val trackerNote = TrackerNotification()
         if (status == 200) {
-            val postedHours =  TimeUnit.MILLISECONDS.convert(date.time, TimeUnit.HOURS)
-            val postedMinutes =  TimeUnit.MILLISECONDS.convert(date.time -
-                    TimeUnit.HOURS.convert(postedHours, TimeUnit.MILLISECONDS), TimeUnit.MINUTES)
-            val postedTIme = "$postedHours:$postedMinutes"
-            trackerNote.notify("Time $postedTIme was successfully posted on server for issue $selectedId",
+            trackerNote.notify("Spent time was successfully added for $selectedId",
                     NotificationType.INFORMATION)
             ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)
         } else {

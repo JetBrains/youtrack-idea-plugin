@@ -91,7 +91,7 @@ class StartTrackerAction : AnAction(
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is already running for issue ${myTimer.issueIdReadable} ", NotificationType.INFORMATION)
+                trackerNote.notify("Work timer is already running for ${myTimer.issueIdReadable} ", NotificationType.INFORMATION)
             }
 
             myTimer.isAutoTrackingTemporaryDisabled = false

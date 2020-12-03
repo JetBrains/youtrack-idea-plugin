@@ -57,7 +57,7 @@ class StopTrackerAction : AnAction(
             bar?.removeWidget("Time Tracking Clock")
 
             if (timer.recordedTime == "0")
-                trackerNote.notify("Time was not recorded (less than 1 minute)", NotificationType.WARNING)
+                trackerNote.notify("Spent time shorter than 1 minute is excluded from time tracking", NotificationType.WARNING)
             else {
                 val status = repo.let { it1 ->
                     TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
@@ -69,8 +69,8 @@ class StopTrackerAction : AnAction(
                     trackerNote.notify("Could not record time: time tracking is disabled (status $status)", NotificationType.WARNING)
                 }
                 else {
-                    trackerNote.notify("Work timer stopped, time posted on server for" +
-                            " issue ${timer.issueIdReadable}", NotificationType.INFORMATION)
+                    trackerNote.notify("Work timer stopped, spent time added to" +
+                            " ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                     val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                     store.saveFields(timer)

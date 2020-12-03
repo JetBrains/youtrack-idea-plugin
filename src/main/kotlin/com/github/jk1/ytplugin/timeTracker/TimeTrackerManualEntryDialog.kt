@@ -32,16 +32,16 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     // TODO: another comboBoxes
     private var idComboBox = JComboBox(arrayOf<String>())
     private var typeComboBox = JComboBox(arrayOf("Development"))
-    private var timeLabel = JBLabel("Time (hh/mm):")
+    private var timeLabel = JBLabel("Spent time:")
 
     private lateinit var hoursSpinner: JSpinner
     private lateinit var minutesSpinner: JSpinner
 
-    private val okButton = JButton("OK")
+    private val okButton = JButton("Save")
     private val cancelButton = JButton("Cancel")
 
     private var commentLabel = JBLabel("Comment:")
-    private var typeLabel = JBLabel("Work item type:")
+    private var typeLabel = JBLabel("Work type:")
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
@@ -53,7 +53,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private val labelsMargin = 124
 
     init {
-        title = "Add spent time"
+        title = "Add Spent Time"
         rootPane.defaultButton = okButton
 
     }
@@ -214,8 +214,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val sep = JLabel("")
         sep.preferredSize = Dimension((labelsMargin * 2.7).toInt(), 30)
         buttonsPanel.add(sep)
-        buttonsPanel.add(okButton)
         buttonsPanel.add(cancelButton)
+        buttonsPanel.add(okButton)
 
         return buttonsPanel
     }
