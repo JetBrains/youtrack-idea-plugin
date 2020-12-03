@@ -30,6 +30,7 @@ class StartTrackerAction : AnAction(
         event.whenActive { project ->
             val timer = ComponentAware.of(project).timeTrackerComponent
             ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
+            timer.reset()
             startTracking(project, timer)
         }
     }

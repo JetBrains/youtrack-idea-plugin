@@ -162,12 +162,6 @@ class ActivityTracker(
 
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
-
-                println("myInactivityTime = " + myInactivityTime)
-                println("inactivityPeriod = " + inactivityPeriod)
-                println("isAutoMode = " + timer.isAutoTrackingEnable)
-                println("isManMode = " + timer.isManualTrackingEnable)
-
                 if ((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused
                         && timer.isAutoTrackingEnable) {
                     timer.pause("Work timer paused due to inactivity")
