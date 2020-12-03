@@ -70,6 +70,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             timer.isAutoTrackingTemporaryDisabled = true
         }
         rootPane.defaultButton = okButton
+        setResizable(false)
+
         super.init()
     }
 
