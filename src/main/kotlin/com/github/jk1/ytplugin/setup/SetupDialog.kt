@@ -36,7 +36,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
     private lateinit var notifyFieldLabel: JBLabel
 
-    private val okButton = JButton("OK")
+    private val okButton = JButton("Save")
     private val cancelButton = JButton("Cancel")
 
     private var mainPane = JBTabbedPane()
@@ -137,7 +137,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
     private fun createTokenPane(): JPanel {
-        tokenLabel = JBLabel("Permanent Token:")
+        tokenLabel = JBLabel("Permanent token:")
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
@@ -152,7 +152,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
     private fun createCheckboxesPane(): JPanel {
         shareUrlCheckBox = JBCheckBox("Share URL", repo.getRepo().isShared)
-        useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
+        useProxyCheckBox = JBCheckBox("Use proxy", repo.getRepo().isUseProxy)
 
         val checkboxesPanel = JPanel(FlowLayout(2))
         checkboxesPanel.add(shareUrlCheckBox)
@@ -162,7 +162,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
     private fun createAdvertiserPane(): JPanel {
-        val advertiserLabel = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack",
+        val advertiserLabel = HyperlinkLabel("Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
         val advertiserPane = JPanel(BorderLayout())
         advertiserPane.add(advertiserLabel, BorderLayout.EAST)
@@ -170,7 +170,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     }
 
     private fun createInfoPane(): JPanel {
-        val getTokenInfoLabel = HyperlinkLabel("How to create a permanent token",
+        val getTokenInfoLabel = HyperlinkLabel("Learn how to generate a permanent token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
 
         val tokenInfoPane = JPanel(BorderLayout())

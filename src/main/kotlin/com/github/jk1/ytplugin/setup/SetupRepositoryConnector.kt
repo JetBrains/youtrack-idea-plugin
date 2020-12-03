@@ -37,7 +37,7 @@ class SetupRepositoryConnector {
         when (noteState) {
             NotifierState.SUCCESS -> {
                 note.foreground = Color(54, 156, 54)
-                note.text = "Successfully connected"
+                note.text = "Connection successful"
             }
             NotifierState.GUEST_LOGIN -> {
                 note.foreground = Color(54, 156, 54)
