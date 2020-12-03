@@ -19,7 +19,7 @@ class PauseTrackerAction : AnAction(
             if (timer.isAutoTrackingEnable) {
                 timer.isAutoTrackingTemporaryDisabled = true
             }
-            timer.pause()
+            timer.pause("Work timer paused")
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(timer)
         }

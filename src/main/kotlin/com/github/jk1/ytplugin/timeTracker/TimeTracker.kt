@@ -124,7 +124,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
         }
     }
 
-    fun pause() {
+    fun pause(message: String) {
         val trackerNote = TrackerNotification()
         if (isPaused) {
             trackerNote.notify("Timer already paused for issue $issueIdReadable", NotificationType.WARNING)
@@ -133,7 +133,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
                 timeInMills = System.currentTimeMillis() - startTime - pausedTime
                 recordedTime = formatTimePeriod(timeInMills)
                 isPaused = true
-                trackerNote.notify("Work timer paused for $issueIdReadable", NotificationType.INFORMATION)
+                trackerNote.notify("$message for $issueIdReadable", NotificationType.INFORMATION)
             } else {
                 trackerNote.notify("Could not pause - timer is not started", NotificationType.WARNING)
             }

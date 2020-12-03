@@ -65,7 +65,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         timer.start(id)
         Assert.assertEquals(timer.isRunning, true)
         Assert.assertEquals(timer.isPaused, false)
-        timer.pause()
+        timer.pause("Work timer paused")
         Assert.assertEquals(timer.isRunning, true)
         Assert.assertEquals(timer.isPaused, true)
     }
