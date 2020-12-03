@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
+import com.michaelbaranov.microba.calendar.DatePicker
 import org.jdesktop.swingx.JXDatePicker
 import java.awt.Color
 import java.awt.Dimension
@@ -26,7 +27,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("Date:")
-    private val datePicker = JXDatePicker(Date())
+    private val datePicker = DatePicker(Date())
+
     private var idLabel = JBLabel("Issue:   ")
 
     // TODO: another comboBoxes
