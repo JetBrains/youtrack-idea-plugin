@@ -51,7 +51,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
         override fun run(indicator: ProgressIndicator) {
             try {
                 logger.debug("Fetching issuesWorkItems for the search query")
-                val list = UserRestClient(repo).getWorkItemsForUser(searchQuery)
+                val list = UserRestClient(repo).getWorkItemsForUser()
                 workItems = if (searchQuery != "")
                     filterWorkItems(searchQuery, list)
                 else

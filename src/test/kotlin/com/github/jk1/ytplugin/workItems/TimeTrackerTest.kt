@@ -88,7 +88,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
     // TODO better connect time tracking to MT project before run
     @Test
     fun `test post new work item`() {
-        val storedIWorkItems = UserRestClient(repository).getWorkItemsForUser("")
+        val storedIWorkItems = UserRestClient(repository).getWorkItemsForUser()
         val size = storedIWorkItems.size
 
         if (storedIWorkItems.isNotEmpty()){
