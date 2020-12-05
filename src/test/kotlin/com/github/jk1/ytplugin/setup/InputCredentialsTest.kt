@@ -25,18 +25,18 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
     }
 
     // TODO: fix it
-//    @Test
-//    fun `test connection with HTTP error in url`() {
-//        val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
-//        repository = createYouTrackRepository(serverUrl, token)
-//        val repo = repository.getRepo()
-//        val setupTask = SetupRepositoryConnector()
-//
-//        setupTask.testConnection(repo, project)
-//
-//        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
-//        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
-//    }
+    @Test
+    fun `test connection with HTTP error in url`() {
+        val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
+        repository = createYouTrackRepository(serverUrl, token)
+        val repo = repository.getRepo()
+        val setupTask = SetupRepositoryConnector()
+
+        setupTask.testConnection(repo, project)
+
+        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+    }
 
     @Test
     fun `test connection with ending error in url`() {
