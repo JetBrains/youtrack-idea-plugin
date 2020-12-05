@@ -21,7 +21,7 @@ class ResetTrackerAction : AnAction(
             if (timer.isRunning) {
                 timer.reset()
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer reset for $timer.issueIdReadable", NotificationType.INFORMATION)
+                trackerNote.notify("Work timer reset for ${timer.issueIdReadable}", NotificationType.INFORMATION)
             } else {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Could not reset - timer is not started", NotificationType.WARNING)
