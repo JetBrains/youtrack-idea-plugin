@@ -243,18 +243,24 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             notifier.foreground = Color.red
             notifier.text = "Date is not specified"
         } else {
-            val selectedId = ids[idComboBox.selectedIndex].name
-            val timerService = TimeTrackingService()
-            val codeOnPost = timerService.postNewWorkItem(datePicker.date.format(),
-                    typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
-                    commentTextField.text, time.toString())
-            if (codeOnPost == 200) {
-                this@TimeTrackerManualEntryDialog.close(0)
-            }
-            else {
+            try {
+                val selectedId = ids[idComboBox.selectedIndex].name
+                val timerService = TimeTrackingService()
+                val codeOnPost = timerService.postNewWorkItem(datePicker.date.format(),
+                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
+                        commentTextField.text, time.toString())
+                if (codeOnPost == 200) {
+                    this@TimeTrackerManualEntryDialog.close(0)
+                } else {
+                    notifier.foreground = Color.red
+                    notifier.text = "Time could not be posted, code $codeOnPost"
+                }
+            } catch (e: IndexOutOfBoundsException) {
                 notifier.foreground = Color.red
-                notifier.text = "Time could not be posted, code $codeOnPost"
+                notifier.text = "Please select the issue"
+                logger.debug("Issue is not selected or there are no issues in the list: ${e.message}")
             }
+
         }
     }
 

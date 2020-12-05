@@ -16,6 +16,7 @@ import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.io.InputStreamReader
 import java.net.URL
+import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 
 
@@ -193,7 +194,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         method.setQueryString(arrayOf(myQuery, myFields))
         val result = mutableListOf<NameValuePair>()
         return method.connect {
-            val status = httpClient.executeMethod(method)
+            val status = try {
+                httpClient.executeMethod(method)
+            } catch (e: UnknownHostException) {
+                logger.warn("Network connection lost when fetching formatted unique issue ids")
+                0
+            }
             if (status == 200) {
                 logger.debug("Successfully got formatted unique issue ids: $status")
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
@@ -207,10 +213,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                     result.add(pair)
                 }
                 result
-            } else {
+            } else if (status != 0) {
                 logger.debug("Unable to get formatted unique issue ids: ${method.responseBodyAsLoggedString()}")
-                result
             }
+            result
         }
     }
 }
