@@ -10,7 +10,7 @@ import com.intellij.openapi.project.DumbAware
 
 
 class ConfigureNotificationsAction(private val notification: YouTrackNotification) :
-        AnAction("Configure", "", AllIcons.General.Settings), DumbAware {
+        AnAction("Configure Notifications", "", AllIcons.General.Settings), DumbAware {
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {
