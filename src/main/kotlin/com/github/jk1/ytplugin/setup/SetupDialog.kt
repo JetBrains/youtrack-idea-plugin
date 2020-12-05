@@ -128,7 +128,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                     repaint()
                 }
             })
-            preferredSize = Dimension(378, 28)
+            preferredSize = Dimension(377, 28)
         }
 
         val serverPanel = JPanel(FlowLayout(2))
@@ -143,7 +143,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            preferredSize = Dimension(379, 31)
+            preferredSize = Dimension(378, 31)
         }
         val tokenPanel = JPanel(FlowLayout(2))
         tokenPanel.add(tokenLabel)
@@ -189,7 +189,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         return notifyPane
     }
 
-    private fun prepareTabbedPane(): JTabbedPane {
+    private fun prepareTabbedPane(): JBTabbedPane {
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
@@ -206,7 +206,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         }
 
         mainPane.apply {
-            tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
+            tabLayoutPolicy = JBTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
