@@ -194,8 +194,10 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         val inputTimePanel = JPanel(FlowLayout(3))
         inputTimePanel.add(hoursSpinner)
-        inputTimePanel.add(JLabel(":"))
+        inputTimePanel.add(JLabel(" hours "))
         inputTimePanel.add(minutesSpinner)
+        inputTimePanel.add(JLabel(" minutes"))
+
         timeLabel.preferredSize = Dimension(labelsMargin - 5, 30)
 
         timePanel.add(timeLabel)

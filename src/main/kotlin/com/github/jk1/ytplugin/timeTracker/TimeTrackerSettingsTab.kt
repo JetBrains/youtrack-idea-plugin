@@ -24,10 +24,10 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
     private lateinit var inactivityHourInputField: JBTextField
     private lateinit var inactivityMinutesInputField: JBTextField
-    private var inactivityTextField = JBLabel(" Inactivity period (hh/mm):")
+    private var inactivityTextField = JBLabel(" Inactivity period:")
 
     private lateinit var isScheduledCheckbox: JBCheckBox
-    private var scheduledTextField = JBLabel("On a set schedule (hh/mm):")
+    private var scheduledTextField = JBLabel("On a set schedule at:")
 
     private lateinit var isManualModeRadioButton: JBRadioButton
     private var manualModeTextField = JBLabel("Manual")
@@ -46,6 +46,11 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var commentLabel = JBLabel(" Comment: ")
     private var typeLabel = JBLabel(" Work type:")
     private lateinit var commentTextField: JBTextField
+
+    private var hourLabel1 =  JBLabel(" hours ")
+    private var hourLabel2 =  JBLabel(" hours ")
+    private var minuteLabel1 =  JBLabel(" minutes")
+    private var minuteLabel2 =  JBLabel(" minutes")
 
     private val workItemsTypes = arrayOf<String?>("Development")
 
@@ -237,8 +242,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         isScheduledCheckbox.isSelected = timer.isScheduledEnabled
 
         timePanel.add(scheduledHour)
-        timePanel.add(JBLabel(":"))
+        timePanel.add(hourLabel2)
         timePanel.add(scheduledMinutes)
+        timePanel.add(minuteLabel2)
 
         val bigScheduledPanel = JPanel(FlowLayout(2))
         val scheduledPanel = JPanel(FlowLayout(2))
@@ -247,6 +253,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         isScheduledCheckbox.isEnabled = timer.isAutoTrackingEnable
         scheduledHour.isEnabled = timer.isAutoTrackingEnable
         scheduledMinutes.isEnabled = timer.isAutoTrackingEnable
+        hourLabel2.isEnabled = timer.isAutoTrackingEnable
+        minuteLabel2.isEnabled = timer.isAutoTrackingEnable
 
         scheduledPanel.add(scheduledTextField)
         scheduledPanel.add(timePanel)
@@ -270,12 +278,16 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
 
         inactivityTimePanel.add(inactivityHourInputField)
-        inactivityTimePanel.add(JBLabel(":"))
+        inactivityTimePanel.add(hourLabel1)
         inactivityTimePanel.add(inactivityMinutesInputField)
+        inactivityTimePanel.add(minuteLabel1)
 
         inactivityHourInputField.isEnabled = timer.isAutoTrackingEnable
         inactivityMinutesInputField.isEnabled = timer.isAutoTrackingEnable
         inactivityTextField.isEnabled = timer.isAutoTrackingEnable
+        hourLabel1.isEnabled = timer.isAutoTrackingEnable
+        minuteLabel1.isEnabled = timer.isAutoTrackingEnable
+
 
         val inactivityPeriodPanel = JPanel(FlowLayout(3))
 
@@ -296,9 +308,13 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         inactivityHourInputField.isEnabled = autoTrackEnabled && !noTrackingEnabled
         inactivityMinutesInputField.isEnabled = autoTrackEnabled && !noTrackingEnabled
         inactivityTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        hourLabel1.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        minuteLabel1.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
         scheduledTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
         isScheduledCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        hourLabel2.isEnabled = autoTrackEnabled && !noTrackingEnabled
+        minuteLabel2.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
         postWhenProjectClosedCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
         postWhenProjectClosedTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
