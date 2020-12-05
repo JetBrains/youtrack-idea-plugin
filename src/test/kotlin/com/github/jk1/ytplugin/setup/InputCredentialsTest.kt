@@ -24,7 +24,6 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         fixture.setUp()
     }
 
-    // TODO: fix it
     @Test
     fun `test connection with HTTP error in url`() {
         val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
