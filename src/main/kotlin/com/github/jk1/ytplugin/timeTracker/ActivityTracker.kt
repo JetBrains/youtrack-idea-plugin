@@ -18,21 +18,16 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import com.intellij.openapi.wm.impl.IdeFrameImpl
-import com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.event.*
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.swing.JFrame
-import javax.swing.JOptionPane
 
 
 class ActivityTracker(
-
         private val parentDisposable: Disposable,
         private val timer: TimeTracker,
         private val inactivityPeriod: Long,
@@ -46,8 +41,6 @@ class ActivityTracker(
 
     @PropertyName("activityTracker.startInactivityTime")
     var startInactivityTime: Long = currentTimeMillis()
-
-    val myStore: PropertiesComponent = PropertiesComponent.getInstance(project)
 
     private var isPostedOnClose = false
 

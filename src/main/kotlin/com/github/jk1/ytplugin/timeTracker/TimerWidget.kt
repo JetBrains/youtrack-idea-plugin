@@ -12,7 +12,7 @@ import javax.swing.Timer
 
 class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable) : CustomStatusBarWidget {
 
-    val label = JLabel(time())
+    private val label = JLabel(time())
     private val timer = Timer(1000, ActionListener { label.text = time() })
     private var trackingDisposable: Disposable? = null
 

@@ -25,7 +25,7 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
 
     init {
         val issueWorkItemsListScrollPane = JBScrollPane(issueWorkItemsList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER)
-        renderer = WorkItemsListCellRenderer({ issueWorkItemsListScrollPane.viewport.width }, { issueWorkItemsListScrollPane.viewport.height }, repo.getRepo())
+        renderer = WorkItemsListCellRenderer({ issueWorkItemsListScrollPane.viewport.width }, repo.getRepo())
         issueWorkItemsList.cellRenderer = renderer
         add(issueWorkItemsListScrollPane, BorderLayout.CENTER)
         initIssueWorkItemsListModel()

@@ -78,26 +78,23 @@ class TimeTracker(override val project: Project) : ComponentAware {
     @PropertyName("timeTracker.query")
     var searchQuery: String = ""
 
-
     init {
         try {
             try {
                 val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                 store.loadFields(this)
-            } catch (e: IllegalStateException){
+            } catch (e: IllegalStateException) {
                 logger.debug("No time tracker is stored yet")
             }
             isPaused = true
             isAutoTrackingTemporaryDisabled = false
 
-            if (isWhenProjectClosedEnabled) {
+            if (isWhenProjectClosedEnabled || isManualTrackingEnable) {
                 reset()
             }
             if (isManualTrackingEnable) {
-                reset()
                 stop()
             }
-
             if (isAutoTrackingEnable) {
                 StartTrackerAction().startAutomatedTracking(project, this)
             }

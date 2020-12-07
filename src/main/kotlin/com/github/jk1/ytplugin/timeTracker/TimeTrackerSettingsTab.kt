@@ -31,7 +31,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
     private var isManualModeRadioButton = JBRadioButton()
     private var manualModeTextField = JBLabel("Manual")
 
-    private var noTrackingButton = JBRadioButton("Off ")
+    private var noTrackingButton = JBRadioButton("Off  ")
 
     private var postWhenProjectClosedCheckbox = JBCheckBox()
     private var postWhenCommitCheckbox = JBCheckBox()

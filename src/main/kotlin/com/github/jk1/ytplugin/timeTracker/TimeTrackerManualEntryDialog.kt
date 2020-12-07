@@ -25,7 +25,6 @@ import javax.swing.*
 
 open class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
-    // TODO is hardcode removable here (for the sake of better look)
     private var dateLabel = JBLabel("Date:")
     private val datePicker = DatePicker(Date())
 
@@ -47,7 +46,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
-
     private val ids = IssuesRestClient(repo).getFormattedUniqueIssueIds()
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds = mutableListOf<String>()
@@ -151,9 +149,9 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     }
 
     private fun createDatePanel(): JPanel {
-        val datePanel = JPanel(FlowLayout(2))
-        dateLabel.preferredSize = Dimension(labelsMargin + 3, 30)
-        datePicker.preferredSize = Dimension(200, 25)
+        val datePanel = JPanel(FlowLayout(0))
+        dateLabel.preferredSize = Dimension(labelsMargin, 30)
+        datePicker.preferredSize = Dimension(200, 30)
         datePicker.getComponent(1).preferredSize = Dimension(30, 30) //JButton
 
         datePanel.add(dateLabel)
@@ -164,7 +162,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     private fun createCommentPanel(): JPanel {
         commentTextField = JBTextField("")
-        commentTextField.preferredSize = Dimension(390, typeComboBox.preferredSize.height)
+        commentTextField.preferredSize = Dimension(389, typeComboBox.preferredSize.height)
         commentLabel.preferredSize = Dimension(labelsMargin, 30)
 
         val commentPanel = JPanel(FlowLayout(2))

@@ -10,9 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
-import kotlin.time.hours
-import kotlin.time.minutes
-import kotlin.time.seconds
 
 
 class TimeTrackingService {
@@ -48,8 +45,8 @@ class TimeTrackingService {
     }
 
     fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, repo: YouTrackServer, project: Project) {
-        val timer = ComponentAware.of(repo.project).timeTrackerComponent
 
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent
         val timeToSchedule = timeTrackingTab.getScheduledTime()
 
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +

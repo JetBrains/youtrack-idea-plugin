@@ -20,7 +20,7 @@ import javax.swing.ListCellRenderer
 
 
 class WorkItemsListCellRenderer(
-        private val viewportWidthProvider: () -> Int, private val viewportHeightProvider: () -> Int, repo: YouTrackRepository) : JPanel(BorderLayout()), ListCellRenderer<IssueWorkItem> {
+        private val viewportWidthProvider: () -> Int, repo: YouTrackRepository) : JPanel(BorderLayout()), ListCellRenderer<IssueWorkItem> {
 
     private val myRepository = repo
     private val topPanel = JPanel(BorderLayout())
@@ -35,8 +35,8 @@ class WorkItemsListCellRenderer(
     lateinit var datePanel: JPanel
     lateinit var valuePanel: JPanel
 
-    fun getValuePanelPosition() = valuePanel.preferredSize.getWidth()
-    fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
+    private fun getValuePanelPosition() = valuePanel.preferredSize.getWidth()
+    private fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
 
 
     private var maxIssueIdWidth = 0
@@ -66,8 +66,8 @@ class WorkItemsListCellRenderer(
     }
 
     private fun fillTrackingInfoLine(issueWorkItem: IssueWorkItem, fgColor: Color) {
-        summaryPanel.removeAll()
 
+        summaryPanel.removeAll()
         summaryPanel.isOpaque = false
 
         val date = SimpleColoredComponent()

@@ -128,7 +128,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                     repaint()
                 }
             })
-            preferredSize = Dimension(377, 28)
+            preferredSize = Dimension(374, 28)
         }
 
         val serverPanel = JPanel(FlowLayout(2))
@@ -143,9 +143,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            preferredSize = Dimension(378, 31)
+            preferredSize = Dimension(375, 31)
         }
-        val tokenPanel = JPanel(FlowLayout(2))
+        val tokenPanel = JPanel(FlowLayout(1))
         tokenPanel.add(tokenLabel)
         tokenPanel.add(inputTokenField)
 
@@ -273,7 +273,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         cancelButton.preferredSize = Dimension(90, 31)
 
         val sep = JLabel("")
-        sep.preferredSize = Dimension(5, 30)
+        sep.preferredSize = Dimension(1, 30)
         buttonsPanel.add(testConnectionButton)
         buttonsPanel.add(proxyButton)
         buttonsPanel.add(cancelButton)

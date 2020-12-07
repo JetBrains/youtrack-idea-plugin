@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
-import com.intellij.ide.util.PropertyName
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -35,12 +34,7 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
         })
     }
 
-    fun remove(repo: YouTrackServer) {
-        stores.remove(repo.id)
-    }
-
     class Memento constructor() {
-
         // should stay mutable and public for serialization to work
         var persistentIssueWorkItems: Map<String, String> = mutableMapOf()
 

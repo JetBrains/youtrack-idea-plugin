@@ -15,7 +15,6 @@ class ToggleGroupByAction(val repo: YouTrackServer) : IssueAction() {
     override val icon = AllIcons.Actions.GroupBy
     override val shortcut = "control alt shift Q"
 
-
     private var GROUP_BY_DATE = false
 
     init {

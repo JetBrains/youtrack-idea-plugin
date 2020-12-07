@@ -81,10 +81,9 @@ class StartTrackerAction : AnAction(
                         trackerNote.notifyWithHelper("To use time tracking please select valid active task on the toolbar" +
                                 " or by pressing Shift + Alt + T", NotificationType.INFORMATION, OpenActiveTaskSelection())
                     } else {
+                        // for activity tracker enabled
                         myTimer.start(activeTask.id)
-                        // case for activity tracker enabled
                     }
-
                 } catch (e: NoYouTrackRepositoryException) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Unable to start automatic time tracking, please select" +
@@ -94,7 +93,6 @@ class StartTrackerAction : AnAction(
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Work timer is already running for ${myTimer.issueIdReadable} ", NotificationType.INFORMATION)
             }
-
             myTimer.isAutoTrackingTemporaryDisabled = false
         }
         val store: PropertiesComponent = PropertiesComponent.getInstance(project)

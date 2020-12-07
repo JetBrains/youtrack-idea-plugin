@@ -14,7 +14,6 @@ import java.net.URI
 import java.net.URISyntaxException
 import javax.swing.JComponent
 import javax.swing.JPanel
-import kotlin.math.log10
 
 
 class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
