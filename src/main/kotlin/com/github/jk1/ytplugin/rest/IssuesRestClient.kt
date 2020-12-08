@@ -203,21 +203,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 if (status == 200) {
                     logger.debug("Successfully got formatted unique issue ids: $status")
                     val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                    val availableForTrackingProjects = AdminRestClient(repository).getTimeTrackingOptionsForProjects()
-
                     for (item in json) {
-                        val projectName = item.asJsonObject.get("project").asJsonObject.get("shortName").asString
-                        if (availableForTrackingProjects.find { it == projectName } != null) {
-                            var summary = item.asJsonObject.get("summary").asString
-                            if (summary.length > SUMMARY_LENGTH_MAX) {
-                                summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
-                            }
-                            val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
-                                    item.asJsonObject.get("idReadable").asString + ": " + summary)
-                            result.add(pair)
-                        } else {
-                            logger.debug("Time tracking is disabled for the project $projectName")
+                        var summary = item.asJsonObject.get("summary").asString
+                        if (summary.length > SUMMARY_LENGTH_MAX) {
+                            summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
                         }
+                        val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
+                                item.asJsonObject.get("idReadable").asString + ": " + summary)
+                        result.add(pair)
                     }
                 } else if (status != 0) {
                     logger.debug("Unable to get formatted unique issue ids: ${method.responseBodyAsLoggedString()}")

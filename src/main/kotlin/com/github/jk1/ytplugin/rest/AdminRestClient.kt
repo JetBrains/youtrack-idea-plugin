@@ -66,18 +66,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         }
     }
 
-    fun getTimeTrackingOptionsForProjects(): List<String> {
-        val projects = getAccessibleProjects()
-        val result = mutableListOf<String>()
-        for (project in projects) {
-            if (checkIfTrackingIsEnabled(project)) {
-                result.add(project)
-            }
-        }
-        return result
-    }
-
-    private fun checkIfTrackingIsEnabled(projectId: String): Boolean {
+    fun checkIfTrackingIsEnabled(projectId: String): Boolean {
         val url = "${repository.url}/api/admin/projects/$projectId/timeTrackingSettings"
         val myFields = NameValuePair("fields", "enabled")
         val method = GetMethod(url)
