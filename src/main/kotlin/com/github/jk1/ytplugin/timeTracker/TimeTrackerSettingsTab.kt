@@ -44,7 +44,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
 
     private var commentLabel = JBLabel(" Comment: ")
     private var typeLabel = JBLabel(" Work type:")
-    private var commentTextField = JBTextField("")
+
+    private var commentTextField = PlaceholderTextField("")
 
     private var hourLabel1 = JBLabel(" hours ")
     private var hourLabel2 = JBLabel(" hours ")
@@ -99,8 +100,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
 
     private fun createCommentPanel(timer: TimeTracker): JPanel {
 
-        commentTextField = JBTextField(timer.comment)
-        commentTextField.toolTipText = "Enter default comment text"
+        commentTextField = PlaceholderTextField(timer.comment)
+        commentTextField.placeholder = "Enter default comment text"
         commentTextField.preferredSize = Dimension(401, 30)
         val commentPanel = JPanel(FlowLayout(2))
         commentLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
