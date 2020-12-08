@@ -65,4 +65,39 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             }
         }
     }
+
+    fun getTimeTrackingOptionsForProjects(): List<String> {
+        val projects = getAccessibleProjects()
+        val result = mutableListOf<String>()
+        for (project in projects) {
+            if (checkIfTrackingIsEnabled(project)) {
+                result.add(project)
+            }
+        }
+        return result
+    }
+
+    private fun checkIfTrackingIsEnabled(projectId: String): Boolean {
+        val url = "${repository.url}/api/admin/projects/$projectId/timeTrackingSettings"
+        val myFields = NameValuePair("fields", "enabled")
+        val method = GetMethod(url)
+        method.setQueryString(arrayOf(myFields))
+        return method.connect {
+            when (val status = httpClient.executeMethod(method)) {
+                200 -> {
+                    if (JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("enabled").asBoolean) {
+                        logger.debug("Time Tracking is enabled for project $projectId")
+                        true
+                    } else {
+                        logger.debug("Time Tracking is disabled for project $projectId")
+                        false
+                    }
+                }
+                else -> {
+                    logger.warn("Unable to check if time tracking is enabled $status: ${method.responseBodyAsLoggedString()}")
+                    false
+                }
+            }
+        }
+    }
 }

@@ -5,9 +5,7 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.*
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
@@ -15,6 +13,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.io.InputStreamReader
+import java.net.SocketException
 import java.net.URL
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
@@ -186,36 +185,49 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         return newIssues
     }
 
-    fun getFormattedUniqueIssueIds(): List<NameValuePair> {
-        val myFields = NameValuePair("fields", "idReadable,summary")
+    fun getIssueIdsAvailableForTracking(): List<NameValuePair> {
+        val myFields = NameValuePair("fields", "idReadable,summary,project(shortName)")
         val url = "${repository.url}/api/issues"
         val method = GetMethod(url)
         method.setQueryString(arrayOf(myFields))
         val result = mutableListOf<NameValuePair>()
-        return method.connect {
-            val status = try {
-                httpClient.executeMethod(method)
-            } catch (e: UnknownHostException) {
-                logger.warn("Network connection lost when fetching formatted unique issue ids")
-                0
-            }
-            if (status == 200) {
-                logger.debug("Successfully got formatted unique issue ids: $status")
-                val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                for (item in json) {
-                    var summary = item.asJsonObject.get("summary").asString
-                    if (summary.length > SUMMARY_LENGTH_MAX) {
-                        summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
+
+        try {
+            return method.connect {
+                val status = try {
+                    httpClient.executeMethod(method)
+                } catch (e: UnknownHostException) {
+                    logger.warn("Network connection lost when fetching issue ids for tracking")
+                    0
+                }
+                if (status == 200) {
+                    logger.debug("Successfully got formatted unique issue ids: $status")
+                    val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+                    val availableForTrackingProjects = AdminRestClient(repository).getTimeTrackingOptionsForProjects()
+
+                    for (item in json) {
+                        val projectName = item.asJsonObject.get("project").asJsonObject.get("shortName").asString
+                        if (availableForTrackingProjects.find { it == projectName } != null) {
+                            var summary = item.asJsonObject.get("summary").asString
+                            if (summary.length > SUMMARY_LENGTH_MAX) {
+                                summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
+                            }
+                            val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
+                                    item.asJsonObject.get("idReadable").asString + ": " + summary)
+                            result.add(pair)
+                        } else {
+                            logger.debug("Time tracking is disabled for the project $projectName")
+                        }
                     }
-                    val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
-                            item.asJsonObject.get("idReadable").asString + ": " + summary)
-                    result.add(pair)
+                } else if (status != 0) {
+                    logger.debug("Unable to get formatted unique issue ids: ${method.responseBodyAsLoggedString()}")
                 }
                 result
-            } else if (status != 0) {
-                logger.debug("Unable to get formatted unique issue ids: ${method.responseBodyAsLoggedString()}")
             }
-            result
+        } catch (e: SocketException) {
+            logger.debug("Unable to get formatted unique issue ids: ${e.message}")
+            method.releaseConnection()
         }
+        return result
     }
 }

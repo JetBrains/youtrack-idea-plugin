@@ -46,7 +46,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
-    private val ids = IssuesRestClient(repo).getFormattedUniqueIssueIds()
+    private val ids = IssuesRestClient(repo).getIssueIdsAvailableForTracking()
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds = mutableListOf<String>()
 
