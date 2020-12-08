@@ -67,14 +67,14 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
             }
         }
 
-        private fun filterWorkItems(searchQuery: String, list: List<IssueWorkItem>) : List<IssueWorkItem>{
+        private fun filterWorkItems(searchQuery: String, list: List<IssueWorkItem>): List<IssueWorkItem> {
             return list.filter {
                 it.value.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        it.author.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        it.issueId.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        it.date.format().contains(searchQuery) ||
-                        it.type.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        it.comment?.toLowerCase()?.contains(searchQuery.toLowerCase()) ?: false
+                it.date.format().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                it.author.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                it.issueId.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                it.type.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                it.comment?.toLowerCase()?.contains(searchQuery.toLowerCase()) ?: false
             }
         }
 
