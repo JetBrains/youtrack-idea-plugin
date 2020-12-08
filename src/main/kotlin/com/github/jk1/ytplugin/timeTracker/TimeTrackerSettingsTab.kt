@@ -102,7 +102,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
 
         commentTextField = PlaceholderTextField(timer.comment)
         commentTextField.placeholder = "Enter default comment text"
-        commentTextField.preferredSize = Dimension(401, 30)
+        commentTextField.preferredSize = Dimension(403, 30)
         val commentPanel = JPanel(FlowLayout(2))
         commentLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
         commentTextField.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
@@ -200,9 +200,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, val myWidt
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
 
         val sep = JBLabel(" ")
-        sep.preferredSize = Dimension(110, 30)
+        sep.preferredSize = Dimension(112, 30)
         val sep2 = JBLabel(" ")
-        sep2.preferredSize = Dimension(110, 30)
+        sep2.preferredSize = Dimension(111, 30)
         enableAutoTrackingPanel.add(isAutoTrackingEnabledRadioButton)
         enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
         enableManualTrackingPanel.add(isManualModeRadioButton)
