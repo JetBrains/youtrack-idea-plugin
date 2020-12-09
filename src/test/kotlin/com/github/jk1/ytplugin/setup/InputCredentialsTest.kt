@@ -85,7 +85,7 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
+        assertEquals(NotifierState.UNAUTHORIZED, setupTask.noteState)
     }
 
     @Test
