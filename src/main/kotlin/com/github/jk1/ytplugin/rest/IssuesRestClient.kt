@@ -1,11 +1,13 @@
 package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.issues.PersistentIssueStore
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
@@ -13,9 +15,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.io.InputStreamReader
-import java.net.SocketException
 import java.net.URL
-import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 
 
@@ -27,7 +27,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     companion object {
         const val SUMMARY_LENGTH_MAX = 38
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
-                "tags(color(foreground,background),name),project,links(value,direction,issues(idReadable)," +
+                "tags(color(foreground,background),name),project(shortName),links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
                 "author(name,login),deleted),summary,wikifiedDescription,customFields(name,color," +
                 "value(name,minutes,presentation,color(background,foreground))," +
@@ -186,40 +186,17 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     fun getIssueIdsAvailableForTracking(): List<NameValuePair> {
-        val myFields = NameValuePair("fields", "idReadable,summary,project(shortName)")
-        val url = "${repository.url}/api/issues"
-        val method = GetMethod(url)
-        method.setQueryString(arrayOf(myFields))
-        val result = mutableListOf<NameValuePair>()
 
-        try {
-            return method.connect {
-                val status = try {
-                    httpClient.executeMethod(method)
-                } catch (e: UnknownHostException) {
-                    logger.warn("Network connection lost when fetching issue ids for tracking")
-                    0
-                }
-                if (status == 200) {
-                    logger.debug("Successfully got formatted unique issue ids: $status")
-                    val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                    for (item in json) {
-                        var summary = item.asJsonObject.get("summary").asString
-                        if (summary.length > SUMMARY_LENGTH_MAX) {
-                            summary = summary.substring(0, SUMMARY_LENGTH_MAX) + "..."
-                        }
-                        val pair = NameValuePair(item.asJsonObject.get("idReadable").asString,
-                                item.asJsonObject.get("idReadable").asString + ": " + summary)
-                        result.add(pair)
-                    }
-                } else if (status != 0) {
-                    logger.debug("Unable to get formatted unique issue ids: ${method.responseBodyAsLoggedString()}")
-                }
-                result
+        val result = mutableListOf<NameValuePair>()
+        val issueService = (ApplicationManager.getApplication().getService(PersistentIssueStore::class.java)!!)[repository]
+        val issues = issueService.getAllIssues()
+        val availableForTrackingProjects = AdminRestClient(repository).getTimeTrackingOptionsForProjects()
+
+        for (issue in issues) {
+            if (availableForTrackingProjects.find { it == issue.projectName } != null) {
+                val pair = NameValuePair(issue.issueId, "${issue.issueId}: ${issue.summary}")
+                result.add(pair)
             }
-        } catch (e: SocketException) {
-            logger.debug("Unable to get formatted unique issue ids: ${e.message}")
-            method.releaseConnection()
         }
         return result
     }

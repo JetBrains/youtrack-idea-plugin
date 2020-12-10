@@ -3,10 +3,10 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.TaskManager
@@ -25,6 +25,7 @@ import javax.swing.*
 
 
 open class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+
 
     private var dateLabel = JBLabel("Date:")
     private val datePicker = DatePicker(Date())
@@ -56,7 +57,6 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     init {
         title = "Add Spent Time"
         rootPane.defaultButton = okButton
-
     }
 
     override fun show() {
@@ -245,28 +245,23 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             notifier.text = "Date is not specified"
         } else {
             try {
-                if (!AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].name)) {
-                    notifier.foreground = Color.red
-                    notifier.text = "Time tracking is disabled for this project"
-                    logger.debug("Time tracking for ${ids[idComboBox.selectedIndex].name} is disabled in project")
+                val selectedId = ids[idComboBox.selectedIndex].name
+                val timerService = TimeTrackingService()
+                val codeOnPost = timerService.postNewWorkItem(datePicker.date.format(),
+                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
+                        commentTextField.text, time.toString())
+                if (codeOnPost == 200) {
+                    this@TimeTrackerManualEntryDialog.close(0)
                 } else {
-                    val selectedId = ids[idComboBox.selectedIndex].name
-                    val timerService = TimeTrackingService()
-                    val codeOnPost = timerService.postNewWorkItem(datePicker.date.format(),
-                            typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
-                            commentTextField.text, time.toString())
-                    if (codeOnPost == 200) {
-                        this@TimeTrackerManualEntryDialog.close(0)
-                    } else {
-                        notifier.foreground = Color.red
-                        notifier.text = "Time could not be posted, code $codeOnPost"
-                    }
+                    notifier.foreground = Color.red
+                    notifier.text = "Time could not be posted, code $codeOnPost"
                 }
             } catch (e: IndexOutOfBoundsException) {
                 notifier.foreground = Color.red
                 notifier.text = "Please select the issue"
                 logger.debug("Issue is not selected or there are no issues in the list: ${e.message}")
             }
+
         }
     }
 
