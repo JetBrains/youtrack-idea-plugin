@@ -57,6 +57,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
     private val myHeight = 490
     private val myWidth = 525
+    private val standartHeight = (0.0613 * myHeight).toInt()
 
     private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
@@ -260,20 +261,20 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         val buttonsPanel = JPanel(FlowLayout(2))
         testConnectionButton = JButton("Test Connection")
         testConnectionButton.addActionListener { testConnectionAction() }
-        testConnectionButton.preferredSize = Dimension(150, 31)
+        testConnectionButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standartHeight)
 
         proxyButton = JButton("Proxy settings...")
         proxyButton.addActionListener { HttpConfigurable.editConfigurable(controlPanel) }
-        proxyButton.preferredSize = Dimension(150, 31)
+        proxyButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standartHeight)
 
         okButton.addActionListener { okAction() }
-        okButton.preferredSize = Dimension(90, 31)
+        okButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standartHeight)
 
         cancelButton.addActionListener { doCancelAction() }
-        cancelButton.preferredSize = Dimension(90, 31)
+        cancelButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standartHeight)
 
         val sep = JLabel("")
-        sep.preferredSize = Dimension(1, 30)
+        sep.preferredSize = Dimension(1, standartHeight)
         buttonsPanel.add(testConnectionButton)
         buttonsPanel.add(proxyButton)
         buttonsPanel.add(cancelButton)
