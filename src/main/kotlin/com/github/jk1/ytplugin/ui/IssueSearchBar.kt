@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.impl.ApplicationInfoImpl
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.DumbAware
@@ -40,7 +41,9 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         // key bindings
 
         // show placeholder on empty query
-        searchField.setShowPlaceholderWhenFocused(true)
+        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+            searchField.setShowPlaceholderWhenFocused(true)
+        }
 
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {
