@@ -44,13 +44,6 @@
     <depends>com.intellij.tasks</depends>
 
     <actions>
-        <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
-                class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
-            <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
-        </action>
-
         <action id="com.github.jk1.ytplugin.issues.actions.CreateIssueAction"
                 class="com.github.jk1.ytplugin.issues.actions.CreateIssueAction">
             <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>
@@ -62,36 +55,44 @@
                 class="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction">
             <keyboard-shortcut first-keystroke="control shift M" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
         <action id="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction"
                 class="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction">
             <keyboard-shortcut first-keystroke="control shift P" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
         <action id="com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction"
                 class="com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction">
             <keyboard-shortcut first-keystroke="control shift N" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
         <action id="com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction"
                 class="com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction">
             <keyboard-shortcut first-keystroke="control shift L" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
         <action id="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction"
                 class="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction">
             <keyboard-shortcut first-keystroke="control shift I" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="tasks.toolbar.group" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
+
+        <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
+                class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
+            <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+        </action>
+
 
     </actions>
 
@@ -101,7 +102,8 @@
                     factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
         <!-- Scheduled tasks-->
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.editor.IssueLinkProviderExtension"/>
-        <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.notifications.FetchNotificationsExtension"/>
+        <backgroundPostStartupActivity
+                implementation="com.github.jk1.ytplugin.notifications.FetchNotificationsExtension"/>
         <!--YouTrack command language support-->
         <fileType name="YouTrack Commands" language="YouTrack Commands"
                   implementationClass="com.github.jk1.ytplugin.commands.lang.CommandFileType"/>

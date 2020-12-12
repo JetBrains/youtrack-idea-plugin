@@ -325,7 +325,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             val myRepositoryType = YouTrackRepositoryType()
             connectedRepository.isLoginAnonymously = false
 
-            connectedRepository.url =  if (inputUrlTextPane.text.startsWith("http"))
+            connectedRepository.url = if (inputUrlTextPane.text.startsWith("http"))
                 inputUrlTextPane.text else "http://${inputUrlTextPane.text}"
             connectedRepository.password = String(inputTokenField.password)
             connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
