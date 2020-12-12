@@ -89,6 +89,17 @@ class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectio
     }
 
     @Test
+    fun `test connection with no protocol `() {
+        val serverUrl = "ytplugintest.myjetbrains.com/youtrack"
+        repository = createYouTrackRepository(serverUrl, token)
+        val repo = repository.getRepo()
+        val setupTask = SetupRepositoryConnector()
+
+        setupTask.testConnection(repo, project)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+    }
+
+    @Test
     fun `test connection with non-existing url`() {
         val serverUrl = "lug"
         repository = createYouTrackRepository(serverUrl, token)

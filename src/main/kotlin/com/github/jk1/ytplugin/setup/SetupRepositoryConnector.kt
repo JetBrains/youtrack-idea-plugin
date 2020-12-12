@@ -150,7 +150,6 @@ class SetupRepositoryConnector {
         checker.check()
     }
 
-
     fun testConnection(repository: YouTrackRepository, myProject: Project) {
         logger.debug("TRY CONNECTION FOR ${repository.url}")
         val task = object : Task.Modal(myProject, "Test connection", true) {
@@ -158,6 +157,7 @@ class SetupRepositoryConnector {
                 indicator.text = "Connecting to " + repository.url + "..."
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
+
                 checkAndFixConnection(repository)
             }
         }

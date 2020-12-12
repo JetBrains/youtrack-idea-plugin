@@ -232,7 +232,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             val oldUrl = URL(if (oldAddress.startsWith("http")) oldAddress else "http://$oldAddress")
             val fixedUrl = URL(connectedRepository.url)
             inputUrlTextPane.text = ""
-            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol }
+            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol && (oldAddress.startsWith("http")) }
             appendToPane(inputUrlTextPane, fixedUrl.protocol, protocolColor)
             appendToPane(inputUrlTextPane, "://", protocolColor)
             appendToPane(inputUrlTextPane, fixedUrl.host, getColor { oldUrl.host == fixedUrl.host })
@@ -325,7 +325,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             val myRepositoryType = YouTrackRepositoryType()
             connectedRepository.isLoginAnonymously = false
 
-            connectedRepository.url = inputUrlTextPane.text
+            connectedRepository.url =  if (inputUrlTextPane.text.startsWith("http"))
+                inputUrlTextPane.text else "http://${inputUrlTextPane.text}"
             connectedRepository.password = String(inputTokenField.password)
             connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
             connectedRepository.repositoryType = myRepositoryType
