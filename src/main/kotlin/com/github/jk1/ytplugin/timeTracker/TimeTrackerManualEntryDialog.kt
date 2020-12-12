@@ -3,7 +3,7 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.application.ApplicationManager
@@ -20,12 +20,12 @@ import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import javax.swing.*
 
 
 open class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
-
 
     private var dateLabel = JBLabel("Date:")
     private val datePicker = DatePicker(Date())
@@ -48,7 +48,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private lateinit var commentTextField: JBTextField
 
     private var notifier = JBLabel("")
-    private val ids = IssuesRestClient(repo).getIssueIdsAvailableForTracking()
+    private val ids = issueStoreComponent[repo].getAllIssues()
     private val tasksIdRepresentation = mutableListOf<String>()
     private val tasksIds = mutableListOf<String>()
 
@@ -133,8 +133,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
         val idPanel = JPanel(FlowLayout(2))
         for (id in ids) {
-            tasksIdRepresentation.add(id.value)
-            tasksIds.add(id.name)
+            tasksIdRepresentation.add(id.issueId + ": " + id.summary)
+            tasksIds.add(id.issueId)
         }
         idComboBox = JComboBox(tasksIdRepresentation.toTypedArray())
 
@@ -245,25 +245,37 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             notifier.text = "Date is not specified"
         } else {
             try {
-                val selectedId = ids[idComboBox.selectedIndex].name
-                val timerService = TimeTrackingService()
-                val codeOnPost = timerService.postNewWorkItem(datePicker.date.format(),
-                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
-                        commentTextField.text, time.toString())
-                if (codeOnPost == 200) {
-                    this@TimeTrackerManualEntryDialog.close(0)
-                } else {
+                val future = ApplicationManager.getApplication().executeOnPooledThread(
+                        Callable {
+                            AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
+                        })
+
+                if (future.get() == false) {
                     notifier.foreground = Color.red
-                    notifier.text = "Time could not be posted, code $codeOnPost"
+                    notifier.text = "Time tracking is disabled for this project"
+                    logger.debug("Time tracking for ${ids[idComboBox.selectedIndex].issueId} is disabled in project")
+                } else {
+                    val selectedId = ids[idComboBox.selectedIndex].issueId
+                    val timerService = TimeTrackingService()
+                    val futureCode = ApplicationManager.getApplication().executeOnPooledThread(
+                            Callable {
+                                timerService.postNewWorkItem(datePicker.date.format(),
+                                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
+                                        commentTextField.text, time.toString())
+                            })
+                    if (futureCode.get() == 200) {
+                        this@TimeTrackerManualEntryDialog.close(0)
+                    } else {
+                        notifier.foreground = Color.red
+                        notifier.text = "Time could not be posted, code ${futureCode.get()}"
+                    }
                 }
             } catch (e: IndexOutOfBoundsException) {
                 notifier.foreground = Color.red
                 notifier.text = "Please select the issue"
                 logger.debug("Issue is not selected or there are no issues in the list: ${e.message}")
             }
-
         }
     }
 
 }
-

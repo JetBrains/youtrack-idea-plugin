@@ -58,28 +58,15 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             if (httpClient.executeMethod(method) == 200) {
                 logger.debug("Successfully fetched accessible projects")
                 val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                method.releaseConnection()
                 json.map { it.asJsonObject.get("shortName").asString }
             } else {
-                method.releaseConnection()
                 logger.warn("Failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException("Failed to fetch accessible projects")
             }
         }
     }
 
-    fun getTimeTrackingOptionsForProjects(): List<String> {
-        val projects = getAccessibleProjects()
-        val result = mutableListOf<String>()
-        for (project in projects) {
-            if (checkIfTrackingIsEnabled(project)) {
-                result.add(project)
-            }
-        }
-        return result
-    }
-
-    private fun checkIfTrackingIsEnabled(projectId: String): Boolean {
+    fun checkIfTrackingIsEnabled(projectId: String): Boolean {
         val url = "${repository.url}/api/admin/projects/$projectId/timeTrackingSettings"
         val myFields = NameValuePair("fields", "enabled")
         val method = GetMethod(url)
@@ -89,17 +76,13 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                 200 -> {
                     if (JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("enabled").asBoolean) {
                         logger.debug("Time Tracking is enabled for project $projectId")
-                        method.releaseConnection()
                         true
                     } else {
                         logger.debug("Time Tracking is disabled for project $projectId")
-                        method.releaseConnection()
-
                         false
                     }
                 }
                 else -> {
-                    method.releaseConnection()
                     logger.warn("Unable to check if time tracking is enabled $status: ${method.responseBodyAsLoggedString()}")
                     false
                 }

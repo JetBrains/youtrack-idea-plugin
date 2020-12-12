@@ -1,13 +1,11 @@
 package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.issues.PersistentIssueStore
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.*
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
@@ -183,21 +181,5 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             newIssues.add(JsonParser.parseString(issueString) as JsonElement)
         }
         return newIssues
-    }
-
-    fun getIssueIdsAvailableForTracking(): List<NameValuePair> {
-
-        val result = mutableListOf<NameValuePair>()
-        val issueService = (ApplicationManager.getApplication().getService(PersistentIssueStore::class.java)!!)[repository]
-        val issues = issueService.getAllIssues()
-        val availableForTrackingProjects = AdminRestClient(repository).getTimeTrackingOptionsForProjects()
-
-        for (issue in issues) {
-            if (availableForTrackingProjects.find { it == issue.projectName } != null) {
-                val pair = NameValuePair(issue.issueId, "${issue.issueId}: ${issue.summary}")
-                result.add(pair)
-            }
-        }
-        return result
     }
 }
