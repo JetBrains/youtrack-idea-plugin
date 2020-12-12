@@ -7,6 +7,7 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.util.ui.UIUtil
 import java.net.MalformedURLException
 import java.net.URI
+import java.net.URL
 import javax.swing.JTextPane
 import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
@@ -52,7 +53,12 @@ object WikiHtmlPaneFactory {
             } catch(e: MalformedURLException) {
                 logger.debug("Unable to parse $description as URI, will try to prefix it with YouTrack server address")
             }
-            return "${issue.repoUrl}$description"
+            return with(URL(issue.repoUrl)){
+                when (port) {
+                    -1 -> "$protocol://$host$description"
+                    else -> "$protocol://$host:$port$description"
+                }
+            }
         }
     }
 }

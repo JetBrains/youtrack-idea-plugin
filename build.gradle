@@ -72,7 +72,6 @@ task testAllSupportedIdes {
     }
 }
 
-
 // Travis CI
 check.dependsOn testAllSupportedIdes
 
