@@ -7,6 +7,8 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.impl.ApplicationInfoImpl
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.DumbAware
@@ -38,7 +40,10 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
 
         searchField.text = timer.searchQuery
         searchField.text = searchField.text.trim()
-        searchField.setShowPlaceholderWhenFocused(true)
+
+        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+            searchField.setShowPlaceholderWhenFocused(true)
+        }
 
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {
