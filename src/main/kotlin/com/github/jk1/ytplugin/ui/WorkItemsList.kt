@@ -3,13 +3,17 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.intellij.diagnostic.ActivityImpl.listener
+import com.intellij.openapi.application.impl.ApplicationInfoImpl
 import com.intellij.ui.ListSpeedSearch
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.event.ActionListener
 import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
@@ -61,7 +65,11 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
                 placeholder.clear()
                 if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
                     placeholder.appendText("No work items found.")
-                    placeholder.appendLine( "Update your filter criteria and try again.")
+                    if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+                        placeholder.appendLine( "Update your filter criteria and try again.")
+                    } else {
+                        placeholder.appendText(" Update your filter criteria and try again.")
+                    }
                 }
                 issueWorkItemListModel.update()
                 val updatedSelectedIssueWorkItemIndex = issueWorkItemsStoreComponent[repo].indexOf(getSelectedIssueWorkItem())
