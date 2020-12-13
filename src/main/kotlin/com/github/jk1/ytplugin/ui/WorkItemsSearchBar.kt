@@ -41,9 +41,10 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         searchField.text = timer.searchQuery
         searchField.text = searchField.text.trim()
 
-        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
-            searchField.setShowPlaceholderWhenFocused(true)
-        }
+
+//        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+//            searchField.setShowPlaceholderWhenFocused(true)
+//        }
 
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {

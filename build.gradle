@@ -19,7 +19,7 @@ targetCompatibility = 1.8
 def supportedVersions = ['IC-2020.1', 'IC-2020.2', 'LATEST-EAP-SNAPSHOT'/*,'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2020.2'
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2020.1'
     plugins 'tasks'  //Bundled plugin dependencies
     updateSinceUntilBuild false
     instrumentCode false

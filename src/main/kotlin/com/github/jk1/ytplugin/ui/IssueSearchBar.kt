@@ -40,10 +40,11 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         file?.putUserData(INTELLISENSE_KEY, server.getSearchCompletionProvider())
         // key bindings
 
-        // show placeholder on empty query
-        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
-            searchField.setShowPlaceholderWhenFocused(true)
-        }
+//        // show placeholder on empty query
+//        @Suppress("UNRESOLVED_REFERENCE")
+//        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+//            searchField.setShowPlaceholderWhenFocused(true)
+//        }
 
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {

@@ -65,11 +65,13 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
                 placeholder.clear()
                 if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
                     placeholder.appendText("No work items found.")
-                    if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
-                        placeholder.appendLine( "Update your filter criteria and try again.")
-                    } else {
-                        placeholder.appendText(" Update your filter criteria and try again.")
-                    }
+                    placeholder.appendText(" Update your filter criteria and try again.")
+
+//                    if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+//                        placeholder.appendLine( "Update your filter criteria and try again.")
+//                    } else {
+//                        placeholder.appendText(" Update your filter criteria and try again.")
+//                    }
                 }
                 issueWorkItemListModel.update()
                 val updatedSelectedIssueWorkItemIndex = issueWorkItemsStoreComponent[repo].indexOf(getSelectedIssueWorkItem())
