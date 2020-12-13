@@ -202,6 +202,7 @@ class ActivityTracker(
         return false
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun <T> findParentComponent(component: Component?, matches: (Component) -> Boolean): T? =
             when {
                 component == null -> null

@@ -70,7 +70,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
         val typePanel = createTypePanel(timer, repo)
 
-        val postWhenPanel = createPostWhenPanel(timer, myHeight)
+        val postWhenPanel = createPostWhenPanel(timer)
 
         val commentPanel = createCommentPanel(timer)
 
@@ -143,7 +143,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         return typePanel
     }
 
-    private fun createPostWhenPanel(timer: TimeTracker, height: Int): JPanel {
+    private fun createPostWhenPanel(timer: TimeTracker): JPanel {
 
         val postWhenPanel = JPanel(FlowLayout(5))
 

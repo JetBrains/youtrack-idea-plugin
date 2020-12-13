@@ -29,7 +29,6 @@ class WorkItemsListCellRenderer(
     private lateinit var issueLink: HyperlinkLabel
 
     private val complimentaryColor = Color(123, 123, 127)
-    private val fgColor = Color(75, 107, 244)
     private val idStyle = STYLE_PLAIN
 
     lateinit var datePanel: JPanel
@@ -61,11 +60,11 @@ class WorkItemsListCellRenderer(
                                               isSelected: Boolean, cellHasFocus: Boolean): Component {
 
         background = UIUtil.getListBackground(false, false)
-        fillTrackingInfoLine(issueWorkItem, fgColor)
+        fillTrackingInfoLine(issueWorkItem)
         return this
     }
 
-    private fun fillTrackingInfoLine(issueWorkItem: IssueWorkItem, fgColor: Color) {
+    private fun fillTrackingInfoLine(issueWorkItem: IssueWorkItem) {
 
         summaryPanel.removeAll()
         summaryPanel.isOpaque = false
