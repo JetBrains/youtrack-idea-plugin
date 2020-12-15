@@ -28,19 +28,15 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var inactivityMinutesInputField = JBTextField("10")
     private var inactivityTextField = JBLabel("With inactivity period:")
 
-    private var isScheduledCheckbox = JBCheckBox()
-    private var scheduledTextField = JBLabel("On a set schedule at:")
+    private var isScheduledCheckbox = JBCheckBox("On a set schedule at:")
 
     private var isManualModeRadioButton = JBRadioButton()
     private var manualModeTextField = JBLabel("Manual")
 
     private var noTrackingButton = JBRadioButton("Off  ")
 
-    private var postWhenProjectClosedCheckbox = JBCheckBox()
-    private var postWhenCommitCheckbox = JBCheckBox()
-
-    private var postWhenProjectClosedTextField = JBLabel(" When closing the project")
-    private var postWhenCommitTextField = JBLabel(" When committing changes  ")
+    private var postWhenProjectClosedCheckbox = JBCheckBox("When closing the project")
+    private var postWhenCommitCheckbox = JBCheckBox("When committing changes")
 
     private var isAutoTrackingEnabledRadioButton = JBRadioButton()
     private var autoTrackingEnabledTextField = JBLabel("Automatic")
@@ -149,22 +145,25 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val postWhenPanel = JPanel(FlowLayout(5))
 
         postWhenCommitCheckbox.isSelected = timer.isPostAfterCommitEnabled
+        postWhenCommitCheckbox.name = "When committing changes"
 
         postWhenProjectClosedCheckbox.isSelected = timer.isWhenProjectClosedEnabled
+        postWhenProjectClosedCheckbox.name = "When closing the project"
+
         postWhenPanel.add(postWhenProjectClosedCheckbox)
-        postWhenPanel.add(postWhenProjectClosedTextField)
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.119 * myWidth).toInt(), standartHeight)
-
+        sep.preferredSize = Dimension((0.14 * myWidth).toInt(), standartHeight)
         postWhenPanel.add(sep)
+
         postWhenPanel.add(postWhenCommitCheckbox)
-        postWhenPanel.add(postWhenCommitTextField)
+
+        val sep2 = JBLabel("")
+        sep2.preferredSize = Dimension((0.002 * myWidth).toInt(), standartHeight)
+        postWhenPanel.add(sep2)
 
         postWhenProjectClosedCheckbox.isEnabled = timer.isAutoTrackingEnable
-        postWhenProjectClosedTextField.isEnabled = timer.isAutoTrackingEnable
         postWhenCommitCheckbox.isEnabled = timer.isAutoTrackingEnable
-        postWhenCommitTextField.isEnabled = timer.isAutoTrackingEnable
 
         return postWhenPanel
     }
@@ -243,16 +242,11 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         timePanel.add(scheduledMinutes)
         timePanel.add(minuteLabel2)
 
-        val bigScheduledPanel = JPanel(FlowLayout(5))
-        val scheduledPanel = JPanel(FlowLayout(5))
-
         scheduledFieldsEnabling(timer.isAutoTrackingEnable)
 
-        scheduledPanel.add(scheduledTextField)
-        scheduledPanel.add(timePanel)
-
+        val bigScheduledPanel = JPanel(FlowLayout(5))
         bigScheduledPanel.add(isScheduledCheckbox)
-        bigScheduledPanel.add(scheduledPanel)
+        bigScheduledPanel.add(timePanel)
 
         return bigScheduledPanel
     }
@@ -277,7 +271,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val inactivityPeriodPanel = JPanel(FlowLayout(3))
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.026 * myWidth).toInt(), standartHeight)
+        sep.preferredSize = Dimension((0.017 * myWidth).toInt(), standartHeight)
         inactivityPeriodPanel.add(inactivityTextField)
         inactivityPeriodPanel.add(sep)
         inactivityPeriodPanel.add(inactivityTimePanel)
@@ -294,7 +288,6 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     }
 
     private fun scheduledFieldsEnabling(enable: Boolean) {
-        scheduledTextField.isEnabled = enable
         isScheduledCheckbox.isEnabled = enable
         scheduledHour.isEnabled = enable
         scheduledMinutes.isEnabled = enable
@@ -311,10 +304,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         scheduledFieldsEnabling(autoTrackEnabled && !noTrackingEnabled)
 
         postWhenProjectClosedCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
-        postWhenProjectClosedTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
-
         postWhenCommitCheckbox.isEnabled = autoTrackEnabled && !noTrackingEnabled
-        postWhenCommitTextField.isEnabled = autoTrackEnabled && !noTrackingEnabled
 
         commentLabel.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
         commentTextField.isEnabled = (autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled
