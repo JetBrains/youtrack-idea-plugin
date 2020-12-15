@@ -39,8 +39,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
     private var postWhenProjectClosedCheckbox = JBCheckBox()
     private var postWhenCommitCheckbox = JBCheckBox()
 
-    private var postWhenProjectClosedTextField = JBLabel("When closing the project")
-    private var postWhenCommitTextField = JBLabel("When committing changes  ")
+    private var postWhenProjectClosedTextField = JBLabel(" When closing the project")
+    private var postWhenCommitTextField = JBLabel(" When committing changes  ")
 
     private var isAutoTrackingEnabledRadioButton = JBRadioButton()
     private var autoTrackingEnabledTextField = JBLabel("Automatic")
@@ -155,7 +155,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         postWhenPanel.add(postWhenProjectClosedTextField)
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.134 * myWidth).toInt(), standartHeight)
+        sep.preferredSize = Dimension((0.119 * myWidth).toInt(), standartHeight)
 
         postWhenPanel.add(sep)
         postWhenPanel.add(postWhenCommitCheckbox)
@@ -243,8 +243,8 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         timePanel.add(scheduledMinutes)
         timePanel.add(minuteLabel2)
 
-        val bigScheduledPanel = JPanel(FlowLayout(2))
-        val scheduledPanel = JPanel(FlowLayout(2))
+        val bigScheduledPanel = JPanel(FlowLayout(5))
+        val scheduledPanel = JPanel(FlowLayout(5))
 
         scheduledFieldsEnabling(timer.isAutoTrackingEnable)
 
