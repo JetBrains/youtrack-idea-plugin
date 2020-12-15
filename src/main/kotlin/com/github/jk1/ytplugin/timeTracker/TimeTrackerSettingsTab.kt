@@ -26,7 +26,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
     private var inactivityHourInputField = JBTextField("00")
     private var inactivityMinutesInputField = JBTextField("10")
-    private var inactivityTextField = JBLabel(" Inactivity period:")
+    private var inactivityTextField = JBLabel("With inactivity period:")
 
     private var isScheduledCheckbox = JBCheckBox()
     private var scheduledTextField = JBLabel("On a set schedule at:")
@@ -85,12 +85,13 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         autoPanel.border = autoPanelBorder
         autoPanel.add(postWhenPanel)
         autoPanel.add(schedulePanel)
+        autoPanel.add(inactivityPeriodPanel)
+
 
         val preferencesPanel = JPanel(VerticalLayout(7))
         val preferencesPanelBorder = BorderFactory.createTitledBorder(loweredetched, "Preferences")
         preferencesPanelBorder.titlePosition = TitledBorder.TOP
         preferencesPanel.border = preferencesPanelBorder
-        preferencesPanel.add(inactivityPeriodPanel)
         preferencesPanel.add(typePanel)
         preferencesPanel.add(commentPanel)
 
@@ -154,7 +155,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         postWhenPanel.add(postWhenProjectClosedTextField)
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension(70, standartHeight)
+        sep.preferredSize = Dimension((0.134 * myWidth).toInt(), standartHeight)
 
         postWhenPanel.add(sep)
         postWhenPanel.add(postWhenCommitCheckbox)
@@ -203,9 +204,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
 
         val sep = JBLabel(" ")
-        sep.preferredSize = Dimension(112, standartHeight)
+        sep.preferredSize = Dimension((0.213 * myWidth).toInt(), standartHeight)
         val sep2 = JBLabel(" ")
-        sep2.preferredSize = Dimension(111, standartHeight)
+        sep2.preferredSize = Dimension((0.214 * myWidth).toInt(), standartHeight)
         enableAutoTrackingPanel.add(isAutoTrackingEnabledRadioButton)
         enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
         enableManualTrackingPanel.add(isManualModeRadioButton)
@@ -276,8 +277,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val inactivityPeriodPanel = JPanel(FlowLayout(3))
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.1 * myWidth).toInt() - 2, standartHeight)
+        sep.preferredSize = Dimension((0.026 * myWidth).toInt(), standartHeight)
         inactivityPeriodPanel.add(inactivityTextField)
+        inactivityPeriodPanel.add(sep)
         inactivityPeriodPanel.add(inactivityTimePanel)
 
         return inactivityPeriodPanel
