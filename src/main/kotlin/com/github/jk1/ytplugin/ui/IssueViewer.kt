@@ -53,7 +53,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         addAttachmentsTab(issue.attachments, tabs)
         addWorkLogTab(issue.workItems, tabs)
         container.add(tabs)
-       // issuePane.setHtml(issue.description)
+        issuePane.setHtml(issue.description)
         scrollToTop.invoke()
         issuePane.repaint()
     }
