@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.issues.model
 
 import com.github.jk1.ytplugin.YouTrackIssue
 import com.github.jk1.ytplugin.rest.IssueJsonParser
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import java.util.*
 
@@ -20,6 +21,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
     var tags: List<IssueTag> = emptyList()
     var attachments: List<Attachment> = emptyList()
     var url: String
+    var projectName: String
     var workItems: MutableList<IssueWorkItem> = mutableListOf()
 
     init {
@@ -40,7 +42,7 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         resolved = (!root.get("resolved").isJsonNull && root.get("resolved") != null)
 
-        customFields = if (root.getAsJsonArray("customFields") != null && !root.getAsJsonArray(("customFields")).isJsonNull){
+        customFields = if (root.getAsJsonArray("customFields") != null && !root.getAsJsonArray(("customFields")).isJsonNull) {
             root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
         } else {
             // YouTrack 2018.X has no 'customFields' yet
@@ -61,7 +63,14 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         attachments = root.getAsJsonArray(("attachments")).mapNotNull { IssueJsonParser.parseAttachment(it, repoUrl) }
 
+        projectName = root.get("project").asJsonObject.get("shortName").asString
+
         url = "$repoUrl/issue/$id"
+
+        if (root.getAsJsonArray(("workItems")) != null && !root.getAsJsonArray(("workItems")).isJsonNull) {
+            val workItemsJson: JsonArray = root.getAsJsonArray(("workItems"))
+            workItemsJson.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
+        }
     }
 
     override fun getIssueId() = id

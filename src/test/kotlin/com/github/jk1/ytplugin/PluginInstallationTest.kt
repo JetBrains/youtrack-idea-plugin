@@ -34,6 +34,8 @@ class PluginInstallationTest : IdeaProjectTrait {
             Assert.assertNotNull(issueStoreComponent)
             Assert.assertNotNull(issueUpdaterComponent)
             Assert.assertNotNull(pluginApiComponent)
+            Assert.assertNotNull(timeTrackerComponent)
+
         }
     }
 

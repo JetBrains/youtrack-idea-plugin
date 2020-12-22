@@ -11,7 +11,7 @@ import javax.swing.Icon
 class ToggleIssueViewAction(val project: Project, private val issueList: IssueList) : IssueAction() {
 
     override val text = "Toggle Presentation"
-    override val description = "Toggle issue list presentation detail level"
+    override val description = "Expand or collapse the list of issues in the tool window"
     override val icon: Icon = AllIcons.Actions.Collapseall
     override val shortcut = "control shift T"
 

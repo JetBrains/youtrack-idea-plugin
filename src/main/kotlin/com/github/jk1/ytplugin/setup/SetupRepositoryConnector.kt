@@ -36,15 +36,15 @@ class SetupRepositoryConnector {
         note.foreground = Color.red
         when (noteState) {
             NotifierState.SUCCESS -> {
-                note.foreground = Color.green
-                note.text = "Successfully connected"
+                note.foreground = Color(54, 156, 54)
+                note.text = "Connection successful"
             }
             NotifierState.GUEST_LOGIN -> {
-                note.foreground = Color.green
+                note.foreground = Color(54, 156, 54)
                 note.text = "Logged in as a guest"
             }
-            NotifierState.EMPTY_FIELD -> note.text =  "Url and token fields are mandatory"
-            NotifierState.PASSWORD_NOT_STORED -> note.text =  "Please check if password persistence is permitted in System Settings "
+            NotifierState.EMPTY_FIELD -> note.text = "Url and token fields are mandatory"
+            NotifierState.PASSWORD_NOT_STORED -> note.text = "Please check if password persistence is permitted in System Settings "
             NotifierState.LOGIN_ERROR -> note.text = "Cannot login: incorrect URL or token"
             NotifierState.UNKNOWN_ERROR -> note.text = "Unknown error"
             NotifierState.UNKNOWN_HOST -> note.text = "Unknown host"
@@ -115,7 +115,7 @@ class SetupRepositoryConnector {
                 }
                 else -> {
                     logger.debug("handling response code other than 301..399, 403 ${repository.url}: MANUAL FIX")
-                    if (!method.uri.path.contains("/youtrack")){
+                    if (!method.uri.path.contains("/youtrack")) {
                         repository.url = "${repository.url}/youtrack"
                         logger.debug("url after manual ending fix: ${repository.url}")
                         checker.check()
@@ -150,7 +150,6 @@ class SetupRepositoryConnector {
         checker.check()
     }
 
-
     fun testConnection(repository: YouTrackRepository, myProject: Project) {
         logger.debug("TRY CONNECTION FOR ${repository.url}")
         val task = object : Task.Modal(myProject, "Test connection", true) {
@@ -158,6 +157,7 @@ class SetupRepositoryConnector {
                 indicator.text = "Connecting to " + repository.url + "..."
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
+
                 checkAndFixConnection(repository)
             }
         }

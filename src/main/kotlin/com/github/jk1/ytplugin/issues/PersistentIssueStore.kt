@@ -42,18 +42,27 @@ class PersistentIssueStore : PersistentStateComponent<Memento> {
     class Memento constructor() {
 
         // should stay mutable and public for serialization to work
-       var persistentIssues: Map<String, String> = mutableMapOf()
+        var persistentIssues: Map<String, String> = mutableMapOf()
+
 
         // primary constructor is reserved for serializer
         constructor(stores: Map<String, IssueStore>) : this() {
             persistentIssues = stores.mapValues { "[${it.value.joinToString(", ") { it.json }}]" }
+//            for (item in stores.values){
+//                val issues = item.getAllIssues()
+//                for (issue in issues){
+//                    persistentWorkItems.addAll(issue.workItems)
+//                }
+//            }
         }
 
         fun getStore(repo: YouTrackServer): IssueStore {
             try {
                 val issuesJson = persistentIssues[repo.id] ?: return IssueStore()
+
                 val issues = JsonParser.parseString(issuesJson).asJsonArray
                         .mapNotNull { IssueJsonParser.parseIssue(it, repo.url) }
+
                 logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
                 return IssueStore(issues)
             } catch (e: Exception) {

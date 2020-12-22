@@ -10,7 +10,7 @@ import javax.swing.Icon
 class PinIssueAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
     override val text: String = "Pin issue"
-    override val description: String = "Open issue in a separate pinned tab"
+    override val description: String = "Pin the selected issue as a separate tab in the tool window"
     override val icon: Icon = AllIcons.General.Pin_tab
     override val shortcut: String = "control shift P"
 

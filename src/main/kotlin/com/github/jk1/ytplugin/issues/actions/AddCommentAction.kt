@@ -10,7 +10,7 @@ import javax.swing.Icon
 class AddCommentAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
     override val text = "Add Comment"
-    override val description = "Adds a comment to the selected issue"
+    override val description = "Open the command dialog and add a comment to the selected issue"
     override val icon: Icon = AllIcons.General.Balloon
     override val shortcut = "control shift C"
 

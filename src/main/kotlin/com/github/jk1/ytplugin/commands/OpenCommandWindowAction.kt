@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.commands
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackPluginException
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.IssueTask
@@ -57,10 +58,16 @@ class OpenCommandWindowAction : AnAction(
                 task.issue
             } else {
                 // try local store first, fall back to rest api if not found
-                val repo = taskManagerComponent.getActiveYouTrackRepository()
-                issueStoreComponent[repo].firstOrNull { it.id == task.id }
-                        ?: IssuesRestClient(repo).getIssue(task.id)
-                        ?: throw NoActiveYouTrackTaskException()
+                try {
+                    val repo = taskManagerComponent.getActiveYouTrackRepository()
+                    issueStoreComponent[repo].firstOrNull { it.id == task.id }
+                            ?: IssuesRestClient(repo).getIssue(task.id)
+                            ?: throw NoActiveYouTrackTaskException()
+                } catch (e: NoYouTrackRepositoryException) {
+                    logger.debug("Unable to get issue from current activeTask: ${e.message} ")
+                    throw NoActiveYouTrackTaskException()
+                }
+
             }
         }
     }

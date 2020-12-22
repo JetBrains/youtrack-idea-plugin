@@ -11,7 +11,7 @@ import java.awt.datatransfer.StringSelection
 class CopyIssueLinkAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
     override val text = "Copy Issue Link"
-    override val description = "Copy issue URL to a clipboard"
+    override val description = "Copy the URL for the selected issue to the clipboard"
     override val icon = AllIcons.Actions.Copy
     override val shortcut = "control shift C"
 

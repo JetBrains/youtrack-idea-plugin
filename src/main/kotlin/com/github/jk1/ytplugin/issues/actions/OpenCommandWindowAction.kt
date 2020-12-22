@@ -9,8 +9,8 @@ import javax.swing.Icon
 
 class OpenCommandWindowAction(private val getSelectedIssue: () -> Issue?): IssueAction() {
 
-    override val text = "Open Command Window"
-    override val description = "Apply command to a currently selected issue in a tool window"
+    override val text = "Open Command Dialog"
+    override val description = "Update the selected issue by applying a command"
     override val icon: Icon = AllIcons.Debugger.Console
     override val shortcut = "control shift Y"
 

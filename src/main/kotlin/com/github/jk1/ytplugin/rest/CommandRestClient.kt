@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
+import java.net.URL
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
@@ -54,7 +55,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                 CommandAssistResponse(method.responseBodyAsLoggedStream())
             } else {
                 method.responseBodyAsLoggedString()
-                logger.error("Runtime Exception while posting assist command in CommandRestClient.")
+                logger.warn("Runtime Exception while posting assist command in CommandRestClient.")
                 throw RuntimeException("HTTP $status")
             }
         }
@@ -64,7 +65,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val execUrl = "${repository.url}/api/groups?fields=name,id,allUsersGroup"
         val getMethod = GetMethod(execUrl)
         val status = httpClient.executeMethod(getMethod)
-        return if (JsonParser.parseString(getMethod.responseBodyAsLoggedString()).isJsonArray ){
+        return if (JsonParser.parseString(getMethod.responseBodyAsLoggedString()).isJsonArray) {
             val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsLoggedString()) as JsonArray
             if (status == 200) {
                 logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
@@ -81,7 +82,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
     }
 
-    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution) : String {
+    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution): String {
         val res = this::class.java.classLoader.getResource("command_execution_rest.json")
                 ?: throw IllegalStateException("Resource 'command_execution_rest.json' file is missing")
 
@@ -107,7 +108,6 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         return jsonBody
     }
 
-
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
 
         val execPostUrl = "${repository.url}/api/commands"
@@ -116,22 +116,13 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
 
         postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
         return postMethod.connect {
-            try {
-                val status = httpClient.executeMethod(postMethod)
-                if (status != 200) {
-                    logger.warn("Failed to fetch execute command in CommandRestClient: " +
-                            "code $status ${postMethod.responseBodyAsLoggedString()}")
-                    val error = JsonParser.parseString(postMethod.responseBodyAsString).asJsonObject.get("value").asString
-                    CommandExecutionResponse(errors = listOf("Workflow: $error"))
-                } else {
-                    logger.debug("Successfully fetched execute command in CommandRestClient: code $status")
-                    postMethod.responseBodyAsLoggedString()
-                    CommandExecutionResponse()
-                }
-            } catch (e: IllegalStateException) {
-                logger.warn("Failed to fetch execute command in CommandRestClient: ${e.message}")
-                val error = JsonParser.parseString(postMethod.responseBodyAsString).asJsonObject.get("error_description").asString
+            val status = httpClient.executeMethod(postMethod)
+            if (status != 200) {
+                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
                 CommandExecutionResponse(errors = listOf("Workflow: $error"))
+            } else {
+                postMethod.responseBodyAsLoggedString()
+                CommandExecutionResponse()
             }
         }
     }

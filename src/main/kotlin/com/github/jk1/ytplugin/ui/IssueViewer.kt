@@ -10,6 +10,7 @@ import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
+import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
@@ -31,6 +32,7 @@ class IssueViewer : JPanel(BorderLayout()) {
 
     fun showIssue(issue: Issue) {
         rootPane.removeAll()
+        rootPane.isOpaque = false
         currentIssue = issue
         val container = JPanel()
         container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
@@ -43,6 +45,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             container.add(createLinkPanel(it.key, it.value))
         }
         val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        issuePane.isOpaque = false
         issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
         container.add(issuePane)
         val tabs = JBTabbedPane()
@@ -89,6 +92,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             }
             panel.add(label)
         }
+        panel.isOpaque = false
         return panel
     }
 
@@ -97,6 +101,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
         panel.add(JLabel("${role.capitalize()}: "))
         links.forEach { panel.add(HyperlinkLabel(it.value, it.url)) }
+        panel.isOpaque = false
         return panel
     }
 
@@ -128,7 +133,7 @@ class IssueViewer : JPanel(BorderLayout()) {
     private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane) {
         if (workItems.isNotEmpty()) {
             val workItemsPanel = JPanel()
-            workItemsPanel.layout = BoxLayout(workItemsPanel, BoxLayout.Y_AXIS)
+            workItemsPanel.layout = VerticalLayout(5)
             tabs.addTab("Work Items (${workItems.size})", workItemsPanel)
             tabs.isFocusable = false
 
@@ -136,6 +141,25 @@ class IssueViewer : JPanel(BorderLayout()) {
             workItems.forEach { workItemsPanel.add(createWorkItemsPanel(it)) }
         }
     }
+
+//    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane) {
+//        if (workItems.isNotEmpty()) {
+//
+//            val wPanel = JPanel()
+//            wPanel.layout = VerticalLayout(5)
+//
+//            workItems.sort()
+//            workItems.forEach {
+//                val workItemsPanel = JPanel()
+//                workItemsPanel.layout = BoxLayout(workItemsPanel, BoxLayout.X_AXIS)
+//                workItemsPanel.add(createWorkItemsPanel(it))
+//                wPanel.add(workItemsPanel)
+//            }
+//
+//            tabs.addTab("Work Items (${workItems.size})", wPanel)
+//            tabs.isFocusable = false
+//        }
+//    }
 
     private fun createCommentPanel(comment: IssueComment): JPanel {
         val topPanel = JPanel(BorderLayout())
@@ -147,6 +171,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
         val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        commentPane.isOpaque = false
         commentPane.margin = Insets(2, 4, 0, 0)
         commentPane.setHtml(comment.text)
         commentPanel.add(commentPane, BorderLayout.CENTER)
@@ -158,34 +183,39 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     private fun createWorkItemsPanel(workItem: IssueWorkItem): JPanel {
-        val workItemsPanel = JPanel(GridLayout(1, 8, 0, 0))
+        val workItemsPanel = JPanel(GridLayout(1, 8, 5, 0))
         val viewportWidth = 60
-
 
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
         header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        header.alignmentX = Component.LEFT_ALIGNMENT
 
         val date = SimpleColoredComponent()
         // post date without time
         date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        date.alignmentX = Component.LEFT_ALIGNMENT
 
         var value = SimpleColoredComponent()
         value.icon = AllIcons.Vcs.History
 
-        value = createValueWithEnding(" +", value,
+        value =  createValueWithEnding(" +", value,
                 workItem.value, viewportWidth)
-
+        value.alignmentX = Component.LEFT_ALIGNMENT
 
         val slash = SimpleColoredComponent()
-        slash.append("            |")
+        slash.append("           |")
+        slash.alignmentX =  Component.LEFT_ALIGNMENT
         val slash1 = SimpleColoredComponent()
-        slash1.append("           |")
+        slash1.append("          |")
+        slash1.alignmentX =  Component.LEFT_ALIGNMENT
         val slash2 = SimpleColoredComponent()
-        slash2.append("           |")
+        slash2.append("          |")
+        slash2.alignmentX =  Component.LEFT_ALIGNMENT
+
 
         val panelWidth = rootPane.width
-        if (panelWidth < 500) {
+        if (panelWidth < 500){
             workItemsPanel.add(date)
             workItemsPanel.add(slash1)
             workItemsPanel.add(value)
@@ -200,22 +230,27 @@ class IssueViewer : JPanel(BorderLayout()) {
             if (workItem.comment != null) {
                 comment = createValueWithEnding(" ...", comment,
                         workItem.comment, viewportWidth)
+                comment.alignmentX = Component.LEFT_ALIGNMENT
                 workItemsPanel.add(slash2)
                 workItemsPanel.add(comment)
             } else {
                 workItemsPanel.add(JLabel(""))  // for empty cell
                 workItemsPanel.add(JLabel(""))  // for empty cell
             }
-
             workItemsPanel.add(JLabel(""))  // for empty cell
         }
+
+
         return workItemsPanel
     }
 
-    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
-            : SimpleColoredComponent {
 
-        val parts = item.split(" ").iterator()
+
+
+    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
+            : SimpleColoredComponent{
+
+        val parts =  item.split(" ").iterator()
         while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
             value.append(" ${parts.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }

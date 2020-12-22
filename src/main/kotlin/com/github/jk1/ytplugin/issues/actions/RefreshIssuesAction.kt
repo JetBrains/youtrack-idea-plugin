@@ -12,8 +12,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
  */
 class RefreshIssuesAction(val repo: YouTrackServer) : IssueAction() {
 
-    override val text = "Refresh"
-    override val description = "Update issue list from YouTrack server"
+    override val text = "Refresh List"
+    override val description = "Pull updates from your YouTrack server"
     override val icon = AllIcons.Actions.Refresh
     override val shortcut = "control shift U"
 

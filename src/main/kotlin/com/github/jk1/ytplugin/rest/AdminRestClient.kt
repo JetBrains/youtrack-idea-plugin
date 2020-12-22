@@ -28,9 +28,9 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
 
         method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
         return method.connect {
-            when (httpClient.executeMethod(method)) {
+            when (val status = httpClient.executeMethod(method)) {
                 200 -> {
-                    logger.debug("Successfully fetched visibility groups")
+                    logger.debug("Successfully fetched visibility groups in AdminRestClient: code $status")
                     listOf("All Users") +
                             parseGroupNames(method, "recommendedGroups") +
                             parseGroupNames(method, "groupsWithoutRecommended")
@@ -62,6 +62,30 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             } else {
                 logger.warn("Failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
                 throw RuntimeException("Failed to fetch accessible projects")
+            }
+        }
+    }
+
+    fun checkIfTrackingIsEnabled(projectId: String): Boolean {
+        val url = "${repository.url}/api/admin/projects/$projectId/timeTrackingSettings"
+        val myFields = NameValuePair("fields", "enabled")
+        val method = GetMethod(url)
+        method.setQueryString(arrayOf(myFields))
+        return method.connect {
+            when (val status = httpClient.executeMethod(method)) {
+                200 -> {
+                    if (JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("enabled").asBoolean) {
+                        logger.debug("Time Tracking is enabled for project $projectId")
+                        true
+                    } else {
+                        logger.debug("Time Tracking is disabled for project $projectId")
+                        false
+                    }
+                }
+                else -> {
+                    logger.warn("Unable to check if time tracking is enabled $status: ${method.responseBodyAsLoggedString()}")
+                    false
+                }
             }
         }
     }

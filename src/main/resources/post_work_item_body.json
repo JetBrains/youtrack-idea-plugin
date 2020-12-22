@@ -1,0 +1,20 @@
+{
+  "usesMarkdown": true,
+  "text": "{comment}",
+  "date": "{date}",
+  "author": {
+    "id": "{authorId}"
+  },
+  "duration": {
+    "minutes": "{minutes}"
+  },
+  "type": {
+    "name": "{type}",
+    "id": "{typeId}",
+    "$type": "WorkItemType"
+  },
+
+  "$type": "IssueWorkItem"
+}
+
+

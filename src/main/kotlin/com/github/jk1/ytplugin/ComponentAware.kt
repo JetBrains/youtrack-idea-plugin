@@ -6,6 +6,7 @@ import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
 import com.github.jk1.ytplugin.issues.PersistentIssueStore
 import com.github.jk1.ytplugin.navigator.SourceNavigatorService
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService
+import com.github.jk1.ytplugin.timeTracker.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 
@@ -34,6 +35,12 @@ interface ComponentAware {
     val sourceNavigatorComponent: SourceNavigatorService
         get() = project.getService(SourceNavigatorService::class.java)!!
 
+    val issueWorkItemsStoreComponent: PersistentIssueWorkItemsStore
+        get() = ApplicationManager.getApplication().getService(PersistentIssueWorkItemsStore::class.java)!!
+
+    val issueWorkItemsUpdaterComponent: IssueWorkItemsStoreUpdaterService
+        get() = project.getService(IssueWorkItemsStoreUpdaterService::class.java)!!
+
     val issueStoreComponent: PersistentIssueStore
         get() = ApplicationManager.getApplication().getService(PersistentIssueStore::class.java)!!
 
@@ -42,4 +49,9 @@ interface ComponentAware {
 
     val pluginApiComponent: YouTrackPluginApiService
         get() = project.getService(YouTrackPluginApiService::class.java) as YouTrackPluginApiService
+
+
+    val timeTrackerComponent: TimeTracker
+        get() = project.getService(TimeTracker::class.java)!!
+
 }

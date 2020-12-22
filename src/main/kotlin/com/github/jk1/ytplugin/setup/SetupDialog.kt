@@ -2,10 +2,17 @@ package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
+import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
+import com.github.jk1.ytplugin.timeTracker.TimeTrackingService
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.youtrack.YouTrackRepository
@@ -14,7 +21,6 @@ import com.intellij.ui.components.*
 import com.intellij.util.net.HttpConfigurable
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
-import java.awt.event.ActionEvent
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
@@ -26,25 +32,47 @@ import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 
 
-open class SetupDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+open class SetupDialog(override val project: Project, val repo: YouTrackServer, val fromTracker: Boolean) : DialogWrapper(project, false), ComponentAware {
 
     private lateinit var notifyFieldLabel: JBLabel
+
+    private val okButton = JButton("Save")
+    private val cancelButton = JButton("Cancel")
+
+    private var mainPane = JBTabbedPane()
 
     private lateinit var tokenLabel: JBLabel
     private lateinit var controlPanel: JBPanel<JBPanelWithEmptyText>
     private lateinit var shareUrlCheckBox: JBCheckBox
     private lateinit var useProxyCheckBox: JBCheckBox
 
+    private lateinit var testConnectionButton: JButton
+    private lateinit var proxyButton: JButton
+
     private var inputUrlTextPane = JTextPane()
     private var inputTokenField = JBPasswordField()
 
-    val repoConnector = SetupRepositoryConnector()
+    private val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
+
+    private val myHeight = 490
+    private val myWidth = 525
+    private val standartHeight = (0.0613 * myHeight).toInt()
+
+    private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
     private var isConnectionTested = false
 
     override fun init() {
         title = "YouTrack"
+        val timer = ComponentAware.of(repo.project).timeTrackerComponent
+        if (timer.isRunning) {
+            StopTrackerAction().stopTimer(project)
+            timer.isAutoTrackingTemporaryDisabled = true
+        }
+        rootPane.defaultButton = okButton
+        setResizable(false)
+
         super.init()
     }
 
@@ -53,48 +81,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         super.show()
     }
 
-    private fun testConnectionAction() {
-
-        val isRememberPassword = PasswordSafe.instance.isRememberPasswordByDefault
-        if (!isRememberPassword) {
-            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
-        }
-
-        val fontColor = inputTokenField.foreground
-
-        val myRepositoryType = YouTrackRepositoryType()
-        connectedRepository.url = inputUrlTextPane.text
-        connectedRepository.password = String(inputTokenField.password)
-        connectedRepository.username = "Token-based authentication" // ignored by YouTrack anyway when token is sent as password
-        connectedRepository.repositoryType = myRepositoryType
-        connectedRepository.storeCredentials()
-
-        connectedRepository.isShared = shareUrlCheckBox.isSelected
-        connectedRepository.isLoginAnonymously = false
-
-        val proxy = HttpConfigurable.getInstance()
-        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
-            connectedRepository.isUseProxy = useProxyCheckBox.isSelected
-            if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
-                repoConnector.testConnection(connectedRepository, project)
-            }
-        } else {
-            repoConnector.noteState = NotifierState.NULL_PROXY_HOST
-            connectedRepository.isUseProxy = false
-        }
-
-        drawAutoCorrection(fontColor)
-
-        if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
-            repoConnector.noteState = NotifierState.EMPTY_FIELD
-        } else if (!repoConnector.isValidToken(connectedRepository.password)) {
-            repoConnector.noteState = NotifierState.INVALID_TOKEN
-        } else if (PasswordSafe.instance.isMemoryOnly) {
-            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
-        }
-
-        repoConnector.setNotifier(notifyFieldLabel)
-        isConnectionTested = true
+    override fun doCancelAction() {
+        startTimer()
+        super.doCancelAction()
     }
 
     private fun appendToPane(tp: JTextPane, msg: String, c: Color) {
@@ -106,15 +95,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         tp.replaceSelection(msg)
     }
 
-    private fun enableButtons() {
-        this.useProxyCheckBox.isEnabled = HttpConfigurable.getInstance().USE_HTTP_PROXY
-        if (!HttpConfigurable.getInstance().USE_HTTP_PROXY) {
-            this.useProxyCheckBox.isSelected = false
-        }
-    }
-
-
-    private fun createServerPane() : JPanel{
+    private fun createServerPane(): JPanel {
         val serverUrlLabel = JBLabel("Server URL:")
         inputUrlTextPane.apply {
             layout = BorderLayout()
@@ -148,7 +129,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
                     repaint()
                 }
             })
-            preferredSize = Dimension(382, 28)
+            preferredSize = Dimension(374, 28)
         }
 
         val serverPanel = JPanel(FlowLayout(2))
@@ -158,23 +139,23 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         return serverPanel
     }
 
-    private fun createTokenPane() : JPanel {
-        tokenLabel = JBLabel("Permanent Token:")
+    private fun createTokenPane(): JPanel {
+        tokenLabel = JBLabel("Permanent token:")
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            preferredSize = Dimension(384, 31)
+            preferredSize = Dimension(375, 31)
         }
-        val tokenPanel = JPanel(FlowLayout(2))
+        val tokenPanel = JPanel(FlowLayout(1))
         tokenPanel.add(tokenLabel)
         tokenPanel.add(inputTokenField)
 
         return tokenPanel
     }
 
-    fun createCheckboxesPane() : JPanel {
-        shareUrlCheckBox = JBCheckBox("Share Url", repo.getRepo().isShared)
-        useProxyCheckBox = JBCheckBox("Use Proxy", repo.getRepo().isUseProxy)
+    private fun createCheckboxesPane(): JPanel {
+        shareUrlCheckBox = JBCheckBox("Share URL", repo.getRepo().isShared)
+        useProxyCheckBox = JBCheckBox("Use proxy", repo.getRepo().isUseProxy)
 
         val checkboxesPanel = JPanel(FlowLayout(2))
         checkboxesPanel.add(shareUrlCheckBox)
@@ -183,52 +164,63 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         return checkboxesPanel
     }
 
-    private fun createAdvertiserPane() : JPanel{
-        val advertiserLabel = HyperlinkLabel("Not YouTrack customer yet? Get YouTrack",
+    private fun createAdvertiserPane(): JPanel {
+        val advertiserLabel = HyperlinkLabel("Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
-        val advertiserPane = JPanel(BorderLayout())
-        advertiserPane.add(advertiserLabel, BorderLayout.EAST)
+        val advertiserPane = JPanel(FlowLayout(FlowLayout.RIGHT))
+        advertiserPane.add(advertiserLabel)
         return advertiserPane
     }
 
-    private fun createInfoPane() : JPanel{
-        val getTokenInfoLabel = HyperlinkLabel("Get token",
+    private fun createInfoPane(): JPanel {
+        val getTokenInfoLabel = HyperlinkLabel("Learn how to generate a permanent token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html")
 
-        notifyFieldLabel = JBLabel("").apply {
-            foreground = Color.red
-        }
-
-        val sep = JBLabel("").apply {
-            preferredSize = Dimension(55, 20)
-        }
-
-        val tokenInfoPane = JPanel(FlowLayout(2))
-        tokenInfoPane.add(notifyFieldLabel)
-        tokenInfoPane.add(sep)
+        val tokenInfoPane = JPanel(FlowLayout(FlowLayout.RIGHT))
         tokenInfoPane.add(getTokenInfoLabel)
-
         return tokenInfoPane
     }
 
-    private fun prepareTabbedPane(): JTabbedPane {
+    private fun createNotifierPane(): JPanel {
+
+        notifyFieldLabel = JBLabel("").apply { foreground = Color.red }
+        val notifyPane = JPanel(BorderLayout())
+        notifyPane.add(notifyFieldLabel, BorderLayout.CENTER)
+
+        return notifyPane
+    }
+
+    private fun prepareTabbedPane(): JBTabbedPane {
 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
         val connectionTab = JBPanel<JBPanelWithEmptyText>().apply {
-            layout = VerticalLayout(5)
+            layout = VerticalLayout(13)
             add(createAdvertiserPane())
             add(createServerPane())
             add(createCheckboxesPane())
             add(createTokenPane())
             add(createInfoPane())
+            add(createNotifierPane())
+            // to separate from other fields
+            for (x in 0..4) add(JBLabel(""))
         }
 
-        return JBTabbedPane().apply {
-            tabLayoutPolicy = JTabbedPane.SCROLL_TAB_LAYOUT
+        mainPane.apply {
+            tabLayoutPolicy = JBTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
+            addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
+            selectedIndex = if (fromTracker) 1 else 0
         }
+
+        if (!repo.getRepo().isConfigured) {
+            timeTrackingTab.forbidSelection()
+        } else {
+            timeTrackingTab.allowSelection()
+        }
+
+        return mainPane
     }
 
     private fun drawAutoCorrection(fontColor: Color) {
@@ -240,7 +232,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
             val oldUrl = URL(if (oldAddress.startsWith("http")) oldAddress else "http://$oldAddress")
             val fixedUrl = URL(connectedRepository.url)
             inputUrlTextPane.text = ""
-            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol }
+            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol && (oldAddress.startsWith("http")) }
             appendToPane(inputUrlTextPane, fixedUrl.protocol, protocolColor)
             appendToPane(inputUrlTextPane, "://", protocolColor)
             appendToPane(inputUrlTextPane, fixedUrl.host, getColor { oldUrl.host == fixedUrl.host })
@@ -256,7 +248,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
     }
 
     override fun createActions(): Array<out Action> =
-            arrayOf(TestConnectionAction(), OpenProxySettingsAction(), OkAction("Ok"), cancelAction)
+            arrayOf()
 
     override fun createJButtonForAction(action: Action): JButton {
         val button = super.createJButtonForAction(action)
@@ -265,25 +257,126 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
         return button
     }
 
+    private fun createButtonsPanel(): JPanel {
+        val buttonsPanel = JPanel(FlowLayout(2))
+        testConnectionButton = JButton("Test Connection")
+        testConnectionButton.addActionListener { testConnectionAction() }
+        testConnectionButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standartHeight)
+
+        proxyButton = JButton("Proxy settings...")
+        proxyButton.addActionListener { HttpConfigurable.editConfigurable(controlPanel) }
+        proxyButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standartHeight)
+
+        okButton.addActionListener { okAction() }
+        okButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standartHeight)
+
+        cancelButton.addActionListener { doCancelAction() }
+        cancelButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standartHeight)
+
+        val sep = JLabel("")
+        sep.preferredSize = Dimension(1, standartHeight)
+        buttonsPanel.add(testConnectionButton)
+        buttonsPanel.add(proxyButton)
+        buttonsPanel.add(cancelButton)
+        buttonsPanel.add(okButton)
+        buttonsPanel.add(sep)
+
+        if (fromTracker) {
+            proxyButton.isVisible = false
+            testConnectionButton.isVisible = false
+        }
+
+        return buttonsPanel
+    }
+
     override fun createCenterPanel(): JComponent {
-        val contextPane = JPanel(GridLayout())
+        val contextPane = JPanel(VerticalLayout())
         val tabbedPane = prepareTabbedPane()
         contextPane.apply {
-            preferredSize = Dimension(540, 230)
+            preferredSize = Dimension(myWidth, myHeight)
             minimumSize = preferredSize
             add(tabbedPane)
+            add(createButtonsPanel())
         }
+        mainPane.addChangeListener {
+            if (mainPane.selectedIndex == 1) {
+                proxyButton.isVisible = false
+                testConnectionButton.isVisible = false
+            } else {
+                proxyButton.isVisible = true
+                testConnectionButton.isVisible = true
+            }
+        }
+
         return contextPane
     }
 
-    inner class OkAction(name: String) : AbstractAction(name) {
-        override fun actionPerformed(e: ActionEvent) {
+    private fun testConnectionAction() {
 
-            if (!isConnectionTested) {
-                testConnectionAction()
+        val isRememberPassword = PasswordSafe.instance.isRememberPasswordByDefault
+        if (!isRememberPassword) {
+            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
+        }
+        val fontColor = inputTokenField.foreground
+
+        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        if (inputUrlTextPane.text.isNotBlank() && inputTokenField.password.isNotEmpty()) {
+
+            val myRepositoryType = YouTrackRepositoryType()
+            connectedRepository.isLoginAnonymously = false
+
+            connectedRepository.url = if (inputUrlTextPane.text.startsWith("http"))
+                inputUrlTextPane.text else "http://${inputUrlTextPane.text}"
+            connectedRepository.password = String(inputTokenField.password)
+            connectedRepository.username = "random" // ignored by YouTrack anyway when token is sent as password
+            connectedRepository.repositoryType = myRepositoryType
+            connectedRepository.storeCredentials()
+
+            connectedRepository.isShared = shareUrlCheckBox.isSelected
+
+            val proxy = HttpConfigurable.getInstance()
+            if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected) {
+                connectedRepository.isUseProxy = useProxyCheckBox.isSelected
+                if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
+                    repoConnector.testConnection(connectedRepository, project)
+                }
+            } else {
+                repoConnector.noteState = NotifierState.NULL_PROXY_HOST
+                connectedRepository.isUseProxy = false
             }
+        }
+        drawAutoCorrection(fontColor)
 
+        if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
+            repoConnector.noteState = NotifierState.EMPTY_FIELD
+        } else if (!repoConnector.isValidToken(connectedRepository.password)) {
+            repoConnector.noteState = NotifierState.INVALID_TOKEN
+        } else if (PasswordSafe.instance.isMemoryOnly) {
+            repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
+        }
+
+        if (repoConnector.noteState != NotifierState.SUCCESS) {
+            timeTrackingTab.forbidSelection()
+        } else {
+            timeTrackingTab.allowSelection()
+        }
+
+        repoConnector.setNotifier(notifyFieldLabel)
+
+        isConnectionTested = true
+    }
+
+    private fun okAction() {
+
+        if (!isConnectionTested) {
+            testConnectionAction()
+        }
+
+        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        if (repoConnector.noteState != NotifierState.EMPTY_FIELD) {
             val myRepository: YouTrackRepository = repo.getRepo()
+            myRepository.isLoginAnonymously = false
+
             myRepository.url = connectedRepository.url
             myRepository.password = String(inputTokenField.password)
             myRepository.username = connectedRepository.username
@@ -292,27 +385,38 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer) 
 
             myRepository.isShared = connectedRepository.isShared
             myRepository.isUseProxy = connectedRepository.isUseProxy
-            myRepository.isLoginAnonymously = false
 
-            repoConnector.showIssuesForConnectedRepo(myRepository, project)
-
-            if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState != NotifierState.PASSWORD_NOT_STORED ) {
-                this@SetupDialog.close(0)
+            if (repoConnector.noteState == NotifierState.SUCCESS) {
+                repoConnector.showIssuesForConnectedRepo(myRepository, project)
             }
+
+            startTimer()
+        }
+
+        if (repoConnector.noteState != NotifierState.NULL_PROXY_HOST && repoConnector.noteState !=
+                NotifierState.PASSWORD_NOT_STORED && repoConnector.noteState != NotifierState.EMPTY_FIELD) {
+            this@SetupDialog.close(0)
         }
     }
 
-    inner class TestConnectionAction : AbstractAction("Test Connection") {
-        override fun actionPerformed(e: ActionEvent) {
-            testConnectionAction()
+    private fun startTimer() {
+        val timerService = TimeTrackingService()
+        timerService.configureTimerForTracking(timeTrackingTab, repo, project)
+
+        val trackerNote = TrackerNotification()
+        val note = "To start using time tracking please select active task on the toolbar" +
+                " or by pressing Shift + Alt + T"
+        try {
+            val timer = ComponentAware.of(repo.project).timeTrackerComponent
+            if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
+                    (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
+                trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+            }
+        } catch (e: NoActiveYouTrackTaskException) {
+            trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
         }
+
     }
 
-    inner class OpenProxySettingsAction : AbstractAction("Proxy settings...") {
-        override fun actionPerformed(e: ActionEvent) {
-            HttpConfigurable.editConfigurable(controlPanel)
-            enableButtons()
-        }
-    }
 }
 

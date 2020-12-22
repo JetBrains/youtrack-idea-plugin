@@ -8,7 +8,7 @@ import com.intellij.openapi.components.ServiceManager
 
 class HelpAction : IssueAction() {
     override val text = "Help"
-    override val description = "Browse help pages to know more about the plugin"
+    override val description = "Learn more about the YouTrack Integration plugin"
     override val icon = AllIcons.Actions.Help
     override val shortcut = "control shift H"
 

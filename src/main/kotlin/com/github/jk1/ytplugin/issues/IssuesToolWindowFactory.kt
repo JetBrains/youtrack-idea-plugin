@@ -5,11 +5,10 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
+import com.github.jk1.ytplugin.ui.TimeTrackerToolWindowContent
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.tasks.youtrack.YouTrackRepository
@@ -50,7 +49,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             }
         }
         // listen to resize events and convert from horizontal to vertical layout and back
-        toolWindow.component.addComponentListener(object: ComponentAdapter(){
+        toolWindow.component.addComponentListener(object : ComponentAdapter() {
 
             private var horizontal = toolWindow.anchor.isHorizontal
 
@@ -75,11 +74,11 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
             else -> {
                 repos.forEach {
                     val panel = IssueListToolWindowContent(!toolWindow.anchor.isHorizontal, it)
-                    contentManager.addContent("Issues | ${it.url.split("//").last()}", panel)
+                    val timeTrackerPanel = TimeTrackerToolWindowContent(!toolWindow.anchor.isHorizontal, it)
+                    contentManager.addContent("${it.url.split("//").last()}   |   Issues", panel)
+                    contentManager.addContent("Time Tracking", timeTrackerPanel)
+
                 }
-                Disposer.register(project, Disposable {
-                    contentManager.removeAllContents(true)
-                })
             }
         }
     }
@@ -95,7 +94,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { SetupDialog(project, repo).show() }
+        val configureLabel = createLink("Configure") { SetupDialog(project, repo, false).show() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)

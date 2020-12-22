@@ -5,16 +5,20 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.impl.ApplicationInfoImpl
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.tasks.youtrack.YouTrackIntellisense.INTELLISENSE_KEY
 import com.intellij.tasks.youtrack.lang.YouTrackLanguage
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
 import javax.swing.AbstractAction
 import javax.swing.BorderFactory
 import javax.swing.JPanel
@@ -38,6 +42,22 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         val file = PsiDocumentManager.getInstance(project).getPsiFile(searchField.document)
         file?.putUserData(INTELLISENSE_KEY, server.getSearchCompletionProvider())
         // key bindings
+
+        // use reflection to avoid IDE version compatibility issues
+        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2){
+            try {
+                val method: Method = LanguageTextField::class.java.getMethod("setShowPlaceholderWhenFocused",
+                        Boolean::class.javaPrimitiveType)
+                method.invoke(searchField, true)
+            } catch (e: NoSuchMethodException) {
+                e.printStackTrace()
+            } catch (e: InvocationTargetException) {
+                e.printStackTrace()
+            } catch (e: IllegalAccessException) {
+                e.printStackTrace()
+            }
+        }
+
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(e: DocumentEvent) {

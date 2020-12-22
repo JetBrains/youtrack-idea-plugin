@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.logger
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.http.util.EntityUtils
 
 class ConnectionChecker(val repository: YouTrackRepository) {
 

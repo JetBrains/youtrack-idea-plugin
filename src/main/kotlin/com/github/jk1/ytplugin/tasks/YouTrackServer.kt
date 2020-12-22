@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.Task
 import com.intellij.tasks.impl.BaseRepositoryImpl
@@ -18,6 +19,7 @@ class YouTrackServer(private val delegate: YouTrackRepository, val project: Proj
     val url: String get() = delegate.url
     val username: String get() = delegate.username
     val password: String get() = delegate.password
+
 
     var defaultSearch: String
         get() = synchronized(delegate) {

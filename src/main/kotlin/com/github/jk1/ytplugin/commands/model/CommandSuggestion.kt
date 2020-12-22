@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.commands.model
 
+import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.intellij.openapi.util.TextRange
@@ -16,10 +17,19 @@ class CommandSuggestion(item: JsonElement) {
     val separator: Boolean
 
     init {
-        matchRange = TextRange(
-                item.asJsonObject.get("matchingStart").asInt,
-                item.asJsonObject.get("matchingEnd").asInt
-        )
+        matchRange = try {
+            TextRange(
+                    item.asJsonObject.get("matchingStart").asInt,
+                    item.asJsonObject.get("matchingEnd").asInt
+            )
+        } catch (e: IllegalArgumentException) {
+            logger.warn("Invalid matching: ${e.message}")
+            TextRange(
+                    0,
+                    item.asJsonObject.get("matchingEnd").asInt
+            )
+
+        }
         completionRange = TextRange(
                 item.asJsonObject.get("completionStart").asInt,
                 item.asJsonObject.get("completionEnd").asInt

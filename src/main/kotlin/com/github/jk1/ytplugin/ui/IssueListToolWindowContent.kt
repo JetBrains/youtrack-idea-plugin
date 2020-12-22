@@ -12,6 +12,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 
+
 class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
 
     override val project: Project = repo.project
@@ -30,6 +31,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
+
     }
 
     private fun createActionPanel(): JComponent {
@@ -46,7 +48,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         group.add(AnalyzeStacktraceAction(selectedIssue))
         group.add(PinIssueAction(selectedIssue))
         group.add(ToggleIssueViewAction(project, issuesList))
-        group.addConfigureTaskServerAction(repo)
+        group.addConfigureTaskServerAction(repo, false)
         group.add(HelpAction())
         return group.createVerticalToolbarComponent()
     }
@@ -58,18 +60,19 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             if (selectedIssue == null) {
                 splitter.collapse()
             } else if (selectedIssue != viewer.currentIssue) {
-                if (splitter.isCollapsedState()){
+                if (splitter.isCollapsedState()) {
                     splitter.expand()
                 }
                 viewer.showIssue(selectedIssue)
             }
         }
 
-        // keystrokes to expand/collapse issue preview
         issuesList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
         issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
         issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
-        // expand issue preview on click
+        // expand issue preview on clickx-special/nautilus-clipboard
+        //copy
+        //file:///home/alina.boshchenko/WorkJB/intellij-community/java/idea-ui/src/com/intellij/jarRepository/RepositoryAttachDialog.form
         issuesList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 if (issuesList.getIssueCount() > 0) {
@@ -77,6 +80,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
                 }
             }
         })
+
         // apply issue search
         searchBar.actionListener = { search ->
             issuesList.startLoading()

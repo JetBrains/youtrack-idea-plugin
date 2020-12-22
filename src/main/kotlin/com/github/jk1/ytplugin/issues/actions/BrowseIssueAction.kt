@@ -14,8 +14,8 @@ import com.intellij.openapi.components.ServiceManager
  */
 class BrowseIssueAction(private val getSelectedIssue: () -> Issue?) : IssueAction() {
 
-    override val text = "Open in Browser"
-    override val description = "Opens selected YouTrack issue in your favorite browser"
+    override val text = "View in YouTrack"
+    override val description = "View the selected issue in the YouTrack web application"
     override val icon = AllIcons.General.Web
     override val shortcut = "control shift B"
 
