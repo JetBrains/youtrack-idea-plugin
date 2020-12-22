@@ -104,10 +104,17 @@ class SetupRepositoryConnector {
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = method.getResponseHeader("Location").value
-                    repository.url = location.replace("/api/token", "")
+                    if (!location.contains("/waitInstanceStartup/")){
+                        repository.url = location.replace("/api/token", "")
+                    } else {
+                        if (!method.uri.path.contains("/youtrack")) {
+                            logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
+                            repository.url = "${repository.url}/youtrack"
+                        }
+                    }
                     logger.debug("url after correction: ${repository.url}")
                     // unloaded instance redirect can't handle /api/* suffix properly
-                    checker.check(api = !location.contains("/waitInstanceStartup/"))
+                    checker.check()
                 }
                 401, 403 -> {
                     logger.debug("handling response code 403 for the ${repository.url}: UNAUTHORIZED")

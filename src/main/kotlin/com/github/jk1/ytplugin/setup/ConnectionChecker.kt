@@ -13,9 +13,9 @@ class ConnectionChecker(val repository: YouTrackRepository) {
 
     private var onTransportError: (method: HttpMethod, e: Exception) -> Unit = { _: HttpMethod, _: Exception -> }
 
-    fun check(api: Boolean = true) {
+    fun check() {
         logger.debug("CHECK CONNECTION FOR ${repository.url}")
-        val method = PostMethod(if (api) repository.url.trimEnd('/') + "/api/token" else repository.url)
+        val method = PostMethod(repository.url.trimEnd('/') + "/api/token")
         method.setRequestHeader("Authorization", "Bearer " + repository.password)
         try {
             repository.httpClient.executeMethod(method)
