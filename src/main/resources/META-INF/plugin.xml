@@ -44,18 +44,53 @@
     <depends>com.intellij.tasks</depends>
 
     <actions>
-        <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
-                class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
-            <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
-        </action>
-
         <action id="com.github.jk1.ytplugin.issues.actions.CreateIssueAction"
                 class="com.github.jk1.ytplugin.issues.actions.CreateIssueAction">
             <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift M" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.PauseTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift P" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.ResetTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift N" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction">
+            <keyboard-shortcut first-keystroke="control shift L" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction"
+                class="com.github.jk1.ytplugin.timeTracker.actions.ManualEntryAction">
+            <keyboard-shortcut first-keystroke="control shift I" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+        </action>
+
+        <action id="com.github.jk1.ytplugin.commands.OpenCommandWindowAction"
+                class="com.github.jk1.ytplugin.commands.OpenCommandWindowAction">
+            <keyboard-shortcut first-keystroke="control shift Y" keymap="$default"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
     </actions>
 
@@ -75,5 +110,6 @@
                                 implementationClass="com.github.jk1.ytplugin.commands.lang.CommandCompletionContributor"/>
         <externalAnnotator language="YouTrack Commands"
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
+        <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
     </extensions>
 </idea-plugin>
