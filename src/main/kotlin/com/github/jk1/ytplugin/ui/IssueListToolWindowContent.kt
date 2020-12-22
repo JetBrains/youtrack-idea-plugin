@@ -80,7 +80,6 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
                 }
             }
         })
-
         // apply issue search
         searchBar.actionListener = { search ->
             issuesList.startLoading()
