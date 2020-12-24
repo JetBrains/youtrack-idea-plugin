@@ -142,25 +142,6 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-//    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane) {
-//        if (workItems.isNotEmpty()) {
-//
-//            val wPanel = JPanel()
-//            wPanel.layout = VerticalLayout(5)
-//
-//            workItems.sort()
-//            workItems.forEach {
-//                val workItemsPanel = JPanel()
-//                workItemsPanel.layout = BoxLayout(workItemsPanel, BoxLayout.X_AXIS)
-//                workItemsPanel.add(createWorkItemsPanel(it))
-//                wPanel.add(workItemsPanel)
-//            }
-//
-//            tabs.addTab("Work Items (${workItems.size})", wPanel)
-//            tabs.isFocusable = false
-//        }
-//    }
-
     private fun createCommentPanel(comment: IssueComment): JPanel {
         val topPanel = JPanel(BorderLayout())
         val commentPanel = JPanel(BorderLayout())

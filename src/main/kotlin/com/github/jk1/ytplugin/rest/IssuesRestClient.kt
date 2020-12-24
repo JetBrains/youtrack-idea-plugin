@@ -176,8 +176,8 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 }
                 workItemsJson += "${workItems.last().json}]"
             }
-            // project field is not going to be used, so could be replaced with valuable workItems
-            val issueString = issue.toString().replace("\"project\":{\"\$type\":\"Project\"}", workItemsJson)
+            // add workItems to issue
+            val issueString = issue.toString().substring(0, issue.toString().length - 1) + ",\n$workItemsJson\n}"
             newIssues.add(JsonParser.parseString(issueString) as JsonElement)
         }
         return newIssues
