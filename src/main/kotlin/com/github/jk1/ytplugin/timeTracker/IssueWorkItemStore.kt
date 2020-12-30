@@ -46,7 +46,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
     override fun iterator() = workItems.iterator()
 
     inner class RefreshIssuesWorkItemsTask(private val future: ActionCallback, private val repo: YouTrackServer) :
-            Task.Backgroundable(repo.project, "Updating issuesWorkItems from server", true, ALWAYS_BACKGROUND) {
+            Task.Backgroundable(repo.project, "Updating work items from server", true, ALWAYS_BACKGROUND) {
 
         override fun run(indicator: ProgressIndicator) {
             try {
