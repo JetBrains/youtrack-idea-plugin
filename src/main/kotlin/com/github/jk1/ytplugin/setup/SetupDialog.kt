@@ -207,7 +207,6 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         }
 
         mainPane.apply {
-            tabLayoutPolicy = JBTabbedPane.SCROLL_TAB_LAYOUT
             addTab("General", null, connectionTab, null)
             addTab("Time Tracking", null, timeTrackingTab, null)
             setMnemonicAt(0, KeyEvent.VK_1)
