@@ -15,7 +15,7 @@ The latest released version can be found at [JetBrains IDE plugin repository](ht
 
 ## Installation and Configuration
 
-This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Gogland IDE is known to have [some issues](https://github.com/jk1/youtrack-idea-plugin/issues/66) with that though. Having YouTrack plugin installed from a plugin repository  proceed as follows:
+This plugin relies on a long-standing task management plugin and it's context management. It will be installed automatically once YouTrack plugin is installed. Goland IDE is known to have [some issues](https://github.com/jk1/youtrack-idea-plugin/issues/66) with that though. Having YouTrack plugin installed from a plugin repository  proceed as follows:
 
 1. Navigate to Settings dialog -> Tools -> Tasks -> Servers
 2. Configure connection to your YouTrack instance
@@ -43,6 +43,10 @@ Plugin displays issue list matching the query set in server settings. When an is
 
 With YouTrack 2018.1+ plugin can show issue tracker notifications in IDE. To enable notifications server wide one should have 'REST API' notification channel enabled on Global Settings page in YouTrack.
 To disable notifications in IDE navigate to File > Appearance & Behavior > Notifications and switch the corresponding category to 'No Balloon'.
+
+### Time Tracking
+
+The plugin can capture user activity and create work items for the current active task in an automated or semi-automated mode.
 
 #### Autolinks
 

@@ -13,24 +13,17 @@
             <li> Renders YouTrack wiki markup </li>
             <li> Recognizes YouTrack issue ids in Java code comments and VCS history </li>
             <li> Displays issue tracker notifications in IDE </li>
+            <li> Creates work log time entries based on user activity </li>
         </ul>
         <p>Compatibility: YouTrack 2018.1+<p/>
         <p>Four minute plugin demo <a href="https://www.youtube.com/watch?v=gGVEwlZpvj8">on YouTube</a></p>
-        <br>
-        <p>If you like this plugin, you can support it:<p/>
-        <ul>
-            <li>Spread it: Tell your friends who are using YouTrack about this plugin</li>
-            <li>Vote for it: Write your review and vote for it at the IntelliJ plugin repository</li>
-            <li>Star it: Star it <a href="https://github.com/jk1/youtrack-idea-plugin">at GitHub</a></li>
-            <li>Improve it: Report bugs or feature requests. Or even fix / implement them by yourself - pull requests are welcome</li>
-        </ul>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
-            <li> Markdown in issue comments </li>
-            <li> Basic time tracking work items support </li>
-            <li> User friendly connection configuration dialog </li>
+            <li> Work items are now displayed in the issue view </li>
+            <li> Manual time tracking: submit work items as you see fit </li>
+            <li> Automated time tracking: let the IDE record time for you </li>
         </ul>
           ]]>
     </change-notes>
