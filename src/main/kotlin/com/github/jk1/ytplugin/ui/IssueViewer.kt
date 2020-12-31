@@ -87,7 +87,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             } else {
                 label.foreground = it.foregroundColor
                 label.background = it.backgroundColor
-                label.border = BorderFactory.createLineBorder(it.backgroundColor, 2)
+                label.border = BorderFactory.createLineBorder(it.foregroundColor)
                 label.isOpaque = true
             }
             panel.add(label)

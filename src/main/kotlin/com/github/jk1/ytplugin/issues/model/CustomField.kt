@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.issues.model
 
 import com.github.jk1.ytplugin.YouTrackIssueField
+import com.github.jk1.ytplugin.asColor
 import com.google.gson.JsonElement
 import java.awt.Color
 import java.text.SimpleDateFormat
@@ -63,12 +64,6 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
     override fun getFieldName() = name
 
     override fun getFieldValues() = value
-
-    private fun JsonElement.asColor() = when (// #F0A -> #FF00AA
-        asString.length) {
-        4 -> Color.decode(asString.drop(1).map { "$it$it" }.joinToString("", "#"))
-        else -> Color.decode(asString)
-    }
 
     fun formatValues() = " ${value.joinToString { formatValue(it) }} "
 
