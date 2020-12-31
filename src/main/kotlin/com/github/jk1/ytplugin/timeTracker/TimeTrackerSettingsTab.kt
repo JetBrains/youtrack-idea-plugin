@@ -3,23 +3,22 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.*
-import java.awt.Dimension
-import java.awt.FlowLayout
+import java.awt.*
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.BorderFactory
 import javax.swing.ButtonGroup
-import javax.swing.JComboBox
 import javax.swing.JPanel
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 
 
-class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
 
 
-    private val standartHeight = (0.0613 * myHeight).toInt()
+    private val standardHeight = (0.0613 * myHeight).toInt()
 
     private var scheduledHour = JBTextField("19")
     private var scheduledMinutes = JBTextField("00")
@@ -53,56 +52,55 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
     private val workItemsTypes = arrayOf<String?>("Development")
 
-    private var typeComboBox = JComboBox(workItemsTypes)
+    private var typeComboBox = ComboBox(workItemsTypes)
 
     init {
         val timer = ComponentAware.of(repo.project).timeTrackerComponent
-
         val inactivityPeriodPanel = createInactivityPeriodPanel(timer)
-
         val trackingModePanel = createTrackingModePanel(timer)
-
         val schedulePanel = createScheduledPanel(timer)
-
         val typePanel = createTypePanel(timer, repo)
-
         val postWhenPanel = createPostWhenPanel(timer)
-
         val commentPanel = createCommentPanel(timer)
 
-        layout = VerticalLayout(8)
-        maximumSize = Dimension(myWidth, myHeight)
-        minimumSize = Dimension(myWidth, myHeight)
-
         val autoPanel = JPanel(VerticalLayout(7))
-        val loweredetched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
-        val autoPanelBorder = BorderFactory.createTitledBorder(loweredetched, "Automatically create work items")
+        val loweredEtched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+        val autoPanelBorder = BorderFactory.createTitledBorder(loweredEtched, "Automatically create work items")
         autoPanelBorder.titlePosition = TitledBorder.TOP
         autoPanel.border = autoPanelBorder
         autoPanel.add(postWhenPanel)
         autoPanel.add(schedulePanel)
         autoPanel.add(inactivityPeriodPanel)
 
-
         val preferencesPanel = JPanel(VerticalLayout(7))
-        val preferencesPanelBorder = BorderFactory.createTitledBorder(loweredetched, "Preferences")
+        val preferencesPanelBorder = BorderFactory.createTitledBorder(loweredEtched, "Preferences")
         preferencesPanelBorder.titlePosition = TitledBorder.TOP
         preferencesPanel.border = preferencesPanelBorder
         preferencesPanel.add(typePanel)
         preferencesPanel.add(commentPanel)
 
-
-        add(trackingModePanel)
-        add(JBLabel(""))
-        add(autoPanel)
-        add(preferencesPanel)
+        layout = GridBagLayout()
+        add(trackingModePanel, GridBagConstraints().also {
+            it.gridx = 0
+            it.fill = GridBagConstraints.HORIZONTAL
+        })
+        add(autoPanel, GridBagConstraints().also {
+            it.gridx = 0
+            it.gridheight = 2
+            it.fill = GridBagConstraints.HORIZONTAL
+        })
+        add(preferencesPanel, GridBagConstraints().also {
+            it.gridx = 0
+            it.gridheight = 3
+            it.fill = GridBagConstraints.HORIZONTAL
+        })
     }
 
     private fun createCommentPanel(timer: TimeTracker): JPanel {
 
         commentTextField = PlaceholderTextField(timer.comment)
         commentTextField.placeholder = "Enter default comment text"
-        commentTextField.preferredSize = Dimension(403, standartHeight)
+        commentTextField.preferredSize = Dimension(403, standardHeight + 5)
         val commentPanel = JPanel(FlowLayout(2))
         commentLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
         commentTextField.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
@@ -121,7 +119,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
 
         var idx = 0
         if (types.isNotEmpty()) {
-            typeComboBox = JComboBox(types.toTypedArray())
+            typeComboBox = ComboBox(types.toTypedArray())
             types.mapIndexed { index, value ->
                 if (value == timer.type) {
                     idx = index
@@ -153,13 +151,13 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         postWhenPanel.add(postWhenProjectClosedCheckbox)
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.14 * myWidth).toInt(), standartHeight)
+        sep.preferredSize = Dimension((0.14 * myWidth).toInt(), standardHeight)
         postWhenPanel.add(sep)
 
         postWhenPanel.add(postWhenCommitCheckbox)
 
         val sep2 = JBLabel("")
-        sep2.preferredSize = Dimension((0.002 * myWidth).toInt(), standartHeight)
+        sep2.preferredSize = Dimension((0.002 * myWidth).toInt(), standardHeight)
         postWhenPanel.add(sep2)
 
         postWhenProjectClosedCheckbox.isEnabled = timer.isAutoTrackingEnable
@@ -203,9 +201,9 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val enableManualTrackingPanel = JPanel(FlowLayout(2))
 
         val sep = JBLabel(" ")
-        sep.preferredSize = Dimension((0.213 * myWidth).toInt(), standartHeight)
+        sep.preferredSize = Dimension((0.213 * myWidth).toInt(), standardHeight)
         val sep2 = JBLabel(" ")
-        sep2.preferredSize = Dimension((0.214 * myWidth).toInt(), standartHeight)
+        sep2.preferredSize = Dimension((0.214 * myWidth).toInt(), standardHeight)
         enableAutoTrackingPanel.add(isAutoTrackingEnabledRadioButton)
         enableAutoTrackingPanel.add(autoTrackingEnabledTextField)
         enableManualTrackingPanel.add(isManualModeRadioButton)
@@ -271,7 +269,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, val myHeight: Int, val my
         val inactivityPeriodPanel = JPanel(FlowLayout(3))
 
         val sep = JBLabel("")
-        sep.preferredSize = Dimension((0.017 * myWidth).toInt(), standartHeight)
+        sep.preferredSize = Dimension((0.017 * myWidth).toInt(), standardHeight)
         inactivityPeriodPanel.add(inactivityTextField)
         inactivityPeriodPanel.add(sep)
         inactivityPeriodPanel.add(inactivityTimePanel)

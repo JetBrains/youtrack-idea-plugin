@@ -55,9 +55,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private val repoConnector = SetupRepositoryConnector()
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
-    private val myHeight = 490
+    private val myHeight = 450
     private val myWidth = 525
-    private val standartHeight = (0.0613 * myHeight).toInt()
+    private val standardHeight = (0.0613 * myHeight).toInt()
 
     private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
 
@@ -261,20 +261,20 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         val buttonsPanel = JPanel(FlowLayout(2))
         testConnectionButton = JButton("Test Connection")
         testConnectionButton.addActionListener { testConnectionAction() }
-        testConnectionButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standartHeight)
+        testConnectionButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standardHeight)
 
         proxyButton = JButton("Proxy settings...")
         proxyButton.addActionListener { HttpConfigurable.editConfigurable(controlPanel) }
-        proxyButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standartHeight)
+        proxyButton.preferredSize = Dimension((0.285 * myWidth).toInt(), standardHeight)
 
         okButton.addActionListener { okAction() }
-        okButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standartHeight)
+        okButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standardHeight)
 
         cancelButton.addActionListener { doCancelAction() }
-        cancelButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standartHeight)
+        cancelButton.preferredSize = Dimension((0.17 * myWidth).toInt(), standardHeight)
 
         val sep = JLabel("")
-        sep.preferredSize = Dimension(1, standartHeight)
+        sep.preferredSize = Dimension(1, standardHeight)
         buttonsPanel.add(testConnectionButton)
         buttonsPanel.add(proxyButton)
         buttonsPanel.add(cancelButton)
