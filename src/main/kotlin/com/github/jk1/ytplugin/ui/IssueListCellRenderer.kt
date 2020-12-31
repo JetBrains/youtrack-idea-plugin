@@ -19,7 +19,6 @@ class IssueListCellRenderer(
     private val topPanel = JPanel(BorderLayout())
     private val bottomPanel = JPanel(BorderLayout())
     private val idSummaryPanel = JPanel(BorderLayout())
-    private val idSummary = SimpleColoredComponent()
     private val fields = SimpleColoredComponent()
     private val time = JLabel()
     private val glyphs = JLabel()
@@ -31,9 +30,7 @@ class IssueListCellRenderer(
         }
 
     init {
-        idSummary.isOpaque = false
         idSummaryPanel.isOpaque = false
-        idSummary.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
         fields.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size)
         time.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size - 2 )
         border = CustomLineBorder(JBColor(Gray._220, Gray._85), 0, 0, 1, 0)
@@ -67,26 +64,40 @@ class IssueListCellRenderer(
     }
 
     private fun fillSummaryLine(issue: Issue, fgColor: Color) {
-        val viewportWidth = viewportWidthProvider.invoke() - 200    // leave some space for timestamp
-        idSummaryPanel.removeAll()
-        idSummary.clear()
-        idSummary.ipad = Insets(0, 4, 0, 0)
-        var idStyle = STYLE_BOLD
-        if (issue.resolved) {
-            idStyle = idStyle.or(STYLE_STRIKEOUT)
-        }
-        idSummary.append(issue.id, SimpleTextAttributes(idStyle, fgColor))
-        idSummary.append(" ")
-        val summaryWords = issue.summary.split(" ").iterator()
         // add summary words one by one until we hit viewport width limit
-        while (summaryWords.hasNext() && (viewportWidth > idSummary.computePreferredSize(false).width)) {
-            idSummary.append(" ${summaryWords.next()}", SimpleTextAttributes(STYLE_BOLD, fgColor))
+        val viewportWidth = viewportWidthProvider.invoke() - 130    // leave some space for timestamp
+        val wordCount = issue.summary.split(" ").size
+        var idSummary = issue.toIdSummary(0, fgColor)
+        for (i in 1..wordCount) {
+            val incremented = issue.toIdSummary(i, fgColor)
+            if (incremented.computePreferredSize(false).width < viewportWidth) {
+                idSummary = incremented
+            } else break
         }
-        if (summaryWords.hasNext()) {
-            idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, fgColor))
-        }
+        idSummaryPanel.removeAll()
         idSummaryPanel.add(iconProvider.createIcon(issue, compactView), BorderLayout.WEST)
         idSummaryPanel.add(idSummary, BorderLayout.EAST)
+    }
+
+    private fun Issue.toIdSummary(limit: Int = Int.MAX_VALUE, fgColor: Color): SimpleColoredComponent{
+        val idSummary = SimpleColoredComponent()
+        idSummary.isOpaque = false
+        idSummary.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+        idSummary.ipad = Insets(0, 4, 0, 0)
+        var idStyle = STYLE_BOLD
+        if (this.resolved) {
+            idStyle = idStyle.or(STYLE_STRIKEOUT)
+        }
+        idSummary.append(this.id, SimpleTextAttributes(idStyle, fgColor))
+        idSummary.append(" ")
+        val words = this.summary.split(" ")
+        words.take(limit).forEach { word ->
+            idSummary.append(" ").append(word, SimpleTextAttributes(STYLE_BOLD, fgColor))
+        }
+        if (limit < words.size) {
+            idSummary.append(" …", SimpleTextAttributes(STYLE_BOLD, fgColor))
+        }
+        return idSummary
     }
 
     private fun fillCustomFields(issue: Issue, fgColor: Color, isSelected: Boolean) {
