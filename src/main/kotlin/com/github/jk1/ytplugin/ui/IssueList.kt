@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.ui.ListSpeedSearch
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
@@ -13,7 +12,10 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
+import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.MouseListener
+import javax.swing.AbstractAction
 import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
@@ -82,8 +84,20 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
         issueList.addListSelectionListener { listener.invoke() }
     }
 
-    override fun registerKeyboardAction(action: ActionListener, keyStroke: KeyStroke, condition: Int) {
-        issueList.registerKeyboardAction(action, keyStroke, condition)
+    fun addComponentInput(key: String, keyStroke: KeyStroke) {
+        issueList.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyStroke, key)
+    }
+
+    fun addComponentAction(key: String, action: () -> Unit) {
+        issueList.actionMap.put(key, object: AbstractAction(){
+            override fun actionPerformed(e: ActionEvent) {
+                action.invoke()
+            }
+        })
+    }
+
+    override fun addMouseListener(l: MouseListener) {
+        issueList.addMouseListener(l)
     }
 
     inner class IssueListModel : AbstractListModel<Issue>() {

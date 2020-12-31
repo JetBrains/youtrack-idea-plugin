@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
+import com.intellij.ui.ListActions
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.*
 import java.awt.event.MouseAdapter
@@ -60,19 +61,14 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             if (selectedIssue == null) {
                 splitter.collapse()
             } else if (selectedIssue != viewer.currentIssue) {
-                if (splitter.isCollapsedState()) {
-                    splitter.expand()
-                }
                 viewer.showIssue(selectedIssue)
             }
         }
 
-        issuesList.registerKeyboardAction({ splitter.collapse() }, KeyStroke.getKeyStroke(VK_RIGHT, 0), WHEN_FOCUSED)
-        issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_LEFT, 0), WHEN_FOCUSED)
-        issuesList.registerKeyboardAction({ splitter.expand() }, KeyStroke.getKeyStroke(VK_ENTER, 0), WHEN_FOCUSED)
-        // expand issue preview on clickx-special/nautilus-clipboard
-        //copy
-        //file:///home/alina.boshchenko/WorkJB/intellij-community/java/idea-ui/src/com/intellij/jarRepository/RepositoryAttachDialog.form
+        issuesList.addComponentInput(ListActions.Left.ID, KeyStroke.getKeyStroke(VK_ENTER, 0))
+        issuesList.addComponentAction(ListActions.Right.ID) { splitter.collapse() }
+        issuesList.addComponentAction(ListActions.Left.ID) { splitter.expand() }
+
         issuesList.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 if (issuesList.getIssueCount() > 0) {
