@@ -33,11 +33,11 @@ class CommandParserDefinition : ParserDefinition {
 
     override fun createLexer(project: Project): Lexer = CommandLexer()
 
-    override fun createParser(project: Project): PsiParser? = CommandPsiParser()
+    override fun createParser(project: Project): PsiParser = CommandPsiParser()
 
     override fun createElement(node: ASTNode): PsiElement = CommandQueryElement(node)
 
-    override fun createFile(provider: FileViewProvider): PsiFile? = CommandFile(provider)
+    override fun createFile(provider: FileViewProvider): PsiFile = CommandFile(provider)
 
     /**
      * Sole element that represents YouTrack command in PSI tree
