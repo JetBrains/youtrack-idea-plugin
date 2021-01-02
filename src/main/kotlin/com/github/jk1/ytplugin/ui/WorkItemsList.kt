@@ -3,11 +3,8 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.diagnostic.ActivityImpl.listener
 import com.intellij.openapi.application.impl.ApplicationInfoImpl
-import com.intellij.ui.LanguageTextField
 import com.intellij.ui.ListSpeedSearch
-import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
@@ -15,9 +12,7 @@ import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import com.intellij.util.ui.StatusText
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.event.ActionListener
-import java.lang.reflect.Method
 import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
@@ -66,14 +61,12 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
             SwingUtilities.invokeLater {
                 val placeholder = issueWorkItemsList.emptyText
                 placeholder.clear()
-
                 // use reflection to avoid IDE version compatibility issues
                 if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
                     placeholder.appendText("No work items found.")
-                    if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2) {
-                        val method: Method = StatusText::class.java.getMethod("appendLine",
-                                String::class.java)
-                        method.invoke(placeholder, "Update your filter criteria and try again.")
+                    if (ApplicationInfoImpl.getInstance().minorVersion.toInt() >= 2) {
+                        StatusText::class.java.getMethod("appendLine",
+                                String::class.java).invoke(placeholder, "Update your filter criteria and try again.")
                     } else {
                         placeholder.appendText(" Update your filter criteria and try again.")
                     }

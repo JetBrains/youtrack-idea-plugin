@@ -12,13 +12,10 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.DumbAware
 import com.intellij.tasks.youtrack.lang.YouTrackLanguage
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
 import javax.swing.AbstractAction
 import javax.swing.BorderFactory
 import javax.swing.JPanel
@@ -37,29 +34,17 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
     init {
         searchField.border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
         searchField.setPlaceholder("Filter work items by date, duration, project ID, issue ID, work type, or comment text")
+        // use reflection to avoid IDE version compatibility issues
+        if (ApplicationInfoImpl.getInstance().minorVersion.toInt() >= 2) {
+            LanguageTextField::class.java.getMethod("setShowPlaceholderWhenFocused",
+                    Boolean::class.javaPrimitiveType).invoke(searchField, true)
+        }
         actionGroup.add(SearchWorkItemsAnAction())
         add(searchField, BorderLayout.CENTER)
         add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
 
         searchField.text = timer.searchQuery
         searchField.text = searchField.text.trim()
-
-
-        // use reflection to avoid IDE version compatibility issues
-        if (ApplicationInfoImpl.getInstance().fullVersion.toDouble() >= 2020.2) {
-            try {
-                val method: Method = LanguageTextField::class.java.getMethod("setShowPlaceholderWhenFocused",
-                        Boolean::class.javaPrimitiveType)
-                method.invoke(searchField, true)
-            } catch (e: NoSuchMethodException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            }
-        }
-
 
         // todo: find a better way to attach onEnter handler to LanguageTextField
         searchField.addDocumentListener(object : DocumentListener {
