@@ -20,7 +20,7 @@ import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
 class IssueViewer : JPanel(BorderLayout()) {
 
-    lateinit var currentIssue: Issue
+    private lateinit var currentIssue: Issue
     private val rootPane = JPanel(BorderLayout())
     private lateinit var scrollToTop: () -> Unit
 
@@ -32,31 +32,33 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     fun showIssue(issue: Issue) {
-        rootPane.removeAll()
-        rootPane.isOpaque = false
-        currentIssue = issue
-        val container = JPanel()
-        container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
-        rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
-        rootPane.add(container, BorderLayout.CENTER)
-        if (issue.tags.isNotEmpty()) {
-            container.add(createTagPanel(issue))
+        if (!this::currentIssue.isInitialized || currentIssue != issue) {
+            rootPane.removeAll()
+            rootPane.isOpaque = false
+            currentIssue = issue
+            val container = JPanel()
+            container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
+            rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
+            rootPane.add(container, BorderLayout.CENTER)
+            if (issue.tags.isNotEmpty()) {
+                container.add(createTagPanel(issue))
+            }
+            issue.links.groupBy { it.role }.forEach {
+                container.add(createLinkPanel(it.key, it.value))
+            }
+            val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue)
+            issuePane.isOpaque = false
+            issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
+            container.add(issuePane)
+            val tabs = JBTabbedPane()
+            addCommentsTab(issue.comments, tabs)
+            addAttachmentsTab(issue.attachments, tabs)
+            addWorkLogTab(issue.workItems, tabs)
+            container.add(tabs)
+            issuePane.setHtml(issue.description)
+            scrollToTop.invoke()
+            issuePane.repaint()
         }
-        issue.links.groupBy { it.role }.forEach {
-            container.add(createLinkPanel(it.key, it.value))
-        }
-        val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue)
-        issuePane.isOpaque = false
-        issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
-        container.add(issuePane)
-        val tabs = JBTabbedPane()
-        addCommentsTab(issue.comments, tabs)
-        addAttachmentsTab(issue.attachments, tabs)
-        addWorkLogTab(issue.workItems, tabs)
-        container.add(tabs)
-        issuePane.setHtml(issue.description)
-        scrollToTop.invoke()
-        issuePane.repaint()
     }
 
     private fun createHeaderPanel(issue: Issue): JPanel {

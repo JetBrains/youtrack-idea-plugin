@@ -60,7 +60,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             val selectedIssue = issuesList.getSelectedIssue()
             if (selectedIssue == null) {
                 splitter.collapse()
-            } else if (selectedIssue != viewer.currentIssue) {
+            } else {
                 viewer.showIssue(selectedIssue)
             }
         }

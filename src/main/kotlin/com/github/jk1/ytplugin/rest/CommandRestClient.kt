@@ -118,8 +118,9 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         return postMethod.connect {
             val status = httpClient.executeMethod(postMethod)
             if (status != 200) {
-                val error = JsonParser.parseReader(postMethod.responseBodyAsReader).asJsonObject.get("value").asString
-                CommandExecutionResponse(errors = listOf("Workflow: $error"))
+                val error = JsonParser.parseString(postMethod.responseBodyAsLoggedString()).asJsonObject.get("error_description")
+                val message = error?.asString ?: "Command execution error. See IDE log for details."
+                CommandExecutionResponse(errors = listOf(message))
             } else {
                 postMethod.responseBodyAsLoggedString()
                 CommandExecutionResponse()
