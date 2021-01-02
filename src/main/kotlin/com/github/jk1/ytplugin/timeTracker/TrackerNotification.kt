@@ -15,7 +15,10 @@ import java.awt.event.KeyEvent
 
 class TrackerNotification {
 
-    private val NOTIFICATION_GROUP = NotificationGroup("Time tracking notifications", NotificationDisplayType.BALLOON, true)
+    companion object {
+        private val NOTIFICATION_GROUP = NotificationGroup("YouTrack time tracking", NotificationDisplayType.BALLOON, true)
+    }
+
 
     fun notify(content: String, type: NotificationType): Notification {
         return notify(null, content, type, null)
@@ -35,6 +38,7 @@ class TrackerNotification {
     }
 }
 
+// todo: replace it the task management action call
 class OpenActiveTaskSelection :
         AnAction("Select task"), DumbAware {
 
