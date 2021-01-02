@@ -37,10 +37,9 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         val url = "${repository.url}/api/workItems"
         val method = GetMethod(url)
         method.setQueryString(arrayOf(myQuery, myFields))
-        val sortedList = parseWorkItems(method)
+
+        return parseWorkItems(method)
                 .sortedWith(compareByDescending { it.created })
                 .sortedWith(compareByDescending { it.date })
-
-        return sortedList
     }
 }

@@ -84,13 +84,11 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
         }
     }
 
-    fun getSelectedIssueWorkItem() = when {
+    private fun getSelectedIssueWorkItem() = when {
         issueWorkItemsList.selectedIndex == -1 -> null
         issueWorkItemsList.selectedIndex >= issueWorkItemListModel.size -> null
         else -> issueWorkItemListModel.getElementAt(issueWorkItemsList.selectedIndex)
     }
-
-    fun getIssueWorkItemsCount() = issueWorkItemListModel.size
 
     fun update() = issueWorkItemListModel.update()
 

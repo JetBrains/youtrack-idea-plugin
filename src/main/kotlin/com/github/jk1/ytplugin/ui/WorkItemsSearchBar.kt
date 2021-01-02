@@ -51,19 +51,18 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
             override fun documentChanged(e: DocumentEvent) {
                 val component = searchField.editor!!.contentComponent
                 component.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply")
-                component.actionMap.put("apply", SearchIssueSwingAction())
+                component.actionMap.put("apply", object : AbstractAction() {
+                    override fun actionPerformed(action: ActionEvent) = doSearch()
+                })
             }
         })
         border = BorderFactory.createEmptyBorder(0, 0, 0, -15)
     }
 
-    inner class SearchIssueSwingAction : AbstractAction() {
-        override fun actionPerformed(event: ActionEvent) {
-            actionListener.invoke(searchField.text)
-            timer.searchQuery = searchField.text
-            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-            store.saveFields(timer)
-        }
+    private fun doSearch() {
+        actionListener.invoke(searchField.text)
+        timer.searchQuery = searchField.text
+        PropertiesComponent.getInstance(project).saveFields(timer)
     }
 
     inner class SearchWorkItemsAnAction : AnAction(), DumbAware {
@@ -74,8 +73,6 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
             templatePresentation.icon = AllIcons.Actions.Find
         }
 
-        override fun actionPerformed(e: AnActionEvent) {
-            actionListener.invoke(searchField.text)
-        }
+        override fun actionPerformed(e: AnActionEvent) = doSearch()
     }
 }
