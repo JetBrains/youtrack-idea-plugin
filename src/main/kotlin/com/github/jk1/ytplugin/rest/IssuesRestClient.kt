@@ -23,12 +23,11 @@ import java.nio.charset.StandardCharsets
 class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClientBase, RestClientTrait {
 
     companion object {
-        const val SUMMARY_LENGTH_MAX = 38
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project(shortName),links(value,direction,issues(idReadable)," +
                 "linkType(name,sourceToTarget,targetToSource),id),comments(id,textPreview,created,updated," +
                 "author(name,login),deleted),summary,wikifiedDescription,customFields(name,color," +
-                "value(name,minutes,presentation,color(background,foreground))," +
+                "value(name,minutes,presentation,markdownText,color(background,foreground))," +
                 "id,projectCustomField(emptyFieldText)),resolved,attachments(name,url),reporter(login)"
 
 

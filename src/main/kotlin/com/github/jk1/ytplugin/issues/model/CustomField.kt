@@ -11,9 +11,9 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
 
     val name: String
     val value: List<String>
-    private val valueId: List<String>
-    var foregroundColor: Color? = null
-    var backgroundColor: Color? = null
+    val foregroundColor: Color?
+    val backgroundColor: Color?
+    val isTextField: Boolean
 
 
     init {
@@ -23,9 +23,9 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
             // YouTack 2018.X fallback
             item.asJsonObject.get("projectCustomField").asJsonObject.get("field").asJsonObject.get("name").asString
         }
-        valueId = mutableListOf()
-        valueId.add(item.asJsonObject.get("id").asString)
 
+        var foregroundColor: Color? = null
+        var backgroundColor: Color? = null
         val valueItem = item.asJsonObject.get("value")
 
         if (valueItem == null || valueItem.isJsonNull || (valueItem.isJsonArray && valueItem.asJsonArray.size() == 0)) {
@@ -52,13 +52,18 @@ class CustomField(item: JsonElement) : YouTrackIssueField {
                     backgroundColor = color.asJsonObject.get("background").asColor()
                 }
 
-                value = mutableListOf()
-                if (valueItem.asJsonObject.get("presentation") == null)
-                    value.add(valueItem.asJsonObject.get("name").asString)
-                else
-                    value.add(item.asJsonObject.get("name").asString + ": " + valueItem.asJsonObject.get("presentation").asString)
+                value = listOf( when {
+                    valueItem.asJsonObject.get("presentation") != null ->
+                        item.asJsonObject.get("name").asString + ": " + valueItem.asJsonObject.get("presentation").asString
+                    valueItem.asJsonObject.get("markdownText") != null -> valueItem.asJsonObject.get("markdownText").asString
+                    else -> valueItem.asJsonObject.get("name").asString
+                })
             }
         }
+        this.backgroundColor = backgroundColor
+        this.foregroundColor = foregroundColor
+        this.isTextField =
+                item.asJsonObject.get("projectCustomField").asJsonObject.get("\$type").asString == "TextProjectCustomField"
     }
 
     override fun getFieldName() = name

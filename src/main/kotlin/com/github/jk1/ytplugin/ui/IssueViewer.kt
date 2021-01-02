@@ -7,6 +7,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
@@ -19,7 +20,7 @@ import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
 class IssueViewer : JPanel(BorderLayout()) {
 
-    var currentIssue: Issue? = null
+    lateinit var currentIssue: Issue
     private val rootPane = JPanel(BorderLayout())
     private lateinit var scrollToTop: () -> Unit
 
@@ -44,7 +45,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         issue.links.groupBy { it.role }.forEach {
             container.add(createLinkPanel(it.key, it.value))
         }
-        val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue)
         issuePane.isOpaque = false
         issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
         container.add(issuePane)
@@ -147,11 +148,11 @@ class IssueViewer : JPanel(BorderLayout()) {
         val commentPanel = JPanel(BorderLayout())
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
-        header.append(comment.authorName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        header.append(comment.authorName, REGULAR_BOLD_ATTRIBUTES)
         header.append(" at ")
         header.append(comment.created.format())
         topPanel.add(header, BorderLayout.WEST)
-        val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue!!)
+        val commentPane = WikiHtmlPaneFactory.createHtmlPane(currentIssue)
         commentPane.isOpaque = false
         commentPane.margin = Insets(2, 4, 0, 0)
         commentPane.setHtml(comment.text)
@@ -169,12 +170,12 @@ class IssueViewer : JPanel(BorderLayout()) {
 
         val header = SimpleColoredComponent()
         header.icon = AllIcons.General.User
-        header.append(workItem.author, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        header.append(workItem.author, REGULAR_BOLD_ATTRIBUTES)
         header.alignmentX = Component.LEFT_ALIGNMENT
 
         val date = SimpleColoredComponent()
         // post date without time
-        date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), REGULAR_BOLD_ATTRIBUTES)
         date.alignmentX = Component.LEFT_ALIGNMENT
 
         var value = SimpleColoredComponent()
@@ -215,30 +216,25 @@ class IssueViewer : JPanel(BorderLayout()) {
                 workItemsPanel.add(slash2)
                 workItemsPanel.add(comment)
             } else {
-                workItemsPanel.add(JLabel(""))  // for empty cell
-                workItemsPanel.add(JLabel(""))  // for empty cell
+                workItemsPanel.add(JLabel(""))  // empty cell
+                workItemsPanel.add(JLabel(""))  // empty cell
             }
-            workItemsPanel.add(JLabel(""))  // for empty cell
+            workItemsPanel.add(JLabel(""))  // empty cell
         }
-
-
         return workItemsPanel
     }
 
-
-
-
-    fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
+    private fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
             : SimpleColoredComponent{
 
         val parts =  item.split(" ").iterator()
         while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
-            value.append(" ${parts.next()}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            value.append(" ${parts.next()}", REGULAR_BOLD_ATTRIBUTES)
         }
 
         if (item != "") {
             if (parts.hasNext() && parts.next() != "") {
-                value.append(ending, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                value.append(ending, REGULAR_BOLD_ATTRIBUTES)
             }
         }
 

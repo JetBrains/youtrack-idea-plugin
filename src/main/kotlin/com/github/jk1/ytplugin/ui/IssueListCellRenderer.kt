@@ -32,7 +32,7 @@ class IssueListCellRenderer(
     init {
         idSummaryPanel.isOpaque = false
         fields.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size)
-        time.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size - 2 )
+        time.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size - 2)
         border = CustomLineBorder(JBColor(Gray._220, Gray._85), 0, 0, 1, 0)
         topPanel.isOpaque = false
         topPanel.add(idSummaryPanel, BorderLayout.WEST)
@@ -79,7 +79,7 @@ class IssueListCellRenderer(
         idSummaryPanel.add(idSummary, BorderLayout.EAST)
     }
 
-    private fun Issue.toIdSummary(limit: Int = Int.MAX_VALUE, fgColor: Color): SimpleColoredComponent{
+    private fun Issue.toIdSummary(limit: Int = Int.MAX_VALUE, fgColor: Color): SimpleColoredComponent {
         val idSummary = SimpleColoredComponent()
         idSummary.isOpaque = false
         idSummary.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
@@ -105,17 +105,17 @@ class IssueListCellRenderer(
         fields.clear()
         fields.isOpaque = !isSelected
         fields.background = this.background
-        issue.customFields.forEach {
-            if (viewportWidth > fields.computePreferredSize(false).width) {
-                val attributes = when {
-                    isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
-                    else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
+        issue.customFields
+                .filterNot { it.isTextField }
+                .forEach {
+                    if (viewportWidth > fields.computePreferredSize(false).width) {
+                        val attributes = when {
+                            isSelected || UIUtil.isUnderDarcula() -> SimpleTextAttributes(STYLE_PLAIN, fgColor)
+                            else -> SimpleTextAttributes(it.backgroundColor, it.foregroundColor, null, STYLE_PLAIN)
+                        }
+                        fields.append(it.formatValues(), attributes)
+                        fields.append("   ")
+                    }
                 }
-                fields.append(it.formatValues(), attributes)
-                fields.append("   ")
-            }
-        }
     }
-
-
 }

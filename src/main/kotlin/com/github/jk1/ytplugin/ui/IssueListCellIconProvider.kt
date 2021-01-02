@@ -28,14 +28,14 @@ class IssueListCellIconProvider(override val project: Project) : ComponentAware 
     fun createIcon(issue: Issue, compact: Boolean) = if (compact) createCompactIcon(issue) else createIcon(issue)
 
     private fun createIcon(issue: Issue): JComponent {
-        if (isActive(issue)) {
+        return if (isActive(issue)) {
             val label = JLabel(AllIcons.Toolwindows.ToolWindowFavorites, SwingConstants.CENTER)
             label.border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
-            return label
+            label
         } else {
             val label = if (UIUtil.isUnderDarcula()) JLabel(YouTrackPluginIcons.YOUTRACK_ISSUE_MARKER) else JLabel()
             label.border = BorderFactory.createEmptyBorder(0, 2, 0, 0)
-            return label
+            label
         }
     }
 
