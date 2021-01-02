@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
@@ -24,7 +25,6 @@ import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import javax.swing.*
 
-
 open class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     private var dateLabel = JBLabel("Date:")
@@ -32,9 +32,8 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
 
     private var idLabel = JBLabel("Issue:   ")
 
-    // TODO: another comboBoxes
-    private var idComboBox = JComboBox(arrayOf<String>())
-    private var typeComboBox = JComboBox(arrayOf("Development"))
+    private var idComboBox = ComboBox(arrayOf<String>())
+    private var typeComboBox = ComboBox(arrayOf("Development"))
     private var timeLabel = JBLabel("Spent time:")
 
     private lateinit var hoursSpinner: JSpinner
@@ -108,7 +107,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
         val timerService = TimeTrackingService()
         val types = timerService.getAvailableWorkItemsTypes(repo)
 
-        typeComboBox = JComboBox(types.toTypedArray())
+        typeComboBox = ComboBox(types.toTypedArray())
         try {
             typeComboBox.selectedIndex = 0
         } catch (e: IllegalArgumentException) {
@@ -136,7 +135,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             tasksIdRepresentation.add(id.issueId + ": " + id.summary)
             tasksIds.add(id.issueId)
         }
-        idComboBox = JComboBox(tasksIdRepresentation.toTypedArray())
+        idComboBox = ComboBox(tasksIdRepresentation.toTypedArray())
 
         idComboBox.preferredSize = Dimension(390, typeComboBox.preferredSize.height)
 
