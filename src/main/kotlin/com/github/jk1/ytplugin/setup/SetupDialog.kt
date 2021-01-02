@@ -129,13 +129,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                     repaint()
                 }
             })
-            preferredSize = Dimension(374, 28)
+            preferredSize = Dimension(375, 28)
         }
 
         val serverPanel = JPanel(FlowLayout(2))
         serverPanel.add(serverUrlLabel)
         serverPanel.add(inputUrlTextPane)
-
+        serverPanel.border = BorderFactory.createEmptyBorder(0, 0, 0, 2)
         return serverPanel
     }
 
@@ -144,9 +144,9 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            preferredSize = Dimension(375, 31)
+            preferredSize = Dimension(377, 31)
         }
-        val tokenPanel = JPanel(FlowLayout(1))
+        val tokenPanel = JPanel()
         tokenPanel.add(tokenLabel)
         tokenPanel.add(inputTokenField)
 
@@ -160,7 +160,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         val checkboxesPanel = JPanel(FlowLayout(2))
         checkboxesPanel.add(shareUrlCheckBox)
         checkboxesPanel.add(useProxyCheckBox)
-
+        checkboxesPanel.border = BorderFactory.createEmptyBorder(0, 0, 0, 4)
         return checkboxesPanel
     }
 
@@ -169,6 +169,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration")
         val advertiserPane = JPanel(FlowLayout(FlowLayout.RIGHT))
         advertiserPane.add(advertiserLabel)
+        advertiserPane.border = BorderFactory.createEmptyBorder(0, 0, 0, 4)
         return advertiserPane
     }
 
@@ -178,6 +179,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
         val tokenInfoPane = JPanel(FlowLayout(FlowLayout.RIGHT))
         tokenInfoPane.add(getTokenInfoLabel)
+        tokenInfoPane.border = BorderFactory.createEmptyBorder(0, 0, 0, 4)
         return tokenInfoPane
     }
 
@@ -195,15 +197,13 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         controlPanel = JBPanel<JBPanelWithEmptyText>().apply { layout = null }
 
         val connectionTab = JBPanel<JBPanelWithEmptyText>().apply {
-            layout = VerticalLayout(13)
+            layout = GridLayout(9, 1)
             add(createAdvertiserPane())
             add(createServerPane())
             add(createCheckboxesPane())
             add(createTokenPane())
             add(createInfoPane())
             add(createNotifierPane())
-            // to separate from other fields
-            for (x in 0..4) add(JBLabel(""))
         }
 
         mainPane.apply {
