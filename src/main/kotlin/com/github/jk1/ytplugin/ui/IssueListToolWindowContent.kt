@@ -6,7 +6,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ListActions
 import java.awt.BorderLayout
-import java.awt.event.KeyEvent.*
+import java.awt.event.KeyEvent.VK_ENTER
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent

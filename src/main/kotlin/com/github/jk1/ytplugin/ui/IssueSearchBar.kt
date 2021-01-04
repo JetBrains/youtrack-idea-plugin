@@ -33,7 +33,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         searchField.border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
         searchField.setPlaceholder("Empty search query - all issues will be displayed")
         // use reflection to avoid IDE version compatibility issues
-        if (ApplicationInfoImpl.getInstance().minorVersion.toInt() >= 2) {
+        if (ApplicationInfoImpl.getInstance().minorVersion.toDouble() >= 2) {
             LanguageTextField::class.java.getMethod("setShowPlaceholderWhenFocused",
                     Boolean::class.javaPrimitiveType).invoke(searchField, true)
         }

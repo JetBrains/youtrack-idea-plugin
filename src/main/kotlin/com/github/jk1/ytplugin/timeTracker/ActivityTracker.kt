@@ -1,9 +1,6 @@
 package com.github.jk1.ytplugin.timeTracker
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
-import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
@@ -17,14 +14,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
-import com.intellij.openapi.wm.impl.IdeFrameImpl
 import java.awt.AWTEvent
 import java.awt.Component
-import java.awt.event.*
+import java.awt.event.KeyEvent
+import java.awt.event.MouseEvent
+import java.awt.event.MouseWheelEvent
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.swing.JFrame
 
 
 class ActivityTracker(
@@ -69,12 +68,7 @@ class ActivityTracker(
             parents.forEach { parent ->
                 // can't use here "Disposer.register(parent, disposable)"
                 // because Disposer only allows one parent to one child registration of Disposable objects
-                Disposer.register(
-                        parent,
-                        Disposable {
-                            Disposer.dispose(disposable)
-                        }
-                )
+                Disposer.register(parent, Disposable { Disposer.dispose(disposable) } )
             }
             return disposable
         }
@@ -96,7 +90,7 @@ class ActivityTracker(
             val minute = formatter.format(SimpleDateFormat("mm").parse(currentTime.minute.toString()))
             val time = hour + ":" + minute + ":" + currentTime.second.toString()
 
-            if (timer.isScheduledEnabled && (time == timer.scheduledPeriod)) {
+            if (timer.isScheduledEnabled && time == timer.scheduledPeriod) {
                 if (!timer.isPostedScheduled) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Scheduled time posting at ${time}0", NotificationType.INFORMATION)
@@ -155,8 +149,7 @@ class ActivityTracker(
 
             if (!isMouseOrKeyboardActive) {
                 myInactivityTime = currentTimeMillis() - startInactivityTime
-                if ((myInactivityTime > inactivityPeriod) && timer.isRunning && !timer.isPaused
-                        && timer.isAutoTrackingEnable) {
+                if (myInactivityTime > inactivityPeriod && timer.isRunning && !timer.isPaused && timer.isAutoTrackingEnable) {
                     timer.pause("Work timer paused due to inactivity")
                 }
             } else if (isMouseOrKeyboardActive) {
@@ -177,37 +170,22 @@ class ActivityTracker(
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
             val focusOwner = ideFocusManager.focusOwner
-
             // this might also work: ApplicationManager.application.isActive(), ApplicationActivationListener
-            val window = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow
-
-            var ideHasFocus = window?.isActive
-            if (!ideHasFocus!!) {
-                val ideFrame = findParentComponent<IdeFrameImpl?>(focusOwner) { it is IdeFrameImpl }
-                ideHasFocus = ideFrame != null && ideFrame.isActive
-            }
-            if (!ideHasFocus) {
-                return false
-            }
-
-            val editor = currentEditorIn(project)
-            if (editor != null) {
-                return true
-            }
-            return false
-
+            val ideHasFocus = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow?.isActive
+                    ?: findParentFrame(focusOwner)?.isActive
+                    ?: false
+            return ideHasFocus && currentEditorIn(project) != null
         } catch (e: Exception) {
             logger.debug("IDE state exception: ${e.message}")
         }
         return false
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> findParentComponent(component: Component?, matches: (Component) -> Boolean): T? =
-            when {
-                component == null -> null
-                matches(component) -> component as T?
-                else -> findParentComponent(component.parent, matches)
+    private fun findParentFrame(component: Component?): JFrame? =
+            when (component) {
+                null -> null
+                is JFrame -> component
+                else -> findParentFrame(component.parent)
             }
 
     private fun currentEditorIn(project: Project): Editor? =

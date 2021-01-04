@@ -1,20 +1,12 @@
 package com.github.jk1.ytplugin.commands
 
-import com.github.jk1.ytplugin.YouTrackPluginException
-import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.intellij.icons.AllIcons
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
-import java.net.SocketException
-import java.net.UnknownHostException
-import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
 
 /**
  *

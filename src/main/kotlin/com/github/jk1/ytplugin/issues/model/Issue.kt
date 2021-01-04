@@ -40,9 +40,9 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         updateDate = Date(root.get("updated")?.asLong ?: 0)
 
-        resolved = (!root.get("resolved").isJsonNull && root.get("resolved") != null)
+        resolved = !root.get("resolved").isJsonNull && root.get("resolved") != null
 
-        customFields = if (root.getAsJsonArray("customFields") != null && !root.getAsJsonArray(("customFields")).isJsonNull) {
+        customFields = if (root.getAsJsonArray("customFields") != null && !root.getAsJsonArray("customFields").isJsonNull) {
             root.getAsJsonArray("customFields").mapNotNull { IssueJsonParser.parseCustomField(it) }
         } else {
             // YouTrack 2018.X has no 'customFields' yet
@@ -59,16 +59,16 @@ class Issue(item: JsonElement, val repoUrl: String) : YouTrackIssue {
 
         links = result.filter { it.value != "" }
 
-        tags = root.getAsJsonArray(("tags")).mapNotNull { IssueJsonParser.parseTag(it) }
+        tags = root.getAsJsonArray("tags").mapNotNull { IssueJsonParser.parseTag(it) }
 
-        attachments = root.getAsJsonArray(("attachments")).mapNotNull { IssueJsonParser.parseAttachment(it, repoUrl) }
+        attachments = root.getAsJsonArray("attachments").mapNotNull { IssueJsonParser.parseAttachment(it, repoUrl) }
 
         projectName = root.get("project").asJsonObject.get("shortName").asString
 
         url = "$repoUrl/issue/$id"
 
-        if (root.getAsJsonArray(("workItems")) != null && !root.getAsJsonArray(("workItems")).isJsonNull) {
-            val workItemsJson: JsonArray = root.getAsJsonArray(("workItems"))
+        if (root.getAsJsonArray("workItems") != null && !root.getAsJsonArray("workItems").isJsonNull) {
+            val workItemsJson: JsonArray = root.getAsJsonArray("workItems")
             workItemsJson.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
         }
     }

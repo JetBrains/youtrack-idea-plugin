@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.notifications
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import org.apache.commons.lang.StringEscapeUtils
-import org.apache.commons.lang3.StringUtils
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*

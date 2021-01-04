@@ -19,9 +19,7 @@ class TimerWidgetTest : PlatformLiteFixture() {
         myProject = MockProjectEx(this.testRootDisposable)
         val windowManager: WindowManager = TestWindowManager()
         val statusBar = windowManager.getStatusBar(myProject)
-
         getApplication().registerService(WindowManager::class.java, windowManager)
-
         val myTimer = TimeTracker(myProject)
         myTimer.isRunning = true
         myTimer.isPaused = false

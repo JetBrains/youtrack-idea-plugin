@@ -5,7 +5,10 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.*
-import java.awt.*
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.BorderFactory

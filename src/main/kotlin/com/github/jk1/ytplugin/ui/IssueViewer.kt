@@ -6,7 +6,6 @@ import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.ui.SimpleColoredComponent
-import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
@@ -230,7 +229,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             : SimpleColoredComponent{
 
         val parts =  item.split(" ").iterator()
-        while (parts.hasNext() && (viewportWidth > value.computePreferredSize(false).width)) {
+        while (parts.hasNext() && viewportWidth > value.computePreferredSize(false).width) {
             value.append(" ${parts.next()}", REGULAR_BOLD_ATTRIBUTES)
         }
 

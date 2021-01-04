@@ -6,7 +6,9 @@ import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
 import com.github.jk1.ytplugin.issues.PersistentIssueStore
 import com.github.jk1.ytplugin.navigator.SourceNavigatorService
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService
-import com.github.jk1.ytplugin.timeTracker.*
+import com.github.jk1.ytplugin.timeTracker.IssueWorkItemsStoreUpdaterService
+import com.github.jk1.ytplugin.timeTracker.PersistentIssueWorkItemsStore
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 

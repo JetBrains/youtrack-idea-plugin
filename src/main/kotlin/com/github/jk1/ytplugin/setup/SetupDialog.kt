@@ -231,7 +231,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             val oldUrl = URL(if (oldAddress.startsWith("http")) oldAddress else "http://$oldAddress")
             val fixedUrl = URL(connectedRepository.url)
             inputUrlTextPane.text = ""
-            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol && (oldAddress.startsWith("http")) }
+            val protocolColor = getColor { oldUrl.protocol == fixedUrl.protocol && oldAddress.startsWith("http") }
             appendToPane(inputUrlTextPane, fixedUrl.protocol, protocolColor)
             appendToPane(inputUrlTextPane, "://", protocolColor)
             appendToPane(inputUrlTextPane, fixedUrl.host, getColor { oldUrl.host == fixedUrl.host })

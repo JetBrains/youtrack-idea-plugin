@@ -13,7 +13,6 @@ import com.intellij.ui.components.JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 import com.intellij.ui.components.JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.MouseListener
 import javax.swing.AbstractAction
 import javax.swing.AbstractListModel

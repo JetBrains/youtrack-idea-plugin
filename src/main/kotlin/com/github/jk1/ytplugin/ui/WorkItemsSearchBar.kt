@@ -35,7 +35,7 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         searchField.border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
         searchField.setPlaceholder("Filter work items by date, duration, project ID, issue ID, work type, or comment text")
         // use reflection to avoid IDE version compatibility issues
-        if (ApplicationInfoImpl.getInstance().minorVersion.toInt() >= 2) {
+        if (ApplicationInfoImpl.getInstance().minorVersion.toDouble() >= 2) {
             LanguageTextField::class.java.getMethod("setShowPlaceholderWhenFocused",
                     Boolean::class.javaPrimitiveType).invoke(searchField, true)
         }

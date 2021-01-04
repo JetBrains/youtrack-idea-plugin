@@ -64,7 +64,7 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
                 // use reflection to avoid IDE version compatibility issues
                 if (issueWorkItemsStoreComponent[repo].getAllWorkItems().isEmpty()) {
                     placeholder.appendText("No work items found.")
-                    if (ApplicationInfoImpl.getInstance().minorVersion.toInt() >= 2) {
+                    if (ApplicationInfoImpl.getInstance().minorVersion.toDouble() >= 2) {
                         StatusText::class.java.getMethod("appendLine",
                                 String::class.java).invoke(placeholder, "Update your filter criteria and try again.")
                     } else {

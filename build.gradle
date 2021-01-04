@@ -16,7 +16,8 @@ allprojects {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-def supportedVersions = ['IC-2020.1', 'IC-2020.2', 'IC-2020.3', 'LATEST-EAP-SNAPSHOT', 'LATEST-TRUNK-SNAPSHOT']
+// LATEST-TRUNK-SNAPSHOT is getting resolved into an internal JB host for some reason
+def supportedVersions = ['IC-2020.1', 'IC-2020.2', 'IC-2020.3', 'LATEST-EAP-SNAPSHOT'/*, 'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
     version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2020.3'

@@ -48,8 +48,8 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
         val method = DeleteMethod("$serverUrl/rest/issue/$id")
         method.connect {
             val status = httpClient.executeMethod(method)
-            if (status != 200) {
-                throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")
+            if (status != 200 && status != 404) {
+                throw IllegalStateException("Unable to delete issue: ${method.responseBodyAsString}")
             }
         }
     }

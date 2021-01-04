@@ -164,13 +164,12 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         for (issue in issues) {
             val id = issue.asJsonObject.get("idReadable").asString
             val workItems = getWorkItems(id)
-
             var workItemsJson: String
             if (workItems.isEmpty()) {
                 workItemsJson = "\"workItems\": []"
             } else {
                 workItemsJson = "\"workItems\": ["
-                for (x in 0..(workItems.size - 2)) {
+                for (x in 0..workItems.size - 2) {
                     workItemsJson += "${workItems[x].json},"
                 }
                 workItemsJson += "${workItems.last().json}]"
