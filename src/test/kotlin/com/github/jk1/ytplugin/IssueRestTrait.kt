@@ -1,12 +1,14 @@
 package com.github.jk1.ytplugin
 
 import com.github.jk1.ytplugin.rest.RestClientTrait
+import com.google.gson.JsonParser
 import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.methods.DeleteMethod
 import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.PutMethod
+import org.apache.commons.httpclient.methods.StringRequestEntity
 
 interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
 
@@ -23,11 +25,18 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
         }
 
     fun createIssue(summary: String = "summary"): String {
-        val method = PutMethod("$serverUrl/rest/issue?project=$projectId&summary=${summary.urlencoded}")
+        val method = PostMethod("$serverUrl/api/issues?fields=idReadable")
+        val body = """{
+         "summary": "$summary",
+         "project": {
+              "id": "81-1"
+          }
+        }"""
+        method.requestEntity = StringRequestEntity(body, "application/json", "UTF-8")
         return method.connect {
             val status = httpClient.executeMethod(method)
-            if (status == 201) {
-                method.getResponseHeader("Location").toExternalForm().split("/").last().trim()
+            if (status == 200) {
+                JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("idReadable").asString
             } else {
                 throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")
             }
@@ -35,7 +44,13 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
     }
 
     fun touchIssue(id: String) {
-        val method = PostMethod("$serverUrl/rest/issue/$id?summary=updatedsummary")
+        val method = PostMethod("$serverUrl/api/issues/$id")
+        val body = """{
+          "summary": "Updated summary"
+        }"""
+
+        method.requestEntity = StringRequestEntity(body, "application/json", "UTF-8")
+
         return method.connect {
             val status = httpClient.executeMethod(method)
             if (status != 200) {
@@ -45,7 +60,7 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
     }
 
     fun deleteIssue(id: String) {
-        val method = DeleteMethod("$serverUrl/rest/issue/$id")
+        val method = DeleteMethod("$serverUrl/api/issues/$id")
         method.connect {
             val status = httpClient.executeMethod(method)
             if (status != 200 && status != 404) {
