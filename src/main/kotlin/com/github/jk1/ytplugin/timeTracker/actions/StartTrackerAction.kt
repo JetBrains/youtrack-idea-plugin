@@ -21,7 +21,7 @@ class StartTrackerAction : AnAction(
         AllIcons.Actions.Profile) {
 
     fun startAutomatedTracking(project: Project, timer: TimeTracker) {
-        if (timer.isAutoTrackingEnable) {
+        if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault && timer.isAutoTrackingEnable) {
             startTracking(project, timer)
         }
     }
@@ -33,8 +33,20 @@ class StartTrackerAction : AnAction(
 
             if (!timer.isPaused)
                 timer.reset()
-            startTracking(project, timer)
+
+            if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault) {
+                startTracking(project, timer)
+            } else {
+                notifySelectTask()
+            }
         }
+    }
+
+    private fun notifySelectTask() {
+        val note = "To start using time tracking please select active task on the toolbar" +
+                " or by pressing Shift + Alt + T"
+        val trackerNote = TrackerNotification()
+        trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
     }
 
     override fun update(event: AnActionEvent) {

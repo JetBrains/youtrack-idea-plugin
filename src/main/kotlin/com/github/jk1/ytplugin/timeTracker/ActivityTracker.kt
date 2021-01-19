@@ -63,7 +63,7 @@ class ActivityTracker(
             parents.forEach { parent ->
                 // can't use here "Disposer.register(parent, disposable)"
                 // because Disposer only allows one parent to one child registration of Disposable objects
-                Disposer.register(parent, Disposable { Disposer.dispose(disposable) } )
+                Disposer.register(parent, Disposable { Disposer.dispose(disposable) })
             }
             return disposable
         }
@@ -148,9 +148,8 @@ class ActivityTracker(
                 }
             } else if (isMouseOrKeyboardActive) {
                 startInactivityTime = currentTimeMillis()
-                if (!timer.isRunning || timer.isPaused) {
-                    val action = StartTrackerAction()
-                    action.startAutomatedTracking(project, timer)
+                if ((!timer.isRunning || timer.isPaused) && !timer.isAutoTrackingTemporaryDisabled) {
+                    StartTrackerAction().startAutomatedTracking(project, timer)
                 }
             }
             logger.debug("startIDEListener: stop the propagation of an event to other listeners")

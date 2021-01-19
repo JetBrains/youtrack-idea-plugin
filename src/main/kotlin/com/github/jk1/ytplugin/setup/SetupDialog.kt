@@ -8,6 +8,7 @@ import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerSettingsTab
 import com.github.jk1.ytplugin.timeTracker.TimeTrackingService
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.passwordSafe.PasswordSafe
@@ -15,6 +16,7 @@ import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
@@ -400,22 +402,37 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
     private fun startTimer() {
         val timerService = TimeTrackingService()
+
         timerService.configureTimerForTracking(timeTrackingTab, repo, project)
 
-        val trackerNote = TrackerNotification()
-        val note = "To start using time tracking please select active task on the toolbar" +
-                " or by pressing Shift + Alt + T"
         try {
             val timer = ComponentAware.of(repo.project).timeTrackerComponent
             if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
                     (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
-                trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+                notifySelectTask()
+            } else {
+                if (timer.isAutoTrackingEnable) {
+                    if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault) {
+                        StartTrackerAction().startAutomatedTracking(project, timer)
+                    } else {
+                        notifySelectTask()
+                    }
+                } else {
+                    val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+                    bar?.removeWidget("Time Tracking Clock")
+                    timer.activityTracker?.dispose()
+                }
             }
         } catch (e: NoActiveYouTrackTaskException) {
-            trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+            notifySelectTask()
         }
-
     }
 
+    private fun notifySelectTask() {
+        val note = "To start using time tracking please select active task on the toolbar" +
+                " or by pressing Shift + Alt + T"
+        val trackerNote = TrackerNotification()
+        trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+    }
 }
 
