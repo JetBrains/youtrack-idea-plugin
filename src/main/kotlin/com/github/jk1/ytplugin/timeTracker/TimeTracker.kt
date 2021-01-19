@@ -69,7 +69,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     @PropertyName("timeTracker.isAutoTrackingTemporaryDisabled")
     var isAutoTrackingTemporaryDisabled = false
 
-    @PropertyName("timeTracker.sactivityTracker")
+    @PropertyName("timeTracker.activityTracker")
     var activityTracker: ActivityTracker? = null
 
     @PropertyName("timeTracker.isPostedScheduled")

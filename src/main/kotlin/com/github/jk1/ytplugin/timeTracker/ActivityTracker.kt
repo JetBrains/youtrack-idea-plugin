@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
@@ -35,10 +34,6 @@ class ActivityTracker(
 ) : Disposable {
     private var trackingDisposable: Disposable? = null
 
-    @PropertyName("activityTracker.myInactivityTime")
-    private var myInactivityTime: Long = 0
-
-    @PropertyName("activityTracker.startInactivityTime")
     var startInactivityTime: Long = currentTimeMillis()
 
     private var isPostedOnClose = false
@@ -148,13 +143,10 @@ class ActivityTracker(
             }
 
             if (!isMouseOrKeyboardActive) {
-                myInactivityTime = currentTimeMillis() - startInactivityTime
-                if (myInactivityTime > inactivityPeriod && timer.isRunning && !timer.isPaused && timer.isAutoTrackingEnable) {
+                if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning && !timer.isPaused && timer.isAutoTrackingEnable) {
                     timer.pause("Work timer paused due to inactivity")
                 }
             } else if (isMouseOrKeyboardActive) {
-                myInactivityTime = 0
-
                 startInactivityTime = currentTimeMillis()
                 if (!timer.isRunning || timer.isPaused) {
                     val action = StartTrackerAction()
