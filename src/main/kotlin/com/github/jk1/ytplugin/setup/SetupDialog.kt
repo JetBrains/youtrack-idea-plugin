@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
@@ -14,9 +15,11 @@ import com.github.jk1.ytplugin.ui.HyperlinkLabel
 import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.tasks.TaskManager
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.tasks.youtrack.YouTrackRepositoryType
 import com.intellij.ui.components.*
@@ -27,6 +30,7 @@ import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
 import java.net.URL
+import java.util.concurrent.Callable
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
@@ -412,7 +416,12 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                 notifySelectTask()
             } else {
                 if (timer.isAutoTrackingEnable) {
-                    if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault) {
+                    val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
+                    val future = ApplicationManager.getApplication().executeOnPooledThread(
+                            Callable {
+                                IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
+                            })
+                    if (!taskManager.activeTask.isDefault && future.get() != "0") {
                         StartTrackerAction().startAutomatedTracking(project, timer)
                     } else {
                         notifySelectTask()

@@ -10,9 +10,11 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.tasks.TaskManager
+import java.util.concurrent.Callable
 
 
 class StartTrackerAction : AnAction(
@@ -29,12 +31,18 @@ class StartTrackerAction : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
             val timer = ComponentAware.of(project).timeTrackerComponent
-            ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
 
-            if (!timer.isPaused)
-                timer.reset()
+            val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
+            val future = ApplicationManager.getApplication().executeOnPooledThread(
+                    Callable {
+                        IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
+                    })
 
-            if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault) {
+            if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault && future.get() != "0") {
+                ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
+
+                if (!timer.isPaused)
+                    timer.reset()
                 startTracking(project, timer)
             } else {
                 notifySelectTask()

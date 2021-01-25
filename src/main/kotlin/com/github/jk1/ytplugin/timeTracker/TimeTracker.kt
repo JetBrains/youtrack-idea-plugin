@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
@@ -10,6 +11,7 @@ import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.TaskManager
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -95,8 +97,17 @@ class TimeTracker(override val project: Project) : ComponentAware {
             if (isManualTrackingEnable) {
                 stop()
             }
+
+            val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
+            val id = IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
+
             if (isAutoTrackingEnable) {
-                StartTrackerAction().startAutomatedTracking(project, this)
+                if (id != "0"){
+                    StartTrackerAction().startAutomatedTracking(project, this)
+                } else {
+                    isPaused = false
+                    isAutoTrackingTemporaryDisabled = true
+                }
             }
         } catch (e: NoYouTrackRepositoryException) {
             logger.debug("Loading time tracker... Active YouTrack repository is not found: ${e.message}")

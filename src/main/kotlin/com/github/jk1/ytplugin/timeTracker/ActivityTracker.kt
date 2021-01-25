@@ -1,18 +1,21 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.ide.IdeEventQueue
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
+import com.intellij.tasks.TaskManager
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.event.KeyEvent
@@ -148,7 +151,10 @@ class ActivityTracker(
                 }
             } else if (isMouseOrKeyboardActive) {
                 startInactivityTime = currentTimeMillis()
-                if ((!timer.isRunning || timer.isPaused) && !timer.isAutoTrackingTemporaryDisabled) {
+                val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
+                val id = IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
+
+                if ((!timer.isRunning || timer.isPaused) && !timer.isAutoTrackingTemporaryDisabled && id != "0") {
                     StartTrackerAction().startAutomatedTracking(project, timer)
                 }
             }
