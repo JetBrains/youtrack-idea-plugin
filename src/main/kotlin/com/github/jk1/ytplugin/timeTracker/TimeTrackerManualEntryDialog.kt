@@ -19,6 +19,8 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridLayout
+import java.net.SocketException
+import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
@@ -105,11 +107,26 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
     private fun createTypePanel(): JPanel {
 
         val timerService = TimeTrackingService()
-        val types = timerService.getAvailableWorkItemsTypes(repo)
+        val future = ApplicationManager.getApplication().executeOnPooledThread(
+                Callable {
+                    timerService.getAvailableWorkItemsTypes(repo)
+                })
 
+        val types = future.get()
+        val timer = project.let { it1 -> ComponentAware.of(it1).timeTrackerComponent }
+
+        var idx = 0
         typeComboBox = ComboBox(types.toTypedArray())
         try {
             typeComboBox.selectedIndex = 0
+            if (types.isNotEmpty()) {
+                types.mapIndexed { index, value ->
+                    if (value == timer.type) {
+                        idx = index
+                    }
+                }
+                typeComboBox.selectedIndex = idx
+            }
         } catch (e: IllegalArgumentException) {
             typeComboBox.selectedIndex = -1
             logger.warn("Failed to fetch work items types")
@@ -246,7 +263,13 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
             try {
                 val future = ApplicationManager.getApplication().executeOnPooledThread(
                         Callable {
-                            AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
+                            try {
+                                AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
+                            } catch (e: UnknownHostException) {
+                                logger.warn("UnknownHostException in manual time tracker: ${e.message}")
+                            } catch (e: SocketException) {
+                                logger.warn("SocketException in manual time tracker: ${e.message}")
+                            }
                         })
 
                 if (future.get() == false) {
@@ -258,13 +281,21 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                     val timerService = TimeTrackingService()
                     val futureCode = ApplicationManager.getApplication().executeOnPooledThread(
                             Callable {
-                                timerService.postNewWorkItem(datePicker.date.format(),
-                                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
-                                        commentTextField.text, time.toString())
+                                try {
+                                    timerService.postNewWorkItem(datePicker.date.format(),
+                                            typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
+                                            commentTextField.text, time.toString())
+                                } catch (e: IllegalStateException) {
+                                    logger.warn("Error in item type: ${e.message}")
+                                    notifier.foreground = Color.red
+                                    notifier.text = "Time could not be posted, please check your connection"
+                                    1
+                                }
+
                             })
                     if (futureCode.get() == 200) {
                         this@TimeTrackerManualEntryDialog.close(0)
-                    } else {
+                    } else if (futureCode.get() != 1) {
                         notifier.foreground = Color.red
                         notifier.text = "Time could not be posted, code ${futureCode.get()}"
                     }

@@ -11,6 +11,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.methods.StringRequestEntity
 import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
@@ -20,7 +21,7 @@ import kotlin.reflect.full.isSubclassOf
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun postNewWorkItem(issueId: String, time: String, type: String, comment: String, date: String) : Int {
+    fun postNewWorkItem(issueId: String, time: String, type: String, comment: String, date: String): Int {
         val getGroupsUrl = "${repository.url}/api/issues/${issueId}/timeTracking/workItems"
 
         val method = PostMethod(getGroupsUrl)
@@ -51,7 +52,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         }
     }
 
-    private fun getMyIdAsAuthor() : String {
+    private fun getMyIdAsAuthor(): String {
         val url = "${repository.url}/api/admin/users/me"
         val method = GetMethod(url)
         return method.connect {
@@ -68,7 +69,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         }
     }
 
-    private fun findWorkItemId(name: String) : String {
+    private fun findWorkItemId(name: String): String {
         val types = getAvailableWorkItemTypes()
         for (type in types) {
             if (type.name == name) {
@@ -80,32 +81,36 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         return ""
     }
 
-    fun getAvailableWorkItemTypes() : List<NameValuePair> {
+    fun getAvailableWorkItemTypes(): List<NameValuePair> {
         val url = "${repository.url}/api/admin/timeTrackingSettings/workItemTypes"
         val method = GetMethod(url)
-        val myFields = NameValuePair("fields","name,id")
-        method.setQueryString(arrayOf( myFields))
+        val myFields = NameValuePair("fields", "name,id")
+        method.setQueryString(arrayOf(myFields))
 
         val result = mutableListOf<NameValuePair>()
 
         return method.connect {
-            try{
-            when (val status = httpClient.executeMethod(method)) {
-                200 -> {
-                    val types: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                    for (type in types){
-                        val currentType = type.asJsonObject
-                        val pair = NameValuePair(currentType.asJsonObject.get("name").asString, currentType.asJsonObject.get("id").asString)
-                        result.add(pair)
+            try {
+                when (val status = httpClient.executeMethod(method)) {
+                    200 -> {
+                        val types: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
+                        for (type in types) {
+                            val currentType = type.asJsonObject
+                            val pair = NameValuePair(currentType.asJsonObject.get("name").asString, currentType.asJsonObject.get("id").asString)
+                            result.add(pair)
+                        }
+                        logger.debug("Successfully fetched available work items types: code $status")
+                        result
                     }
-                    logger.debug("Successfully fetched available work items types: code $status")
-                    result
+                    else -> {
+                        logger.warn("Unable to fetch available work items types: ${method.responseBodyAsLoggedString()}")
+                        mutableListOf()
+                    }
                 }
-                else -> {
-                    logger.warn("Unable to fetch available work items types: ${method.responseBodyAsLoggedString()}")
-                    mutableListOf()
-                }
-            }} catch (e: IllegalArgumentException){
+            } catch (e: IllegalArgumentException) {
+                logger.warn("Unable to fetch available work items types: ${e.message}")
+                mutableListOf()
+            } catch (e: SocketTimeoutException) {
                 logger.warn("Unable to fetch available work items types: ${e.message}")
                 mutableListOf()
             } catch (e: Exception) {

@@ -58,7 +58,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private val connectedRepository: YouTrackRepository = YouTrackRepository()
 
     private val myHeight = 450
-    private val myWidth = 525
+    private val myWidth = 530
     private val standardHeight = (0.0613 * myHeight).toInt()
 
     private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
@@ -146,7 +146,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         inputTokenField.apply {
             text = repo.password
             echoChar = '\u25CF'
-            preferredSize = Dimension(377, 31)
+            preferredSize = Dimension(375, 31)
         }
         val tokenPanel = JPanel()
         tokenPanel.add(tokenLabel)
