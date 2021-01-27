@@ -28,7 +28,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private va
 
     private var inactivityHourInputField = JBTextField("00")
     private var inactivityMinutesInputField = JBTextField("10")
-    private var inactivityTextField = JBLabel("With inactivity period:")
+    private var inactivityTextField = JBLabel("Inactivity period:")
 
     private var isScheduledCheckbox = JBCheckBox("On a set schedule at:")
 

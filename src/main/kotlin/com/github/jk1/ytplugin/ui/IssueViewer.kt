@@ -136,7 +136,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         if (workItems.isNotEmpty()) {
             val workItemsPanel = JPanel()
             workItemsPanel.layout = VerticalLayout(5)
-            tabs.addTab("Work Items (${workItems.size})", workItemsPanel)
+            tabs.addTab("Spent Time (${workItems.size})", workItemsPanel)
             tabs.isFocusable = false
 
             workItems.sort()

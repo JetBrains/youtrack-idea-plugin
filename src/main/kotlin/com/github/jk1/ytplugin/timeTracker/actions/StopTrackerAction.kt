@@ -34,7 +34,7 @@ class StopTrackerAction : AnAction(
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isEnabled = timer.isRunning
             event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
-            event.presentation.text = if (timer.isAutoTrackingEnable) "Post current tracking progress" else "Post Time"
+            event.presentation.text = "Post Time"
         }
     }
 
