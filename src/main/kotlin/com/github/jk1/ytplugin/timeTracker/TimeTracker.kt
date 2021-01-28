@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
@@ -11,7 +10,6 @@ import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.TaskManager
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -98,21 +96,17 @@ class TimeTracker(override val project: Project) : ComponentAware {
                 stop()
             }
 
-            val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
-            val id = try {
-                IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
-            } catch (e: IllegalStateException){
-                logger.debug("Task manager is null, id could not be received")
-                "0"
-            }
             if (isAutoTrackingEnable) {
-                if (id != "0"){
+                try {
+                    ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask().id
                     StartTrackerAction().startAutomatedTracking(project, this)
-                } else {
+                } catch (e: NoActiveYouTrackTaskException) {
+                    logger.debug("TaskId could not be received")
                     isPaused = false
                     isAutoTrackingTemporaryDisabled = true
                 }
             }
+
         } catch (e: NoYouTrackRepositoryException) {
             logger.debug("Loading time tracker... Active YouTrack repository is not found: ${e.message}")
         }
@@ -177,8 +171,9 @@ class TimeTracker(override val project: Project) : ComponentAware {
             "0"
     }
 
-    fun setupTimer(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                   isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean) {
+
+    fun setupTimerProperties(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
+                             isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean) {
         comment = myComment
         isPostAfterCommitEnabled = isPostWhenCommitEnabled
         isAutoTrackingEnable = isAutoTracking

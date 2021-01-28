@@ -1,7 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.rest.IssuesRestClient
+import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.*
 import com.github.jk1.ytplugin.whenActive
@@ -10,11 +11,8 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.tasks.TaskManager
-import java.util.concurrent.Callable
 
 
 class StartTrackerAction : AnAction(
@@ -31,20 +29,20 @@ class StartTrackerAction : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
             val timer = ComponentAware.of(project).timeTrackerComponent
+            try {
+                ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+                if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault) {
+                    ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
 
-            val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
-            val future = ApplicationManager.getApplication().executeOnPooledThread(
-                    Callable {
-                        IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
-                    })
+                    if (!timer.isPaused)
+                        timer.reset()
+                    startTracking(project, timer)
+                } else {
+                    notifySelectTask()
+                }
 
-            if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault && future.get() != "0") {
-                ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-
-                if (!timer.isPaused)
-                    timer.reset()
-                startTracking(project, timer)
-            } else {
+            } catch (e: NoActiveYouTrackTaskException) {
+                logger.debug("Active task is not valid")
                 notifySelectTask()
             }
         }
@@ -68,8 +66,6 @@ class StartTrackerAction : AnAction(
 
 
     private fun startTracking(project: Project, myTimer: TimeTracker) {
-        val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
-        val activeTask = taskManager.activeTask
         val parentDisposable = project.getService(IssueWorkItemsStoreUpdaterService::class.java)
         if (!myTimer.isRunning) {
             myTimer.startTime = System.currentTimeMillis()
@@ -94,18 +90,21 @@ class StartTrackerAction : AnAction(
 
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
-                    myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
-                    myTimer.issueId = IssuesRestClient.getEntityIdByIssueId(activeTask.id, project)
-                    myTimer.issueIdReadable = activeTask.id
-                    if (myTimer.issueId == "0") {
+
+                    try {
+                        val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+                        myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
+                        myTimer.issueId = activeTask.id
+                        myTimer.issueIdReadable = activeTask.id
+                        myTimer.start(activeTask.id)
+                    } catch (e: NoActiveYouTrackTaskException) {
                         val trackerNote = TrackerNotification()
                         trackerNote.notify("Could not record time: not a valid YouTrack issue", NotificationType.WARNING)
                         trackerNote.notifyWithHelper("To use time tracking please select valid active task on the toolbar" +
                                 " or by pressing Shift + Alt + T", NotificationType.INFORMATION, OpenActiveTaskSelection())
-                    } else {
-                        // for activity tracker enabled
-                        myTimer.start(activeTask.id)
                     }
+
+
                 } catch (e: NoYouTrackRepositoryException) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Unable to start automatic time tracking, please select" +

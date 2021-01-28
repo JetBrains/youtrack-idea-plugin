@@ -1,13 +1,10 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.*
-import com.intellij.openapi.project.Project
-import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.apache.commons.httpclient.methods.PostMethod
@@ -29,38 +26,6 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "author(name,login),deleted),summary,wikifiedDescription,customFields(name,color," +
                 "value(name,minutes,presentation,markdownText,color(background,foreground))," +
                 "id,projectCustomField(emptyFieldText)),resolved,attachments(name,url),reporter(login)"
-
-
-        fun getEntityIdByIssueId(issueId: String, project: Project): String {
-            val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
-            if (!task.isIssue) {
-                logger.debug("No valid YouTrack active task selected, ${task.id} is selected")
-                return "0"
-            }
-            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-            val myQuery = NameValuePair("fields", "id")
-            val url = "${repo.url}/api/issues/${issueId}"
-
-            val client = HttpClient()
-            val method = GetMethod(url)
-            method.setQueryString(arrayOf(myQuery))
-            method.setRequestHeader("Authorization", "Bearer " + repo.password)
-
-            try {
-                val status = client.executeMethod(method)
-                return if (status == 200) {
-                    logger.debug("Successfully found entity Id by issue Id: status $status")
-                    val json: JsonObject = JsonParser.parseString(method.responseBodyAsString) as JsonObject
-                    json.get("id").asString
-                } else {
-                    logger.debug("Failed to find entity Id by issue Id: code $status, ${method.responseBodyAsString}")
-                    "0"
-                }
-            } catch (e: Exception) {
-                logger.debug("Failed to get entity Id by issue Id: ${e.message}")
-            }
-            return "0"
-        }
     }
 
     override fun createDraft(summary: String): String {

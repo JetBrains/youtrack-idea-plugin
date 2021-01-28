@@ -3,9 +3,12 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
+import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.WindowManager
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
@@ -42,15 +45,15 @@ class TimeTrackingService {
         return status
     }
 
-    fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, repo: YouTrackServer, project: Project) {
+    private fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, project: Project) {
 
-        val timer = ComponentAware.of(repo.project).timeTrackerComponent
+        val timer = ComponentAware.of(project).timeTrackerComponent
         val timeToSchedule = timeTrackingTab.getScheduledTime()
 
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
 
-        timer.setupTimer(timeTrackingTab.getComment(), timeTrackingTab.getPostWhenCommitCheckbox().isSelected,
+        timer.setupTimerProperties(timeTrackingTab.getComment(), timeTrackingTab.getPostWhenCommitCheckbox().isSelected,
                 timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
                 timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
                 timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule,
@@ -59,6 +62,43 @@ class TimeTrackingService {
         timer.pausedTime = 0
         timer.isAutoTrackingTemporaryDisabled = false
 
+    }
+
+    fun setupTimeTracking(timeTrackingTab: TimeTrackerSettingsTab, project: Project) {
+
+        val timer = ComponentAware.of(project).timeTrackerComponent
+
+        configureTimerForTracking(timeTrackingTab, project)
+
+        try {
+            if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
+                    (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
+                notifySelectTask()
+            } else {
+                if (timer.isAutoTrackingEnable) {
+                    try {
+                        ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+                        StartTrackerAction().startAutomatedTracking(project, timer)
+                    } catch (e: NoActiveYouTrackTaskException) {
+                        notifySelectTask()
+                    }
+                } else {
+                    val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+                    bar?.removeWidget("Time Tracking Clock")
+                    timer.activityTracker?.dispose()
+                }
+            }
+
+        } catch (e: NoActiveYouTrackTaskException) {
+            notifySelectTask()
+        }
+    }
+
+    private fun notifySelectTask() {
+        val note = "To start using time tracking please select active task on the toolbar" +
+                " or by pressing Shift + Alt + T"
+        val trackerNote = TrackerNotification()
+        trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
     }
 
 }
