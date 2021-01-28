@@ -99,8 +99,12 @@ class TimeTracker(override val project: Project) : ComponentAware {
             }
 
             val taskManager = project.let { it1 -> TaskManager.getManager(it1) }
-            val id = IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
-
+            val id = try {
+                IssuesRestClient.getEntityIdByIssueId(taskManager.activeTask.id, project)
+            } catch (e: IllegalStateException){
+                logger.debug("Task manager is null, id could not be received")
+                "0"
+            }
             if (isAutoTrackingEnable) {
                 if (id != "0"){
                     StartTrackerAction().startAutomatedTracking(project, this)
