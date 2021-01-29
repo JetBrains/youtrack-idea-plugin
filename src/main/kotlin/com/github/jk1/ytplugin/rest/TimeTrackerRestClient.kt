@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonArray
@@ -15,8 +16,6 @@ import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
-import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
 
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
@@ -107,14 +106,8 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                         mutableListOf()
                     }
                 }
-            } catch (e: IllegalArgumentException) {
-                logger.warn("Unable to fetch available work items types: ${e.message}")
-                mutableListOf()
-            } catch (e: SocketTimeoutException) {
-                logger.warn("Unable to fetch available work items types: ${e.message}")
-                mutableListOf()
             } catch (e: Exception) {
-                e.multicatchException(SocketException::class, UnknownHostException::class) {
+                e.multicatchException(SocketException::class, UnknownHostException::class, SocketTimeoutException::class) {
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
                     logger.warn("Connection to network lost: ${e.message}")
@@ -122,11 +115,5 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 }
             }
         }
-    }
-
-    private fun <R> Throwable.multicatchException(vararg classes: KClass<*>, block: () -> R): R {
-        if (classes.any { this::class.isSubclassOf(it) }) {
-            return block()
-        } else throw this
     }
 }

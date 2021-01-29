@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
+import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.application.ApplicationManager
@@ -20,6 +21,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -265,10 +267,10 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                         Callable {
                             try {
                                 AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
-                            } catch (e: UnknownHostException) {
-                                logger.warn("UnknownHostException in manual time tracker: ${e.message}")
-                            } catch (e: SocketException) {
-                                logger.warn("SocketException in manual time tracker: ${e.message}")
+                            } catch (e: Exception) {
+                                e.multicatchException(SocketException::class, UnknownHostException::class, SocketTimeoutException::class) {
+                                    logger.warn("Exception in manual time tracker: ${e.message}")
+                                }
                             }
                         })
 

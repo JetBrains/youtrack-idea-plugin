@@ -4,14 +4,14 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.HelpAction
 import com.github.jk1.ytplugin.issues.actions.IssueActionGroup
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.*
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.io.IOException
-import java.net.URI
-import java.net.URISyntaxException
+import java.net.*
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -62,10 +62,10 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
                     if (mousePosition.x in issueIdStart until issueIdEnd) {
                         try {
                             Desktop.getDesktop().browse(URI("${repo.url}/issue/${selectedItem.issueId}"))
-                        } catch (e: IOException) {
-                            logger.debug("Error in issue opening in the browser: ${e.message}")
-                        } catch (e: URISyntaxException) {
-                            logger.debug("Error in issue opening in the browser: ${e.message}")
+                        } catch (e: Exception) {
+                            e.multicatchException(IOException::class, URISyntaxException::class) {
+                                logger.debug("Error in issue opening in the browser: ${e.message}")
+                            }
                         }
                     }
                 }
