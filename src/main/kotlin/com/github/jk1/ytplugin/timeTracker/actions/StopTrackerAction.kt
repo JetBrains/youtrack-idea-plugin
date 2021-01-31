@@ -40,6 +40,7 @@ class StopTrackerAction : AnAction(
 
     fun stopTimer(project: Project) {
         val trackerNote = TrackerNotification()
+
         val repo: YouTrackServer?
         try {
              repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()

@@ -28,6 +28,7 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import javax.swing.event.ChangeListener
 
 /**
  *
@@ -48,6 +49,8 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
                 createContent(project, toolWindow)
             }
         }
+
+
         // listen to resize events and convert from horizontal to vertical layout and back
         toolWindow.component.addComponentListener(object : ComponentAdapter() {
 

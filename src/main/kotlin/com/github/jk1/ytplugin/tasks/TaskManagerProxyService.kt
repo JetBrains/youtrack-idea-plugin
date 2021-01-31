@@ -6,9 +6,7 @@ import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.Task
-import com.intellij.tasks.TaskManager
-import com.intellij.tasks.TaskRepository
+import com.intellij.tasks.*
 import com.intellij.tasks.actions.OpenTaskDialog
 import com.intellij.tasks.impl.BaseRepository
 import com.intellij.tasks.youtrack.YouTrackRepository
@@ -33,6 +31,9 @@ class TaskManagerProxyService(val project: Project) : Disposable {
 
     init {
         syncTaskManagerConfig()
+        val taskListener = TaskListenerCustomAdapter(project)
+        getTaskManager().addTaskListener(taskListener)
+
         timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             if (listeners.isNotEmpty()) {
                 syncTaskManagerConfig()
@@ -90,6 +91,7 @@ class TaskManagerProxyService(val project: Project) : Disposable {
                     .first { repo -> repo.url == issue.repoUrl }
 
     private fun syncTaskManagerConfig() {
+
         synchronized(this) {
             val newHash = getTaskManager().allRepositories
                     .filter { it.isYouTrack() }

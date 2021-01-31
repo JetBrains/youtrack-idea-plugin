@@ -169,6 +169,7 @@ class ActivityTracker(
         try {
             val ideFocusManager = IdeFocusManager.getGlobalInstance()
             val focusOwner = ideFocusManager.focusOwner
+
             // this might also work: ApplicationManager.application.isActive(), ApplicationActivationListener
             val ideHasFocus = WindowManagerEx.getInstanceEx().mostRecentFocusedWindow?.isActive
                     ?: findParentFrame(focusOwner)?.isActive
