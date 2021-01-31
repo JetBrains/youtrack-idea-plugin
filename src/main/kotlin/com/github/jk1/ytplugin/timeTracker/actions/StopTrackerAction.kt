@@ -38,18 +38,20 @@ class StopTrackerAction : AnAction(
         }
     }
 
+
     fun stopTimer(project: Project) {
+
         val trackerNote = TrackerNotification()
+        val timer = ComponentAware.of(project).timeTrackerComponent
 
         val repo: YouTrackServer?
         try {
-             repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-             logger.debug("YouTrack server integration is configured")
+            repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
+            logger.debug("YouTrack server integration is configured")
         } catch (e: NoYouTrackRepositoryException){
             logger.debug("YouTrack server integration is not configured yet")
             return
         }
-        val timer = ComponentAware.of(project).timeTrackerComponent
 
         try {
             timer.stop()
