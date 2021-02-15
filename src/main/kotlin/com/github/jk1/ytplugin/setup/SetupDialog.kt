@@ -212,7 +212,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         if (!repo.getRepo().isConfigured) {
             timeTrackingTab.forbidSelection()
         } else {
-            timeTrackingTab.allowSelection()
+            timeTrackingTab.allowSelection(repo)
         }
 
         return mainPane
@@ -353,7 +353,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
         if (repoConnector.noteState != NotifierState.SUCCESS) {
             timeTrackingTab.forbidSelection()
         } else {
-            timeTrackingTab.allowSelection()
+            timeTrackingTab.allowSelection(YouTrackServer(connectedRepository, project))
         }
 
         repoConnector.setNotifier(notifyFieldLabel)

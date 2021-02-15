@@ -3,7 +3,10 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.impl.AnyModalityState
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.ui.components.*
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -13,12 +16,13 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.BorderFactory
 import javax.swing.ButtonGroup
+import javax.swing.DefaultComboBoxModel
 import javax.swing.JPanel
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 
 
-class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
+class TimeTrackerSettingsTab(var repo: YouTrackServer, myHeight: Int, private val myWidth: Int) : JBPanel<JBPanelWithEmptyText>() {
 
 
     private val standardHeight = (0.0613 * myHeight).toInt()
@@ -62,7 +66,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private va
         val inactivityPeriodPanel = createInactivityPeriodPanel(timer)
         val trackingModePanel = createTrackingModePanel(timer)
         val schedulePanel = createScheduledPanel(timer)
-        val typePanel = createTypePanel(timer, repo)
+        val typePanel = createTypePanel(timer)
         val postWhenPanel = createPostWhenPanel(timer)
         val commentPanel = createCommentPanel(timer)
 
@@ -114,30 +118,14 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private va
         return commentPanel
     }
 
-    private fun createTypePanel(timer: TimeTracker, repo: YouTrackServer): JPanel {
-
+    private fun createTypePanel(timer: TimeTracker): JPanel {
         val typePanel = JPanel(FlowLayout(2))
-        val timerService = TimeTrackingService()
-        val types = timerService.getAvailableWorkItemsTypes(repo)
-
-        var idx = 0
-        if (types.isNotEmpty()) {
-            typeComboBox = ComboBox(types.toTypedArray())
-            types.mapIndexed { index, value ->
-                if (value == timer.type) {
-                    idx = index
-                }
-            }
-        }
-
-        typeComboBox.selectedIndex = idx
+        typeComboBox.selectedIndex = 0
         typeComboBox.isEditable = true
         typeComboBox.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
         typeLabel.isEnabled = timer.isAutoTrackingEnable || timer.isManualTrackingEnable
-
         typePanel.add(typeLabel)
         typePanel.add(typeComboBox)
-
         return typePanel
     }
 
@@ -187,7 +175,7 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private va
         if (!repo.getRepo().isConfigured) {
             forbidSelection()
         } else {
-            allowSelection()
+            allowSelection(repo)
         }
         noTrackingButton.addActionListener {
             isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected,
@@ -322,10 +310,23 @@ class TimeTrackerSettingsTab(val repo: YouTrackServer, myHeight: Int, private va
         isTrackingModeChanged(autoTrackEnabled = false, manualTrackEnabled = false, noTrackingEnabled = false)
     }
 
-    fun allowSelection() {
+    fun allowSelection(repository: YouTrackServer) {
         noTrackingButton.isEnabled = true
         isAutoTrackingEnabledRadioButton.isEnabled = true
         isManualModeRadioButton.isEnabled = true
+        val types = TimeTrackingService().getAvailableWorkItemsTypes(repository)
+        ApplicationManager.getApplication().invokeLater( {
+            var idx = 0
+            if (types.isNotEmpty()) {
+                typeComboBox.model = DefaultComboBoxModel(types.toTypedArray())
+                types.mapIndexed { index, value ->
+                    if (value == ComponentAware.of(repo.project).timeTrackerComponent.type) {
+                        idx = index
+                    }
+                }
+            }
+            typeComboBox.selectedIndex = idx
+        }, AnyModalityState.ANY)
     }
 
     fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledRadioButton
