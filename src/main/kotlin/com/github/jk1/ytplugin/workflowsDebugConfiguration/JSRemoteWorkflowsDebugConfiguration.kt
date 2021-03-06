@@ -7,9 +7,13 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
+import com.intellij.javascript.debugger.LocalFileSystemFileFinder
+import com.intellij.javascript.debugger.RemoteDebuggingFileFinder
+import com.intellij.javascript.debugger.createUrlToLocalMap
+import com.intellij.javascript.debugger.execution.JSLocalFilesMappingPanel
+import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
@@ -29,10 +33,12 @@ import com.intellij.util.xmlb.annotations.Property
 import com.intellij.util.xmlb.annotations.XCollection
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
+import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
+import com.jetbrains.debugger.wip.WipWithExclusiveWebsocketChannelVmConnection
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
-import org.jetbrains.debugger.connection.VmConnection
 import java.awt.BorderLayout
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -42,25 +48,29 @@ private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
 class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String)
     : LocatableConfigurationBase<Element>(project, factory, name),
-        RunConfigurationWithSuppressedDefaultRunAction{
-//        JSRunProfileWithCompileBeforeLaunchOption,
-//        DebuggableRunConfiguration {
+        RunConfigurationWithSuppressedDefaultRunAction,
+        DebuggableRunConfiguration {
+
     @Attribute
     var host: String? = null
         set(value) {
-            field = if (StringUtil.isEmpty(value) || value == "localhost" || value == "127.0.0.1") null else value
+            field = value
         }
     @Attribute
     var port: Int = DEFAULT_PORT
 
     @Property(surroundWithTag = false)
     @XCollection
-//    var mappings: MutableList<RemoteUrlMappingBean> = SmartList()
-//        private set
+    var mappings: MutableList<RemoteUrlMappingBean> = SmartList()
+        private set
 
-//    override fun createDebugProcess(socketAddress: InetSocketAddress, session: XDebugSession, executionResult: ExecutionResult?, environment: ExecutionEnvironment): XDebugProcess {
-//        TODO("Not yet implemented")
-//    }
+    override fun createDebugProcess(socketAddress: InetSocketAddress,
+                                    session: XDebugSession,
+                                    executionResult: ExecutionResult?,
+                                    environment: ExecutionEnvironment): XDebugProcess {
+        return createWipDebugProcess(socketAddress, session, executionResult)
+    }
+
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return WipRemoteDebugConfigurationSettingsEditor()
@@ -74,7 +84,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         val configuration = super.clone() as JSRemoteWorkflowsDebugConfiguration
         configuration.host = host
         configuration.port = port
-//        configuration.mappings = SmartList(mappings)
+        configuration.mappings = SmartList(mappings)
         return configuration
     }
 
@@ -94,38 +104,41 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         XmlSerializer.serializeInto(this, element, SERIALIZATION_FILTER)
     }
 
+    override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
+        return InetSocketAddress(host, port)
+    }
+
 //    override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
-////        return host?.let {
-////            HttpInetSocketAddress(it, port)
-////        } ?: HttpInetSocketAddress(InetAddress.getLoopbackAddress(), port)
-//        return InetSocketAddress(host, port)
+//        return host?.let {
+//            HttpInetSocketAddress(it, port)
+//        } ?: HttpInetSocketAddress(InetAddress.getLoopbackAddress(), port)
 //    }
 
 
-//    private fun createWipDebugProcess(socketAddress: InetSocketAddress,
-//                                      session: XDebugSession,
-//                                      executionResult: ExecutionResult?): BrowserChromeDebugProcess {
-//        val connection = WipWithExclusiveWebsocketChannelVmConnection()
-//        val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
-//        // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
-//        val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
-//        connection.open(socketAddress)
-//        return process
-//    }
+    private fun createWipDebugProcess(socketAddress: InetSocketAddress,
+                                      session: XDebugSession,
+                                      executionResult: ExecutionResult?): BrowserChromeDebugProcess {
+        val connection = WipWithExclusiveWebsocketChannelVmConnection()
+        val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
+        // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
+        val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+        connection.open(socketAddress)
+        return process
+    }
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
         private val hostField = GuiUtils.createUndoableTextField()
         private val portField = PortField(DEFAULT_PORT, 1024)
 //        private val filesMappingPanel: JSLocalFilesMappingPanel
 
-        init {
+//        init {
 //            filesMappingPanel = object : JSLocalFilesMappingPanel(project, BorderLayout()) {
 //                override fun initUI() {
 //                    add(mappingTreePanel)
 //                    super.initUI()
 //                }
 //            }
-        }
+//        }
 
         override fun resetEditorFrom(configuration: JSRemoteWorkflowsDebugConfiguration) {
             hostField.text = StringUtil.notNullize(configuration.host, "localhost")
