@@ -3,6 +3,8 @@
     <name>YouTrack Integration</name>
     <version>1.1.4</version>
     <vendor>JetBrains</vendor>
+    <resource-bundle>messages.JSDebuggerBundle</resource-bundle>
+
 
     <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
@@ -105,6 +107,7 @@
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
         <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
 
+        <xdebugger.settings implementation="com.intellij.javascript.debugger.settings.JavaScriptDebuggerSettings"/>
         <configurationType implementation="com.github.jk1.ytplugin.workflowsDebugConfiguration.JSRemoteWorkflowsDebugConfigurationType"/>
 
     </extensions>
