@@ -3,7 +3,6 @@
     <name>YouTrack Integration</name>
     <version>1.1.4</version>
     <vendor>JetBrains</vendor>
-<!--    <resource-bundle>messages.JSDebuggerBundle</resource-bundle>-->
 
     <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
@@ -36,9 +35,9 @@
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->
     <depends>com.intellij.tasks</depends>
-
     <depends>com.intellij.modules.ultimate</depends>
     <depends>JavaScript</depends>
+    <depends>JavaScriptDebugger</depends>
 
     <actions>
 
@@ -113,10 +112,7 @@
         <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
 
 
-<!--        <xdebugger.settings implementation="com.intellij.javascript.debugger.settings.JavaScriptDebuggerSettings"/>-->
         <configurationType implementation="com.github.jk1.ytplugin.workflowsDebugConfiguration.JSRemoteWorkflowsDebugConfigurationType"/>
-<!--        <applicationConfigurable implementation="com.intellij.javascript.debugger.execution.RemoteUrlMappingBean"/>-->
-<!--        <programRunner implementation="com.intellij.javascript.debugger.execution.JavaScriptDebugRunner"/>-->
 
     </extensions>
 
