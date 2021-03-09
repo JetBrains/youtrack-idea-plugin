@@ -48,8 +48,6 @@ dependencies {
     compile project(':api')
     compile 'org.nanohttpd:nanohttpd:2.3.0'
     testCompile 'junit:junit:4.12'
-//    compile files ('libs/JavaScriptDebugger.jar')
-//    compile files ('libs/ChromeConnector.jar')
 
 }
 
