@@ -5,13 +5,15 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.RunConfigurationSingletonPolicy
 import com.intellij.icons.AllIcons
+import com.intellij.javascript.debugger.JSDebuggerBundle
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
+import icons.JavaScriptDebuggerIcons
 import org.jdom.Element
 
 private const val ID = "WorkflowsRemoteDebugType"
-private const val FACTORY_ID = "Workflows Remote"
+private const val FACTORY_ID = "Chromium Remote"
 
 class JSRemoteWorkflowsDebugConfigurationType
     : ConfigurationTypeBase(ID, "Remote Debug Of Workflows Scripts", null, NotNullLazyValue.createValue { AllIcons.Actions.IntentionBulbGrey }),
