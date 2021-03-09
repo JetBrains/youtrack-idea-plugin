@@ -34,7 +34,6 @@ import com.intellij.util.xmlb.annotations.XCollection
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
-import com.jetbrains.debugger.wip.WipWithExclusiveWebsocketChannelVmConnection
 import org.apache.http.HttpHost
 import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
@@ -119,7 +118,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     private fun createWipDebugProcess(socketAddress: InetSocketAddress,
                                       session: XDebugSession,
                                       executionResult: ExecutionResult?): BrowserChromeDebugProcess {
-        val connection = WipWithExclusiveWebsocketChannelVmConnection()
+        val connection = WipConnection()
         val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
         // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)

@@ -21,6 +21,7 @@ targetCompatibility = 1.8
 def supportedVersions = ['IU-2020.3.2' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
+
     version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2020.3.2'
     plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
     updateSinceUntilBuild false
@@ -36,6 +37,12 @@ idea {
         downloadSources = true
         outputDir file("$buildDir/idea/main")
         testOutputDir file("$buildDir/idea/test")
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
