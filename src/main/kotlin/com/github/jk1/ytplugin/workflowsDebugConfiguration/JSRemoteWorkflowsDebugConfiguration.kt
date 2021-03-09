@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
 import com.intellij.javascript.debugger.*
+import com.intellij.javascript.debugger.execution.JSLocalFilesMappingPanel
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -17,8 +18,10 @@ import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.GuiUtils
+import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.PortField
+import com.intellij.uiDesigner.core.AbstractLayout
 import com.intellij.util.SmartList
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
@@ -28,6 +31,7 @@ import com.intellij.util.xmlb.annotations.Property
 import com.intellij.util.xmlb.annotations.XCollection
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
+
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
 import com.jetbrains.debugger.wip.WipWithExclusiveWebsocketChannelVmConnection
 import org.apache.http.HttpHost
@@ -35,6 +39,7 @@ import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import org.jetbrains.debugger.connection.VmConnection
+import java.awt.BorderLayout
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import javax.swing.JComponent
@@ -109,6 +114,8 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     private fun createWipDebugProcess(socketAddress: InetSocketAddress,
                                       session: XDebugSession,
                                       executionResult: ExecutionResult?): BrowserChromeDebugProcess {
+        println (System.getProperty ("java.class.path"))
+
         val connection = WipWithExclusiveWebsocketChannelVmConnection()
         val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
         // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
@@ -120,39 +127,39 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
         private val hostField = GuiUtils.createUndoableTextField()
         private val portField = PortField(DEFAULT_PORT, 1024)
-//        private val filesMappingPanel: JSLocalFilesMappingPanel
-//
-//        init {
-//            filesMappingPanel = object : JSLocalFilesMappingPanel(project, BorderLayout()) {
-//                override fun initUI() {
-//                    add(mappingTreePanel)
-//                    super.initUI()
-//                }
-//            }
-//        }
+        private val filesMappingPanel: JSLocalFilesMappingPanel
+
+        init {
+            filesMappingPanel = object : JSLocalFilesMappingPanel(project, BorderLayout()) {
+                override fun initUI() {
+                    add(mappingTreePanel)
+                    super.initUI()
+                }
+            }
+        }
 
         override fun resetEditorFrom(configuration: JSRemoteWorkflowsDebugConfiguration) {
             hostField.text = StringUtil.notNullize(configuration.host, "localhost")
             portField.number = configuration.port
-//            filesMappingPanel.resetEditorFrom(configuration.mappings, true)
+            filesMappingPanel.resetEditorFrom(configuration.mappings, true)
         }
 
         override fun applyEditorTo(configuration: JSRemoteWorkflowsDebugConfiguration) {
             configuration.host = hostField.text
             configuration.port = portField.number
-//            filesMappingPanel.applyEditorTo(mappings, configuration)
+            filesMappingPanel.applyEditorTo(mappings, configuration)
         }
 
         override fun createEditor(): JComponent {
             val protocolPanel = JPanel(VerticalFlowLayout())
             protocolPanel.border = IdeBorderFactory.createTitledBorder("Attach to")
-//            filesMappingPanel.initUI()
-//            val mappingsPanel = HideableTitledPanel("Mapping", filesMappingPanel, true)
+            filesMappingPanel.initUI()
+            val mappingsPanel = HideableTitledPanel("Mapping", filesMappingPanel, true)
             return FormBuilder.createFormBuilder()
                     .addLabeledComponent("Host", hostField)
                     .addLabeledComponent("Port", portField)
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
-//                    .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
+                    .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel
         }
     }

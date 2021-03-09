@@ -3,8 +3,7 @@
     <name>YouTrack Integration</name>
     <version>1.1.4</version>
     <vendor>JetBrains</vendor>
-    <resource-bundle>messages.JSDebuggerBundle</resource-bundle>
-
+<!--    <resource-bundle>messages.JSDebuggerBundle</resource-bundle>-->
 
     <description><![CDATA[
         <p>Extends bundled task management plugin to provide deeper integration with YouTrack bug tracker:</p>
@@ -33,12 +32,16 @@
     <!-- Compatible with Idea platform 2020.1 - 2020.3 -->
     <idea-version since-build="203" until-build="203.*"/>
     <!-- Enable plugin in all products except  MPS -->
-    <depends>com.intellij.modules.platform</depends>
+<!--    <depends>com.intellij.modules.platform</depends>-->
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->
     <depends>com.intellij.tasks</depends>
 
+    <depends>com.intellij.modules.ultimate</depends>
+    <depends>JavaScript</depends>
+
     <actions>
+
         <action id="com.github.jk1.ytplugin.issues.actions.CreateIssueAction"
                 class="com.github.jk1.ytplugin.issues.actions.CreateIssueAction">
             <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>
@@ -87,9 +90,11 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
+
         <!--Main issue tool window-->
         <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
                     factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
@@ -107,8 +112,12 @@
                            implementationClass="com.github.jk1.ytplugin.commands.lang.CommandHighlightingAnnotator"/>
         <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
 
-        <xdebugger.settings implementation="com.intellij.javascript.debugger.settings.JavaScriptDebuggerSettings"/>
+
+<!--        <xdebugger.settings implementation="com.intellij.javascript.debugger.settings.JavaScriptDebuggerSettings"/>-->
         <configurationType implementation="com.github.jk1.ytplugin.workflowsDebugConfiguration.JSRemoteWorkflowsDebugConfigurationType"/>
+<!--        <applicationConfigurable implementation="com.intellij.javascript.debugger.execution.RemoteUrlMappingBean"/>-->
+<!--        <programRunner implementation="com.intellij.javascript.debugger.execution.JavaScriptDebugRunner"/>-->
 
     </extensions>
+
 </idea-plugin>
