@@ -17,11 +17,13 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.GuiUtils
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.PortField
+import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.uiDesigner.core.AbstractLayout
 import com.intellij.util.SmartList
@@ -62,6 +64,9 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
 
     @Attribute
     var port: Int = DEFAULT_PORT
+
+    @Attribute
+    var token: String = ""
 
     @Property(surroundWithTag = false)
     @XCollection
@@ -119,6 +124,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
                                       session: XDebugSession,
                                       executionResult: ExecutionResult?): BrowserChromeDebugProcess {
         val connection = WipConnection()
+        connection.token = token
         val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
         // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
@@ -128,6 +134,8 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
         private val hostField = GuiUtils.createUndoableTextField()
+        val tokenField = JBPasswordField()
+
         private val portField = PortField(DEFAULT_PORT, 1024)
         private val wipRadioButton = JBRadioButton(JSDebuggerBundle.message("js.remote.debug.inspector.protocol"))
         private val filesMappingPanel: JSLocalFilesMappingPanel
@@ -152,6 +160,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
 
         override fun applyEditorTo(configuration: JSRemoteWorkflowsDebugConfiguration) {
             configuration.host = hostField.text
+            configuration.token = tokenField.text
             configuration.port = portField.number
             filesMappingPanel.applyEditorTo(mappings, configuration)
         }
@@ -165,6 +174,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
             return FormBuilder.createFormBuilder()
                     .addLabeledComponent(JSDebuggerBundle.message("js.remote.debug.host"), hostField)
                     .addLabeledComponent(JSDebuggerBundle.message("js.remote.debug.port"), portField)
+                    .addLabeledComponent("Token", tokenField)
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
                     .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel

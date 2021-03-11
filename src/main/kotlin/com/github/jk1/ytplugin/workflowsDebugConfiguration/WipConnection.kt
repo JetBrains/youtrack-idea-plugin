@@ -2,15 +2,18 @@ package com.github.jk1.ytplugin.workflowsDebugConfiguration
 
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
-import com.jetbrains.debugger.wip.WipRemoteVmConnection
 import com.intellij.javascript.debugger.JSDebuggerBundle
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Conditions
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.util.SmartList
+import com.intellij.util.Urls
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.connectRetrying
 import com.intellij.util.io.handler
 import com.jetbrains.debugger.wip.PageConnection
+import com.jetbrains.debugger.wip.WipRemoteVmConnection
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelHandler
@@ -19,6 +22,8 @@ import io.netty.handler.codec.http.*
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.isPending
+import org.jetbrains.debugger.MessagingLogger
+import org.jetbrains.debugger.connection.chooseDebuggee
 import org.jetbrains.debugger.createDebugLogger
 import org.jetbrains.io.NettyUtil
 import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
@@ -27,17 +32,24 @@ import java.net.InetSocketAddress
 
 class WipConnection : WipRemoteVmConnection() {
 
-    private val JSON_API_ENDPOINT = "/api/workflowsinspector/json"
+    var token = ""
+    private var currentPageTitle: String? = null
 
     @Volatile
     private var connectionsData: ByteBuf? = null
+    private var websocketUrl = ""
+
 
     override fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?) {
+        doOpen(result, address, stopCondition, token)
+    }
+
+    fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?, token: String) {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
         val resultRejected = Condition<Void> { result.state == Promise.State.REJECTED }
         val combinedCondition = Conditions.or(stopCondition ?: Conditions.alwaysFalse(), resultRejected)
         fun connectToWebSocket() {
-            super.doOpen(result, address, stopCondition)
+            super.doOpen(result, InetSocketAddress("127.0.0.1", 4242), stopCondition)
         }
         val connectResult = createBootstrap().handler {
             it.pipeline().addLast(
@@ -46,7 +58,7 @@ class WipConnection : WipRemoteVmConnection() {
                     object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
                         override fun channelActive(context: ChannelHandlerContext) {
                             super.channelActive(context)
-                            sendJson(address, context, result)
+                            sendJson(address, context, result, token)
                         }
 
                         override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
@@ -75,15 +87,41 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    fun sendJson(address: InetSocketAddress, context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>) {
-        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, JSON_API_ENDPOINT)
-        request.headers().set(HttpHeaderNames.HOST, address.hostString)
+    fun sendJson(address: InetSocketAddress, context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>, token: String) {
+        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/workflowsinspector/json")
+        request.headers().set(HttpHeaderNames.HOST, "localhost:4343")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
-        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Basic cm9vdDpyb290")
-
-        context.channel().writeAndFlush(request).addChannelListener {
+        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer $token")
+    context.channel().writeAndFlush(request).addChannelListener {
             if (!it.isSuccess) {
                 vmResult.setError(it.cause())
+            }
+        }
+
+    }
+
+
+    override fun createChannelHandler(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): ChannelHandler {
+        return object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
+            override fun channelActive(context: ChannelHandlerContext) {
+                super.channelActive(context)
+                try {
+                    context.pipeline().remove(this)
+                    connectToPage(context, address, connectionsData!!, vmResult)
+                }
+                catch (e: Throwable) {
+                    handleExceptionOnGettingWebSockets(e, vmResult)
+                }
+            }
+
+            override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
+
+            }
+
+            @Suppress("OverridingDeprecatedMember")
+            override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
+                vmResult.setError(cause)
+                context.close()
             }
         }
     }
@@ -130,35 +168,52 @@ class WipConnection : WipRemoteVmConnection() {
             }
             reader.endObject()
 
+            if (webSocketDebuggerUrl == null)
+                result.setError("Please check your permissions to debug")
+            else
+                websocketUrl = webSocketDebuggerUrl
             pageConnections.add(PageConnection(pageUrl, title, type, webSocketDebuggerUrl, id, address))
         }
 
         return !processPageConnections(context, debugMessageQueue, pageConnections, result)
     }
 
-    override fun createChannelHandler(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): ChannelHandler {
-        return object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
-            override fun channelActive(context: ChannelHandlerContext) {
-                super.channelActive(context)
-                try {
-                    context.pipeline().remove(this)
-                    connectToPage(context, address, connectionsData!!, vmResult)
-                }
-                catch (e: Throwable) {
-                    handleExceptionOnGettingWebSockets(e, vmResult)
-                }
+    override fun processPageConnections(context: ChannelHandlerContext,
+                                              debugMessageQueue: MessagingLogger?,
+                                              pageConnections: List<PageConnection>,
+                                              result: AsyncPromise<WipVm>): Boolean {
+        val debuggablePages = SmartList<PageConnection>()
+
+        for (p in pageConnections) {
+            if (url == null) {
+                debuggablePages.add(p)
             }
-
-            override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
-
-            }
-
-            @Suppress("OverridingDeprecatedMember")
-            override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
-                vmResult.setError(cause)
-                context.close()
+            else if (Urls.equals(url, Urls.newFromEncoded(p.url!!), SystemInfo.isFileSystemCaseSensitive, true)) {
+                connectDebugger(p, context, result, debugMessageQueue)
+                return true
             }
         }
+
+        if (url == null) {
+            chooseDebuggee(debuggablePages, -1) { item, renderer ->
+                renderer.append("${item.title} ${item.url?.let { "($it)" } ?: ""}",
+                        if (item.webSocketDebuggerUrl == null) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            }.onSuccess {
+                val webSocketDebuggerUrl = it.webSocketDebuggerUrl
+                if (webSocketDebuggerUrl == null) {
+                    result.setError(JSDebuggerBundle.message("js.debug.another.debugger.attached"))
+                    return@onSuccess
+                }
+
+                currentPageTitle = it.title
+                connectDebugger(it, context, result, debugMessageQueue)
+            }
+                    .onError { result.setError(it) }
+        }
+        else {
+            result.setError(JSDebuggerBundle.message("error.connection.no.page", url))
+        }
+        return true
     }
 
     override fun detachAndClose(): Promise<*> {
@@ -167,5 +222,4 @@ class WipConnection : WipRemoteVmConnection() {
         }
         return super.detachAndClose()
     }
-
 }
