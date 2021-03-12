@@ -33,7 +33,6 @@ import java.net.URI
 
 class WipConnection : WipRemoteVmConnection() {
 
-    var token = ""
     private var currentPageTitle: String? = null
 
     @Volatile
@@ -45,17 +44,16 @@ class WipConnection : WipRemoteVmConnection() {
     private var type: String? = null
     private var id: String? = null
 
-
     override fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?) {
-        doOpen(result, address, stopCondition, token)
-    }
-
-    fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?, token: String) {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
         val resultRejected = Condition<Void> { result.state == Promise.State.REJECTED }
         val combinedCondition = Conditions.or(stopCondition ?: Conditions.alwaysFalse(), resultRejected)
         fun connectToWebSocket() {
-            super.doOpen(result, InetSocketAddress(URI(webSocketDebuggerUrl).host, URI(webSocketDebuggerUrl).port), stopCondition)
+            if (webSocketDebuggerUrl != null) {
+                super.doOpen(result, InetSocketAddress(URI(webSocketDebuggerUrl!!).host, URI(webSocketDebuggerUrl!!).port), stopCondition)
+            } else {
+                result.setError("Please check your permissions to debug")
+            }
         }
 
         val connectResult = createBootstrap().handler {
@@ -65,7 +63,7 @@ class WipConnection : WipRemoteVmConnection() {
                     object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
                         override fun channelActive(context: ChannelHandlerContext) {
                             super.channelActive(context)
-                            formJsonRequest(address, context, result, token)
+                            formJsonRequest(address, context, result)
                         }
 
                         override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
@@ -94,11 +92,11 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    fun formJsonRequest(address: InetSocketAddress, context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>, token: String) {
+    fun formJsonRequest(address: InetSocketAddress, context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>) {
         val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/workflowsinspector/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
-        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer $token")
+        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer ${JSRemoteWorkflowsDebugConfiguration.connectionToken}")
         request.headers().set(HttpHeaderNames.ACCEPT, "application/json")
 
         context.channel().writeAndFlush(request).addChannelListener {

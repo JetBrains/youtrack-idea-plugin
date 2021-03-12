@@ -65,9 +65,6 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     @Attribute
     var port: Int = DEFAULT_PORT
 
-    @Attribute
-    var token: String = ""
-
     @Property(surroundWithTag = false)
     @XCollection
     var mappings: MutableList<RemoteUrlMappingBean> = SmartList()
@@ -124,7 +121,6 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
                                       session: XDebugSession,
                                       executionResult: ExecutionResult?): BrowserChromeDebugProcess {
         val connection = WipConnection()
-        connection.token = token
         val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
         // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
@@ -134,7 +130,6 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
         private val hostField = GuiUtils.createUndoableTextField()
-        val tokenField = JBPasswordField()
 
         private val portField = PortField(DEFAULT_PORT, 1024)
         private val wipRadioButton = JBRadioButton(JSDebuggerBundle.message("js.remote.debug.inspector.protocol"))
@@ -160,7 +155,6 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
 
         override fun applyEditorTo(configuration: JSRemoteWorkflowsDebugConfiguration) {
             configuration.host = hostField.text
-            configuration.token = tokenField.text
             configuration.port = portField.number
             filesMappingPanel.applyEditorTo(mappings, configuration)
         }
@@ -174,10 +168,14 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
             return FormBuilder.createFormBuilder()
                     .addLabeledComponent(JSDebuggerBundle.message("js.remote.debug.host"), hostField)
                     .addLabeledComponent(JSDebuggerBundle.message("js.remote.debug.port"), portField)
-                    .addLabeledComponent("Token", tokenField)
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
                     .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel
         }
     }
+
+    companion object {
+        var connectionToken: String? = null
+    }
+
 }
