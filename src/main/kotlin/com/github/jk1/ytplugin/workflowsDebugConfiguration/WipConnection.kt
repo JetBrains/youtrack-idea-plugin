@@ -1,5 +1,7 @@
 package com.github.jk1.ytplugin.workflowsDebugConfiguration
 
+import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.intellij.javascript.debugger.JSDebuggerBundle
@@ -30,6 +32,13 @@ import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
 import org.jetbrains.wip.WipVm
 import java.net.InetSocketAddress
 import java.net.URI
+
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.WindowManager
+
+import com.intellij.openapi.project.ProjectManager
+import java.awt.Window
+
 
 class WipConnection : WipRemoteVmConnection() {
 
@@ -92,22 +101,46 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
+    private fun getActiveProject(): Project? {
+        val projects = ProjectManager.getInstance().openProjects
+        var activeProject: Project? = null
+        for (project in projects) {
+            val window: Window? = WindowManager.getInstance().suggestParentWindow(project)
+            if (window != null && window.isActive) {
+                activeProject = project
+            }
+        }
+        return activeProject
+    }
+
     fun formJsonRequest(address: InetSocketAddress, context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>) {
+
+        // get active project to detect YouTrack repo
+        val activeProject = getActiveProject()
+
         val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/workflowsinspector/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
-        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer ${JSRemoteWorkflowsDebugConfiguration.connectionToken}")
-        request.headers().set(HttpHeaderNames.ACCEPT, "application/json")
 
-        context.channel().writeAndFlush(request).addChannelListener {
-            if (!it.isSuccess) {
-                vmResult.setError(it.cause())
+        try {
+            val repositories = activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
+            val token = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
+
+            request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer $token")
+            request.headers().set(HttpHeaderNames.ACCEPT, "application/json")
+            context.channel().writeAndFlush(request).addChannelListener {
+                if (!it.isSuccess) {
+                    vmResult.setError(it.cause())
+                }
             }
+        } catch (e: NoYouTrackRepositoryException) {
+            vmResult.setError("Please check your permissions to debug")
         }
 
     }
 
     override fun createChannelHandler(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): ChannelHandler {
+
         return object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
             override fun channelActive(context: ChannelHandlerContext) {
                 super.channelActive(context)

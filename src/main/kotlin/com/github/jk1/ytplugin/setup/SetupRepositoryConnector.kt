@@ -79,7 +79,6 @@ class SetupRepositoryConnector {
                     noteState = NotifierState.LOGIN_ERROR
                     false
                 } else {
-                    shareToken(repository)
                     json.get("version").asString.toDouble() >= 2017.1
                 }
             } else {
@@ -91,10 +90,6 @@ class SetupRepositoryConnector {
             logger.warn("invalid token or login, failed on version validation: ${method.statusCode}")
         }
         return false
-    }
-
-    private fun shareToken(repository: YouTrackRepository){
-        connectionToken = repository.password
     }
 
     private fun checkAndFixConnection(repository: YouTrackRepository) {

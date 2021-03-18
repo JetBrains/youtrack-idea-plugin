@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.workflowsDebugConfiguration
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configuration.EmptyRunProfileState
@@ -17,13 +18,8 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
-import com.intellij.openapi.util.NlsSafe
-import com.intellij.openapi.util.text.StringUtil
-import com.intellij.ui.GuiUtils
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.IdeBorderFactory
-import com.intellij.ui.PortField
-import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.uiDesigner.core.AbstractLayout
 import com.intellij.util.SmartList
@@ -44,6 +40,7 @@ import org.jetbrains.debugger.connection.VmConnection
 import java.awt.BorderLayout
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.net.URL
 import javax.swing.ButtonGroup
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -129,16 +126,9 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     }
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
-        private val hostField = GuiUtils.createUndoableTextField()
-
-        private val portField = PortField(DEFAULT_PORT, 1024)
-        private val wipRadioButton = JBRadioButton(JSDebuggerBundle.message("js.remote.debug.inspector.protocol"))
         private val filesMappingPanel: JSLocalFilesMappingPanel
 
         init {
-            val buttonGroup = ButtonGroup()
-            wipRadioButton.isSelected = true
-            buttonGroup.add(wipRadioButton)
             filesMappingPanel = object : JSLocalFilesMappingPanel(project, BorderLayout()) {
                 override fun initUI() {
                     add(mappingTreePanel)
@@ -148,34 +138,27 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         }
 
         override fun resetEditorFrom(configuration: JSRemoteWorkflowsDebugConfiguration) {
-            hostField.text = StringUtil.notNullize(configuration.host, "localhost")
-            portField.number = configuration.port
             filesMappingPanel.resetEditorFrom(configuration.mappings, true)
         }
 
         override fun applyEditorTo(configuration: JSRemoteWorkflowsDebugConfiguration) {
-            configuration.host = hostField.text
-            configuration.port = portField.number
+            val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+            if (repositories.isNotEmpty()) {
+                configuration.host = URL(repositories[0].url).host
+                configuration.port = URL(repositories[0].url).port
+            }
             filesMappingPanel.applyEditorTo(mappings, configuration)
         }
 
         override fun createEditor(): JComponent {
             val protocolPanel = JPanel(VerticalFlowLayout())
-            protocolPanel.border = IdeBorderFactory.createTitledBorder(JSDebuggerBundle.message("js.remote.debug.attach.to"))
-            protocolPanel.add(wipRadioButton)
             filesMappingPanel.initUI()
             val mappingsPanel = HideableTitledPanel(JSDebuggerBundle.message("label.text.remote.urls.of.local.files"), filesMappingPanel, true)
             return FormBuilder.createFormBuilder()
-                    .addLabeledComponent(JSDebuggerBundle.message("js.remote.debug.host"), hostField)
-                    .addLabeledComponent(JSDebuggerBundle.message("js.remote.debug.port"), portField)
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
                     .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel
         }
-    }
-
-    companion object {
-        var connectionToken: String? = null
     }
 
 }

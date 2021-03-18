@@ -13,7 +13,7 @@ import icons.JavaScriptDebuggerIcons
 import org.jdom.Element
 
 private const val ID = "WorkflowsRemoteDebugType"
-private const val FACTORY_ID = "Chromium Remote"
+private const val FACTORY_ID = "Workflows Remote Debug"
 
 class JSRemoteWorkflowsDebugConfigurationType
     : ConfigurationTypeBase(ID, "Remote Debug Of Workflows Scripts", null, NotNullLazyValue.createValue { AllIcons.Actions.IntentionBulbGrey }),
