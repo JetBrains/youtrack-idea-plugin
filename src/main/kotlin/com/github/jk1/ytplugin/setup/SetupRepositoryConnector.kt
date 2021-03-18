@@ -1,10 +1,6 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.github.jk1.ytplugin.workflowsDebugConfiguration.JSRemoteWorkflowsDebugConfiguration
-import com.github.jk1.ytplugin.workflowsDebugConfiguration.JSRemoteWorkflowsDebugConfiguration.Companion.connectionToken
-import com.github.jk1.ytplugin.workflowsDebugConfiguration.WipConnection
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.openapi.progress.ProgressIndicator
@@ -15,8 +11,6 @@ import com.intellij.tasks.TaskManager
 import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
-import com.jetbrains.debugger.wip.JSRemoteDebugConfiguration
-import com.jetbrains.debugger.wip.JSRemoteDebugConfigurationType
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.NameValuePair

@@ -12,7 +12,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.*
-import com.intellij.javascript.debugger.execution.JSLocalFilesMappingPanel
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -20,7 +19,6 @@ import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.IdeBorderFactory
-import com.intellij.ui.components.JBRadioButton
 import com.intellij.uiDesigner.core.AbstractLayout
 import com.intellij.util.SmartList
 import com.intellij.util.ui.FormBuilder
@@ -41,9 +39,9 @@ import java.awt.BorderLayout
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URL
-import javax.swing.ButtonGroup
 import javax.swing.JComponent
 import javax.swing.JPanel
+
 
 private const val DEFAULT_PORT = 9229
 private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
@@ -126,10 +124,10 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     }
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
-        private val filesMappingPanel: JSLocalFilesMappingPanel
+        private val filesMappingPanel: WorkflowsLocalFilesMappingPanel
 
         init {
-            filesMappingPanel = object : JSLocalFilesMappingPanel(project, BorderLayout()) {
+            filesMappingPanel = object : WorkflowsLocalFilesMappingPanel(project, BorderLayout()) {
                 override fun initUI() {
                     add(mappingTreePanel)
                     super.initUI()
