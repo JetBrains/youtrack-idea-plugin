@@ -17,6 +17,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
+import com.intellij.ui.GuiUtils
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.uiDesigner.core.AbstractLayout
@@ -60,6 +61,9 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     @Attribute
     var port: Int = DEFAULT_PORT
 
+    @Attribute
+    var workflowName: String = ""
+
     @Property(surroundWithTag = false)
     @XCollection
     var mappings: MutableList<RemoteUrlMappingBean> = SmartList()
@@ -78,6 +82,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         configuration.host = host
         configuration.port = port
         configuration.mappings = SmartList(mappings)
+        configuration.workflowName = workflowName
         return configuration
     }
 
@@ -125,6 +130,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
         private val filesMappingPanel: WorkflowsLocalFilesMappingPanel
+        private val workflowNameField = GuiUtils.createUndoableTextField()
 
         init {
             filesMappingPanel = object : WorkflowsLocalFilesMappingPanel(project, BorderLayout()) {
@@ -145,6 +151,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
                 configuration.host = URL(repositories[0].url).host
                 configuration.port = URL(repositories[0].url).port
             }
+            configuration.workflowName = workflowNameField.text
             filesMappingPanel.applyEditorTo(mappings, configuration)
         }
 
@@ -154,6 +161,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
             val mappingsPanel = HideableTitledPanel(JSDebuggerBundle.message("label.text.remote.urls.of.local.files"), filesMappingPanel, true)
             return FormBuilder.createFormBuilder()
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
+                    .addLabeledComponent("Workflow Name", workflowNameField)
                     .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel
         }

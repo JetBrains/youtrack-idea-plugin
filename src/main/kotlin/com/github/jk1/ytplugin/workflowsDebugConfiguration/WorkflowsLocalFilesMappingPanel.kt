@@ -75,10 +75,13 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
         } else null
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            val workflow = WorkflowsRestClient(repo!!).getWorkflowRulesList(workflowName)
+            val workflow = if (workflowName.isNotEmpty())
+                WorkflowsRestClient(repo!!).getWorkflowRulesList(workflowName)
+            else null
+
             if (workflow != null) {
                 for (rule in workflow.rules) {
-                    WorkflowsRestClient(repo).getWorkFlowContent(workflow, rule)
+                    WorkflowsRestClient(repo!!).getWorkFlowContent(workflow, rule)
                     val vFile: VirtualFile? = createFile("src/${rule.name}.js", rule.content)
                 }
             }
@@ -93,7 +96,7 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
                 val remote = mapping.value
 
                 if (!isWorkflowLoaded){
-                    loadWorkflowRules("color-scheme-workflow")
+                    loadWorkflowRules((configuration as JSRemoteWorkflowsDebugConfiguration).workflowName)
                     isWorkflowLoaded = true
                 }
 
