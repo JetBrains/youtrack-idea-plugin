@@ -24,6 +24,7 @@ import javax.swing.JPanel
 
 import com.intellij.testFramework.PlatformTestUtil.getOrCreateProjectBaseDir
 import com.intellij.testFramework.VfsTestUtil
+import com.intellij.util.SmartList
 
 
 open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutManager) : JPanel(layout) {
@@ -33,7 +34,6 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
             if (project.isDefault) null
             else AbstractFileTreeTable(project, String::class.java, JSDebuggerBundle.message("column.title.remote.url"),
                     VisibleNodeFileFilter(DirectoryIndex.getInstance(project)), true, false)
-    protected var isWorkflowLoaded = false
 
     open fun initUI() {
         if (mappingTree != null) {
@@ -63,54 +63,40 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
         }
     }
 
-
-    protected open fun createFile(path: String, text: String?): VirtualFile? {
-        return VfsTestUtil.createFile(getOrCreateProjectBaseDir(project), path, text)
-    }
-
-    private fun loadWorkflowRules(workflowName: String) {
-        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
-        val repo = if (repositories.isNotEmpty()) {
-            repositories[0]
-        } else null
-
-        ApplicationManager.getApplication().executeOnPooledThread {
-            val workflow = if (workflowName.isNotEmpty())
-                WorkflowsRestClient(repo!!).getWorkflowRulesList(workflowName)
-            else null
-
-            if (workflow != null) {
-                for (rule in workflow.rules) {
-                    WorkflowsRestClient(repo!!).getWorkFlowContent(workflow, rule)
-                    val vFile: VirtualFile? = createFile("src/${rule.name}.js", rule.content)
-                }
-            }
-        }
-
-    }
-
     fun applyEditorTo(mappings: MutableList<RemoteUrlMappingBean>, configuration: RunConfiguration) {
+
+        val name = "fff"
+        name.split("/").size
+        val mapings: MutableList<RemoteUrlMappingBean> = SmartList()
         if (mappingTree != null) {
-            mappings.clear()
-            for (mapping in mappingTree.values.entries) {
-                val remote = mapping.value
-
-                if (!isWorkflowLoaded){
-                    loadWorkflowRules((configuration as JSRemoteWorkflowsDebugConfiguration).workflowName)
-                    isWorkflowLoaded = true
-                }
-
-                if (!remote.isEmpty()) {
-                    mappings.add(createMapping(mapping.key.path, remote))
-                }
-            }
-
             for (process in XDebuggerManager.getInstance(mappingTree.project).getDebugProcesses(JavaScriptDebugProcess::class.java)) {
                 if (process.session.runProfile === configuration) {
-                    process.updateRemoteUrlMappings(mappings)
+                    process.updateRemoteUrlMappings(mapings)
                 }
             }
         }
+
+//        if (mappingTree != null) {
+//            mappings.clear()
+//            for (mapping in mapings) {
+//                val remote = mapping
+//
+//                if (!isWorkflowLoaded){
+//                    loadWorkflowRules((configuration as JSRemoteWorkflowsDebugConfiguration).workflowName)
+//                    isWorkflowLoaded = true
+//                }
+//
+//                if (!remote.isEmpty()) {
+//                    mappings.add(createMapping(mapping.key.path, remote))
+//                }
+//            }
+//
+//            for (process in XDebuggerManager.getInstance(mappingTree.project).getDebugProcesses(JavaScriptDebugProcess::class.java)) {
+//                if (process.session.runProfile === configuration) {
+//                    process.updateRemoteUrlMappings(mappings)
+//                }
+//            }
+//        }
     }
 
     protected open fun createMapping(localPath: String, remote: String): RemoteUrlMappingBean = RemoteUrlMappingBean(localPath, remote)
