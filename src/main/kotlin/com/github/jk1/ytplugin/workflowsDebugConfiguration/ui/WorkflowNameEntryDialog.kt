@@ -53,13 +53,14 @@ open class WorkflowNameEntryDialog(val project: Project) : DialogWrapper(project
     override fun createCenterPanel(): JComponent {
         val contextPane = JPanel(VerticalFlowLayout())
         contextPane.apply {
-            preferredSize = Dimension(400, 90)
+            preferredSize = Dimension(500, 90)
             minimumSize = preferredSize
             add(createMainPanel())
             add(createButtonsPanel())
         }
         return contextPane
     }
+
 
     private fun okAction() {
         WorkflowRulesHandler().loadWorkflowRules(workflowNameField.text, project)

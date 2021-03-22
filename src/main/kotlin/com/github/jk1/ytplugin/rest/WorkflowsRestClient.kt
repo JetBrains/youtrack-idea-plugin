@@ -4,15 +4,17 @@ import com.github.jk1.ytplugin.issues.model.Workflow
 import com.github.jk1.ytplugin.issues.model.WorkflowRule
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.intellij.notification.NotificationType
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 
 class WorkflowsRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun getWorkflowRulesList(workflowName: String): Workflow? {
+    fun getWorkflowWithRules(workflowName: String): Workflow? {
         val getWorkflowsListUrl = "${repository.url}/api/admin/workflows"
         val method = GetMethod(getWorkflowsListUrl)
         method.params.contentCharset = "UTF-8"

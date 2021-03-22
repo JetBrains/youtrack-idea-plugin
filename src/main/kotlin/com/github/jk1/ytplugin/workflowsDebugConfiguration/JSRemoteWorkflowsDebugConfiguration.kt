@@ -152,10 +152,10 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         override fun createEditor(): JComponent {
             val protocolPanel = JPanel(VerticalFlowLayout())
             filesMappingPanel.initUI()
-            val mappingsPanel = HideableTitledPanel(JSDebuggerBundle.message("label.text.remote.urls.of.local.files"), filesMappingPanel, true)
+//            val mappingsPanel = HideableTitledPanel(JSDebuggerBundle.message("label.text.remote.urls.of.local.files"), filesMappingPanel, true)
             return FormBuilder.createFormBuilder()
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
-                    .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
+//                    .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel
         }
     }

@@ -60,6 +60,7 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
             }
             mappingTree.reset(map)
             mappingTree.select(toSelect)
+
         }
     }
 
@@ -68,6 +69,7 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
         val name = "fff"
         name.split("/").size
         val mapings: MutableList<RemoteUrlMappingBean> = SmartList()
+        mapings.add(RemoteUrlMappingBean("/home/alina.boshchenko/IdeaProjects/untitled16/src/change-color-over-time.js", "color-scheme-workflow/change-color-over-time.js"))
         if (mappingTree != null) {
             for (process in XDebuggerManager.getInstance(mappingTree.project).getDebugProcesses(JavaScriptDebugProcess::class.java)) {
                 if (process.session.runProfile === configuration) {
