@@ -10,13 +10,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.LocalTask
 import com.intellij.tasks.TaskListener
 
-class TaskListenerCustomAdapter(val project: Project) : TaskListener {
+class TaskListenerCustomAdapter(override val project: Project) : TaskListener, ComponentAware {
 
 
     override fun taskDeactivated(task: LocalTask) {
         try {
-            ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
-        } catch (e: NoActiveYouTrackTaskException){
+            taskManagerComponent.getActiveYouTrackTask()
+        } catch (e: NoActiveYouTrackTaskException) {
             val note = "To start using time tracking please select active task on the toolbar" +
                     " or by pressing Shift + Alt + T"
             val trackerNote = TrackerNotification()
@@ -26,16 +26,15 @@ class TaskListenerCustomAdapter(val project: Project) : TaskListener {
     }
 
     override fun taskActivated(task: LocalTask) {
-        if (ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled){
-            ComponentAware.of(project).timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-            StartTrackerAction().startAutomatedTracking(project, ComponentAware.of(project).timeTrackerComponent)
+        if (timeTrackerComponent.isAutoTrackingTemporaryDisabled) {
+            timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
+            StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
         }
     }
 
 
     override fun taskAdded(task: LocalTask) {
-        val timer = ComponentAware.of(project).timeTrackerComponent
-        if (timer.isRunning && timer.isAutoTrackingEnable) {
+        if (timeTrackerComponent.isRunning && timeTrackerComponent.isAutoTrackingEnable) {
             StopTrackerAction().stopTimer(project)
         }
     }
