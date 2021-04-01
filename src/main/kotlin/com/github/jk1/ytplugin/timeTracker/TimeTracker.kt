@@ -98,7 +98,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
             if (isAutoTrackingEnable) {
                 try {
-                    ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask().id
+                    taskManagerComponent.getActiveYouTrackTask().id
                     StartTrackerAction().startAutomatedTracking(project, this)
                 } catch (e: NoActiveYouTrackTaskException) {
                     logger.debug("TaskId could not be received")

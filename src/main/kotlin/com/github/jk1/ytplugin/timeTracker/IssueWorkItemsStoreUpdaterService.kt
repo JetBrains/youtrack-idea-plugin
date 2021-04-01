@@ -37,8 +37,8 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
 
     override fun dispose() {
         try {
-            val repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-            val timer = ComponentAware.of(repo.project).timeTrackerComponent
+            val repo = taskManagerComponent.getActiveYouTrackRepository()
+            val timer = timeTrackerComponent
 
             if (timer.isWhenProjectClosedEnabled) {
                 logger.debug("state PROJECT_CLOSE with posting enabled")
