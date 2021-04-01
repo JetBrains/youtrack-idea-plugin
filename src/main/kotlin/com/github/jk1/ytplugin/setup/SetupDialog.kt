@@ -61,7 +61,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
     override fun init() {
         title = "YouTrack"
-        val timer = ComponentAware.of(repo.project).timeTrackerComponent
+        val timer = timeTrackerComponent
         if (timer.isRunning) {
             StopTrackerAction().stopTimer(project)
             timer.isAutoTrackingTemporaryDisabled = true

@@ -115,7 +115,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 })
 
         val types = future.get()
-        val timer = project.let { it1 -> ComponentAware.of(it1).timeTrackerComponent }
+        val timer = project.let { it1 -> timeTrackerComponent }
 
         var idx = 0
         typeComboBox = ComboBox(types.toTypedArray())

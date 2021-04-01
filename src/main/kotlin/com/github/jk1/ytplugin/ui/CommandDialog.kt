@@ -156,8 +156,8 @@ open class CommandDialog(override val project: Project, val issue: Issue) : Dial
             val group = visibilityGroupDropdown.selectedItem?.toString() ?: "All Users"
             val execution = YouTrackCommandExecution(issue, commandField.text, silent, commentArea.text, group)
             commandComponent.executeAsync(execution)
-            val repo = ComponentAware.of(project).taskManagerComponent.getYouTrackRepository(issue)
-            ComponentAware.of(project).issueStoreComponent[repo].update(repo)
+            val repo = taskManagerComponent.getYouTrackRepository(issue)
+            issueStoreComponent[repo].update(repo)
             this@CommandDialog.close(0)
         }
     }
