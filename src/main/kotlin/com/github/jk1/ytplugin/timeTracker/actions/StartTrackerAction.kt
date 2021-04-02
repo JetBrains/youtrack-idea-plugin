@@ -40,7 +40,6 @@ class StartTrackerAction : AnAction(
                 } else {
                     notifySelectTask()
                 }
-
             } catch (e: NoActiveYouTrackTaskException) {
                 logger.debug("Active task is not valid")
                 notifySelectTask()
