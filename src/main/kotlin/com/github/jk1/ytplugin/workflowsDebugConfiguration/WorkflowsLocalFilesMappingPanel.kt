@@ -64,16 +64,13 @@ open class WorkflowsLocalFilesMappingPanel(val project: Project, layout: LayoutM
         }
     }
 
-    fun applyEditorTo(mappings: MutableList<RemoteUrlMappingBean>, configuration: RunConfiguration) {
+    fun applyEditorTo(configuration: RunConfiguration) {
 
-        val name = "fff"
-        name.split("/").size
-        val mapings: MutableList<RemoteUrlMappingBean> = SmartList()
-        mapings.add(RemoteUrlMappingBean("/home/alina.boshchenko/IdeaProjects/untitled16/src/change-color-over-time.js", "color-scheme-workflow/change-color-over-time.js"))
+        val mappings: MutableList<RemoteUrlMappingBean> = SmartList()
         if (mappingTree != null) {
             for (process in XDebuggerManager.getInstance(mappingTree.project).getDebugProcesses(JavaScriptDebugProcess::class.java)) {
                 if (process.session.runProfile === configuration) {
-                    process.updateRemoteUrlMappings(mapings)
+                    process.updateRemoteUrlMappings(mappings)
                 }
             }
         }

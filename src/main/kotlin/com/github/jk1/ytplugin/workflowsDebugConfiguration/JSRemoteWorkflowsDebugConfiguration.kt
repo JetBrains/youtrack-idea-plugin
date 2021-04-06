@@ -146,7 +146,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
                 configuration.host = URL(repositories[0].url).host
                 configuration.port = URL(repositories[0].url).port
             }
-            filesMappingPanel.applyEditorTo(mappings, configuration)
+            filesMappingPanel.applyEditorTo(configuration)
         }
 
         override fun createEditor(): JComponent {
