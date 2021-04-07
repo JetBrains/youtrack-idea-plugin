@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.logger
 import com.intellij.tasks.impl.httpclient.NewBaseRepositoryImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
+import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 
@@ -12,9 +13,9 @@ class ConnectionChecker(val repository: YouTrackRepository) {
 
     private var onSuccess: (method: HttpRequest) -> Unit = {}
 
-    private var onApplicationError: (method: HttpRequest, responseCode: Int) -> Unit = { _: HttpRequest, _: Int -> }
+    private var onApplicationError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
 
-    private var onTransportError: (method: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
+    private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
 
     fun check() {
         logger.debug("CHECK CONNECTION FOR ${repository.url}")
@@ -33,7 +34,7 @@ class ConnectionChecker(val repository: YouTrackRepository) {
             } else {
                 logger.debug("connection status: APPLICATION ERROR")
                 method.releaseConnection()
-                onApplicationError(method, response.statusLine.statusCode)
+                onApplicationError(method, response)
             }
         } catch (e: Exception) {
             logger.debug("connection status: TRANSPORT ERROR")
@@ -46,11 +47,11 @@ class ConnectionChecker(val repository: YouTrackRepository) {
         this.onSuccess = closure
     }
 
-    fun onApplicationError(closure: (method: HttpRequest, responseCode: Int) -> Unit) {
+    fun onApplicationError(closure: (request: HttpRequest, httpResponse: HttpResponse) -> Unit) {
         this.onApplicationError = closure
     }
 
-    fun onTransportError(closure: (method: HttpRequest, e: Exception) -> Unit) {
+    fun onTransportError(closure: (request: HttpRequest, e: Exception) -> Unit) {
         this.onTransportError = closure
     }
 }

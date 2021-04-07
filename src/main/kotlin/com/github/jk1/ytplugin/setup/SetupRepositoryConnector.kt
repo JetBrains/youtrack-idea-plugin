@@ -11,13 +11,13 @@ import com.intellij.tasks.TaskManager
 import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.HttpMethod
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.URI
-import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.http.HttpRequest
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.utils.URIBuilder
+import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
 import java.io.InputStreamReader
+import java.net.URL
 import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLException
 import javax.swing.JLabel
@@ -58,16 +58,15 @@ class SetupRepositoryConnector {
     }
 
     private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
-        val client = HttpClient()
-        val method = GetMethod(repository.url.trimEnd('/') + "/api/config")
-        val fields = NameValuePair("fields", "version")
-        method.setQueryString(arrayOf(fields))
-        method.setRequestHeader("Authorization", "Bearer " + repository.password)
-
+        val client = HttpClientBuilder.create().build()
+        val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
+        builder.addParameter("fields", "version")
+        val method = HttpGet(builder.build())
+        method.setHeader("Authorization", "Bearer " + repository.password)
         try {
-            val status = client.executeMethod(method)
-            return if (status == 200) {
-                val reader = InputStreamReader(method.responseBodyAsStream, StandardCharsets.UTF_8)
+            val response = client.execute(method)
+            return if (response.statusLine.statusCode == 200) {
+                val reader = InputStreamReader(response.entity.content, StandardCharsets.UTF_8)
                 val json: JsonObject = JsonParser.parseReader(reader).asJsonObject
                 if (json.get("version") == null || json.get("version").isJsonNull) {
                     noteState = NotifierState.LOGIN_ERROR
@@ -77,20 +76,20 @@ class SetupRepositoryConnector {
                 }
             } else {
                 noteState = NotifierState.LOGIN_ERROR
-                logger.warn("invalid token or login, failed on version validation: ${method.statusCode}")
+                logger.warn("invalid token or login, failed on version validation: ${response.statusLine.statusCode}")
                 false
             }
         } catch (e: Exception) {
-            logger.warn("invalid token or login, failed on version validation: ${method.statusCode}")
+            logger.warn("invalid token or login, failed on version validation: ${e.message}")
         }
         return false
     }
 
     private fun checkAndFixConnection(repository: YouTrackRepository) {
         val checker = ConnectionChecker(repository)
-        checker.onSuccess { method ->
+        checker.onSuccess { request ->
             noteState = if (isValidYouTrackVersion(repository)) {
-                repository.url = method.uri.toString().replace("/api/token", "")
+                repository.url = request.requestLine.uri.replace("/api/token", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
             } else {
@@ -98,16 +97,16 @@ class SetupRepositoryConnector {
                 NotifierState.INVALID_VERSION
             }
         }
-        checker.onApplicationError { method, code ->
+        checker.onApplicationError { request, response ->
             logger.debug("handling application error for ${repository.url}")
-            when (code) {
+            when (response.statusLine.statusCode) {
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
-                    val location = method.getResponseHeader("Location").value
+                    val location = response.getFirstHeader("Location").value
                     if (!location.contains("/waitInstanceStartup/")){
                         repository.url = location.replace("/api/token", "")
                     } else {
-                        if (!method.uri.path.contains("/youtrack")) {
+                        if (!request.requestLine.uri.contains("/youtrack")) {
                             logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
                             repository.url = "${repository.url}/youtrack"
                         }
@@ -122,7 +121,7 @@ class SetupRepositoryConnector {
                 }
                 else -> {
                     logger.debug("handling response code other than 301..399, 403 ${repository.url}: MANUAL FIX")
-                    if (!method.uri.path.contains("/youtrack")) {
+                    if (!request.requestLine.uri.contains("/youtrack")) {
                         repository.url = "${repository.url}/youtrack"
                         logger.debug("url after manual ending fix: ${repository.url}")
                         checker.check()
@@ -133,7 +132,7 @@ class SetupRepositoryConnector {
                 }
             }
         }
-        checker.onTransportError { method: HttpMethod, exception: Exception ->
+        checker.onTransportError { request: HttpRequest, exception: Exception ->
             logger.debug("handling transport error for ${repository.url}")
             when (exception) {
                 is SSLException -> {
@@ -141,10 +140,10 @@ class SetupRepositoryConnector {
                     noteState = NotifierState.INCORRECT_CERTIFICATE
                 }
                 else -> {
-                    if (method.uri.scheme != "https") {
+                    if (URL(request.requestLine.uri).protocol != "https") {
                         logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
-                        val repoUri = URI(repository.url, false)
-                        repository.url = URI("https", null, repoUri.host, repoUri.port, repoUri.path).toString()
+                        val repoUrl = URL(repository.url)
+                        repository.url = URL("https", repoUrl.host, repoUrl.port, repoUrl.path).toString()
                         logger.debug("url after manual protocol fix: ${repository.url}")
                         checker.check()
                     } else {

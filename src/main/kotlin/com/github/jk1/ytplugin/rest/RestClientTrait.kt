@@ -25,6 +25,8 @@ interface RestClientTrait : ResponseLoggerTrait {
     val httpClient: HttpClient
         get() = repository.getRestClient()
 
+    fun HttpUriRequest.execute(): Unit = execute { }
+
     fun <T> HttpUriRequest.execute(responseParser: (json: JsonElement) -> T): T {
         this.setHeader("Accept", "application/json")
         this.addHeader("Authorization", "Basic ${"${repository.username}:${repository.password}".b64Encoded}")

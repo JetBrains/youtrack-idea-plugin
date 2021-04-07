@@ -7,9 +7,9 @@ import com.github.jk1.ytplugin.rest.RestClientTrait
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URLEncodedUtils
+import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.message.BasicNameValuePair
 import org.junit.After
 import org.junit.Assert
@@ -45,10 +45,8 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait,
                 BasicNameValuePair("line", "${expectedLine + 1}"),
                 BasicNameValuePair("offset", "$expectedColumn")
         )
-        val method = GetMethod("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        method.connect {
-            HttpClient().executeMethod(method)
-        }
+        val request = HttpGet("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
+        request.execute()
 
         // assert the document document to be scrolled to requested position
         val caret = fixture.editor.caretModel.logicalPosition
@@ -63,15 +61,14 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait,
                 BasicNameValuePair("line", "3"),
                 BasicNameValuePair("offset", "5")
         )
-        val method = GetMethod("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        method.connect {
-            val responseStatus = HttpClient().executeMethod(method)
-            val image = ImageIO.read(method.responseBodyAsStream)
+        val request = HttpGet("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
+        val response = HttpClientBuilder.create().build().execute(request)
+        val responseStatus = response.statusLine.statusCode
+        val image = ImageIO.read(response.entity.content)
 
-            Assert.assertEquals(200, responseStatus)
-            Assert.assertEquals(1, image.height)
-            Assert.assertEquals(1, image.width)
-        }
+        Assert.assertEquals(200, responseStatus)
+        Assert.assertEquals(1, image.height)
+        Assert.assertEquals(1, image.width)
     }
 
     @Test
@@ -79,10 +76,8 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait,
         val params = listOf(
                 BasicNameValuePair("file", "testData/Whatever.kt")
         )
-        val method = GetMethod("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        method.connect {
-            HttpClient().executeMethod(method)
-        }
+        val request = HttpGet("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
+        request.execute()
 
         val caret = fixture.editor.caretModel.logicalPosition
         Assert.assertEquals(0, caret.line)
