@@ -4,88 +4,53 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.methods.GetMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.utils.URIBuilder
 import java.net.URL
-import java.nio.charset.StandardCharsets
 
 class AdminRestClient(override val repository: YouTrackServer) : AdminRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
     override fun getVisibilityGroups(issueId: String): List<String> {
-        val getGroupsUrl = "${repository.url}/api/visibilityGroups"
-        val method = PostMethod(getGroupsUrl)
-        method.params.contentCharset = "UTF-8"
-
-        val top = NameValuePair("\$top", "-1")
-        val fields = NameValuePair("fields", "groupsWithoutRecommended(name),recommendedGroups(name)")
-        method.setQueryString(arrayOf(top, fields))
-
+        val builder = URIBuilder("${repository.url}/api/visibilityGroups")
+        builder.setParameter("\$top", "-1")
+                .setParameter("fields", "groupsWithoutRecommended(name),recommendedGroups(name)")
+        val method = HttpPost(builder.build())
         val res: URL? = this::class.java.classLoader.getResource("admin_body.json")
         val jsonBody = res?.readText()?.replace("{issueId}", issueId, true)
-
-        method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
-        return method.connect {
-            when (val status = httpClient.executeMethod(method)) {
-                200 -> {
-                    logger.debug("Successfully fetched visibility groups in AdminRestClient: code $status")
-                    listOf("All Users") +
-                            parseGroupNames(method, "recommendedGroups") +
-                            parseGroupNames(method, "groupsWithoutRecommended")
-                }
-                else -> {
-                    logger.warn("failed to fetch visibility groups: ${method.responseBodyAsLoggedString()}")
-                    throw RuntimeException()
-                }
-            }
+        method.entity = jsonBody?.jsonEntity
+        return method.execute {
+            listOf("All Users") +
+                    parseGroupNames(it.asJsonObject, "recommendedGroups") +
+                    parseGroupNames(it.asJsonObject, "groupsWithoutRecommended")
         }
     }
 
-    private fun parseGroupNames(method: PostMethod, elem: String): List<String> {
-        val myObject: JsonObject = JsonParser.parseReader(method.responseBodyAsReader) as JsonObject
+    private fun parseGroupNames(myObject: JsonObject, elem: String): List<String> {
         val recommendedGroups: JsonArray = myObject.get(elem) as JsonArray
         return recommendedGroups.map { it.asJsonObject.get("name").asString }
     }
 
     override fun getAccessibleProjects(): List<String> {
-        val method = GetMethod("${repository.url}/api/admin/projects")
-        val fields = NameValuePair("fields", "shortName")
-        method.setQueryString(arrayOf(fields))
-
-        return method.connect {
-            if (httpClient.executeMethod(method) == 200) {
-                logger.debug("Successfully fetched accessible projects")
-                val json: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                json.map { it.asJsonObject.get("shortName").asString }
-            } else {
-                logger.warn("Failed to fetch accessible projects: ${method.responseBodyAsLoggedString()}")
-                throw RuntimeException("Failed to fetch accessible projects")
-            }
+        val builder = URIBuilder("${repository.url}/api/admin/projects")
+        builder.setParameter("fields", "shortName")
+        val method = HttpGet(builder.build())
+        return method.execute { element ->
+            element.asJsonArray.map { it.asJsonObject.get("shortName").asString }
         }
     }
 
     fun checkIfTrackingIsEnabled(projectId: String): Boolean {
-        val url = "${repository.url}/api/admin/projects/$projectId/timeTrackingSettings"
-        val myFields = NameValuePair("fields", "enabled")
-        val method = GetMethod(url)
-        method.setQueryString(arrayOf(myFields))
-        return method.connect {
-            when (val status = httpClient.executeMethod(method)) {
-                200 -> {
-                    if (JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("enabled").asBoolean) {
-                        logger.debug("Time Tracking is enabled for project $projectId")
-                        true
-                    } else {
-                        logger.debug("Time Tracking is disabled for project $projectId")
-                        false
-                    }
-                }
-                else -> {
-                    logger.warn("Unable to check if time tracking is enabled $status: ${method.responseBodyAsLoggedString()}")
-                    false
-                }
+        val builder = URIBuilder("${repository.url}/api/admin/projects/$projectId/timeTrackingSettings")
+        builder.setParameter("fields", "enabled")
+        val method = HttpGet(builder.build())
+        return method.execute {
+            if (it.asJsonObject.get("enabled").asBoolean) {
+                logger.debug("Time Tracking is enabled for project $projectId")
+                true
+            } else {
+                logger.debug("Time Tracking is disabled for project $projectId")
+                false
             }
         }
     }

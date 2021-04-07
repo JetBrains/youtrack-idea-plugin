@@ -6,6 +6,8 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
 import com.intellij.openapi.util.JDOMUtil
 import org.apache.commons.httpclient.HttpMethodBase
+import org.apache.http.HttpResponse
+import org.apache.http.util.EntityUtils
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -13,11 +15,11 @@ import java.util.*
 
 interface ResponseLoggerTrait {
 
-    fun HttpMethodBase.responseBodyAsLoggedString(): String {
-        val response = getResponseBodyAsString(25 * 1024 * 1024)
+    fun HttpResponse.responseBodyAsLoggedString(): String {
+        val response = EntityUtils.toString(entity, "UTF-8");
         if (logger.isDebugEnabled){
             try {
-                val header = getRequestHeader("Content-Type")
+                val header = getFirstHeader("Content-Type")
                 val contentType = if (header == null) "text/plain" else header.elements[0].name.toLowerCase(Locale.ENGLISH)
                 when {
                     contentType.contains("xml") -> logXml(response)
@@ -31,11 +33,11 @@ interface ResponseLoggerTrait {
         return response
     }
 
-    fun HttpMethodBase.responseBodyAsLoggedStream(): InputStream {
+    fun HttpResponse.responseBodyAsLoggedStream(): InputStream {
         return if (logger.isDebugEnabled){
             ByteArrayInputStream(responseBodyAsLoggedString().toByteArray(Charsets.UTF_8))
         } else {
-            responseBodyAsStream
+            entity.content
         }
     }
 

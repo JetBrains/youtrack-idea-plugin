@@ -55,26 +55,23 @@ class StopTrackerAction : AnAction(
 
         try {
             timer.stop()
-            val bar = project.let { it1 -> WindowManager.getInstance().getStatusBar(it1) }
+            val bar = WindowManager.getInstance().getStatusBar(project)
             bar?.removeWidget("Time Tracking Clock")
 
             if (timer.recordedTime == "0")
                 trackerNote.notify("Spent time shorter than 1 minute is excluded from time tracking", NotificationType.WARNING)
             else {
-                val status = repo.let { it1 ->
-                    TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
+                try {
+                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
                             timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
-                }
-                if (status != 200){
-                    logger.warn("Time tracking might not be enabled: $status")
-                    trackerNote.notify("Could not record time: time tracking is disabled (status $status)", NotificationType.WARNING)
-                }
-                else {
                     trackerNote.notify("Work timer stopped, spent time added to" +
                             " ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                     val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                     store.saveFields(timer)
+                } catch (e: Exception) {
+                    logger.warn("Time tracking might not be enabled")
+                    trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
                 }
             }
         } catch (e: IllegalStateException) {
