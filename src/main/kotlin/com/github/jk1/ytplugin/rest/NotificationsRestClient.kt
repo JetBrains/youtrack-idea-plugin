@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.notifications.YouTrackNotification
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
 
@@ -12,7 +13,7 @@ class NotificationsRestClient(override val repository: YouTrackServer) : RestCli
         val builder = URIBuilder("${repository.url}/api/users/notifications")
         builder.setParameter("\$top", "-1")
                 .setParameter("fields", "id,recipient(login),content,metadata")
-        val method = HttpPost(builder.build())
+        val method = HttpGet(builder.build())
         return try {
             method.execute { element ->
                 element.asJsonArray

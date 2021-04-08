@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.setup
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.IdeaProjectTrait
 import com.github.jk1.ytplugin.SetupConnectionTrait
-import com.github.jk1.ytplugin.SetupManagerTrait
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -12,11 +11,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class InputCredentialsTest : SetupManagerTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
+class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
-    override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
+
+    lateinit var repository: YouTrackServer
 
     @Before
     fun setUp() {

@@ -11,6 +11,7 @@ import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
 class NotificationsTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {

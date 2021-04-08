@@ -46,7 +46,7 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait,
                 BasicNameValuePair("offset", "$expectedColumn")
         )
         val request = HttpGet("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        request.execute()
+        HttpClientBuilder.create().build().execute(request)
 
         // assert the document document to be scrolled to requested position
         val caret = fixture.editor.caretModel.logicalPosition
@@ -77,7 +77,7 @@ class SourceNavigatorTest : RestClientTrait, IdeaProjectTrait, TaskManagerTrait,
                 BasicNameValuePair("file", "testData/Whatever.kt")
         )
         val request = HttpGet("$ideaUrl/file?${URLEncodedUtils.format(params, "utf-8")}")
-        request.execute()
+        HttpClientBuilder.create().build().execute(request)
 
         val caret = fixture.editor.caretModel.logicalPosition
         Assert.assertEquals(0, caret.line)

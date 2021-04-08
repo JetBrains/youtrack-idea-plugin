@@ -1,12 +1,11 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.logger
-import com.intellij.tasks.impl.httpclient.NewBaseRepositoryImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
-import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
+import org.apache.http.impl.client.HttpClientBuilder
 
 
 class ConnectionChecker(val repository: YouTrackRepository) {
@@ -22,11 +21,8 @@ class ConnectionChecker(val repository: YouTrackRepository) {
         val method = HttpPost(repository.url.trimEnd('/') + "/api/token")
         method.setHeader("Authorization", "Bearer " + repository.password)
         try {
-            // dirty hack to get preconfigured http client from task management plugin
-            // we don't want to handle all the connection/testing/proxy stuff ourselves
-            val function = NewBaseRepositoryImpl::class.java.getDeclaredMethod("getHttpClient")
-            function.isAccessible = true
-            val response = (function.invoke(repository) as HttpClient).execute(method)
+            // todo: proxy
+            val response = HttpClientBuilder.create().build().execute(method)
             if (response.statusLine.statusCode == 200) {
                 logger.debug("connection status: SUCCESS")
                 method.releaseConnection()
