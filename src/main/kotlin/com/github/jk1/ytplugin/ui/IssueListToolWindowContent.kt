@@ -39,7 +39,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         val group = IssueActionGroup(this)
         val selectedIssue = { issuesList.getSelectedIssue() }
         group.add(RefreshIssuesAction(repo))
-        group.add(CreateIssueAction())
+        group.add(ToolWindowCreateIssueAction())
         // todo: grouping and separators for actions
         group.add(AddCommentAction(selectedIssue))
         group.add(OpenCommandWindowAction(selectedIssue))

@@ -37,8 +37,8 @@
     <depends>com.intellij.tasks</depends>
 
     <actions>
-        <action id="com.github.jk1.ytplugin.issues.actions.CreateIssueAction"
-                class="com.github.jk1.ytplugin.issues.actions.CreateIssueAction">
+        <action id="com.github.jk1.ytplugin.issues.actions.EditorCreateIssueAction"
+                class="com.github.jk1.ytplugin.issues.actions.EditorCreateIssueAction">
             <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
