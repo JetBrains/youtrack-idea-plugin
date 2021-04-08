@@ -41,15 +41,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         builder.addParameter("fields", ISSUE_FIELDS)
         val method = HttpGet(builder.build())
         return method.execute { element ->
-            val issues: JsonArray = element.asJsonArray
-            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
+            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(listOf(element))
             val fullIssues = parseIssues(issuesWithWorkItems)
             logger.debug("Successfully fetched issue: $id")
             fullIssues[0]
         }
     }
 
-    private fun mapWorkItemsWithIssues(issues: JsonArray): List<JsonElement> {
+    private fun mapWorkItemsWithIssues(issues: Iterable<JsonElement>): List<JsonElement> {
         val newIssues = mutableListOf<JsonElement>()
         for (issue in issues) {
             val id = issue.asJsonObject.get("idReadable").asString
