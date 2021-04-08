@@ -16,22 +16,25 @@ import java.util.concurrent.TimeUnit
 class TimeTrackingService {
 
     fun getAvailableWorkItemsTypes(repo: YouTrackServer): Collection<String> {
-        return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().values
+        return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys
     }
 
+    // todo: make it return something meaningful
     fun postNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
-                        repo: YouTrackServer, comment: String, time: String) {
+                        repo: YouTrackServer, comment: String, time: String): Int {
 
         val sdf = SimpleDateFormat("dd MMM yyyy")
         val date = sdf.parse(dateNotFormatted)
         val trackerNote = TrackerNotification()
-        try {
+        return try {
             TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType, comment, date.time.toString())
             trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
             ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)
+            200
         } catch (e: Exception) {
             logger.warn("Time was not posted. See IDE logs for details.")
             trackerNote.notify("Time was not posted, please check your connection", NotificationType.WARNING)
+            -1
         }
     }
 

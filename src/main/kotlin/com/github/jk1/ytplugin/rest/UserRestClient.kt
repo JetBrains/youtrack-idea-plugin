@@ -10,7 +10,7 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
 
     fun getWorkItemsForUser(): List<IssueWorkItem> {
         val builder = URIBuilder("${repository.url}/api/workItems")
-        builder.addParameter("query", "created by: me")
+        builder.addParameter("author", "me")
                 .addParameter("fields", "text,issue(idReadable),type(name),created," +
                         "duration(presentation,minutes),author(name),creator(name),date,id")
         val method = HttpGet(builder.build())
