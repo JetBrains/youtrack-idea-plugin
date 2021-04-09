@@ -62,10 +62,8 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
                     if (mousePosition.x in issueIdStart until issueIdEnd) {
                         try {
                             Desktop.getDesktop().browse(URI("${repo.url}/issue/${selectedItem.issueId}"))
-                        } catch (e: Exception) {
-                            e.multicatchException(IOException::class, URISyntaxException::class) {
-                                logger.debug("Error in issue opening in the browser: ${e.message}")
-                            }
+                        } catch (e: IOException) {
+                            logger.debug("Error in issue opening in the browser: ${e.message}")
                         }
                     }
                 }

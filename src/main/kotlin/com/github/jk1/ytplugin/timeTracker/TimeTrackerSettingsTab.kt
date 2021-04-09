@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.openapi.application.ApplicationManager
@@ -12,6 +13,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.BorderFactory
@@ -314,19 +316,25 @@ class TimeTrackerSettingsTab(var repo: YouTrackServer, myHeight: Int, private va
         noTrackingButton.isEnabled = true
         isAutoTrackingEnabledRadioButton.isEnabled = true
         isManualModeRadioButton.isEnabled = true
-        val types = TimeTrackingService().getAvailableWorkItemsTypes(repository)
-        ApplicationManager.getApplication().invokeLater( {
-            var idx = 0
-            if (types.isNotEmpty()) {
-                typeComboBox.model = DefaultComboBoxModel(types.toTypedArray())
-                types.mapIndexed { index, value ->
-                    if (value == ComponentAware.of(repo.project).timeTrackerComponent.type) {
-                        idx = index
+        try {
+            // todo: implement global connection state tracker and get rid of it
+            val types = TimeTrackingService().getAvailableWorkItemsTypes(repository)
+            ApplicationManager.getApplication().invokeLater( {
+                var idx = 0
+                if (types.isNotEmpty()) {
+                    typeComboBox.model = DefaultComboBoxModel(types.toTypedArray())
+                    types.mapIndexed { index, value ->
+                        if (value == ComponentAware.of(repo.project).timeTrackerComponent.type) {
+                            idx = index
+                        }
                     }
                 }
-            }
-            typeComboBox.selectedIndex = idx
-        }, AnyModalityState.ANY)
+                typeComboBox.selectedIndex = idx
+            }, AnyModalityState.ANY)
+        } catch (e: Exception) {
+            logger.info("Work item types cannot be loaded: ${e.message}")
+            typeComboBox.model = DefaultComboBoxModel(arrayOf(ComponentAware.of(repo.project).timeTrackerComponent.type))
+        }
     }
 
     fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledRadioButton

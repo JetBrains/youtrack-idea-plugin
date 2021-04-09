@@ -268,7 +268,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                             try {
                                 AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
                             } catch (e: Exception) {
-                                e.multicatchException(SocketException::class, UnknownHostException::class, SocketTimeoutException::class) {
+                                e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
                                     logger.warn("Exception in manual time tracker: ${e.message}")
                                 }
                             }

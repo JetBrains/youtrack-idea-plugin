@@ -52,7 +52,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 }
             }
         } catch (e: Exception) {
-            e.multicatchException(SocketException::class, UnknownHostException::class, SocketTimeoutException::class) {
+            e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
                 logger.warn("Connection to network lost: ${e.message}")
