@@ -1,6 +1,6 @@
 YouTrack-Idea-Plugin
 ======================
-[![Build Status](https://travis-ci.org/jk1/youtrack-idea-plugin.png?branch=master)](https://travis-ci.org/jk1/youtrack-idea-plugin)
+![](http://jb.gg/badges/official-flat-square.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 This plugin brings Jetbrains YouTrack bugtracker features to Intellij IDE family.
