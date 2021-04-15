@@ -34,6 +34,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
     override fun getAccessibleProjects(): List<String> {
         val builder = URIBuilder("${repository.url}/api/admin/projects")
         builder.setParameter("fields", "shortName")
+        builder.setParameter("\$top", "1000")
         val method = HttpGet(builder.build())
         return method.execute { element ->
             element.asJsonArray.map { it.asJsonObject.get("shortName").asString }
