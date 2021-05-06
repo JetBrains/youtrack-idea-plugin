@@ -1,10 +1,13 @@
 package com.github.jk1.ytplugin.workflowsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.commands.CommandSuggestResponseCache
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.intellij.javascript.debugger.JSDebuggerBundle
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Conditions
 import com.intellij.openapi.util.SystemInfo
@@ -37,6 +40,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 
 import com.intellij.openapi.project.ProjectManager
+import kotlinx.coroutines.internal.synchronized
 import java.awt.Window
 
 
@@ -102,13 +106,21 @@ class WipConnection : WipRemoteVmConnection() {
     }
 
     private fun getActiveProject(): Project? {
+
         val projects = ProjectManager.getInstance().openProjects
         var activeProject: Project? = null
         for (project in projects) {
-            val window: Window? = WindowManager.getInstance().suggestParentWindow(project)
-            if (window != null && window.isActive) {
+
+            var window: Window? = null
+            //todo check
+            ApplicationManager.getApplication().invokeAndWait {
+                window = WindowManager.getInstance().suggestParentWindow(project)
+            }
+
+            if (window != null && window!!.isActive) {
                 activeProject = project
             }
+
         }
         return activeProject
     }
