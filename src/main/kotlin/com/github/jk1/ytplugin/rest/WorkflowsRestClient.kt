@@ -10,7 +10,7 @@ import org.apache.http.client.utils.URIBuilder
 
 class WorkflowsRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun getWorkflowWithRules(workflowName: String): Workflow? {
+    fun getWorkflowsWithRules(): List<Workflow> {
 
         val builder = URIBuilder("${repository.url}/api/admin/workflows")
         builder.setParameter("\$top", "-1")
@@ -18,18 +18,14 @@ class WorkflowsRestClient(override val repository: YouTrackServer) : RestClientT
                 .setParameter("query", "language:JS,system:null")
         val method = HttpGet(builder.build())
 
+        val workflowsList = mutableListOf<Workflow>()
         return method.execute { element ->
-            var workflow: Workflow? = null
             val jsonArray = element.asJsonArray
             for (json in jsonArray) {
-                if (json.asJsonObject.get("name").asString.contains(workflowName)) {
-                    workflow = Workflow(json as JsonObject)
-                    break
-                }
+                workflowsList.add(Workflow(json as JsonObject))
             }
-            workflow
+            workflowsList
         }
-//     logger.warn("failed to fetch workflow rules: ${method.responseBodyAsLoggedString()}")
     }
 
 

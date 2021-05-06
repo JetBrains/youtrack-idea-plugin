@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NonNls
 
 class WorkflowRulesHandler {
 
-    fun loadWorkflowRules(workflowName: String, project: Project) {
+    fun loadWorkflowRules(project: Project) {
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) {
             repositories.first()
@@ -27,21 +27,16 @@ class WorkflowRulesHandler {
 
         ApplicationManager.getApplication().executeOnPooledThread(
                 Callable {
-                    val workflow = if (workflowName.isNotEmpty())
-                        WorkflowsRestClient(repo!!).getWorkflowWithRules(workflowName)
-                    else null
+                    val workflowsList = WorkflowsRestClient(repo!!).getWorkflowsWithRules()
                     val trackerNote = TrackerNotification()
 
-                    if (workflow != null) {
+                    for (workflow in workflowsList) {
                         for (rule in workflow.rules) {
-                            WorkflowsRestClient(repo!!).getWorkFlowContent(workflow, rule)
+                            WorkflowsRestClient(repo).getWorkFlowContent(workflow, rule)
                             createFile("${rule.name}.js", rule.content, project)
                         }
-                        trackerNote.notify("Successfully loaded workflow \"$workflowName\"", NotificationType.INFORMATION)
-                    } else {
-                        trackerNote.notify("Workflow \"$workflowName\" is not found", NotificationType.WARNING)
+                        trackerNote.notify("Successfully loaded workflow \"${workflow.name}\"", NotificationType.INFORMATION)
                     }
-
                 })
     }
 

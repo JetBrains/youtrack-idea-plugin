@@ -4,8 +4,7 @@ import com.github.jk1.ytplugin.workflowsDebugConfiguration.WorkflowRulesHandler
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.VerticalFlowLayout
-import com.intellij.ui.GuiUtils
-import com.intellij.util.ui.FormBuilder
+import com.intellij.ui.components.Label
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.util.*
@@ -13,27 +12,18 @@ import javax.swing.*
 
 open class WorkflowNameEntryDialog(val project: Project) : DialogWrapper(project, false) {
 
-    private val workflowNameField = GuiUtils.createUndoableTextField()
     private val okButton = JButton("Load")
     private val cancelButton = JButton("Cancel")
 
 
     init {
-        title = "Load Workflow To Local Files"
+        title = "Load Scripts From YouTrack"
         rootPane.defaultButton = okButton
     }
 
     override fun show() {
         init()
         super.show()
-    }
-
-    fun createMainPanel(): JComponent {
-        okButton.addActionListener { okAction() }
-
-        return FormBuilder.createFormBuilder()
-                .addLabeledComponent("Workflow Name", workflowNameField)
-                .panel
     }
 
     private fun createButtonsPanel(): JPanel {
@@ -53,9 +43,9 @@ open class WorkflowNameEntryDialog(val project: Project) : DialogWrapper(project
     override fun createCenterPanel(): JComponent {
         val contextPane = JPanel(VerticalFlowLayout())
         contextPane.apply {
-            preferredSize = Dimension(500, 90)
+            preferredSize = Dimension(300, 70)
             minimumSize = preferredSize
-            add(createMainPanel())
+            add(Label("Load scripts from YouTrack?"))
             add(createButtonsPanel())
         }
         return contextPane
@@ -63,7 +53,7 @@ open class WorkflowNameEntryDialog(val project: Project) : DialogWrapper(project
 
 
     private fun okAction() {
-        WorkflowRulesHandler().loadWorkflowRules(workflowNameField.text, project)
+        WorkflowRulesHandler().loadWorkflowRules(project)
         this@WorkflowNameEntryDialog.close(0)
     }
 
