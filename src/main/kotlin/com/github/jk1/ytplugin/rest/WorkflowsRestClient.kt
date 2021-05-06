@@ -27,7 +27,6 @@ class WorkflowsRestClient(override val repository: YouTrackServer) : RestClientT
                     break
                 }
             }
-            logger.warn("Workflow not found: ${element.asString}")
             workflow
         }
 //     logger.warn("failed to fetch workflow rules: ${method.responseBodyAsLoggedString()}")

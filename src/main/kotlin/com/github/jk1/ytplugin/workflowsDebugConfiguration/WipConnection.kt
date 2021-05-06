@@ -1,7 +1,6 @@
 package com.github.jk1.ytplugin.workflowsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
-import com.github.jk1.ytplugin.commands.CommandSuggestResponseCache
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.google.gson.stream.JsonReader
@@ -40,7 +39,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 
 import com.intellij.openapi.project.ProjectManager
-import kotlinx.coroutines.internal.synchronized
 import java.awt.Window
 
 
@@ -112,9 +110,14 @@ class WipConnection : WipRemoteVmConnection() {
         for (project in projects) {
 
             var window: Window? = null
+            // required to avoid threads exception
             //todo check
-            ApplicationManager.getApplication().invokeAndWait {
-                window = WindowManager.getInstance().suggestParentWindow(project)
+            try {
+                ApplicationManager.getApplication().invokeAndWait {
+                    window = WindowManager.getInstance().suggestParentWindow(project)
+                }
+            } catch (e: Exception) {
+                logger.error("IUnable to get the window: ${e.message}")
             }
 
             if (window != null && window!!.isActive) {
