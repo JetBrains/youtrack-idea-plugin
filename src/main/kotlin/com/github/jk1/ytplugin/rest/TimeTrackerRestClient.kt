@@ -4,115 +4,59 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
-import com.google.gson.JsonArray
-import com.google.gson.JsonParser
 import com.intellij.notification.NotificationType
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.methods.GetMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.utils.URIBuilder
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
 
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun postNewWorkItem(issueId: String, time: String, type: String, comment: String, date: String): Int {
-        val getGroupsUrl = "${repository.url}/api/issues/${issueId}/timeTracking/workItems"
+    fun postNewWorkItem(issueId: String, time: String, type: String, comment: String, date: String) {
+        val types = getAvailableWorkItemTypes()
 
-        val method = PostMethod(getGroupsUrl)
-        method.params.contentCharset = "UTF-8"
-
+        val method = HttpPost("${repository.url}/api/issues/${issueId}/timeTracking/workItems")
         val res: URL? = this::class.java.classLoader.getResource("post_work_item_body.json")
         val jsonBody = res?.readText()
                 ?.replace("\"{minutes}\"", time, true)
                 ?.replace("\"{date}\"", date, true)
                 ?.replace("{authorId}", getMyIdAsAuthor(), true)
                 ?.replace("{type}", type, true)
-                ?.replace("{typeId}", findWorkItemId(type), true)
+                ?.replace("{typeId}", types[type] ?: throw IllegalArgumentException("No work item type by name '$type'"), true)
                 ?.replace("{comment}", comment, true)
-
-        method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
-
-        return method.connect {
-            when (val status = httpClient.executeMethod(method)) {
-                200 -> {
-                    logger.debug("Successfully posted work item ${findWorkItemId(type)} for issue $issueId with code $status")
-                    status
-                }
-                else -> {
-                    logger.warn("Work item ${findWorkItemId(type)}, posting failed with code $status: " + method.responseBodyAsLoggedString())
-                    status
-                }
-            }
+        method.entity = jsonBody?.jsonEntity
+        method.execute {
+            logger.debug("Successfully posted work item ${types[type]} for issue $issueId")
         }
     }
 
     private fun getMyIdAsAuthor(): String {
-        val url = "${repository.url}/api/admin/users/me"
-        val method = GetMethod(url)
-        return method.connect {
-            when (val status = httpClient.executeMethod(method)) {
-                200 -> {
-                    logger.debug("Successfully fetched user id")
-                    JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("id").asString
+        return HttpGet("${repository.url}/api/admin/users/me")
+                .execute {
+                    it.asJsonObject.get("id").asString
                 }
-                else -> {
-                    logger.warn("Unable to fetch user id, status $status: ${method.responseBodyAsLoggedString()}")
-                    ""
-                }
-            }
-        }
     }
 
-    private fun findWorkItemId(name: String): String {
-        val types = getAvailableWorkItemTypes()
-        for (type in types) {
-            if (type.name == name) {
-                logger.debug("$name work item id found: ${type.value}")
-                return type.value
+    fun getAvailableWorkItemTypes(): Map<String, String> {
+        val builder = URIBuilder("${repository.url}/api/admin/timeTrackingSettings/workItemTypes")
+        builder.addParameter("fields", "name,id")
+        val method = HttpGet(builder.build())
+        return try {
+            method.execute { element ->
+                element.asJsonArray.associate {
+                    Pair(it.asJsonObject.get("name").asString, it.asJsonObject.get("id").asString)
+                }
             }
-        }
-        logger.debug("No such work item id found: $name")
-        return ""
-    }
-
-    fun getAvailableWorkItemTypes(): List<NameValuePair> {
-        val url = "${repository.url}/api/admin/timeTrackingSettings/workItemTypes"
-        val method = GetMethod(url)
-        val myFields = NameValuePair("fields", "name,id")
-        method.setQueryString(arrayOf(myFields))
-
-        val result = mutableListOf<NameValuePair>()
-
-        return method.connect {
-            try {
-                when (val status = httpClient.executeMethod(method)) {
-                    200 -> {
-                        val types: JsonArray = JsonParser.parseString(method.responseBodyAsString) as JsonArray
-                        for (type in types) {
-                            val currentType = type.asJsonObject
-                            val pair = NameValuePair(currentType.asJsonObject.get("name").asString, currentType.asJsonObject.get("id").asString)
-                            result.add(pair)
-                        }
-                        logger.debug("Successfully fetched available work items types: code $status")
-                        result
-                    }
-                    else -> {
-                        logger.warn("Unable to fetch available work items types: ${method.responseBodyAsLoggedString()}")
-                        mutableListOf()
-                    }
-                }
-            } catch (e: Exception) {
-                e.multicatchException(SocketException::class, UnknownHostException::class, SocketTimeoutException::class) {
-                    val trackerNote = TrackerNotification()
-                    trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
-                    logger.warn("Connection to network lost: ${e.message}")
-                    mutableListOf()
-                }
+        } catch (e: Exception) {
+            e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
+                logger.warn("Connection to network lost: ${e.message}")
+                mapOf()
             }
         }
     }

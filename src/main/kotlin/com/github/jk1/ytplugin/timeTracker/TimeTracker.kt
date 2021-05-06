@@ -154,13 +154,11 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
     fun reset() {
-        if (isRunning) {
             isPaused = false
             recordedTime = "0"
             timeInMills = 0
             pausedTime = 0
             startTime = System.currentTimeMillis()
-        }
     }
 
     fun formatTimePeriod(timeInMilSec: Long): String {

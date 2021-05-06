@@ -6,5 +6,6 @@ class Attachment(item: JsonElement, repoUrl: String) {
 
     val fileName: String = item.asJsonObject.get("name").asString
 
-    val url: String = repoUrl.substring(0, repoUrl.length - 9) + item.asJsonObject.get("url").asString
+    val url: String =
+            "$repoUrl/api/files/${item.asJsonObject.get("url").asString.split("/api/files/").last()}"
 }

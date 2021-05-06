@@ -268,7 +268,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                             try {
                                 AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
                             } catch (e: Exception) {
-                                e.multicatchException(SocketException::class, UnknownHostException::class, SocketTimeoutException::class) {
+                                e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
                                     logger.warn("Exception in manual time tracker: ${e.message}")
                                 }
                             }
@@ -299,7 +299,7 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                         this@TimeTrackerManualEntryDialog.close(0)
                     } else if (futureCode.get() != 1) {
                         notifier.foreground = Color.red
-                        notifier.text = "Time could not be posted, code ${futureCode.get()}"
+                        notifier.text = "Time could not be posted, see logs for details"
                     }
                 }
             } catch (e: IndexOutOfBoundsException) {

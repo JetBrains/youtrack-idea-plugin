@@ -1,71 +1,56 @@
 package com.github.jk1.ytplugin
 
 import com.github.jk1.ytplugin.rest.RestClientTrait
-import com.google.gson.JsonParser
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.UsernamePasswordCredentials
-import org.apache.commons.httpclient.auth.AuthScope
-import org.apache.commons.httpclient.methods.DeleteMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
+import org.apache.http.HttpRequest
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpDelete
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.config.SocketConfig
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.protocol.HttpContext
+import java.nio.charset.StandardCharsets
+import java.util.*
 
 interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
 
     override val httpClient: HttpClient
         get() {
-            val client = HttpClient()
-            client.params.connectionManagerTimeout = 30000 // ms
-            client.params.soTimeout = 30000 // ms
-            client.params.credentialCharset = "UTF-8"
-            client.params.isAuthenticationPreemptive = true
-            val credentials = UsernamePasswordCredentials(username, password)
-            client.state.setCredentials(AuthScope.ANY, credentials)
-            return client
+            // todo: migrate towards the common factory
+            val socketConfig = SocketConfig.custom().setSoTimeout(30000).build() // ms
+            return HttpClientBuilder.create()
+                    .setDefaultSocketConfig(socketConfig)
+                    .addInterceptorFirst { request: HttpRequest, _: HttpContext ->
+                        request.setHeader("Accept", "application/json")
+                        request.setHeader("Authorization", "Basic ${"${repository.username}:${repository.password}".b64Encoded}")
+                    }
+                    .build()
         }
 
+    private val String.b64Encoded: String
+        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
+
     fun createIssue(summary: String = "summary"): String {
-        val method = PostMethod("$serverUrl/api/issues?fields=idReadable")
+        val request = HttpPost("$serverUrl/api/issues?fields=idReadable")
         val body = """{
          "summary": "$summary",
          "project": {
               "id": "81-1"
           }
         }"""
-        method.requestEntity = StringRequestEntity(body, "application/json", "UTF-8")
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                JsonParser.parseString(method.responseBodyAsString).asJsonObject.get("idReadable").asString
-            } else {
-                throw IllegalStateException("Unable to create issue: ${method.responseBodyAsString}")
-            }
-        }
+        request.entity = body.jsonEntity
+        return request.execute { it.asJsonObject.get("idReadable").asString }
     }
 
     fun touchIssue(id: String) {
-        val method = PostMethod("$serverUrl/api/issues/$id")
+        val method = HttpPost("$serverUrl/api/issues/$id")
         val body = """{
           "summary": "Updated summary"
         }"""
-
-        method.requestEntity = StringRequestEntity(body, "application/json", "UTF-8")
-
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status != 200) {
-                throw IllegalStateException("Unable to update an issue: ${method.responseBodyAsString}")
-            }
-        }
+        method.entity = body.jsonEntity
+        return method.execute()
     }
 
     fun deleteIssue(id: String) {
-        val method = DeleteMethod("$serverUrl/api/issues/$id")
-        method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status != 200 && status != 404) {
-                throw IllegalStateException("Unable to delete issue: ${method.responseBodyAsString}")
-            }
-        }
+        HttpDelete("$serverUrl/api/issues/$id").execute()
     }
 }

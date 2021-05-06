@@ -9,12 +9,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class SetupVariationsTest : SetupManagerTrait, IssueRestTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
+class SetupVariationsTest : IssueRestTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
-    override val httpClient = super<SetupManagerTrait>.httpClient
 
     @Before
     fun setUp() {

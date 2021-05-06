@@ -26,18 +26,15 @@ import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JFrame
 
-
 class ActivityTracker(
         private val parentDisposable: Disposable,
         private val timer: TimeTracker,
         private val inactivityPeriod: Long,
-        private val project: Project
+        override val project: Project
+) : Disposable, ComponentAware {
 
-) : Disposable {
     private var trackingDisposable: Disposable? = null
-
-    var startInactivityTime: Long = currentTimeMillis()
-
+    private var startInactivityTime: Long = currentTimeMillis()
     private var isPostedOnClose = false
 
     fun startTracking() {
@@ -152,7 +149,7 @@ class ActivityTracker(
                 startInactivityTime = currentTimeMillis()
 
                 try {
-                    ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+                    taskManagerComponent.getActiveYouTrackTask()
                     if (!timer.isRunning || timer.isPaused) {
                         StartTrackerAction().startAutomatedTracking(project, timer)
                     }

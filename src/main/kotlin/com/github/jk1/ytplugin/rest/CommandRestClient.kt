@@ -6,12 +6,10 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.google.gson.JsonArray
 import com.google.gson.JsonParser
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.methods.GetMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.utils.URIBuilder
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
@@ -31,54 +29,40 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     }
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
-        val method = PostMethod("${repository.url}/api/commands/assist")
-        val fields = NameValuePair("fields", "commands(description,error),styleRanges(length,start,style)," +
+        val builder = URIBuilder("${repository.url}/api/commands/assist")
+        builder.addParameter("fields", "commands(description,error),styleRanges(length,start,style)," +
                 "suggestions(caret,completionEnd,completionStart,description,matchingEnd,matchingStart,option,prefix,suffix)")
-        method.setQueryString(arrayOf(fields))
+        val method = HttpPost(builder.build())
         val caret = command.caret - 1
         val res = this::class.java.classLoader.getResource("get_command_body.json")
                 ?: throw IllegalStateException("Resource 'get_command_body.json' file is missing")
-
         val id = command.issue.entityId
-        val jsonBody = res.readText()
+        method.entity = res.readText()
                 .replace("{query}", command.command, true)
                 .replace("0", caret.toString(), true)
                 .replace("{id}", id, true)
-
-        method.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
-
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                logger.debug("Successfully posted assist command in CommandRestClient: code $status")
-                CommandAssistResponse(method.responseBodyAsLoggedStream())
-            } else {
-                method.responseBodyAsLoggedString()
-                logger.warn("Runtime Exception while posting assist command in CommandRestClient.")
-                throw RuntimeException("HTTP $status")
-            }
+                .jsonEntity
+        return method.execute {
+            CommandAssistResponse(it)
         }
     }
 
     private fun getGroupId(command: YouTrackCommandExecution): String {
-        val execUrl = "${repository.url}/api/groups?fields=name,id,allUsersGroup"
-        val getMethod = GetMethod(execUrl)
-        val status = httpClient.executeMethod(getMethod)
-        return if (JsonParser.parseString(getMethod.responseBodyAsLoggedString()).isJsonArray) {
-            val response: JsonArray = JsonParser.parseString(getMethod.responseBodyAsLoggedString()) as JsonArray
-            if (status == 200) {
-                logger.debug("Successfully fetched Group Id in CommandRestClient: code $status")
+        val builder = URIBuilder("${repository.url}/api/groups")
+        builder.setParameter("fields", "name,id,allUsersGroup")
+        val getMethod = HttpGet(builder.build())
+        return try {
+            getMethod.execute { element ->
                 visibilityState = VisibilityState.VISIBILITY_RESTRICTED
-                response.first { command.commentVisibleGroup == it.asJsonObject.get("name").asString }.asJsonObject.get("id").asString
-            } else {
-                logger.warn("Failed to fetch Group Id in CommandRestClient")
-                ""
+                element.asJsonArray.first {
+                    command.commentVisibleGroup == it.asJsonObject.get("name").asString
+                }.asJsonObject.get("id").asString
             }
-        } else {
-            logger.warn("Failed to fetch possible groups ids in CommandRestClient ")
+        } catch (e: Exception) {
+            // todo: detailed exception handling
+            logger.warn("Failed to fetch possible groups ids in CommandRestClient", e)
             ""
         }
-
     }
 
     private fun constructJsonForCommandExecution(command: YouTrackCommandExecution): String {
@@ -108,21 +92,20 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     }
 
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
-
-        val execPostUrl = "${repository.url}/api/commands"
-        val postMethod = PostMethod(execPostUrl)
-        val jsonBody = constructJsonForCommandExecution(command)
-
-        postMethod.requestEntity = StringRequestEntity(jsonBody, "application/json", "UTF-8")
-        return postMethod.connect {
-            val status = httpClient.executeMethod(postMethod)
-            if (status != 200) {
-                val error = JsonParser.parseString(postMethod.responseBodyAsLoggedString()).asJsonObject.get("error_description")
+        val postMethod = HttpPost("${repository.url}/api/commands")
+        postMethod.entity = constructJsonForCommandExecution(command).jsonEntity
+        return try {
+            postMethod.execute {
+                CommandExecutionResponse()
+            }
+        } catch (e: Exception) {
+            // todo: expose more error response details and reimplement it
+            try {
+                val error = JsonParser.parseString(e.message).asJsonObject.get("error_description")
                 val message = error?.asString ?: "Command execution error. See IDE log for details."
                 CommandExecutionResponse(errors = listOf(message))
-            } else {
-                postMethod.responseBodyAsLoggedString()
-                CommandExecutionResponse()
+            } catch (ex: Exception) {
+                CommandExecutionResponse(errors = listOf("Command execution error. See IDE log for details."))
             }
         }
     }

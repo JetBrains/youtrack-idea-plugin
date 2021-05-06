@@ -17,7 +17,7 @@ object IssueNavigationLinkFactory {
     fun createNavigationLink(youtrackUrl: String): IssueNavigationLink {
         val link = IssueNavigationLink()
         link.linkRegexp = "$youtrackUrl/issue/$0"
-        link.issueRegexp = "(?x)[A-Z]+-\\d+$markerSuffix"
+        link.issueRegexp = "(?x)\\b[A-Z]+-\\d+\\b$markerSuffix"
         return link
     }
 
@@ -25,7 +25,8 @@ object IssueNavigationLinkFactory {
      * Makes navigation link smarter and slower by teaching it actual YouTrack project short names
      */
     fun IssueNavigationLink.setProjects(projectShortNames: List<String>){
-        issueRegexp = "(?x)(${projectShortNames.joinToString("|")})-\\d+$markerSuffix"
+        val projects = projectShortNames.sortedByDescending { it.length }.joinToString("|")
+        issueRegexp = "(?x)\\b($projects)-\\d+\\b$markerSuffix"
     }
 
     val IssueNavigationLink.createdByYouTrackPlugin: Boolean

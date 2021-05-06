@@ -15,34 +15,27 @@ import java.util.concurrent.TimeUnit
 
 class TimeTrackingService {
 
-    fun getAvailableWorkItemsTypes(repo: YouTrackServer): MutableList<String> {
-        val types = mutableListOf<String>()
-        val typesReceived = TimeTrackerRestClient(repo).getAvailableWorkItemTypes()
-        if (typesReceived.isNotEmpty()) {
-            typesReceived.forEach { types.add(it.name) }
-        }
-        return types
+    fun getAvailableWorkItemsTypes(repo: YouTrackServer): Collection<String> {
+        return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys
     }
 
+    // todo: make it return something meaningful
     fun postNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
                         repo: YouTrackServer, comment: String, time: String): Int {
 
         val sdf = SimpleDateFormat("dd MMM yyyy")
         val date = sdf.parse(dateNotFormatted)
-        val status = TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType,
-                comment, date.time.toString())
-
         val trackerNote = TrackerNotification()
-        if (status == 200) {
-            trackerNote.notify("Spent time was successfully added for $selectedId",
-                    NotificationType.INFORMATION)
+        return try {
+            TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType, comment, date.time.toString())
+            trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
             ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)
-        } else {
-            logger.warn("Time was not posted: code $status")
+            200
+        } catch (e: Exception) {
+            logger.warn("Time was not posted. See IDE logs for details.")
             trackerNote.notify("Time was not posted, please check your connection", NotificationType.WARNING)
+            -1
         }
-
-        return status
     }
 
     private fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, project: Project) {

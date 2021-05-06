@@ -5,14 +5,10 @@ import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.*
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.methods.GetMethod
-import org.apache.commons.httpclient.methods.PostMethod
-import org.apache.commons.httpclient.methods.StringRequestEntity
-import java.io.InputStreamReader
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.utils.URIBuilder
 import java.net.URL
-import java.nio.charset.StandardCharsets
-
 
 /**
  * Fetches YouTrack issues with issue description formatted from wiki into html on server side.
@@ -29,102 +25,30 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun createDraft(summary: String): String {
-        val method = PostMethod("${repository.url}/api/admin/users/me/drafts")
+        val method = HttpPost("${repository.url}/api/admin/users/me/drafts")
         val res: URL? = this::class.java.classLoader.getResource("create_draft_body.json")
-
         val summaryFormatted = summary.replace("\n", "\\n").replace("\"", "\\\"")
-        val jsonBody = res?.readText()?.replace("{description}", summaryFormatted)
-
-        method.requestEntity = StringRequestEntity(jsonBody, "application/json", StandardCharsets.UTF_8.name())
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                logger.debug("Successfully created draft: status $status")
-                val stream = InputStreamReader(method.responseBodyAsLoggedStream(), "UTF-8")
-                JsonParser.parseReader(stream).asJsonObject.get("id").asString
-            } else {
-                logger.debug("Failed to create draft: ${method.responseBodyAsLoggedString()}")
-                throw RuntimeException(method.responseBodyAsLoggedString())
-            }
+        method.entity = res?.readText()?.replace("{description}", summaryFormatted)?.jsonEntity
+        return method.execute { element ->
+            val id = element.asJsonObject.get("id").asString
+            logger.debug("Successfully created issue draft: $id")
+            id
         }
     }
 
-    override fun getIssue(id: String): Issue? {
-        val method = GetMethod("${repository.url}/api/issues/$id")
-        val fields = NameValuePair("fields", ISSUE_FIELDS)
-        method.setQueryString(arrayOf(fields))
-        val status = httpClient.executeMethod(method)
-        return if (status == 200) {
-            logger.debug("Successfully fetched issue: status $status")
-            val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader).asJsonArray
-            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
+    override fun getIssue(id: String): Issue {
+        val builder = URIBuilder("${repository.url}/api/issues/$id")
+        builder.addParameter("fields", ISSUE_FIELDS)
+        val method = HttpGet(builder.build())
+        return method.execute { element ->
+            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(listOf(element))
             val fullIssues = parseIssues(issuesWithWorkItems)
+            logger.debug("Successfully fetched issue: $id")
             fullIssues[0]
-        } else {
-            logger.debug("Failed to fetch issue with id $id: ${method.responseBodyAsLoggedString()}")
-            null
         }
     }
 
-    private fun parseIssues(json: List<JsonElement>): List<Issue> {
-        return json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
-    }
-
-    private fun parseWorkItems(method: GetMethod): List<IssueWorkItem> {
-        return method.connect {
-            val workItems = mutableListOf<IssueWorkItem>()
-            val status = httpClient.executeMethod(method)
-            val json: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
-            if (status == 200) {
-                logger.debug("Successfully parsed work items: $status")
-                json.mapNotNull { workItems.add(IssueJsonParser.parseWorkItem(it)!!) }
-                workItems
-            } else {
-                throw RuntimeException("Unable to parse work items: ${method.responseBodyAsLoggedString()}")
-            }
-        }
-    }
-
-
-    override fun getIssues(query: String): List<Issue> {
-        // todo: customizable "max" limit
-        val url = "${repository.url}/api/issues"
-        val method = GetMethod(url)
-        val myQuery = NameValuePair("query", query)
-        val myTop = NameValuePair("\$top", "100")   // todo: customizable "max" limit
-        val myFields = NameValuePair("fields", ISSUE_FIELDS)
-        var fullIssues: List<Issue>
-        method.setQueryString(arrayOf(myQuery, myFields, myTop))
-
-        return method.connect {
-            val status = httpClient.executeMethod(method)
-            if (status == 200) {
-                logger.debug("Successfully fetched issues : $status")
-                val issues: JsonArray = JsonParser.parseReader(method.responseBodyAsReader) as JsonArray
-                val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
-                fullIssues = parseIssues(issuesWithWorkItems)
-                fullIssues
-            } else {
-                logger.debug("Failed to fetch issues for query $query, issues: {}: ${method.responseBodyAsLoggedString()}")
-                throw RuntimeException(method.responseBodyAsLoggedString())
-            }
-        }
-
-    }
-
-    private fun getWorkItems(query: String): List<IssueWorkItem> {
-        val myQuery = NameValuePair("query", query)
-        val url = "${repository.url}/api/workItems"
-        val method = GetMethod(url)
-        val myFields = NameValuePair("fields", "text,type(name),created,issue(idReadable)," +
-                "duration(presentation,minutes),author(name),creator(name),date,id")
-        val myTop = NameValuePair("\$top", "100")
-        method.setQueryString(arrayOf(myQuery, myFields, myTop))
-
-        return parseWorkItems(method)
-    }
-
-    private fun mapWorkItemsWithIssues(issues: JsonArray): List<JsonElement> {
+    private fun mapWorkItemsWithIssues(issues: Iterable<JsonElement>): List<JsonElement> {
         val newIssues = mutableListOf<JsonElement>()
         for (issue in issues) {
             val id = issue.asJsonObject.get("idReadable").asString
@@ -144,5 +68,34 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
             newIssues.add(JsonParser.parseString(issueString) as JsonElement)
         }
         return newIssues
+    }
+
+    private fun parseIssues(json: List<JsonElement>): List<Issue> {
+        return json.map { IssueParser().parseIssue(it.asJsonObject, repository.url) }
+    }
+
+    override fun getIssues(query: String): List<Issue> {
+        // todo: customizable "max" limit
+        val builder = URIBuilder("${repository.url}/api/issues")
+        builder.addParameter("query", query)
+                .addParameter("\$top", "100")
+                .addParameter("fields", ISSUE_FIELDS)
+        val method = HttpGet(builder.build())
+        return method.execute { element ->
+            val issues: JsonArray = element.asJsonArray
+            val issuesWithWorkItems: List<JsonElement> = mapWorkItemsWithIssues(issues)
+            parseIssues(issuesWithWorkItems)
+        }
+    }
+
+    private fun getWorkItems(query: String): List<IssueWorkItem> {
+        val builder = URIBuilder("${repository.url}/api/workItems")
+        builder.addParameter("\$top", "100")
+                .addParameter("query", query)
+                .addParameter("fields", "text,type(name),created,issue(idReadable)," +
+                        "duration(presentation,minutes),author(name),creator(name),date,id")
+        return HttpGet(builder.build()).execute { element ->
+            element.asJsonArray.mapNotNull { IssueJsonParser.parseWorkItem(it) }
+        }
     }
 }
