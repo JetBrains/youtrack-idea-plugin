@@ -25,7 +25,6 @@ import com.intellij.util.SmartList
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import org.jetbrains.io.LocalFileFinder
-import kotlin.reflect.jvm.internal.impl.load.java.lazy.ContextKt.child
 
 
 
@@ -40,7 +39,7 @@ class RemoteDebuggingFileFinder(mappings: BiMap<String, VirtualFile> = Immutable
         private set
 
     @Deprecated("Use constructor with DebuggableFileFinder")
-    constructor(mappings: BiMap<String, VirtualFile>, parent: JSFileFinderBase) : this(mappings, null)
+    constructor(mappings: BiMap<String, VirtualFile>) : this(mappings, null)
 
     override fun findNavigatable(url: Url, project: Project): Navigatable? {
         findMapping(url, project)?.let {

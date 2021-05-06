@@ -17,15 +17,17 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 // LATEST-TRUNK-SNAPSHOT is getting resolved into an internal JB host for some reason
-def supportedVersions = ['IC-2021.1', 'LATEST-EAP-SNAPSHOT' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
+def supportedVersions = ['IU-2021.1', 'LATEST-EAP-SNAPSHOT' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IC-2021.1'
-    plugins 'tasks'  //Bundled plugin dependencies
+
+    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.1'
+    plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
     updateSinceUntilBuild false
     instrumentCode false
     pluginName 'ytplugin'
-    println "This build uses IDEA Community $version"
+    println "This build uses IDEA Ultimate $version"
+
 }
 
 idea {
@@ -33,6 +35,12 @@ idea {
         downloadSources = true
         outputDir file("$buildDir/idea/main")
         testOutputDir file("$buildDir/idea/test")
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
