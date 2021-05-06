@@ -8,6 +8,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileTypes.StdFileTypes.JS
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFileFactory
 import org.jetbrains.annotations.NotNull
 import java.util.concurrent.Callable
@@ -31,16 +32,17 @@ class WorkflowRulesHandler {
                     val trackerNote = TrackerNotification()
 
                     for (workflow in workflowsList) {
+                        val scriptDirectory = createScriptDirectory(project, workflow.name.split('/').last())
                         for (rule in workflow.rules) {
                             WorkflowsRestClient(repo).getWorkFlowContent(workflow, rule)
-                            createFile("${rule.name}.js", rule.content, project)
+                            createScriptFile("${rule.name}.js", rule.content, project, scriptDirectory)
                         }
                         trackerNote.notify("Successfully loaded workflow \"${workflow.name}\"", NotificationType.INFORMATION)
                     }
                 })
     }
 
-    private fun createFile(name: String, text: String?, project: Project) {
+    private fun createScriptFile(name: String, text: String?, project: Project, directory: PsiDirectory) {
 
         ApplicationManager.getApplication().invokeLater {
 
@@ -48,24 +50,35 @@ class WorkflowRulesHandler {
             val file: PsiFile = psiFileFactory.createFileFromText(name, JS, text as @NotNull @NonNls CharSequence)
 
             ApplicationManager.getApplication().runWriteAction {
-                // find or create directory
-                val targetVirtualDir = if (project.baseDir.findFileByRelativePath("src") == null) {
-                    logger.debug("Directory /src is created")
-                    project.baseDir.createChildDirectory(this, "src")
-                } else {
-                    project.baseDir.findFileByRelativePath("src")
-                }
-
                 //find or create file
-                val targetDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(targetVirtualDir!!)
                 try {
-                    targetDirectory.add(file)
+                    directory.add(file)
                     logger.debug("File $name is loaded")
                 } catch (e: Exception) {
                     logger.debug("File $name is already loaded")
                 }
             }
         }
+
+    }
+
+    private fun createScriptDirectory(project: Project, name: String) : PsiDirectory {
+        var targetDirectory: PsiDirectory? = null
+
+        ApplicationManager.getApplication().invokeAndWait {
+            ApplicationManager.getApplication().runWriteAction {
+                // find or create directory
+                val targetVirtualDir = if (project.baseDir.findFileByRelativePath(name) == null) {
+                    logger.debug("Directory $name is created")
+                    project.baseDir.createChildDirectory(this, name)
+                } else {
+                    project.baseDir.findFileByRelativePath(name)
+                }
+
+                targetDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(targetVirtualDir!!)
+            }
+        }
+        return targetDirectory!!
 
     }
 }
