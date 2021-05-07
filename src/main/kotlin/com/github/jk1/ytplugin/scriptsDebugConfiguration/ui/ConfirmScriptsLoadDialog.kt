@@ -1,6 +1,6 @@
-package com.github.jk1.ytplugin.workflowsDebugConfiguration.ui
+package com.github.jk1.ytplugin.scriptsDebugConfiguration.ui
 
-import com.github.jk1.ytplugin.workflowsDebugConfiguration.WorkflowRulesHandler
+import com.github.jk1.ytplugin.scriptsDebugConfiguration.ScriptsRulesHandler
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.VerticalFlowLayout
@@ -10,7 +10,7 @@ import java.awt.FlowLayout
 import java.util.*
 import javax.swing.*
 
-open class WorkflowNameEntryDialog(val project: Project) : DialogWrapper(project, false) {
+open class ConfirmScriptsLoadDialog(val project: Project) : DialogWrapper(project, false) {
 
     private val okButton = JButton("Load")
     private val cancelButton = JButton("Cancel")
@@ -53,8 +53,8 @@ open class WorkflowNameEntryDialog(val project: Project) : DialogWrapper(project
 
 
     private fun okAction() {
-        WorkflowRulesHandler().loadWorkflowRules(project)
-        this@WorkflowNameEntryDialog.close(0)
+        ScriptsRulesHandler(project).loadWorkflowRules()
+        this@ConfirmScriptsLoadDialog.close(0)
     }
 
 }

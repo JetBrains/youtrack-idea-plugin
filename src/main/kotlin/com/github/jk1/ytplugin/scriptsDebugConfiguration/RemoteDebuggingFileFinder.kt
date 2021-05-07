@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.workflowsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.google.common.base.Joiner
 import com.google.common.collect.BiMap
@@ -25,8 +25,6 @@ import com.intellij.util.SmartList
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import org.jetbrains.io.LocalFileFinder
-
-
 
 
 private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")

@@ -1,8 +1,8 @@
-package com.github.jk1.ytplugin.workflowsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.WorkflowsRestClient
+import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
@@ -18,9 +18,11 @@ import com.intellij.psi.PsiFile
 import org.jetbrains.annotations.NonNls
 
 
-class WorkflowRulesHandler {
+class ScriptsRulesHandler(val project: Project) {
 
-    fun loadWorkflowRules(project: Project) {
+    private var srcDir = project.baseDir
+
+    fun loadWorkflowRules() {
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) {
             repositories.first()
@@ -28,21 +30,22 @@ class WorkflowRulesHandler {
 
         ApplicationManager.getApplication().executeOnPooledThread(
                 Callable {
-                    val workflowsList = WorkflowsRestClient(repo!!).getWorkflowsWithRules()
+                    val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
                     val trackerNote = TrackerNotification()
-
-                    for (workflow in workflowsList) {
-                        val scriptDirectory = createScriptDirectory(project, workflow.name.split('/').last())
+                    createScriptDirectory("src")
+                    srcDir = project.baseDir.findFileByRelativePath("src")
+                    for (workflow in scriptsList) {
+                        val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
                         for (rule in workflow.rules) {
-                            WorkflowsRestClient(repo).getWorkFlowContent(workflow, rule)
-                            createScriptFile("${rule.name}.js", rule.content, project, scriptDirectory)
+                            ScriptsRestClient(repo).getScriptsContent(workflow, rule)
+                            createScriptFile("${rule.name}.js", rule.content, scriptDirectory)
                         }
                         trackerNote.notify("Successfully loaded workflow \"${workflow.name}\"", NotificationType.INFORMATION)
                     }
                 })
     }
 
-    private fun createScriptFile(name: String, text: String?, project: Project, directory: PsiDirectory) {
+    private fun createScriptFile(name: String, text: String?, directory: PsiDirectory) {
 
         ApplicationManager.getApplication().invokeLater {
 
@@ -62,19 +65,19 @@ class WorkflowRulesHandler {
 
     }
 
-    private fun createScriptDirectory(project: Project, name: String) : PsiDirectory {
+    private fun createScriptDirectory(name: String) : PsiDirectory {
         var targetDirectory: PsiDirectory? = null
+
 
         ApplicationManager.getApplication().invokeAndWait {
             ApplicationManager.getApplication().runWriteAction {
                 // find or create directory
-                val targetVirtualDir = if (project.baseDir.findFileByRelativePath(name) == null) {
+                val targetVirtualDir = if (srcDir?.findFileByRelativePath(name) == null) {
                     logger.debug("Directory $name is created")
-                    project.baseDir.createChildDirectory(this, name)
+                    srcDir?.createChildDirectory(this, name)
                 } else {
-                    project.baseDir.findFileByRelativePath(name)
+                    srcDir.findFileByRelativePath(name)
                 }
-
                 targetDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(targetVirtualDir!!)
             }
         }

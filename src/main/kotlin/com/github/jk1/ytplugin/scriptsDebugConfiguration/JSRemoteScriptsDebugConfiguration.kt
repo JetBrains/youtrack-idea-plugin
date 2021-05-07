@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.workflowsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.execution.ExecutionResult
@@ -17,9 +17,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
-import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.IdeBorderFactory
-import com.intellij.uiDesigner.core.AbstractLayout
 import com.intellij.util.SmartList
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
@@ -46,7 +44,7 @@ import javax.swing.JPanel
 private const val DEFAULT_PORT = 9229
 private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
-class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String)
+class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String)
     : LocatableConfigurationBase<Element>(project, factory, name),
         RunConfigurationWithSuppressedDefaultRunAction,
         JSRunProfileWithCompileBeforeLaunchOption,
@@ -74,7 +72,7 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
     }
 
     override fun clone(): RunConfiguration {
-        val configuration = super.clone() as JSRemoteWorkflowsDebugConfiguration
+        val configuration = super.clone() as JSRemoteScriptsDebugConfiguration
         configuration.host = host
         configuration.port = port
         configuration.mappings = SmartList(mappings)
@@ -124,11 +122,11 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         return process
     }
 
-    private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteWorkflowsDebugConfiguration>() {
-        private val filesMappingPanel: WorkflowsLocalFilesMappingPanel
+    private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteScriptsDebugConfiguration>() {
+        private val filesMappingPanel: ScriptsLocalFilesMappingPanel
 
         init {
-            filesMappingPanel = object : WorkflowsLocalFilesMappingPanel(project, BorderLayout()) {
+            filesMappingPanel = object : ScriptsLocalFilesMappingPanel(project, BorderLayout()) {
                 override fun initUI() {
                     add(mappingTreePanel)
                     super.initUI()
@@ -136,11 +134,11 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
             }
         }
 
-        override fun resetEditorFrom(configuration: JSRemoteWorkflowsDebugConfiguration) {
+        override fun resetEditorFrom(configuration: JSRemoteScriptsDebugConfiguration) {
             filesMappingPanel.resetEditorFrom(configuration.mappings, true)
         }
 
-        override fun applyEditorTo(configuration: JSRemoteWorkflowsDebugConfiguration) {
+        override fun applyEditorTo(configuration: JSRemoteScriptsDebugConfiguration) {
             val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
             if (repositories.isNotEmpty()) {
                 configuration.host = URL(repositories[0].url).host
@@ -152,10 +150,8 @@ class JSRemoteWorkflowsDebugConfiguration(project: Project, factory: Configurati
         override fun createEditor(): JComponent {
             val protocolPanel = JPanel(VerticalFlowLayout())
             filesMappingPanel.initUI()
-//            val mappingsPanel = HideableTitledPanel(JSDebuggerBundle.message("label.text.remote.urls.of.local.files"), filesMappingPanel, true)
             return FormBuilder.createFormBuilder()
                     .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
-//                    .addComponentFillVertically(mappingsPanel, AbstractLayout.DEFAULT_VGAP * 2)
                     .panel
         }
     }

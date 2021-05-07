@@ -89,8 +89,8 @@
             <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
-        <action id="com.github.jk1.ytplugin.workflowsDebugConfiguration.actions.LoadWorkflowsAction"
-                class="com.github.jk1.ytplugin.workflowsDebugConfiguration.actions.LoadWorkflowsAction">
+        <action id="com.github.jk1.ytplugin.scriptsDebugConfiguration.actions.LoadScriptsAction"
+                class="com.github.jk1.ytplugin.scriptsDebugConfiguration.actions.LoadScriptsAction">
             <keyboard-shortcut first-keystroke="control shift Q" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
@@ -118,7 +118,7 @@
         <checkinHandlerFactory implementation="com.github.jk1.ytplugin.timeTracker.VcsCommitsHandler"/>
 
 
-        <configurationType implementation="com.github.jk1.ytplugin.workflowsDebugConfiguration.JSRemoteWorkflowsDebugConfigurationType"/>
+        <configurationType implementation="com.github.jk1.ytplugin.scriptsDebugConfiguration.JSRemoteScriptsDebugConfigurationType"/>
 
     </extensions>
 </idea-plugin>

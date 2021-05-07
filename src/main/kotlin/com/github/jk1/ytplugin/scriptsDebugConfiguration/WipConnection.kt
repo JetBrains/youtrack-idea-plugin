@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.workflowsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
@@ -133,7 +133,7 @@ class WipConnection : WipRemoteVmConnection() {
         // get active project to detect YouTrack repo
         val activeProject = getActiveProject()
 
-        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/workflowsinspector/json")
+        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/scriptsdebugger/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
 

@@ -1,21 +1,19 @@
-package com.github.jk1.ytplugin.workflowsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.intellij.execution.RunConfigurationConverter
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.RunConfigurationSingletonPolicy
 import com.intellij.icons.AllIcons
-import com.intellij.javascript.debugger.JSDebuggerBundle
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
-import icons.JavaScriptDebuggerIcons
 import org.jdom.Element
 
 private const val ID = "WorkflowsRemoteDebugType"
 private const val FACTORY_ID = "Workflows Remote Debug"
 
-class JSRemoteWorkflowsDebugConfigurationType
+class JSRemoteScriptsDebugConfigurationType
     : ConfigurationTypeBase(ID, "Remote Debug Of Workflows Scripts", null, NotNullLazyValue.createValue { AllIcons.Actions.IntentionBulbGrey }),
         DumbAware, RunConfigurationConverter {
     init {
@@ -24,7 +22,7 @@ class JSRemoteWorkflowsDebugConfigurationType
 
             override fun getId() = FACTORY_ID
 
-            override fun createTemplateConfiguration(project: Project) = JSRemoteWorkflowsDebugConfiguration(project, this, configurationTypeDescription)
+            override fun createTemplateConfiguration(project: Project) = JSRemoteScriptsDebugConfiguration(project, this, configurationTypeDescription)
 
             override fun isEditableInDumbMode() = true
         })
