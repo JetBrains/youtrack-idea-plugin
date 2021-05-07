@@ -42,6 +42,18 @@ import com.intellij.openapi.project.ProjectManager
 import java.awt.Window
 
 
+import com.intellij.util.io.socketConnection.ConnectionStatus
+import io.netty.channel.Channel
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
+import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator
+import io.netty.handler.codec.http.websocketx.WebSocketVersion
+import org.jetbrains.io.webSocket.WebSocketProtocolHandler
+import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
+import org.jetbrains.wip.protocol.inspector.DetachedEventData
+
+
+
 class WipConnection : WipRemoteVmConnection() {
 
     private var currentPageTitle: String? = null
@@ -228,6 +240,52 @@ class WipConnection : WipRemoteVmConnection() {
 
         pageConnections.add(PageConnection(pageUrl, title, type, webSocketDebuggerUrl, id, address))
         return !processPageConnections(context, debugMessageQueue, pageConnections, result)
+    }
+
+    override fun connectDebugger(page: PageConnection,
+                                       context: ChannelHandlerContext,
+                                       result: AsyncPromise<WipVm>,
+                                       debugMessageQueue: MessagingLogger?) {
+        val handshaker = WebSocketClientHandshakerFactory.newHandshaker(URI.create(page.webSocketDebuggerUrl!!), WebSocketVersion.V13, null, false, null, 100 * 1024 * 1024)
+        val channel = context.channel()
+        val vm = DebuggerWipVm(debugEventListener, page.url, channel, debugMessageQueue)
+        vm.title = page.title
+        vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
+            if (it.reason() == "targetCrashed") {
+                close("${ConnectionStatus.DISCONNECTED.statusText} (tab crashed)", ConnectionStatus.DISCONNECTED)
+            }
+            else {
+                close("${ConnectionStatus.DISCONNECTED.statusText} (tab was closed or Web Inspector was opened)", ConnectionStatus.DETACHED)
+            }
+        }
+
+        channel.pipeline().addLast(
+                object : WebSocketProtocolHandshakeHandler(handshaker) {
+                    override fun completed() {
+                        vm.initDomains()
+                        result.setResult(vm)
+                        vm.ready()
+                    }
+
+                    @Suppress("OverridingDeprecatedMember")
+                    override fun exceptionCaught(@Suppress("NAME_SHADOWING") context: ChannelHandlerContext, cause: Throwable) {
+                        result.setError(cause)
+                        context.fireExceptionCaught(cause)
+                    }
+                },
+                WebSocketFrameAggregator(NettyUtil.MAX_CONTENT_LENGTH),
+                object : WebSocketProtocolHandler() {
+                    override fun textFrameReceived(@Suppress("NAME_SHADOWING") channel: Channel, message: TextWebSocketFrame) {
+                        vm.textFrameReceived(message)
+                    }
+                }
+        )
+
+        handshaker.handshake(channel).addChannelListener {
+            if (!it.isSuccess) {
+                context.fireExceptionCaught(it.cause())
+            }
+        }
     }
 
     override fun processPageConnections(context: ChannelHandlerContext,
