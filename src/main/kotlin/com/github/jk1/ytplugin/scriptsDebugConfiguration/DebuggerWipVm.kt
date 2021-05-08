@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.intellij.notification.NotificationType
 import com.intellij.util.io.readUtf8
@@ -40,8 +39,8 @@ class DebuggerWipVm(tabListener: DebugEventListener,
         try {
             commandProcessor.processIncomingJson(JsonReaderEx(message.content().readUtf8()))
         }
-        // todo cases for actual exception
-        catch (e: Exception) {
+        // case required to catch exception on repeating id when breakpoint is removed on timer expire
+        catch (e: IllegalArgumentException) {
             logger.debug("Execution was continued explicitly on timer expire")
             val note = "Execution could not be paused on breakpoint for longer than three minutes"
             val trackerNote = TrackerNotification()

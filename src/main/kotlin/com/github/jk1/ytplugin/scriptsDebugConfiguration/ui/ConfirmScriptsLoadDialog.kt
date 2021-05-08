@@ -32,8 +32,8 @@ open class ConfirmScriptsLoadDialog(val project: Project) : DialogWrapper(projec
         okButton.addActionListener { okAction() }
         cancelButton.addActionListener { super.doCancelAction() }
 
-        buttonsPanel.add(cancelButton)
         buttonsPanel.add(okButton)
+        buttonsPanel.add(cancelButton)
 
         return buttonsPanel
     }
