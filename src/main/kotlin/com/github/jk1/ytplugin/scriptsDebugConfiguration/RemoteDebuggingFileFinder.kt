@@ -20,7 +20,6 @@ import com.intellij.openapi.vfs.impl.http.HttpVirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.ProjectScope
-import com.intellij.util.PathUtilRt
 import com.intellij.util.SmartList
 import com.intellij.util.Url
 import com.intellij.util.Urls
@@ -112,15 +111,6 @@ class RemoteDebuggingFileFinder(mappings: BiMap<String, VirtualFile> = Immutable
         return parent?.getRemoteUrls(file) ?: listOf(Urls.newFromVirtualFile(file))
     }
 
-    fun updateRemoteUrlMapping(mappings: List<RemoteUrlMappingBean>): Boolean {
-        val newMap = createUrlToLocalMap(mappings)
-        if (newMap != this.mappings) {
-            this.mappings = newMap
-            return true
-        }
-        return false
-    }
-
     override fun toString(): String = Joiner.on("\n ").withKeyValueSeparator("->").join(mappings)
 }
 
@@ -139,7 +129,6 @@ fun createUrlToLocalMap(mappings: List<RemoteUrlMappingBean>): BiMap<String, Vir
     return map
 }
 
-fun findByName(url: Url, project: Project) = findByName(if (url.path.endsWith('/')) "" else PathUtilRt.getFileName(url.path), project, url)
 
 private fun findByName(filename: String, project: Project, url: Url?): VirtualFile? {
     val files = findByName(filename, project)
