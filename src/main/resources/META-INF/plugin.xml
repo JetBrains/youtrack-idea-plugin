@@ -89,13 +89,6 @@
             <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
-        <action id="com.github.jk1.ytplugin.scriptsDebugConfiguration.actions.LoadScriptsAction"
-                class="com.github.jk1.ytplugin.scriptsDebugConfiguration.actions.LoadScriptsAction">
-            <keyboard-shortcut first-keystroke="control shift Q" keymap="$default"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
-        </action>
-
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">

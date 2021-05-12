@@ -13,6 +13,7 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.*
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
@@ -37,6 +38,7 @@ import java.awt.BorderLayout
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URL
+import java.util.concurrent.Callable
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -96,6 +98,10 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
+        ApplicationManager.getApplication().executeOnPooledThread (
+            Callable {
+                ScriptsRulesHandler(project).loadWorkflowRules()
+            })
         return host?.let {
             HttpInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
         } ?: HttpInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
