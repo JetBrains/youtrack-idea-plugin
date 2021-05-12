@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.intellij.notification.NotificationType
@@ -29,23 +30,34 @@ class ScriptsRulesHandler(val project: Project) {
         } else null
 
         ApplicationManager.getApplication().executeOnPooledThread(
-                Callable {
-                    val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
-                    val trackerNote = TrackerNotification()
-                    createScriptDirectory("src")
-                    srcDir = project.baseDir.findFileByRelativePath("src")
-                    for (workflow in scriptsList) {
-                        val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
-                        for (rule in workflow.rules) {
+            Callable {
+                val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
+                val trackerNote = TrackerNotification()
+
+                createScriptDirectory("src")
+                srcDir = project.baseDir.findFileByRelativePath("src")
+
+                scriptsList.map { workflow ->
+                    val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
+                    workflow.rules.map { rule ->
+                        val existingScript = project.baseDir.findFileByRelativePath(
+                            "src/${workflow.name.split('/').last()}/${rule.name}.js"
+                        )
+                        if (existingScript == null) {
                             ScriptsRestClient(repo).getScriptsContent(workflow, rule)
-                            createScriptFile("${rule.name}.js", rule.content, scriptDirectory)
+                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                            trackerNote.notify(
+                                "Successfully loaded script \"${workflow.name}\"",
+                                NotificationType.INFORMATION
+                            )
                         }
-                        trackerNote.notify("Successfully loaded workflow \"${workflow.name}\"", NotificationType.INFORMATION)
                     }
-                })
+                }
+
+            })
     }
 
-    private fun createScriptFile(name: String, text: String?, directory: PsiDirectory) {
+    private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
 
         ApplicationManager.getApplication().invokeLater {
 
@@ -65,7 +77,7 @@ class ScriptsRulesHandler(val project: Project) {
 
     }
 
-    private fun createScriptDirectory(name: String) : PsiDirectory {
+    private fun createScriptDirectory(name: String): PsiDirectory {
         var targetDirectory: PsiDirectory? = null
 
 
