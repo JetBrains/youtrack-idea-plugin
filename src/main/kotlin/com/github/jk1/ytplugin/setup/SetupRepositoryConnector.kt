@@ -102,11 +102,11 @@ class SetupRepositoryConnector {
         }
         checker.onApplicationError { request, response ->
             logger.debug("handling application error for ${repository.url}")
-            when (response.statusLine.statusCode) {
+            when (response?.statusLine?.statusCode) {
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
-                    val location = response.getFirstHeader("Location").value
-                    if (!location.contains("/waitInstanceStartup/")){
+                    val location = response?.getFirstHeader("Location")?.value
+                    if (location != null && !location.contains("/waitInstanceStartup/")) {
                         repository.url = location.replace("api/users/me?fields=name", "")
                     } else {
                         if (!request.requestLine.uri.contains("/youtrack")) {
@@ -131,6 +131,7 @@ class SetupRepositoryConnector {
                     } else {
                         logger.debug("no manual ending fix: LOGIN_ERROR")
                         noteState = NotifierState.LOGIN_ERROR
+                        checker.check()
                     }
                 }
             }
@@ -152,6 +153,7 @@ class SetupRepositoryConnector {
                     } else {
                         logger.debug("no manual transport fix: LOGIN_ERROR")
                         noteState = NotifierState.LOGIN_ERROR
+                        checker.check()
                     }
                 }
             }
