@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.setup
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -19,6 +20,7 @@ import java.awt.Color
 import java.io.InputStreamReader
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
@@ -26,11 +28,10 @@ class SetupRepositoryConnector {
 
     @Volatile
     var noteState = NotifierState.INVALID_TOKEN
-    private val tokenPattern = Regex("perm:([^.]+)\\.([^.]+)\\.(.+)")
 
-    fun isValidToken(token: String): Boolean {
-        return token.matches(tokenPattern)
-    }
+    private val String.b64Encoded: String
+        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
+
 
     fun setNotifier(note: JLabel) {
         note.foreground = Color.red
@@ -57,12 +58,15 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
+    private fun isValidYouTrackVersion(repository: YouTrackRepository, project: Project): Boolean {
         val client = HttpClientBuilder.create().build()
         val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
         builder.addParameter("fields", "version")
         val method = HttpGet(builder.build())
-        method.setHeader("Authorization", "Bearer " + repository.password)
+
+        val auth = "${repository.username}:${repository.password}".b64Encoded
+        method.setHeader("Authorization", "Basic $auth")
+
         try {
             val response = client.execute(method)
             return if (response.statusLine.statusCode == 200) {
@@ -85,11 +89,11 @@ class SetupRepositoryConnector {
         return false
     }
 
-    private fun checkAndFixConnection(repository: YouTrackRepository) {
-        val checker = ConnectionChecker(repository)
+    private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
+        val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            noteState = if (isValidYouTrackVersion(repository)) {
-                repository.url = request.requestLine.uri.replace("/api/token", "")
+            noteState = if (isValidYouTrackVersion(repository, project)) {
+                repository.url = request.requestLine.uri.replace("/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
             } else {
@@ -104,7 +108,7 @@ class SetupRepositoryConnector {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = response.getFirstHeader("Location").value
                     if (!location.contains("/waitInstanceStartup/")){
-                        repository.url = location.replace("/api/token", "")
+                        repository.url = location.replace("/users/me?fields=name", "")
                     } else {
                         if (!request.requestLine.uri.contains("/youtrack")) {
                             logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
@@ -164,7 +168,7 @@ class SetupRepositoryConnector {
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
 
-                checkAndFixConnection(repository)
+                checkAndFixConnection(repository, myProject)
             }
         }
         ProgressManager.getInstance().run(task)

@@ -1,25 +1,42 @@
 package com.github.jk1.ytplugin.setup
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
+import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.HttpClientBuilder
+import java.nio.charset.StandardCharsets
+import java.util.*
 
 
-class ConnectionChecker(val repository: YouTrackRepository) {
+class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     private var onSuccess: (method: HttpRequest) -> Unit = {}
 
     private var onApplicationError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
 
     private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
+    private val credentialsChecker = ComponentAware.of(project).credentialsCheckerComponent
+
+    private val String.b64Encoded: String
+        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
+
 
     fun check() {
         logger.debug("CHECK CONNECTION FOR ${repository.url}")
-        val method = HttpPost(repository.url.trimEnd('/') + "/api/token")
-        method.setHeader("Authorization", "Bearer " + repository.password)
+        val method = HttpGet(repository.url.trimEnd('/') + "/users/me?fields=name")
+//        method.setHeader("Authorization", "Bearer " + repository.password)
+        if (credentialsChecker.isMatchingAppPassword(repository.password) && !(credentialsChecker.isMatchingBearerToken(repository.password))){
+            repository.username = repository.password.split(Regex(":"), 2).first()
+            repository.password = repository.password.split(Regex(":"), 2).last()
+        }
+        val auth = "${repository.username}:${repository.password}".b64Encoded
+        method.setHeader("Authorization", "Basic $auth")
+
         try {
             // todo: proxy
             val response = HttpClientBuilder.create().build().execute(method)
