@@ -56,6 +56,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
     private val standardHeight = (0.0613 * myHeight).toInt()
 
     private val timeTrackingTab = TimeTrackerSettingsTab(repo, myHeight, myWidth)
+    private val credentialsChecker = ComponentAware.of(project).credentialsCheckerComponent
 
     private var isConnectionTested = false
 
@@ -334,6 +335,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
                 connectedRepository.isUseProxy = useProxyCheckBox.isSelected
                 if (inputUrlTextPane.text.isNotEmpty() && inputTokenField.password.isNotEmpty()) {
                     repoConnector.testConnection(connectedRepository, project)
+                    connectedRepository.storeCredentials()
                 }
             } else {
                 repoConnector.noteState = NotifierState.NULL_PROXY_HOST
@@ -344,7 +346,8 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
 
         if (inputUrlTextPane.text.isBlank() || inputTokenField.password.isEmpty()) {
             repoConnector.noteState = NotifierState.EMPTY_FIELD
-        } else if (!repoConnector.isValidToken(connectedRepository.password)) {
+        } else if (!(credentialsChecker.isMatchingAppPassword(connectedRepository.password)
+                    || credentialsChecker.isMatchingBearerToken(connectedRepository.password))) {
             repoConnector.noteState = NotifierState.INVALID_TOKEN
         } else if (PasswordSafe.instance.isMemoryOnly) {
             repoConnector.noteState = NotifierState.PASSWORD_NOT_STORED
@@ -373,7 +376,7 @@ open class SetupDialog(override val project: Project, val repo: YouTrackServer, 
             myRepository.isLoginAnonymously = false
 
             myRepository.url = connectedRepository.url
-            myRepository.password = String(inputTokenField.password)
+            myRepository.password = connectedRepository.password
             myRepository.username = connectedRepository.username
             myRepository.repositoryType = connectedRepository.repositoryType
             myRepository.storeCredentials()
