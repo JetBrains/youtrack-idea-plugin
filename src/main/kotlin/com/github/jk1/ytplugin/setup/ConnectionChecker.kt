@@ -40,7 +40,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
         try {
             // todo: proxy
-            val response = HttpClientBuilder.create().build().execute(method)
+            val response =  HttpClientBuilder.create().disableRedirectHandling().build().execute(method)
             val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8")).asJsonObject.get("name").toString()
             if (response.statusLine.statusCode == 200 && user != "guest") {
                 logger.debug("connection status: SUCCESS")
