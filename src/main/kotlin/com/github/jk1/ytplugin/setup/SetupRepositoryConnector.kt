@@ -92,7 +92,7 @@ class SetupRepositoryConnector {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
             noteState = if (isValidYouTrackVersion(repository)) {
-                repository.url = request.requestLine.uri.replace("/users/me?fields=name", "")
+                repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
             } else {
@@ -107,7 +107,7 @@ class SetupRepositoryConnector {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = response.getFirstHeader("Location").value
                     if (!location.contains("/waitInstanceStartup/")){
-                        repository.url = location.replace("/users/me?fields=name", "")
+                        repository.url = location.replace("api/users/me?fields=name", "")
                     } else {
                         if (!request.requestLine.uri.contains("/youtrack")) {
                             logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
