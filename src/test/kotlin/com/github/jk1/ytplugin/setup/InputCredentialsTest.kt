@@ -77,7 +77,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
     }
 
     @Test
-    fun `test connection with invalid token `() {
+    fun `test connection with invalid token`() {
         val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token)
@@ -85,11 +85,33 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.UNAUTHORIZED, setupTask.noteState)
+        assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
     }
 
     @Test
-    fun `test connection with no protocol `() {
+    fun `test connection with application password`() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
+        repository = createYouTrackRepository(serverUrl, "$username:$applicationPassword")
+        val repo = repository.getRepo()
+        val setupTask = SetupRepositoryConnector()
+
+        setupTask.testConnection(repo, project)
+        assertEquals(NotifierState.SUCCESS, setupTask.noteState)
+    }
+
+    @Test
+    fun `test connection with application password in wrong format`() {
+        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
+        repository = createYouTrackRepository(serverUrl, "$username:$applicationPassword 12A3")
+        val repo = repository.getRepo()
+        val setupTask = SetupRepositoryConnector()
+
+        setupTask.testConnection(repo, project)
+        assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
+    }
+
+    @Test
+    fun `test connection with no protocol`() {
         val serverUrl = "ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()

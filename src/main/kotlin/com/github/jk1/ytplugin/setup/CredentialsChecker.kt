@@ -12,6 +12,8 @@ class CredentialsChecker {
         return token.matches(tokenPattern)
     }
 
+    //TODO helper for XXXX-XXXX pass format error
+
     fun isMatchingAppPassword(token: String): Boolean {
         return token.split(Regex(":"), 2).last().matches(appPasswordPattern)
     }
