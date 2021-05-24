@@ -6,7 +6,6 @@ import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
-import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils
@@ -21,10 +20,9 @@ import java.net.UnknownHostException
 class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     private var onSuccess: (method: HttpRequest) -> Unit = {}
-
     private var onInputError: (request: HttpRequest) -> Unit = { _: HttpRequest -> }
-
     private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
+
     private val credentialsChecker = ComponentAware.of(project).credentialsCheckerComponent
 
     private val String.b64Encoded: String
@@ -44,18 +42,19 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
         try {
             // todo: proxy
-            //timeout is required to handle connections with non-existing url looking like existing
-            val config = RequestConfig.custom().setConnectTimeout(10000).build()
-            val response = HttpClientBuilder.create().disableRedirectHandling().setDefaultRequestConfig(config).build()
+            //timeout (1 min) is required to handle connections with non-existing url looking like existing
+            val config = RequestConfig.custom().setConnectTimeout(60000).build()
+            val response = HttpClientBuilder.create()
+                .disableRedirectHandling()
+                .setDefaultRequestConfig(config).build()
                 .execute(method)
-            val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8")).asJsonObject.get("name")
-                .toString()
+            val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
+                .asJsonObject.get("name").toString()
             if (response.statusLine.statusCode == 200 && user != "\"guest\"") {
                 logger.debug("connection status: SUCCESS")
                 method.releaseConnection()
                 onSuccess(method)
             }
-
         } catch (e: ConnectTimeoutException) {
             logger.debug("connection status: TIMEOUT ERROR")
             method.releaseConnection()

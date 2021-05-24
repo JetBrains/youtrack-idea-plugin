@@ -25,60 +25,59 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
     }
 
     @Test
-    fun `test connection with HTTP error in url`() {
-        val serverUrl = "http://ytplugintest.myjetbrains.com/youtrack"
-        repository = createYouTrackRepository(serverUrl, token)
+    fun `test connection with protocol error in url`() {
+        val myServerUrl = serverUrl.replace("https", "http")
+        repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(serverUrl, repository.getRepo().url)
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
     }
 
     @Test
     fun `test connection with ending error in url`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com"
-        repository = createYouTrackRepository(serverUrl, token)
+        val myServerUrl = serverUrl.replace("/youtrack", "")
+        repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(serverUrl, repository.getRepo().url)
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
     }
 
     @Test
-    fun `test connection with HTTP and ending error in url`() {
-        val serverUrl = "http://ytplugintest.myjetbrains.com"
-        repository = createYouTrackRepository(serverUrl, token)
+    fun `test connection with protocol and ending error in url`() {
+        val myServerUrl = serverUrl.replace("/youtrack", "").replace("https", "http")
+        repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(serverUrl, repository.getRepo().url)
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
     }
 
     @Test
     fun `test connection with trailing slash error in url`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack/////"
-        repository = createYouTrackRepository(serverUrl, token)
+        val myServerUrl = "$serverUrl/////"
+        repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://ytplugintest.myjetbrains.com/youtrack", repository.getRepo().url)
+        assertEquals(serverUrl, repository.getRepo().url)
         assertEquals(NotifierState.SUCCESS, setupTask.noteState)
     }
 
     @Test
     fun `test connection with invalid token`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         val token = "RlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
         repository = createYouTrackRepository(serverUrl, token)
         val repo = repository.getRepo()
@@ -90,7 +89,6 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
     @Test
     fun `test connection with application password`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, "$username:$applicationPassword")
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
@@ -101,7 +99,6 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
     @Test
     fun `test connection with application password in wrong format`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, "$username:$applicationPassword 12A3")
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
@@ -112,8 +109,8 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
     @Test
     fun `test connection with no protocol`() {
-        val serverUrl = "ytplugintest.myjetbrains.com/youtrack"
-        repository = createYouTrackRepository(serverUrl, token)
+        val myServerUrl = serverUrl.substring(serverUrl.indexOf("://") + 3, serverUrl.lastIndex + 1)
+        repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
 

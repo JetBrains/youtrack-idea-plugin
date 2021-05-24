@@ -12,11 +12,13 @@ import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
+import org.apache.http.client.ClientProtocolException
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
 import java.io.InputStreamReader
+import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -116,7 +118,13 @@ class SetupRepositoryConnector {
                         repository.url = "${repository.url}/youtrack"
                         logger.debug("url after manual ending fix: ${repository.url}")
                     }
-                    if (URL(request.requestLine.uri).protocol != "https") {
+                    val protocol = try {
+                         URL(request.requestLine.uri).protocol
+                    } catch (e: MalformedURLException){
+                        noteState = NotifierState.LOGIN_ERROR
+                        null
+                    }
+                    if (protocol != "https") {
                         logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
                         val repoUrl = URL(repository.url)
                         repository.url = URL("https", repoUrl.host, repoUrl.port, repoUrl.path).toString()
@@ -165,6 +173,7 @@ enum class NotifierState {
     UNKNOWN_HOST,
     INVALID_TOKEN,
     INVALID_VERSION,
+    INVALID_PROTOCOL,
     NULL_PROXY_HOST,
     TIMEOUT,
     INCORRECT_CERTIFICATE,
