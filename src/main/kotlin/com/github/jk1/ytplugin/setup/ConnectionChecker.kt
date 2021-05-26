@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
+import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils
@@ -13,15 +14,13 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 import org.apache.http.client.config.RequestConfig
-import org.apache.http.conn.ConnectTimeoutException
-import java.net.UnknownHostException
 
 
 class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     private var onSuccess: (method: HttpRequest) -> Unit = {}
-    private var onInputError: (request: HttpRequest) -> Unit = { _: HttpRequest -> }
     private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
+    private var onApplicationError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
 
     private val credentialsChecker = ComponentAware.of(project).credentialsCheckerComponent
 
@@ -41,28 +40,24 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         method.setHeader("Authorization", "Basic $authCredentials")
 
         try {
-            // todo: proxy
-            //timeout (1 min) is required to handle connections with non-existing url looking like existing
             val config = RequestConfig.custom().setConnectTimeout(60000).build()
             val response = HttpClientBuilder.create()
                 .disableRedirectHandling()
                 .setDefaultRequestConfig(config).build()
                 .execute(method)
-            val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
-                .asJsonObject.get("name").toString()
-            if (response.statusLine.statusCode == 200 && user != "\"guest\"") {
-                logger.debug("connection status: SUCCESS")
+            if (response.statusLine.statusCode == 200) {
+                val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
+                    .asJsonObject.get("name").toString()
+                if (user != "\"guest\""){
+                    logger.debug("connection status: SUCCESS")
+                    method.releaseConnection()
+                    onSuccess(method)
+                }
+            } else {
+                logger.debug("connection status: APPLICATION ERROR")
                 method.releaseConnection()
-                onSuccess(method)
+                onApplicationError(method, response)
             }
-        } catch (e: ConnectTimeoutException) {
-            logger.debug("connection status: TIMEOUT ERROR")
-            method.releaseConnection()
-            onInputError(method)
-        } catch (e: UnknownHostException) {
-            logger.debug("connection status: HOST ERROR")
-            method.releaseConnection()
-            onInputError(method)
         } catch (e: Exception) {
             logger.debug("connection status: TRANSPORT ERROR")
             method.releaseConnection()
@@ -74,8 +69,8 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         this.onSuccess = closure
     }
 
-    fun onInputError(closure: (request: HttpRequest) -> Unit) {
-        this.onInputError = closure
+    fun onApplicationError(closure: (request: HttpRequest, httpResponse: HttpResponse) -> Unit) {
+        this.onApplicationError = closure
     }
 
     fun onTransportError(closure: (request: HttpRequest, e: Exception) -> Unit) {

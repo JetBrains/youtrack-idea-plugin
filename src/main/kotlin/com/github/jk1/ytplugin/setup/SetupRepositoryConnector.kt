@@ -17,7 +17,6 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
 import java.io.InputStreamReader
-import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -89,6 +88,7 @@ class SetupRepositoryConnector {
         return false
     }
 
+
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
@@ -101,9 +101,40 @@ class SetupRepositoryConnector {
                 NotifierState.INVALID_VERSION
             }
         }
-        checker.onInputError { request ->
-            logger.debug("handling input error for ${repository.url}: ${request.requestLine.uri}")
-            noteState = NotifierState.LOGIN_ERROR
+        checker.onApplicationError { request, response ->
+            logger.debug("handling application error for ${repository.url}")
+            when (response.statusLine.statusCode) {
+                in 301..399 -> {
+                    logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
+                    val location = response.getFirstHeader("Location").value
+                    if (!location.contains("/waitInstanceStartup/")) {
+                        repository.url = location.replace("/api/users/me?fields=name", "")
+                    } else {
+                        if (!request.requestLine.uri.contains("/youtrack")) {
+                            logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
+                            repository.url = "${repository.url}/youtrack"
+                        }
+                    }
+                    logger.debug("url after correction: ${repository.url}")
+                    // unloaded instance redirect can't handle /api/* suffix properly
+                    checker.check()
+                }
+                401, 403 -> {
+                    logger.debug("handling response code 403 for the ${repository.url}: UNAUTHORIZED")
+                    noteState = NotifierState.UNAUTHORIZED
+                }
+                else -> {
+                    logger.debug("handling response code other than 301..399, 403 ${repository.url}: MANUAL FIX")
+                    if (!request.requestLine.uri.contains("/youtrack")) {
+                        repository.url = "${repository.url}/youtrack"
+                        logger.debug("url after manual ending fix: ${repository.url}")
+                        checker.check()
+                    } else {
+                        logger.debug("no manual ending fix: LOGIN_ERROR")
+                        noteState = NotifierState.LOGIN_ERROR
+                    }
+                }
+            }
         }
         checker.onTransportError { request: HttpRequest, exception: Exception ->
             logger.debug("handling transport error for ${repository.url}")
@@ -113,26 +144,16 @@ class SetupRepositoryConnector {
                     noteState = NotifierState.INCORRECT_CERTIFICATE
                 }
                 else -> {
-                    if (!request.requestLine.uri.contains("/youtrack")) {
-                        repository.url = "${repository.url}/youtrack"
-                        logger.debug("url after manual ending fix: ${repository.url}")
-                    }
-                    val protocol = try {
-                         URL(request.requestLine.uri).protocol
-                    } catch (e: MalformedURLException){
-                        noteState = NotifierState.INVALID_PROTOCOL
-                        null
-                    }
-                    if (protocol != "https") {
+                    if (URL(request.requestLine.uri).protocol != "https") {
                         logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
                         val repoUrl = URL(repository.url)
                         repository.url = URL("https", repoUrl.host, repoUrl.port, repoUrl.path).toString()
                         logger.debug("url after manual protocol fix: ${repository.url}")
+                        checker.check()
                     } else {
                         logger.debug("no manual transport fix: LOGIN_ERROR")
-                        noteState = NotifierState.INVALID_PROTOCOL
+                        noteState = NotifierState.LOGIN_ERROR
                     }
-                    checker.check()
                 }
             }
         }
