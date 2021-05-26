@@ -12,7 +12,6 @@ import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
-import org.apache.http.client.ClientProtocolException
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
@@ -121,7 +120,7 @@ class SetupRepositoryConnector {
                     val protocol = try {
                          URL(request.requestLine.uri).protocol
                     } catch (e: MalformedURLException){
-                        noteState = NotifierState.LOGIN_ERROR
+                        noteState = NotifierState.INVALID_PROTOCOL
                         null
                     }
                     if (protocol != "https") {
@@ -131,7 +130,7 @@ class SetupRepositoryConnector {
                         logger.debug("url after manual protocol fix: ${repository.url}")
                     } else {
                         logger.debug("no manual transport fix: LOGIN_ERROR")
-                        noteState = NotifierState.LOGIN_ERROR
+                        noteState = NotifierState.INVALID_PROTOCOL
                     }
                     checker.check()
                 }
