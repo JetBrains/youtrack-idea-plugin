@@ -47,6 +47,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import org.jetbrains.io.webSocket.WebSocketProtocolHandler
 import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
 import org.jetbrains.wip.protocol.inspector.DetachedEventData
+import java.nio.charset.StandardCharsets
+import java.util.*
 
 
 class WipConnection : WipRemoteVmConnection() {
@@ -61,6 +63,9 @@ class WipConnection : WipRemoteVmConnection() {
     private var title: String? = null
     private var type: String? = null
     private var id: String? = null
+
+    private val String.b64Encoded: String
+        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
     override fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?) {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
@@ -142,6 +147,7 @@ class WipConnection : WipRemoteVmConnection() {
         // get active project to detect YouTrack repo
         val activeProject = getActiveProject()
 
+        // todo cloud
         val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/scripts/debug/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
@@ -149,9 +155,14 @@ class WipConnection : WipRemoteVmConnection() {
         try {
             val repositories =
                 activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
-            val token = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
 
-            request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer $token")
+            val password = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
+            val username = if (repositories != null && repositories.isNotEmpty()) repositories[0].username else ""
+
+            val authCredentials = "${username}:${password}".b64Encoded
+
+            request.headers().set(HttpHeaderNames.AUTHORIZATION, "Basic $authCredentials")
+
             request.headers().set(HttpHeaderNames.ACCEPT, "application/json")
             context.channel().writeAndFlush(request).addChannelListener {
                 if (!it.isSuccess) {
