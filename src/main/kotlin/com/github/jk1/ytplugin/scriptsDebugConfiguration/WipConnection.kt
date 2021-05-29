@@ -49,7 +49,6 @@ import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
 import org.jetbrains.wip.protocol.inspector.DetachedEventData
 
 
-
 class WipConnection : WipRemoteVmConnection() {
 
     private var currentPageTitle: String? = null
@@ -69,7 +68,11 @@ class WipConnection : WipRemoteVmConnection() {
         val combinedCondition = Conditions.or(stopCondition ?: Conditions.alwaysFalse(), resultRejected)
         fun connectToWebSocket() {
             if (webSocketDebuggerUrl != null) {
-                super.doOpen(result, InetSocketAddress(URI(webSocketDebuggerUrl!!).host, URI(webSocketDebuggerUrl!!).port), stopCondition)
+                super.doOpen(
+                    result,
+                    InetSocketAddress(URI(webSocketDebuggerUrl!!).host, URI(webSocketDebuggerUrl!!).port),
+                    stopCondition
+                )
             } else {
                 result.setError("Please check your permissions to debug")
             }
@@ -77,32 +80,32 @@ class WipConnection : WipRemoteVmConnection() {
 
         val connectResult = createBootstrap().handler {
             it.pipeline().addLast(
-                    HttpClientCodec(),
-                    HttpObjectAggregator(1048576 * 10),
-                    object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
-                        override fun channelActive(context: ChannelHandlerContext) {
-                            super.channelActive(context)
-                            formJsonRequest(address, context, result)
-                        }
+                HttpClientCodec(),
+                HttpObjectAggregator(1048576 * 10),
+                object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
+                    override fun channelActive(context: ChannelHandlerContext) {
+                        super.channelActive(context)
+                        formJsonRequest(address, context, result)
+                    }
 
-                        override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
-                            try {
-                                context.pipeline().remove(this)
-                                context.close()
-                                connectionsData = message.content().copy()
-                                getJsonInfo(connectionsData!!, result)
-                                connectToWebSocket()
-                            } catch (e: Throwable) {
-                                handleExceptionOnGettingWebSockets(e, result)
-                            }
-                        }
-
-                        @Suppress("OverridingDeprecatedMember")
-                        override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
-                            result.setError(cause)
+                    override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
+                        try {
+                            context.pipeline().remove(this)
                             context.close()
+                            connectionsData = message.content().copy()
+                            getJsonInfo(connectionsData!!, result)
+                            connectToWebSocket()
+                        } catch (e: Throwable) {
+                            handleExceptionOnGettingWebSockets(e, result)
                         }
                     }
+
+                    @Suppress("OverridingDeprecatedMember")
+                    override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
+                        result.setError(cause)
+                        context.close()
+                    }
+                }
             )
         }.connectRetrying(address, maxAttemptCount, combinedCondition)
 
@@ -112,7 +115,6 @@ class WipConnection : WipRemoteVmConnection() {
     }
 
     private fun getActiveProject(): Project? {
-
         val projects = ProjectManager.getInstance().openProjects
         var activeProject: Project? = null
         for (project in projects) {
@@ -145,7 +147,8 @@ class WipConnection : WipRemoteVmConnection() {
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
 
         try {
-            val repositories = activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
+            val repositories =
+                activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
             val token = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
 
             request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer $token")
@@ -162,7 +165,6 @@ class WipConnection : WipRemoteVmConnection() {
     }
 
     override fun createChannelHandler(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): ChannelHandler {
-
         return object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
             override fun channelActive(context: ChannelHandlerContext) {
                 super.channelActive(context)
@@ -186,8 +188,10 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    fun getJsonInfo(connectionsJson: ByteBuf,
-                    result: AsyncPromise<WipVm>) {
+    fun getJsonInfo(
+        connectionsJson: ByteBuf,
+        result: AsyncPromise<WipVm>
+    ) {
 
         if (!connectionsJson.isReadable) {
             result.setError(JSDebuggerBundle.message("error.websocket.malformed.message"))
@@ -214,10 +218,12 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    override fun connectToPage(context: ChannelHandlerContext,
-                               address: InetSocketAddress,
-                               connectionsJson: ByteBuf,
-                               result: AsyncPromise<WipVm>): Boolean {
+    override fun connectToPage(
+        context: ChannelHandlerContext,
+        address: InetSocketAddress,
+        connectionsJson: ByteBuf,
+        result: AsyncPromise<WipVm>
+    ): Boolean {
 
         //todo
         val debugMessageQueue = createDebugLogger("js.debugger.wip.log", debugLogSuffix ?: "")
@@ -238,42 +244,59 @@ class WipConnection : WipRemoteVmConnection() {
         return !processPageConnections(context, debugMessageQueue, pageConnections, result)
     }
 
-    override fun connectDebugger(page: PageConnection,
-                                       context: ChannelHandlerContext,
-                                       result: AsyncPromise<WipVm>,
-                                       debugMessageQueue: MessagingLogger?) {
-        val handshaker = WebSocketClientHandshakerFactory.newHandshaker(URI.create(page.webSocketDebuggerUrl!!), WebSocketVersion.V13, null, false, null, 100 * 1024 * 1024)
+    override fun connectDebugger(
+        page: PageConnection,
+        context: ChannelHandlerContext,
+        result: AsyncPromise<WipVm>,
+        debugMessageQueue: MessagingLogger?
+    ) {
+        val handshaker = WebSocketClientHandshakerFactory.newHandshaker(
+            URI.create(page.webSocketDebuggerUrl!!),
+            WebSocketVersion.V13,
+            null,
+            false,
+            null,
+            100 * 1024 * 1024
+        )
         val channel = context.channel()
         val vm = DebuggerWipVm(debugEventListener, page.url, channel, debugMessageQueue)
         vm.title = page.title
         vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
             if (it.reason() == "targetCrashed") {
                 close("${ConnectionStatus.DISCONNECTED.statusText} (tab crashed)", ConnectionStatus.DISCONNECTED)
-            }
-            else {
-                close("${ConnectionStatus.DISCONNECTED.statusText} (tab was closed or Web Inspector was opened)", ConnectionStatus.DETACHED)
+            } else {
+                close(
+                    "${ConnectionStatus.DISCONNECTED.statusText} (tab was closed or Web Inspector was opened)",
+                    ConnectionStatus.DETACHED
+                )
             }
         }
 
         channel.pipeline().addLast(
-                object : WebSocketProtocolHandshakeHandler(handshaker) {
-                    override fun completed() {
-                        vm.initDomains()
-                        result.setResult(vm)
-                        vm.ready()
-                    }
-
-                    override fun exceptionCaught(@Suppress("NAME_SHADOWING") context: ChannelHandlerContext, cause: Throwable) {
-                        result.setError(cause)
-                        context.fireExceptionCaught(cause)
-                    }
-                },
-                WebSocketFrameAggregator(NettyUtil.MAX_CONTENT_LENGTH),
-                object : WebSocketProtocolHandler() {
-                    override fun textFrameReceived(@Suppress("NAME_SHADOWING") channel: Channel, message: TextWebSocketFrame) {
-                        vm.textFrameReceived(message)
-                    }
+            object : WebSocketProtocolHandshakeHandler(handshaker) {
+                override fun completed() {
+                    vm.initDomains()
+                    result.setResult(vm)
+                    vm.ready()
                 }
+
+                override fun exceptionCaught(
+                    @Suppress("NAME_SHADOWING") context: ChannelHandlerContext,
+                    cause: Throwable
+                ) {
+                    result.setError(cause)
+                    context.fireExceptionCaught(cause)
+                }
+            },
+            WebSocketFrameAggregator(NettyUtil.MAX_CONTENT_LENGTH),
+            object : WebSocketProtocolHandler() {
+                override fun textFrameReceived(
+                    @Suppress("NAME_SHADOWING") channel: Channel,
+                    message: TextWebSocketFrame
+                ) {
+                    vm.textFrameReceived(message)
+                }
+            }
         )
 
         handshaker.handshake(channel).addChannelListener {
@@ -283,10 +306,12 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    override fun processPageConnections(context: ChannelHandlerContext,
-                                        debugMessageQueue: MessagingLogger?,
-                                        pageConnections: List<PageConnection>,
-                                        result: AsyncPromise<WipVm>): Boolean {
+    override fun processPageConnections(
+        context: ChannelHandlerContext,
+        debugMessageQueue: MessagingLogger?,
+        pageConnections: List<PageConnection>,
+        result: AsyncPromise<WipVm>
+    ): Boolean {
         val debuggablePages = SmartList<PageConnection>()
 
         for (p in pageConnections) {
@@ -301,7 +326,7 @@ class WipConnection : WipRemoteVmConnection() {
         if (url == null) {
             chooseDebuggee(debuggablePages, -1) { item, renderer ->
                 renderer.append("${item.title} ${item.url?.let { "($it)" } ?: ""}",
-                        if (item.webSocketDebuggerUrl == null) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    if (item.webSocketDebuggerUrl == null) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES)
             }.onSuccess {
                 val webSocketDebuggerUrl = it.webSocketDebuggerUrl
                 if (webSocketDebuggerUrl == null) {
@@ -313,7 +338,7 @@ class WipConnection : WipRemoteVmConnection() {
 
                 connectDebugger(it, context, result, debugMessageQueue)
             }
-                    .onError { result.setError(it) }
+                .onError { result.setError(it) }
         } else {
             result.setError(JSDebuggerBundle.message("error.connection.no.page", url))
         }

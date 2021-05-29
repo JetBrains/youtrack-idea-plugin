@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.google.common.collect.ImmutableBiMap
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configuration.EmptyRunProfileState
@@ -20,6 +21,7 @@ import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.util.SmartList
+import com.intellij.util.Url
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
 import com.intellij.util.xmlb.XmlSerializer
@@ -44,16 +46,13 @@ import javax.swing.JPanel
 private const val DEFAULT_PORT = 9229
 private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
-class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String)
-    : LocatableConfigurationBase<Element>(project, factory, name),
+class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
+    LocatableConfigurationBase<Element>(project, factory, name),
     RunConfigurationWithSuppressedDefaultRunAction,
     JSRunProfileWithCompileBeforeLaunchOption,
     DebuggableRunConfiguration {
     @Attribute
     var host: String? = null
-        set(value) {
-            field = value
-        }
 
     @Attribute
     var port: Int = DEFAULT_PORT
@@ -82,7 +81,6 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     @Throws(InvalidDataException::class)
     override fun readExternal(element: Element) {
         super<LocatableConfigurationBase>.readExternal(element)
-
         XmlSerializer.deserializeInto(this, element)
         if (port <= 0) {
             port = DEFAULT_PORT
@@ -91,7 +89,6 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
 
     override fun writeExternal(element: Element) {
         super<LocatableConfigurationBase>.writeExternal(element)
-
         XmlSerializer.serializeInto(this, element, SERIALIZATION_FILTER)
     }
 
@@ -102,7 +99,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     private fun loadScripts() {
-        ApplicationManager.getApplication().executeOnPooledThread (
+        ApplicationManager.getApplication().executeOnPooledThread(
             Callable {
                 ScriptsRulesHandler(project).loadWorkflowRules()
             })
@@ -117,20 +114,23 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         return createWipDebugProcess(socketAddress, session, executionResult)
     }
 
-    private fun createWipDebugProcess(socketAddress: InetSocketAddress,
-                                      session: XDebugSession,
-                                      executionResult: ExecutionResult?): BrowserChromeDebugProcess {
+    private fun createWipDebugProcess(
+        socketAddress: InetSocketAddress,
+        session: XDebugSession,
+        executionResult: ExecutionResult?
+    ): BrowserChromeDebugProcess {
         // todo
         loadScripts()
 
         val connection = WipConnection()
-        val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
+        val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
         connection.open(socketAddress)
         return process
     }
 
-    private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteScriptsDebugConfiguration>() {
+    private inner class WipRemoteDebugConfigurationSettingsEditor :
+        SettingsEditor<JSRemoteScriptsDebugConfiguration>() {
 
         override fun resetEditorFrom(configuration: JSRemoteScriptsDebugConfiguration) {
         }

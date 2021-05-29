@@ -13,10 +13,11 @@ private const val ID = "WorkflowsRemoteDebugType"
 private const val FACTORY_ID = "Workflows Remote Debug"
 
 class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
-        ID,
-        "Remote Debug Of Workflows Scripts",
-        null,
-        AllIcons.RunConfigurations.RemoteDebug), DumbAware {
+    ID,
+    "Remote Debug Of Workflows Scripts",
+    null,
+    AllIcons.RunConfigurations.RemoteDebug
+), DumbAware {
 
     init {
         if (Registry.`is`("youtrack.script.debug", false)) {
@@ -26,7 +27,7 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
                 override fun getId() = FACTORY_ID
 
                 override fun createTemplateConfiguration(project: Project) =
-                        JSRemoteScriptsDebugConfiguration(project, this, configurationTypeDescription)
+                    JSRemoteScriptsDebugConfiguration(project, this, configurationTypeDescription)
 
                 override fun isEditableInDumbMode() = true
             })

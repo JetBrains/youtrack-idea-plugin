@@ -18,22 +18,22 @@ import org.jetbrains.rpc.LOG
 import org.jetbrains.wip.WipVm
 import org.jetbrains.wip.WipWorkerManager
 
-abstract class StandaloneDebuggerWipVm(tabListener: DebugEventListener,
-                                       url: String?,
-                                       channel: Channel,
-                                       val debugMessageQueue: MessagingLogger? = null,
-                                       workerManagerFactory: (WipVm) -> WipWorkerManager = ::WipWorkerManager)
-    : WipVm(tabListener, workerManagerFactory = workerManagerFactory) {
+abstract class StandaloneDebuggerWipVm(
+    tabListener: DebugEventListener,
+    url: String?,
+    channel: Channel,
+    val debugMessageQueue: MessagingLogger? = null,
+    workerManagerFactory: (WipVm) -> WipWorkerManager = ::WipWorkerManager
+) : WipVm(tabListener, workerManagerFactory = workerManagerFactory) {
 
     private val vmHelper = object : StandaloneVmHelper(this, commandProcessor, channel) {
         override fun closeChannel(channel: Channel, promise: AsyncPromise<Any?>) {
             promise.catchError {
                 if (channel.isActive) {
                     channel
-                            .writeAndFlush(CloseWebSocketFrame())
-                            .addChannelListener { doCloseChannel(channel, promise) }
-                }
-                else {
+                        .writeAndFlush(CloseWebSocketFrame())
+                        .addChannelListener { doCloseChannel(channel, promise) }
+                } else {
                     promise.setResult(null)
                 }
             }
@@ -51,11 +51,9 @@ abstract class StandaloneDebuggerWipVm(tabListener: DebugEventListener,
         debugMessageQueue?.add(message.content(), "IN")
         try {
             commandProcessor.processIncomingJson(JsonReaderEx(message.content().readUtf8()))
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             LOG.error(e)
-        }
-        finally {
+        } finally {
             message.release()
         }
     }

@@ -12,16 +12,24 @@ import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.io.JsonReaderEx
 import org.jetbrains.wip.node.NodeWipWorkerManager
 import org.jetbrains.wip.protocol.runtime.Enable
+import org.jetbrains.wip.protocol.runtime.ExecutionContextDestroyedEventData.TYPE
 
-class DebuggerWipVm(tabListener: DebugEventListener,
-                    url: String?,
-                    channel: Channel,
-                    debugMessageQueue: MessagingLogger? = null)
-    : StandaloneDebuggerWipVm(tabListener, url, channel, debugMessageQueue, workerManagerFactory = ::NodeWipWorkerManager) {
+class DebuggerWipVm(
+    tabListener: DebugEventListener,
+    url: String?,
+    channel: Channel,
+    debugMessageQueue: MessagingLogger? = null
+) : StandaloneDebuggerWipVm(
+    tabListener,
+    url,
+    channel,
+    debugMessageQueue,
+    workerManagerFactory = ::NodeWipWorkerManager
+) {
 
     init {
         // in browser ExecutionContextDestroyed is dispatched on page reload, we don't want to disconnect in this case
-        this.commandProcessor.eventMap.add(org.jetbrains.wip.protocol.runtime.ExecutionContextDestroyedEventData.TYPE) {
+        this.commandProcessor.eventMap.add(TYPE) {
             if (it.executionContextId == 1) {
                 attachStateManager.detach()
             }
@@ -46,8 +54,7 @@ class DebuggerWipVm(tabListener: DebugEventListener,
             val note = "Execution could not be paused on breakpoint for longer than three minutes"
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.INFORMATION)
-        }
-        finally {
+        } finally {
             message.release()
         }
     }

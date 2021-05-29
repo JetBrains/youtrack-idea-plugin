@@ -57,7 +57,6 @@ class ScriptsRulesHandler(val project: Project) {
     }
 
     private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
-
         ApplicationManager.getApplication().invokeLater {
             val psiFileFactory = PsiFileFactory.getInstance(project)
             val file: PsiFile = psiFileFactory.createFileFromText(name, JS, text as @NotNull @NonNls CharSequence)
