@@ -114,7 +114,7 @@
                 implementation="com.github.jk1.ytplugin.scriptsDebugConfiguration.JSRemoteScriptsDebugConfigurationType"/>
 
         <registryKey key="youtrack.script.debug" defaultValue="false" restartRequired="true"
-                     description="Enables YouTrack workflow debug configuration"/>
+                     description="Enables YouTrack scripts debug configuration"/>
 
     </extensions>
 </idea-plugin>

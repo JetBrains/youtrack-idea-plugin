@@ -83,7 +83,6 @@ class RemoteDebuggingFileFinder(
 
 
 fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
-// when clicking in tree could be useful for the first try
     val url = parsedUrl.trimParameters().toDecodedForm()
     val filename = url.split("/")[url.split("/").size - 1]
 
@@ -96,7 +95,6 @@ fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
     if (child != null) {
         return child
     }
-
     return null
 }
 

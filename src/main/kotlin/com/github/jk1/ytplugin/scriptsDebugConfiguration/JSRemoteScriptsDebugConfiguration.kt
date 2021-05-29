@@ -21,7 +21,6 @@ import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.util.SmartList
-import com.intellij.util.Url
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
 import com.intellij.util.xmlb.XmlSerializer
@@ -119,9 +118,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         session: XDebugSession,
         executionResult: ExecutionResult?
     ): BrowserChromeDebugProcess {
-        // todo
         loadScripts()
-
         val connection = WipConnection()
         val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
@@ -132,8 +129,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     private inner class WipRemoteDebugConfigurationSettingsEditor :
         SettingsEditor<JSRemoteScriptsDebugConfiguration>() {
 
-        override fun resetEditorFrom(configuration: JSRemoteScriptsDebugConfiguration) {
-        }
+        override fun resetEditorFrom(configuration: JSRemoteScriptsDebugConfiguration) {}
 
         override fun applyEditorTo(configuration: JSRemoteScriptsDebugConfiguration) {
             val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
