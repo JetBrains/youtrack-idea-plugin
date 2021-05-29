@@ -16,7 +16,7 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
         ID,
         "Remote Debug Of Workflows Scripts",
         null,
-        AllIcons.Actions.IntentionBulbGrey), DumbAware {
+        AllIcons.RunConfigurations.RemoteDebug), DumbAware {
 
     init {
         if (Registry.`is`("youtrack.script.debug", false)) {

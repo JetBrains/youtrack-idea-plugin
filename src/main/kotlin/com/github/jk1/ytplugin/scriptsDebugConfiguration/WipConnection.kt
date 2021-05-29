@@ -119,7 +119,6 @@ class WipConnection : WipRemoteVmConnection() {
 
             var window: Window? = null
             // required to avoid threads exception
-            //todo check
             try {
                 ApplicationManager.getApplication().invokeAndWait {
                     window = WindowManager.getInstance().suggestParentWindow(project)
@@ -141,7 +140,7 @@ class WipConnection : WipRemoteVmConnection() {
         // get active project to detect YouTrack repo
         val activeProject = getActiveProject()
 
-        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/scriptsdebugger/json")
+        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/scripts/debug/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
 
