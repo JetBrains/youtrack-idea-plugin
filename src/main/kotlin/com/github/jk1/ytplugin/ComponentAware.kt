@@ -53,6 +53,7 @@ interface ComponentAware {
     val pluginApiComponent: YouTrackPluginApiService
         get() = project.getService(YouTrackPluginApiService::class.java) as YouTrackPluginApiService
 
+
     val timeTrackerComponent: TimeTracker
         get() = project.getService(TimeTracker::class.java)!!
 

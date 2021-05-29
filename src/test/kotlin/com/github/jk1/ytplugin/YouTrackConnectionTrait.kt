@@ -17,4 +17,7 @@ interface YouTrackConnectionTrait {
     val token: String
         get() = "perm:aWRlcGx1Z2lu.NjItMA==.7iaoaBCduVgrbAj9BkQSxksQLQcEte"
 
+    val applicationPassword: String
+        get() = "YOJSM4CNCD8ZKBSYI59H"
+
 }

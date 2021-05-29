@@ -8,21 +8,20 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils
-import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.*
+
+import org.apache.http.client.config.RequestConfig
 
 
 class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     private var onSuccess: (method: HttpRequest) -> Unit = {}
-
+    private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
     private var onApplicationError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
 
-    private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
     private val credentialsChecker = ComponentAware.of(project).credentialsCheckerComponent
 
     private val String.b64Encoded: String
@@ -31,23 +30,29 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     fun check() {
         logger.debug("CHECK CONNECTION FOR ${repository.url}")
-        val method = HttpGet(repository.url.trimEnd('/') + "/users/me?fields=name")
-//        method.setHeader("Authorization", "Bearer " + repository.password)
-        if (credentialsChecker.isMatchingAppPassword(repository.password) && !(credentialsChecker.isMatchingBearerToken(repository.password))){
+        val method = HttpGet(repository.url.trimEnd('/') + "/api/users/me?fields=name")
+        if (credentialsChecker.isMatchingAppPassword(repository.password) &&
+            !(credentialsChecker.isMatchingBearerToken(repository.password))) {
             repository.username = repository.password.split(Regex(":"), 2).first()
             repository.password = repository.password.split(Regex(":"), 2).last()
         }
-        val auth = "${repository.username}:${repository.password}".b64Encoded
-        method.setHeader("Authorization", "Basic $auth")
+        val authCredentials = "${repository.username}:${repository.password}".b64Encoded
+        method.setHeader("Authorization", "Basic $authCredentials")
 
         try {
-            // todo: proxy
-            val response = HttpClientBuilder.create().build().execute(method)
-            val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8")).asJsonObject.get("name").toString()
-            if (response.statusLine.statusCode == 200 && user != "guest") {
-                logger.debug("connection status: SUCCESS")
-                method.releaseConnection()
-                onSuccess(method)
+            val config = RequestConfig.custom().setConnectTimeout(60000).build()
+            val response = HttpClientBuilder.create()
+                .disableRedirectHandling()
+                .setDefaultRequestConfig(config).build()
+                .execute(method)
+            if (response.statusLine.statusCode == 200) {
+                val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
+                    .asJsonObject.get("name").toString()
+                if (user != "\"guest\""){
+                    logger.debug("connection status: SUCCESS")
+                    method.releaseConnection()
+                    onSuccess(method)
+                }
             } else {
                 logger.debug("connection status: APPLICATION ERROR")
                 method.releaseConnection()

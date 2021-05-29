@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.setup
 
-import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -58,7 +57,7 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun isValidYouTrackVersion(repository: YouTrackRepository, project: Project): Boolean {
+    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
         val client = HttpClientBuilder.create().build()
         val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
         builder.addParameter("fields", "version")
@@ -89,11 +88,12 @@ class SetupRepositoryConnector {
         return false
     }
 
+
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            noteState = if (isValidYouTrackVersion(repository, project)) {
-                repository.url = request.requestLine.uri.replace("/users/me?fields=name", "")
+            noteState = if (isValidYouTrackVersion(repository)) {
+                repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
             } else {
@@ -107,8 +107,8 @@ class SetupRepositoryConnector {
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = response.getFirstHeader("Location").value
-                    if (!location.contains("/waitInstanceStartup/")){
-                        repository.url = location.replace("/users/me?fields=name", "")
+                    if (!location.contains("/waitInstanceStartup/")) {
+                        repository.url = location.replace("/api/users/me?fields=name", "")
                     } else {
                         if (!request.requestLine.uri.contains("/youtrack")) {
                             logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
@@ -193,6 +193,7 @@ enum class NotifierState {
     UNKNOWN_HOST,
     INVALID_TOKEN,
     INVALID_VERSION,
+    INVALID_PROTOCOL,
     NULL_PROXY_HOST,
     TIMEOUT,
     INCORRECT_CERTIFICATE,
