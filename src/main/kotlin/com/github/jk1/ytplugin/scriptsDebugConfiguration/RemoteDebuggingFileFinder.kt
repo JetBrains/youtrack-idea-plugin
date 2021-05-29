@@ -7,9 +7,6 @@ import com.google.common.collect.ImmutableBiMap
 import com.intellij.javascript.debugger.*
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -19,8 +16,6 @@ import com.intellij.util.Url
 import com.intellij.util.Urls
 import org.jetbrains.io.LocalFileFinder
 
-
-private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
 class RemoteDebuggingFileFinder(
     private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
@@ -36,33 +31,6 @@ class RemoteDebuggingFileFinder(
         }
         return parent?.findNavigatable(url, project)
     }
-
-    override fun findFile(url: Url, project: Project): VirtualFile? {
-        return findByMappings(url, mappings)
-    }
-
-    override fun guessFile(url: Url, project: Project): VirtualFile? {
-        parent?.findFile(url, project)?.let {
-            return it
-        }
-
-        var predefinedMappings = project.getUserData(PREDEFINED_MAPPINGS_KEY)
-        if (predefinedMappings == null) {
-            predefinedMappings = createPredefinedMappings(project)
-            project.putUserData(PREDEFINED_MAPPINGS_KEY, predefinedMappings)
-        }
-
-        return findByMappings(url, predefinedMappings) ?: parent?.guessFile(url, project)
-    }
-
-    override fun searchesByName(): Boolean = true
-
-    private fun createPredefinedMappings(project: Project): BiMap<String, VirtualFile> {
-        val projectDir = project.guessProjectDir()
-        return if (projectDir != null) ImmutableBiMap.of("webpack:///.", projectDir) else ImmutableBiMap.of()
-    }
-
-    override fun canSetRemoteUrl(file: VirtualFile, project: Project): Boolean = ProjectRootManager.getInstance(project).fileIndex.isInContent(file)
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
@@ -100,7 +68,6 @@ fun createUrlToLocalMap(mappings: List<RemoteUrlMappingBean>): BiMap<String, Vir
     return map
 }
 
-
 private fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
 
     val url = parsedUrl.trimParameters().toDecodedForm()
@@ -116,42 +83,5 @@ private fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
         return child
     }
 
-    return null
-}
-
-
-private fun findByMappings(parsedUrl: Url, mappings: BiMap<String, VirtualFile>): VirtualFile? {
-    if (mappings.isEmpty()) {
-        return null
-    }
-
-    val url = parsedUrl.trimParameters().toDecodedForm()
-    var i = url.length
-    while (i != -1) {
-        val prefix = url.substring(0, i)
-        val file = mappings[prefix]
-        if (file != null) {
-            if (i == url.length) {
-                return file
-            }
-            if (i + 1 == url.length) {
-                // empty string, try to find index file
-                val indexFile = org.jetbrains.builtInWebServer.findIndexFile(file)
-                if (indexFile == null) {
-                    break
-                } else {
-                    return indexFile
-                }
-            }
-
-            val filename = url.substring(i + 1)
-            val child = file.findFileByRelativePath(filename)
-            if (child != null) {
-                return child
-            }
-            break
-        }
-        i = url.lastIndexOf('/', i - 1)
-    }
     return null
 }

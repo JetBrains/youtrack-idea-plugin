@@ -33,7 +33,6 @@ import org.apache.http.HttpHost
 import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
-import java.awt.BorderLayout
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URL
@@ -47,9 +46,9 @@ private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
 class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String)
     : LocatableConfigurationBase<Element>(project, factory, name),
-        RunConfigurationWithSuppressedDefaultRunAction,
-        JSRunProfileWithCompileBeforeLaunchOption,
-        DebuggableRunConfiguration {
+    RunConfigurationWithSuppressedDefaultRunAction,
+    JSRunProfileWithCompileBeforeLaunchOption,
+    DebuggableRunConfiguration {
     @Attribute
     var host: String? = null
         set(value) {
@@ -97,13 +96,16 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
+        return host?.let {
+            HttpInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
+        } ?: HttpInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
+    }
+
+    private fun loadScripts() {
         ApplicationManager.getApplication().executeOnPooledThread (
             Callable {
                 ScriptsRulesHandler(project).loadWorkflowRules()
             })
-        return host?.let {
-            HttpInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
-        } ?: HttpInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
     }
 
     override fun createDebugProcess(
@@ -118,28 +120,19 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     private fun createWipDebugProcess(socketAddress: InetSocketAddress,
                                       session: XDebugSession,
                                       executionResult: ExecutionResult?): BrowserChromeDebugProcess {
+        // todo
+        loadScripts()
+
         val connection = WipConnection()
         val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
-
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
         connection.open(socketAddress)
         return process
     }
 
     private inner class WipRemoteDebugConfigurationSettingsEditor : SettingsEditor<JSRemoteScriptsDebugConfiguration>() {
-        private val filesMappingPanel: ScriptsLocalFilesMappingPanel
-
-        init {
-            filesMappingPanel = object : ScriptsLocalFilesMappingPanel(project, BorderLayout()) {
-                override fun initUI() {
-                    add(mappingTreePanel)
-                    super.initUI()
-                }
-            }
-        }
 
         override fun resetEditorFrom(configuration: JSRemoteScriptsDebugConfiguration) {
-            filesMappingPanel.resetEditorFrom(configuration.mappings, true)
         }
 
         override fun applyEditorTo(configuration: JSRemoteScriptsDebugConfiguration) {
@@ -148,15 +141,13 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                 configuration.host = URL(repositories[0].url).host
                 configuration.port = URL(repositories[0].url).port
             }
-            filesMappingPanel.applyEditorTo(configuration)
         }
 
         override fun createEditor(): JComponent {
             val protocolPanel = JPanel(VerticalFlowLayout())
-            filesMappingPanel.initUI()
             return FormBuilder.createFormBuilder()
-                    .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
-                    .panel
+                .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
+                .panel
         }
     }
 

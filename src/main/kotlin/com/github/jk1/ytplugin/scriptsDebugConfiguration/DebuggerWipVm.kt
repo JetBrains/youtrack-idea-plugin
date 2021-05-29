@@ -11,6 +11,7 @@ import org.jetbrains.debugger.DebugEventListener
 import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.io.JsonReaderEx
 import org.jetbrains.wip.node.NodeWipWorkerManager
+import org.jetbrains.wip.protocol.runtime.Enable
 
 class DebuggerWipVm(tabListener: DebugEventListener,
                     url: String?,
@@ -29,7 +30,7 @@ class DebuggerWipVm(tabListener: DebugEventListener,
 
     override fun initDomains() {
         super.initDomains()
-        commandProcessor.send(org.jetbrains.wip.protocol.runtime.Enable())
+        commandProcessor.send(Enable())
         enableWorkers()
     }
 
