@@ -33,7 +33,6 @@ import org.apache.http.HttpHost
 import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
-import org.jetbrains.debugger.connection.VmConnection
 import java.awt.BorderLayout
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -107,13 +106,13 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         } ?: HttpInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
     }
 
-    override fun createDebugProcess(socketAddress: InetSocketAddress,
-                                    session: XDebugSession,
-                                    executionResult: ExecutionResult?,
-                                    environment: ExecutionEnvironment): XDebugProcess {
-        val debugProcess: JavaScriptDebugProcess<VmConnection<*>> =
-                createWipDebugProcess(socketAddress, session, executionResult)
-        return debugProcess
+    override fun createDebugProcess(
+        socketAddress: InetSocketAddress,
+        session: XDebugSession,
+        executionResult: ExecutionResult?,
+        environment: ExecutionEnvironment
+    ): XDebugProcess {
+        return createWipDebugProcess(socketAddress, session, executionResult)
     }
 
     private fun createWipDebugProcess(socketAddress: InetSocketAddress,
@@ -122,7 +121,6 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val connection = WipConnection()
         val finder = RemoteDebuggingFileFinder(createUrlToLocalMap(mappings), LocalFileSystemFileFinder())
 
-        // TODO process should be NodeChromeDebugProcess depending on PageConnection.type
         val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
         connection.open(socketAddress)
         return process

@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
-
 import com.intellij.util.Urls
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.readUtf8
@@ -26,7 +25,6 @@ abstract class StandaloneDebuggerWipVm(tabListener: DebugEventListener,
                                        workerManagerFactory: (WipVm) -> WipWorkerManager = ::WipWorkerManager)
     : WipVm(tabListener, workerManagerFactory = workerManagerFactory) {
 
-    @Suppress("LeakingThis")
     private val vmHelper = object : StandaloneVmHelper(this, commandProcessor, channel) {
         override fun closeChannel(channel: Channel, promise: AsyncPromise<Any?>) {
             promise.catchError {
@@ -46,7 +44,6 @@ abstract class StandaloneDebuggerWipVm(tabListener: DebugEventListener,
 
     init {
         debugMessageQueue?.closeOnChannelClose(channel)
-
         currentUrl = url?.let { Urls.newFromEncoded(url) }
     }
 

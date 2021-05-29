@@ -34,14 +34,10 @@ import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
 import org.jetbrains.wip.WipVm
 import java.net.InetSocketAddress
 import java.net.URI
-
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-
 import com.intellij.openapi.project.ProjectManager
 import java.awt.Window
-
-
 import com.intellij.util.io.socketConnection.ConnectionStatus
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
@@ -207,7 +203,7 @@ class WipConnection : WipRemoteVmConnection() {
             reader.beginObject()
             while (reader.hasNext()) {
                 when (reader.nextName()) {
-                    "url" -> pageUrl = reader.nextString()
+                    "devtoolsFrontendUrl" -> pageUrl = reader.nextString()
                     "title" -> title = reader.nextString()
                     "type" -> type = reader.nextString()
                     "webSocketDebuggerUrl" -> webSocketDebuggerUrl = reader.nextString()
@@ -224,6 +220,7 @@ class WipConnection : WipRemoteVmConnection() {
                                connectionsJson: ByteBuf,
                                result: AsyncPromise<WipVm>): Boolean {
 
+        //todo
         val debugMessageQueue = createDebugLogger("js.debugger.wip.log", debugLogSuffix ?: "")
         debugMessageQueue?.let { logger ->
             logger.add(connectionsJson, "IN")
@@ -267,7 +264,6 @@ class WipConnection : WipRemoteVmConnection() {
                         vm.ready()
                     }
 
-                    @Suppress("OverridingDeprecatedMember")
                     override fun exceptionCaught(@Suppress("NAME_SHADOWING") context: ChannelHandlerContext, cause: Throwable) {
                         result.setError(cause)
                         context.fireExceptionCaught(cause)

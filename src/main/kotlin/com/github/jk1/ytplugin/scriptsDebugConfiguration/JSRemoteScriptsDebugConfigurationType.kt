@@ -35,3 +35,4 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
         }
     }
 }
+

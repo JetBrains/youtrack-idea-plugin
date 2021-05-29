@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.intellij.notification.NotificationType
@@ -60,7 +59,6 @@ class ScriptsRulesHandler(val project: Project) {
     private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
 
         ApplicationManager.getApplication().invokeLater {
-
             val psiFileFactory = PsiFileFactory.getInstance(project)
             val file: PsiFile = psiFileFactory.createFileFromText(name, JS, text as @NotNull @NonNls CharSequence)
 
@@ -80,7 +78,6 @@ class ScriptsRulesHandler(val project: Project) {
     private fun createScriptDirectory(name: String): PsiDirectory {
         var targetDirectory: PsiDirectory? = null
 
-
         ApplicationManager.getApplication().invokeAndWait {
             ApplicationManager.getApplication().runWriteAction {
                 // find or create directory
@@ -94,6 +91,5 @@ class ScriptsRulesHandler(val project: Project) {
             }
         }
         return targetDirectory!!
-
     }
 }
