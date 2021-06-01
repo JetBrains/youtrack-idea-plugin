@@ -114,6 +114,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     fun stop() {
         if (isRunning) {
+            // What will happen if I have chanched timezone or I suspend laptop?
             timeInMills = System.currentTimeMillis() - startTime - pausedTime
             // to be used for the post request later
             recordedTime = formatTimePeriod(timeInMills)
