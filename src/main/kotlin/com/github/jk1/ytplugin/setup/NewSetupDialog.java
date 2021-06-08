@@ -1,18 +1,12 @@
 // Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setup;
 
-import com.intellij.codeInsight.codeFragment.CodeFragment;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.refactoring.RefactoringBundle;
-import com.intellij.refactoring.extractMethod.ExtractMethodDecorator;
 import com.intellij.refactoring.extractMethod.ExtractMethodSettings;
-import com.intellij.refactoring.extractMethod.ExtractMethodValidator;
-import com.intellij.refactoring.ui.ComboBoxVisibilityPanel;
 import com.intellij.refactoring.ui.MethodSignatureComponent;
 import com.intellij.refactoring.util.AbstractVariableData;
 import com.intellij.refactoring.util.SimpleParameterTablePanel;
@@ -22,70 +16,82 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class NewSetupDialog<T> extends DialogWrapper implements ExtractMethodSettings<T> {
-  private JPanel myContentPane;
-  private JTabbedPane tabbedPane1;
-  private JTextField textField1;
-  private JPasswordField passwordField1;
-  private JRadioButton automaticRadioButton;
-  private JRadioButton manualRadioButton;
-  private JRadioButton offRadioButton;
-  private JCheckBox whenClosingTheProjectCheckBox;
-  private JCheckBox whenCommitingChangesCheckBox;
+public class NewSetupDialog extends DialogWrapper implements ExtractMethodSettings {
+  private JPanel rootPane;
+  private JTabbedPane mainPane;
+  private JTextField inputUrlTextPane;
+  private JPasswordField inputTokenField;
+  private JRadioButton isAutoTrackingEnabledRadioButton;
+  private JRadioButton isManualModeRadioButton;
+  private JRadioButton noTrackingButton;
+  private JCheckBox postWhenProjectClosedCheckbox;
+  private JCheckBox postWhenCommitCheckbox;
   private JCheckBox onASetScheduleCheckBox;
   private JButton saveButton;
   private JButton cancelButton;
+  private JButton testConnectionButton;
+  private JButton proxyButton;
+  private JButton okButton;
+  private JButton cancelButton1;
+  private JLabel serverUrlLabel;
+  private JLabel advertiserLabel;
+  private JLabel getTokenInfoLabel;
+  private JCheckBox shareUrlCheckBox;
+  private JCheckBox useProxyCheckBox;
+  private JLabel tokenLabel;
+  private JLabel notifyFieldLabel;
+  private JPanel autoPanel;
+  private JPanel trackingModePanel;
+  private JLabel typeLabel;
+  private JTextField commentTextField;
+  private JLabel commentLabel;
+  private JComboBox typeComboBox;
+  private JPanel preferencesPanel;
+  private JTextField inactivityHourInputField;
+  private JTextField inactivityMinutesInputField;
+  private JLabel hourLabel1;
+  private JLabel minuteLabel1;
+  private JPanel inactivityPeriodPanel;
+  private JLabel inactivityTextField;
+  private JTextField scheduledHour;
+  private JTextField scheduledMinutes;
+  private JLabel minuteLabel2;
+  private JLabel hourLabel2;
+  private JPanel timePanel;
+  private JPanel timeTrackingTab;
+  private JPanel connectionTab;
   private SimpleParameterTablePanel myParametersPanel;
   private JTextField myMethodNameTextField;
   private MethodSignatureComponent mySignaturePreviewTextArea;
   private JTextArea myOutputVariablesTextArea;
-  private final ComboBoxVisibilityPanel<T> myVisibilityComboBox;
   private final Project myProject;
   private final String myDefaultName;
-  private final ExtractMethodValidator myValidator;
-  private final ExtractMethodDecorator<T> myDecorator;
 
   private AbstractVariableData[] myVariableData;
   private Map<String, AbstractVariableData> myVariablesMap;
 
-  private final List<String> myArguments;
-  private final ArrayList<String> myOutputVariables;
-  private final FileType myFileType;
+  private SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
 
-  public NewSetupDialog(final Project project,
-                        final String defaultName,
-                        final CodeFragment fragment,
-                        final T[] visibilityVariants,
-                        final ExtractMethodValidator validator,
-                        final ExtractMethodDecorator<T> decorator,
-                        final FileType type) {
+  public NewSetupDialog(final Project project) {
     super(project, true);
     myProject = project;
-    myDefaultName = defaultName;
-    myValidator = validator;
-    myDecorator = decorator;
-    myFileType = type;
-
-    myVisibilityComboBox = new ComboBoxVisibilityPanel<>(visibilityVariants);
-    myVisibilityComboBox.setVisible(visibilityVariants.length > 1);
-    getRememberedVisibility(visibilityVariants).ifPresent(myVisibilityComboBox::setVisibility);
-    myVisibilityComboBox.addListener(event -> rememberCurrentVisibility());
+    myDefaultName = "YouTrack";
 
     $$$setupUI$$$();
 
-    myArguments = new ArrayList<>(fragment.getInputVariables());
-    Collections.sort(myArguments);
-    myOutputVariables = new ArrayList<>(fragment.getOutputVariables());
-    Collections.sort(myOutputVariables);
-    setModal(true);
-    setTitle(RefactoringBundle.message("extract.method.title"));
     init();
   }
 
   private void $$$setupUI$$$() {
+  }
+  @Override
+  public void show() {
+    init();
+    super.show();
   }
 
   @Override
@@ -98,21 +104,15 @@ public class NewSetupDialog<T> extends DialogWrapper implements ExtractMethodSet
     myMethodNameTextField.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(@NotNull DocumentEvent e) {
-        updateOutputVariables();
-        updateSignature();
-        updateOkStatus();
       }
     });
 
 
-    myVariableData = createVariableDataByNames(myArguments);
     myVariablesMap = createVariableMap(myVariableData);
     myParametersPanel.init(myVariableData);
-
-    updateOutputVariables();
-    updateSignature();
-    updateOkStatus();
   }
+
+
 
   @Override
   public JComponent getPreferredFocusedComponent() {
@@ -147,16 +147,13 @@ public class NewSetupDialog<T> extends DialogWrapper implements ExtractMethodSet
 
   @Override
   protected void doOKAction() {
-    final String error = myValidator.check(getMethodName());
-    if (error != null){
       if (ApplicationManager.getApplication().isUnitTestMode()){
-        Messages.showInfoMessage(error, RefactoringBundle.message("error.title"));
         return;
       }
-      if (Messages.showOkCancelDialog(error + ". " + RefactoringBundle.message("do.you.wish.to.continue"), RefactoringBundle.message("warning.title"), Messages.getWarningIcon()) != Messages.OK){
+      if (Messages.showOkCancelDialog( RefactoringBundle.message("do.you.wish.to.continue"), RefactoringBundle.message("warning.title"), Messages.getWarningIcon()) != Messages.OK){
         return;
       }
-    }
+
     super.doOKAction();
   }
 
@@ -167,69 +164,16 @@ public class NewSetupDialog<T> extends DialogWrapper implements ExtractMethodSet
 
   @Override
   protected JComponent createCenterPanel() {
-    return myContentPane;
+    return rootPane;
   }
 
-  private void createUIComponents() {
-    myParametersPanel = new SimpleParameterTablePanel(myValidator::isValidName) {
-      @Override
-      protected void doCancelAction() {
-        NewSetupDialog.this.doCancelAction();
-      }
-
-      @Override
-      protected void doEnterAction() {
-        doOKAction();
-      }
-
-      @Override
-      protected void updateSignature() {
-        updateOutputVariables();
-        NewSetupDialog.this.updateSignature();
-      }
-    };
-    mySignaturePreviewTextArea = new MethodSignatureComponent("", myProject, myFileType);
-  }
 
   @NotNull
   private String getPersistenceId() {
     return "visibility.combobox." + getClass().getName();
   }
 
-  private void rememberCurrentVisibility() {
-    PropertiesComponent.getInstance().setValue(getPersistenceId(), Optional.ofNullable(getVisibility()).map(Object::toString).orElse(null));
-  }
 
-  private Optional<T> getRememberedVisibility(T[] visibilityVariants) {
-    final String stringValue = PropertiesComponent.getInstance().getValue(getPersistenceId());
-    return Stream.of(visibilityVariants).filter(visibility -> visibility.toString().equals(stringValue)).findAny();
-  }
-
-  private void updateOutputVariables() {
-    final StringBuilder builder = new StringBuilder();
-    boolean first = true;
-    for (String variable : myOutputVariables) {
-      if (myVariablesMap!=null){
-        final AbstractVariableData data = myVariablesMap.get(variable);
-        final String outputName = data != null ? data.getName() : variable;
-        if (first){
-          first = false;
-        } else {
-          builder.append(", ");
-        }
-        builder.append(outputName);
-      }
-    }
-    myOutputVariablesTextArea.setText(builder.length() > 0 ? builder.toString() : RefactoringBundle.message("refactoring.extract.method.dialog.empty"));
-  }
-
-  private void updateSignature() {
-    mySignaturePreviewTextArea.setSignature(myDecorator.createMethodSignature(this));
-  }
-
-  private void updateOkStatus() {
-    setOKActionEnabled(myValidator.isValidName(getMethodName()));
-  }
 
   @NotNull
   @Override
@@ -244,7 +188,8 @@ public class NewSetupDialog<T> extends DialogWrapper implements ExtractMethodSet
 
   @Nullable
   @Override
-  public T getVisibility() {
-    return myVisibilityComboBox.getVisibility();
+  public Object getVisibility() {
+    return null;
   }
+
 }
