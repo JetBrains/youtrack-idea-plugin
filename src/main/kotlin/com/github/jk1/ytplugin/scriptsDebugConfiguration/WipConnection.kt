@@ -272,10 +272,10 @@ class WipConnection : WipRemoteVmConnection() {
         vm.title = page.title
         vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
             if (it.reason() == "targetCrashed") {
-                close("${ConnectionStatus.DISCONNECTED.statusText} (tab crashed)", ConnectionStatus.DISCONNECTED)
+                close("${ConnectionStatus.DISCONNECTED.statusText} (debugger crashed)", ConnectionStatus.DISCONNECTED)
             } else {
                 close(
-                    "${ConnectionStatus.DISCONNECTED.statusText} (tab was closed or Web Inspector was opened)",
+                    "${ConnectionStatus.DISCONNECTED.statusText} (debugger was closed or Web Inspector was opened)",
                     ConnectionStatus.DETACHED
                 )
             }

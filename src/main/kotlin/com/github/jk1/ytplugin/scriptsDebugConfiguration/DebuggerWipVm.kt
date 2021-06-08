@@ -25,15 +25,6 @@ class DebuggerWipVm(
     workerManagerFactory = ::NodeWipWorkerManager
 ) {
 
-    init {
-        // in browser ExecutionContextDestroyed is dispatched on page reload, we don't want to disconnect in this case
-        this.commandProcessor.eventMap.add(TYPE) {
-            if (it.executionContextId == 1) {
-                attachStateManager.detach()
-            }
-        }
-    }
-
     override fun initDomains() {
         super.initDomains()
         commandProcessor.send(Enable())
