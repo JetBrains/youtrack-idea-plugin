@@ -236,23 +236,21 @@ class WipConnection : WipRemoteVmConnection() {
         result: AsyncPromise<WipVm>
     ): Boolean {
 
-        //todo
-        val debugMessageQueue = createDebugLogger("js.debugger.wip.log", debugLogSuffix ?: "")
-        debugMessageQueue?.let { logger ->
-            logger.add(connectionsJson, "IN")
-            result.onError {
-                logger.add("\"$it\"", "Error")
-                logger.close()
-            }
+        logger.debug("On connection to page: $connectionsJson")
+        result.onError {
+            logger.debug("Error: $it")
         }
 
         val pageConnections = SmartList<PageConnection>()
 
+        // read is allowed if the user can update any project  (e.g. he can read this workflow and write the similar one for his own projects);
+        // read project permission for any project is not sufficient as reading workflows without being able to update
+        // any of them seems to be a security leak
         if (webSocketDebuggerUrl == null)
-            result.setError("Please check your permissions to debug")
+            result.setError("Please check your permissions, you should be able to update any project to debug scripts")
 
         pageConnections.add(PageConnection(pageUrl, title, type, webSocketDebuggerUrl, id, address))
-        return !processPageConnections(context, debugMessageQueue, pageConnections, result)
+        return !processPageConnections(context,null, pageConnections, result)
     }
 
     override fun connectDebugger(
@@ -270,7 +268,7 @@ class WipConnection : WipRemoteVmConnection() {
             100 * 1024 * 1024
         )
         val channel = context.channel()
-        val vm = DebuggerWipVm(debugEventListener, page.url, channel, debugMessageQueue)
+        val vm = DebuggerWipVm(debugEventListener, page.url, channel)
         vm.title = page.title
         vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
             if (it.reason() == "targetCrashed") {
@@ -321,7 +319,7 @@ class WipConnection : WipRemoteVmConnection() {
         context: ChannelHandlerContext,
         debugMessageQueue: MessagingLogger?,
         pageConnections: List<PageConnection>,
-        result: AsyncPromise<WipVm>
+        result: AsyncPromise<WipVm>,
     ): Boolean {
         val debuggablePages = SmartList<PageConnection>()
 
@@ -329,7 +327,7 @@ class WipConnection : WipRemoteVmConnection() {
             if (url == null) {
                 debuggablePages.add(p)
             } else if (Urls.equals(url, Urls.newFromEncoded(p.url!!), SystemInfo.isFileSystemCaseSensitive, true)) {
-                connectDebugger(p, context, result, debugMessageQueue)
+                connectDebugger(p, context, result, null)
                 return true
             }
         }
@@ -347,7 +345,7 @@ class WipConnection : WipRemoteVmConnection() {
 
                 currentPageTitle = it.title
 
-                connectDebugger(it, context, result, debugMessageQueue)
+                connectDebugger(it, context, result, null)
             }
                 .onError { result.setError(it) }
         } else {
