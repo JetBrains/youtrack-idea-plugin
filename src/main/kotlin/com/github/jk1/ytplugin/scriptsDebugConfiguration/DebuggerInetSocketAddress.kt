@@ -5,7 +5,7 @@ import org.apache.http.util.Args
 import java.net.InetAddress
 import java.net.InetSocketAddress
 
-class CustomInetSocketAddress(private val httphost: HttpHost?, addr: InetAddress?, port: Int) :
+class DebuggerInetSocketAddress(private val httphost: HttpHost?, addr: InetAddress?, port: Int) :
     InetSocketAddress(addr, port) {
 
     private val DEFAULT_PORT = 9229

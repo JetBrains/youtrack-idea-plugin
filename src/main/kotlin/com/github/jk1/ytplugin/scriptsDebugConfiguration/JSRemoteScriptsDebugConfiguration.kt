@@ -91,11 +91,9 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
-        val addr = host?.let {
-            CustomInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
-        } ?: CustomInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
-        println("addr: ${addr.toString()}")
-        return addr
+        return host?.let {
+            DebuggerInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
+        } ?: DebuggerInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
     }
 
     private fun loadScripts() {
