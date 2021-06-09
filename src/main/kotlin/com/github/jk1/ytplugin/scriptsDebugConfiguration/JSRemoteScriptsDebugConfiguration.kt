@@ -31,7 +31,6 @@ import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
 import org.apache.http.HttpHost
-import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import java.net.InetAddress
@@ -92,9 +91,11 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
-        return host?.let {
-            HttpInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
-        } ?: HttpInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
+        val addr = host?.let {
+            CustomInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
+        } ?: CustomInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
+        println("addr: ${addr.toString()}")
+        return addr
     }
 
     private fun loadScripts() {

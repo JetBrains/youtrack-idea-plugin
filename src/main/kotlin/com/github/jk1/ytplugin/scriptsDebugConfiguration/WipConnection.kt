@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
-import com.intellij.javascript.debugger.JSDebuggerBundle
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Conditions
@@ -28,7 +27,6 @@ import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.isPending
 import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.debugger.connection.chooseDebuggee
-import org.jetbrains.debugger.createDebugLogger
 import org.jetbrains.io.NettyUtil
 import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
 import org.jetbrains.wip.WipVm
@@ -115,7 +113,7 @@ class WipConnection : WipRemoteVmConnection() {
         }.connectRetrying(address, maxAttemptCount, combinedCondition)
 
         if (connectResult.channel == null && result.isPending) {
-            result.setError(JSDebuggerBundle.message("error.connection.address", address))
+            result.setError("Cannot connect to $address")
         }
     }
 
@@ -205,7 +203,7 @@ class WipConnection : WipRemoteVmConnection() {
     ) {
 
         if (!connectionsJson.isReadable) {
-            result.setError(JSDebuggerBundle.message("error.websocket.malformed.message"))
+            result.setError("Malformed response")
             return
         }
 
@@ -339,7 +337,7 @@ class WipConnection : WipRemoteVmConnection() {
             }.onSuccess {
                 val webSocketDebuggerUrl = it.webSocketDebuggerUrl
                 if (webSocketDebuggerUrl == null) {
-                    result.setError(JSDebuggerBundle.message("js.debug.another.debugger.attached"))
+                    result.setError("Another debugger is attached, please ensure that DevTools is closed or restart application to force detach")
                     return@onSuccess
                 }
 
@@ -349,7 +347,7 @@ class WipConnection : WipRemoteVmConnection() {
             }
                 .onError { result.setError(it) }
         } else {
-            result.setError(JSDebuggerBundle.message("error.connection.no.page", url))
+            result.setError("Cannot find page $url to connect")
         }
         return true
     }
