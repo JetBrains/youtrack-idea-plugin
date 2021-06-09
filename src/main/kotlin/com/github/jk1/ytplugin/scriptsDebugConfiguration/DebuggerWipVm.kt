@@ -8,11 +8,9 @@ import com.intellij.util.io.readUtf8
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.jetbrains.debugger.DebugEventListener
-import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.io.JsonReaderEx
 import org.jetbrains.wip.node.NodeWipWorkerManager
 import org.jetbrains.wip.protocol.runtime.Enable
-import org.jetbrains.wip.protocol.runtime.ExecutionContextDestroyedEventData.TYPE
 
 class DebuggerWipVm(
     tabListener: DebugEventListener,
