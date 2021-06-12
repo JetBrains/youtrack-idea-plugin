@@ -84,9 +84,10 @@ class RemoteDebuggingFileFinder(
 
 fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
     val url = parsedUrl.trimParameters().toDecodedForm()
-    val filename = url.split("/")[url.split("/").size - 1]
+    val filename = url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
+    val systemIndependentPath: String =
+        FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("src/$filename").toString())
 
-    val systemIndependentPath: String = FileUtil.toSystemIndependentName("src/$filename")
     val projectBaseDir: VirtualFile = project.baseDir
     val child = if (systemIndependentPath.isEmpty()) {
         projectBaseDir

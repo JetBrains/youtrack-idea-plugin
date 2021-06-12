@@ -36,7 +36,7 @@ class ScriptsRulesHandler(val project: Project) {
                 val trackerNote = TrackerNotification()
 
                 createScriptDirectory("src")
-                srcDir = project.baseDir.findFileByRelativePath("src")
+                srcDir = project.guessProjectDir()?.findFileByRelativePath("src")
 
                 scriptsList.map { workflow ->
                     val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
