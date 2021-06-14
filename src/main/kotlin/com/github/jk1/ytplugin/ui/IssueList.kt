@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.setup.NewSetupDialog
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ui.ListSpeedSearch
@@ -55,7 +56,7 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
                 if (issueStoreComponent[repo].getAllIssues().isEmpty()) {
                     placeholder.appendText("No issues found. Edit search request or ")
                     placeholder.appendText("configuration", SimpleTextAttributes.LINK_ATTRIBUTES
-                    ) { SetupDialog(project, repo, false).show() }
+                    ) { NewSetupDialog(project, repo, false).show() }
                 }
                 issueListModel.update()
                 val updatedSelectedIssueIndex = issueStoreComponent[repo].indexOf(getSelectedIssue())

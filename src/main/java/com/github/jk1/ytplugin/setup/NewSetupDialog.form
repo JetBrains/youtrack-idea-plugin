@@ -30,7 +30,7 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="2df6a" class="javax.swing.JTextField" binding="inputUrlTextPane">
+              <component id="2df6a" class="javax.swing.JTextPane" binding="inputUrlTextPane">
                 <constraints>
                   <grid row="2" column="1" row-span="1" col-span="16" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="500" height="-1"/>
@@ -72,7 +72,7 @@
                   <text value="Proxy settings..."/>
                 </properties>
               </component>
-              <component id="e0f7f" class="javax.swing.JLabel" binding="getTokenInfoLabel">
+              <component id="e0f7f" class="com.github.jk1.ytplugin.ui.HyperlinkLabel" binding="getTokenInfoLabel" custom-create="true">
                 <constraints>
                   <grid row="6" column="11" row-span="1" col-span="6" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -88,7 +88,7 @@
                   <text value="Share URL"/>
                 </properties>
               </component>
-              <component id="47a48" class="javax.swing.JLabel" binding="advertiserLabel">
+              <component id="47a48" class="com.github.jk1.ytplugin.ui.HyperlinkLabel" binding="advertiserLabel" custom-create="true">
                 <constraints>
                   <grid row="1" column="12" row-span="1" col-span="5" vsize-policy="0" hsize-policy="0" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>

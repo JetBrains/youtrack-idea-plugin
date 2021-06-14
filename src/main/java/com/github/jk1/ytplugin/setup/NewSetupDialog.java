@@ -11,16 +11,14 @@ import com.github.jk1.ytplugin.navigator.SourceNavigatorService;
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.github.jk1.ytplugin.timeTracker.*;
+import com.github.jk1.ytplugin.ui.HyperlinkLabel;
 import com.intellij.ide.passwordSafe.PasswordSafe;
+import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.impl.AnyModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.refactoring.RefactoringBundle;
-import com.intellij.refactoring.util.AbstractVariableData;
-import com.intellij.refactoring.util.SimpleParameterTablePanel;
 import com.intellij.tasks.youtrack.YouTrackRepository;
 import com.intellij.tasks.youtrack.YouTrackRepositoryType;
 import com.intellij.ui.components.JBPanel;
@@ -40,6 +38,9 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -49,7 +50,7 @@ import java.util.*;
 public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel myRootPane;
     private JTabbedPane mainPane;
-    private JTextField inputUrlTextPane;
+    private JTextPane inputUrlTextPane;
     private JPasswordField inputTokenField;
     private JRadioButton isAutoTrackingEnabledRadioButton;
     private JRadioButton isManualModeRadioButton;
@@ -60,8 +61,8 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private JButton testConnectionButton;
     private JButton proxyButton;
     private JLabel serverUrlLabel;
-    private JLabel advertiserLabel;
-    private JLabel getTokenInfoLabel;
+    private HyperlinkLabel advertiserLabel;
+    private HyperlinkLabel getTokenInfoLabel;
     private JCheckBox shareUrlCheckBox;
     private JCheckBox useProxyCheckBox;
     private JLabel tokenLabel;
@@ -88,208 +89,111 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel connectionTab;
     private JBPanel<JBPanelWithEmptyText> controlPanel;
 
-    private SimpleParameterTablePanel myParametersPanel;
-
     Logger logger = Logger.getInstance("com.github.jk1.ytplugin");
 
     private boolean isConnectionTested;
     private CredentialsChecker credentialsChecker;
+    private YouTrackRepository connectedRepository = new YouTrackRepository();
+    private final SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
+    private boolean fromTracker;
 
     @NotNull
-    private Project project;
-
-    private AbstractVariableData[] myVariableData;
-    private Map<String, AbstractVariableData> myVariablesMap;
-
-    private SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
-    private YouTrackRepository connectedRepository;
-
-
-    private boolean fromTracker;
+    private final Project project;
 
     @NotNull
     private YouTrackServer repo;
 
 
-    public NewSetupDialog(@NotNull Project project) {
+    public NewSetupDialog(@NotNull Project project, YouTrackServer repo, Boolean fromTracker) {
         super(project, true);
+        this.project = project;
+        this.repo = repo;
+        this.fromTracker = fromTracker;
         setTitle("YouTrack");
         $$$setupUI$$$();
         init();
     }
 
     @Override
+    protected JButton createJButtonForAction(Action action) {
+        JButton button = super.createJButtonForAction(action);
+        button.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
+        button.getActionMap().put("apply", action);
+        return button;
+    }
+
+    void installDefaultBorder() {
+        inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new JTabbedPane().getBackground(), 2),
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                        BorderFactory.createEmptyBorder(0, 5, 2, 2)
+                )
+        ));
+    }
+
+    @Override
     protected void init() {
-        super.init();
+        if (fromTracker) {
+            proxyButton.setVisible(false);
+            testConnectionButton.setVisible(false);
+        }
+
+        if (!repo.getRepo().isConfigured()) {
+            forbidSelection();
+        } else {
+            allowSelection(repo);
+        }
+
+        inputUrlTextPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        inputUrlTextPane.setText(repo.getUrl());
+        inputUrlTextPane.setBackground(inputTokenField.getBackground());
+        // reset the default text area behavior to make TAB key transfer focus
+
+        inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+        // make text area border behave similar to the one of the text field
+        installDefaultBorder();
+
+        inputUrlTextPane.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent arg0) {
+                inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
+                        new DarculaTextBorder(),
+                        BorderFactory.createEmptyBorder(0, 5, 0, 0)));
+                repaint();
+            }
+
+            @Override
+            public void focusLost(FocusEvent arg0) {
+                installDefaultBorder();
+                repaint();
+            }
+        });
+
+
         testConnectionButton.addActionListener(it -> testConnectionAction());
+
+        controlPanel = new JBPanel<>();
+        controlPanel.setLayout(null);
         proxyButton.addActionListener(it -> HttpConfigurable.editConfigurable(controlPanel));
-    }
 
-    /**
-     * Method generated by IntelliJ IDEA GUI Designer
-     * >>> IMPORTANT!! <<<
-     * DO NOT edit this method OR call it in your code!
-     *
-     * @noinspection ALL
-     */
-    private void $$$setupUI$$$() {
-        myRootPane = new JPanel();
-        myRootPane.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        myRootPane.setEnabled(true);
-        myRootPane.setOpaque(true);
-        mainPane = new JTabbedPane();
-        myRootPane.add(mainPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(100, 200), null, 0, false));
-        connectionTab = new JPanel();
-        connectionTab.setLayout(new GridLayoutManager(13, 17, new Insets(20, 20, 30, 20), -1, -1));
-        connectionTab.setInheritsPopupMenu(false);
-        mainPane.addTab("General", connectionTab);
-        inputUrlTextPane = new JTextField();
-        connectionTab.add(inputUrlTextPane, new GridConstraints(2, 1, 1, 16, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(500, -1), null, 0, false));
-        serverUrlLabel = new JLabel();
-        serverUrlLabel.setText("Server URL:");
-        connectionTab.add(serverUrlLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer1 = new Spacer();
-        connectionTab.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer2 = new Spacer();
-        connectionTab.add(spacer2, new GridConstraints(4, 12, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        testConnectionButton = new JButton();
-        testConnectionButton.setText("Test connection");
-        connectionTab.add(testConnectionButton, new GridConstraints(12, 9, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        proxyButton = new JButton();
-        proxyButton.setText("Proxy settings...");
-        connectionTab.add(proxyButton, new GridConstraints(12, 10, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        getTokenInfoLabel = new JLabel();
-        getTokenInfoLabel.setText("Learn how to generate a permanent token");
-        connectionTab.add(getTokenInfoLabel, new GridConstraints(6, 11, 1, 6, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        shareUrlCheckBox = new JCheckBox();
-        shareUrlCheckBox.setText("Share URL");
-        connectionTab.add(shareUrlCheckBox, new GridConstraints(3, 16, 1, 1, GridConstraints.ANCHOR_NORTHEAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        advertiserLabel = new JLabel();
-        advertiserLabel.setText("Get YouTrack");
-        connectionTab.add(advertiserLabel, new GridConstraints(1, 12, 1, 5, GridConstraints.ANCHOR_SOUTHEAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        useProxyCheckBox = new JCheckBox();
-        useProxyCheckBox.setText("Use proxy");
-        connectionTab.add(useProxyCheckBox, new GridConstraints(3, 15, 1, 1, GridConstraints.ANCHOR_NORTHEAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer3 = new Spacer();
-        connectionTab.add(spacer3, new GridConstraints(7, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(-1, 40), new Dimension(-1, 40), null, 0, false));
-        final Spacer spacer4 = new Spacer();
-        connectionTab.add(spacer4, new GridConstraints(8, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer5 = new Spacer();
-        connectionTab.add(spacer5, new GridConstraints(9, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer6 = new Spacer();
-        connectionTab.add(spacer6, new GridConstraints(10, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer7 = new Spacer();
-        connectionTab.add(spacer7, new GridConstraints(11, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        tokenLabel = new JLabel();
-        tokenLabel.setText("Permanent token:");
-        connectionTab.add(tokenLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        inputTokenField = new JPasswordField();
-        inputTokenField.setText("");
-        connectionTab.add(inputTokenField, new GridConstraints(5, 1, 1, 16, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        notifyFieldLabel = new JLabel();
-        notifyFieldLabel.setText("");
-        connectionTab.add(notifyFieldLabel, new GridConstraints(7, 0, 1, 10, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        timeTrackingTab = new JPanel();
-        timeTrackingTab.setLayout(new GridLayoutManager(4, 1, new Insets(20, 20, 20, 20), -1, -1));
-        mainPane.addTab("Time Tracking", timeTrackingTab);
-        autoPanel = new JPanel();
-        autoPanel.setLayout(new GridLayoutManager(4, 23, new Insets(10, 10, 10, 10), 20, 20));
-        timeTrackingTab.add(autoPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        autoPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Automatically create work items", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
-        postWhenProjectClosedCheckbox = new JCheckBox();
-        postWhenProjectClosedCheckbox.setText("When closing the project");
-        autoPanel.add(postWhenProjectClosedCheckbox, new GridConstraints(0, 0, 1, 22, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        postWhenCommitCheckbox = new JCheckBox();
-        postWhenCommitCheckbox.setText("When commiting changes");
-        autoPanel.add(postWhenCommitCheckbox, new GridConstraints(0, 22, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        isScheduledCheckbox = new JCheckBox();
-        isScheduledCheckbox.setText("On a set schedule at:");
-        autoPanel.add(isScheduledCheckbox, new GridConstraints(1, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer8 = new Spacer();
-        autoPanel.add(spacer8, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        timePanel = new JPanel();
-        timePanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
-        autoPanel.add(timePanel, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        scheduledHour = new JTextField();
-        scheduledHour.setText("19");
-        timePanel.add(scheduledHour, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        scheduledMinutes = new JTextField();
-        scheduledMinutes.setText("00");
-        timePanel.add(scheduledMinutes, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        final Spacer spacer9 = new Spacer();
-        timePanel.add(spacer9, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        hourLabel2 = new JLabel();
-        hourLabel2.setText("hours");
-        timePanel.add(hourLabel2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        minuteLabel2 = new JLabel();
-        minuteLabel2.setText("minutes");
-        timePanel.add(minuteLabel2, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        inactivityPeriodPanel = new JPanel();
-        inactivityPeriodPanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
-        autoPanel.add(inactivityPeriodPanel, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        inactivityHourInputField = new JTextField();
-        inactivityHourInputField.setText("00");
-        inactivityPeriodPanel.add(inactivityHourInputField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        inactivityMinutesInputField = new JTextField();
-        inactivityMinutesInputField.setText("15");
-        inactivityPeriodPanel.add(inactivityMinutesInputField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        final Spacer spacer10 = new Spacer();
-        inactivityPeriodPanel.add(spacer10, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        hourLabel1 = new JLabel();
-        hourLabel1.setText("hours");
-        inactivityPeriodPanel.add(hourLabel1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        minuteLabel1 = new JLabel();
-        minuteLabel1.setText("minutes");
-        inactivityPeriodPanel.add(minuteLabel1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        inactivityTextField = new JLabel();
-        inactivityTextField.setText("Inactivity period:");
-        autoPanel.add(inactivityTextField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        preferencesPanel = new JPanel();
-        preferencesPanel.setLayout(new GridLayoutManager(3, 7, new Insets(10, 10, 10, 10), -1, -1));
-        timeTrackingTab.add(preferencesPanel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        preferencesPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Preferences", TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION, null, null));
-        typeLabel = new JLabel();
-        typeLabel.setText("Work type:");
-        preferencesPanel.add(typeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        commentLabel = new JLabel();
-        commentLabel.setText("Comment:");
-        preferencesPanel.add(commentLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        typeComboBox = new JComboBox();
-        preferencesPanel.add(typeComboBox, new GridConstraints(0, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        commentTextField = new JTextField();
-        preferencesPanel.add(commentTextField, new GridConstraints(2, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final Spacer spacer11 = new Spacer();
-        preferencesPanel.add(spacer11, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
-        trackingModePanel = new JPanel();
-        trackingModePanel.setLayout(new GridLayoutManager(1, 3, new Insets(10, 10, 10, 10), 20, 20));
-        timeTrackingTab.add(trackingModePanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        trackingModePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Tracking mode", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
-        isAutoTrackingEnabledRadioButton = new JRadioButton();
-        isAutoTrackingEnabledRadioButton.setText("Automatic");
-        trackingModePanel.add(isAutoTrackingEnabledRadioButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        isManualModeRadioButton = new JRadioButton();
-        isManualModeRadioButton.setText("Manual");
-        trackingModePanel.add(isManualModeRadioButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        noTrackingButton = new JRadioButton();
-        noTrackingButton.setText("Off");
-        trackingModePanel.add(noTrackingButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 3), -1, -1));
-        timeTrackingTab.add(panel1, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final Spacer spacer12 = new Spacer();
-        panel1.add(spacer12, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-    }
+        mainPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$() {
-        return myRootPane;
-    }
+        mainPane.addChangeListener(e -> {
+            if (mainPane.getSelectedIndex() == 1) {
+                proxyButton.setVisible(false);
+                testConnectionButton.setVisible(false);
+            } else {
+                proxyButton.setVisible(true);
+                testConnectionButton.setVisible(true);
+            }
+        });
 
-    void createUIComponents() {
+        super.init();
 
     }
+
 
     @Override
     public JComponent getPreferredFocusedComponent() {
@@ -311,7 +215,10 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         Color fontColor = inputTokenField.getForeground();
 
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
-        if (!inputUrlTextPane.getText().isBlank() && inputTokenField.getPassword().length != 0) {
+        //todo
+        if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
+
+//            if (!inputUrlTextPane.getText().isBlank() && inputTokenField.getPassword().length != 0) {
 
             YouTrackRepositoryType myRepositoryType = new YouTrackRepositoryType();
             connectedRepository.setLoginAnonymously(false);
@@ -343,7 +250,10 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 
         drawAutoCorrection(fontColor);
 
-        if (inputUrlTextPane.getText().isBlank() || inputTokenField.getPassword().length == 0) {
+        //todo
+        if (inputUrlTextPane.getText().isEmpty() || inputTokenField.getPassword().length == 0) {
+
+//        if (inputUrlTextPane.getText().isBlank() || inputTokenField.getPassword().length == 0) {
             repoConnector.setNoteState(NotifierState.EMPTY_FIELD);
         } else if (!(credentialsChecker.isMatchingAppPassword(connectedRepository.getPassword())
                 || credentialsChecker.isMatchingBearerToken(connectedRepository.getPassword()))) {
@@ -390,7 +300,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 //            }
 //          }
 //        }
-                typeComboBox.setSelectedIndex(idx);
+//                typeComboBox.setSelectedIndex(idx);
             }, AnyModalityState.ANY);
         } catch (Exception var3) {
             HelpersKt.getLogger().info("Work item types cannot be loaded: " + var3.getMessage());
@@ -470,12 +380,12 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         }
     }
 
-    private void appendToPane(JTextField tp, String msg, Color c) {
+    private void appendToPane(JTextPane tp, String msg, Color c) {
         StyleContext sc = StyleContext.getDefaultStyleContext();
         AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
-//    aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
         tp.setCaretPosition(tp.getDocument().getLength());
-//    tp.setCharacterAttributes(aset, false);
+        tp.setCharacterAttributes(aset, false);
         tp.replaceSelection(msg);
     }
 
@@ -487,10 +397,36 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 
     @Override
     protected void doOKAction() {
-        if (Messages.showOkCancelDialog(RefactoringBundle.message("do.you.wish.to.continue"), RefactoringBundle.message("warning.title"), Messages.getWarningIcon()) != Messages.OK) {
-            return;
+        if (!isConnectionTested) {
+            testConnectionAction();
         }
 
+        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
+            YouTrackRepository myRepository = repo.getRepo();
+            myRepository.setLoginAnonymously(false);
+
+            myRepository.setUrl(connectedRepository.getUrl());
+            myRepository.setPassword(connectedRepository.getPassword());
+            myRepository.setUsername(connectedRepository.getUsername());
+            myRepository.setRepositoryType(connectedRepository.getRepositoryType());
+            myRepository.storeCredentials();
+
+            myRepository.setShared(connectedRepository.isShared());
+            myRepository.setUseProxy(connectedRepository.isUseProxy());
+
+            if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
+                repoConnector.showIssuesForConnectedRepo(myRepository, project);
+            }
+
+            new TimeTrackingService().setupTimeTracking(this, project);
+
+        }
+
+        if (repoConnector.getNoteState() != NotifierState.NULL_PROXY_HOST && repoConnector.getNoteState() !=
+                NotifierState.PASSWORD_NOT_STORED && repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
+            this.close(0);
+        }
         super.doOKAction();
     }
 
@@ -635,6 +571,177 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     public final void setRepo(@NotNull YouTrackServer var1) {
         Intrinsics.checkNotNullParameter(var1, "<set-?>");
         this.repo = var1;
+    }
+
+
+    private void createUIComponents() {
+        advertiserLabel = new HyperlinkLabel("Get YouTrack",
+                "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration", null);
+        getTokenInfoLabel = new HyperlinkLabel("Learn how to generate a permanent token",
+                "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html", null);
+
+    }
+
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        createUIComponents();
+        myRootPane = new JPanel();
+        myRootPane.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        myRootPane.setEnabled(true);
+        myRootPane.setOpaque(true);
+        mainPane = new JTabbedPane();
+        myRootPane.add(mainPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(100, 200), null, 0, false));
+        connectionTab = new JPanel();
+        connectionTab.setLayout(new GridLayoutManager(13, 17, new Insets(20, 20, 30, 20), -1, -1));
+        connectionTab.setInheritsPopupMenu(false);
+        mainPane.addTab("General", connectionTab);
+        inputUrlTextPane = new JTextPane();
+        connectionTab.add(inputUrlTextPane, new GridConstraints(2, 1, 1, 16, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(500, -1), null, 0, false));
+        serverUrlLabel = new JLabel();
+        serverUrlLabel.setText("Server URL:");
+        connectionTab.add(serverUrlLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        connectionTab.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        connectionTab.add(spacer2, new GridConstraints(4, 12, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        testConnectionButton = new JButton();
+        testConnectionButton.setText("Test connection");
+        connectionTab.add(testConnectionButton, new GridConstraints(12, 9, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        proxyButton = new JButton();
+        proxyButton.setText("Proxy settings...");
+        connectionTab.add(proxyButton, new GridConstraints(12, 10, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        getTokenInfoLabel.setText("Learn how to generate a permanent token");
+        connectionTab.add(getTokenInfoLabel, new GridConstraints(6, 11, 1, 6, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        shareUrlCheckBox = new JCheckBox();
+        shareUrlCheckBox.setText("Share URL");
+        connectionTab.add(shareUrlCheckBox, new GridConstraints(3, 16, 1, 1, GridConstraints.ANCHOR_NORTHEAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        advertiserLabel.setText("Get YouTrack");
+        connectionTab.add(advertiserLabel, new GridConstraints(1, 12, 1, 5, GridConstraints.ANCHOR_SOUTHEAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        useProxyCheckBox = new JCheckBox();
+        useProxyCheckBox.setText("Use proxy");
+        connectionTab.add(useProxyCheckBox, new GridConstraints(3, 15, 1, 1, GridConstraints.ANCHOR_NORTHEAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer3 = new Spacer();
+        connectionTab.add(spacer3, new GridConstraints(7, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(-1, 40), new Dimension(-1, 40), null, 0, false));
+        final Spacer spacer4 = new Spacer();
+        connectionTab.add(spacer4, new GridConstraints(8, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final Spacer spacer5 = new Spacer();
+        connectionTab.add(spacer5, new GridConstraints(9, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final Spacer spacer6 = new Spacer();
+        connectionTab.add(spacer6, new GridConstraints(10, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final Spacer spacer7 = new Spacer();
+        connectionTab.add(spacer7, new GridConstraints(11, 15, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        tokenLabel = new JLabel();
+        tokenLabel.setText("Permanent token:");
+        connectionTab.add(tokenLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        inputTokenField = new JPasswordField();
+        inputTokenField.setText("");
+        connectionTab.add(inputTokenField, new GridConstraints(5, 1, 1, 16, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        notifyFieldLabel = new JLabel();
+        notifyFieldLabel.setText("");
+        connectionTab.add(notifyFieldLabel, new GridConstraints(7, 0, 1, 10, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        timeTrackingTab = new JPanel();
+        timeTrackingTab.setLayout(new GridLayoutManager(4, 1, new Insets(20, 20, 20, 20), -1, -1));
+        mainPane.addTab("Time Tracking", timeTrackingTab);
+        autoPanel = new JPanel();
+        autoPanel.setLayout(new GridLayoutManager(4, 23, new Insets(10, 10, 10, 10), 20, 20));
+        timeTrackingTab.add(autoPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        autoPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Automatically create work items", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        postWhenProjectClosedCheckbox = new JCheckBox();
+        postWhenProjectClosedCheckbox.setText("When closing the project");
+        autoPanel.add(postWhenProjectClosedCheckbox, new GridConstraints(0, 0, 1, 22, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        postWhenCommitCheckbox = new JCheckBox();
+        postWhenCommitCheckbox.setText("When commiting changes");
+        autoPanel.add(postWhenCommitCheckbox, new GridConstraints(0, 22, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        isScheduledCheckbox = new JCheckBox();
+        isScheduledCheckbox.setText("On a set schedule at:");
+        autoPanel.add(isScheduledCheckbox, new GridConstraints(1, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer8 = new Spacer();
+        autoPanel.add(spacer8, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        timePanel = new JPanel();
+        timePanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        autoPanel.add(timePanel, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        scheduledHour = new JTextField();
+        scheduledHour.setText("19");
+        timePanel.add(scheduledHour, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
+        scheduledMinutes = new JTextField();
+        scheduledMinutes.setText("00");
+        timePanel.add(scheduledMinutes, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
+        final Spacer spacer9 = new Spacer();
+        timePanel.add(spacer9, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        hourLabel2 = new JLabel();
+        hourLabel2.setText("hours");
+        timePanel.add(hourLabel2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        minuteLabel2 = new JLabel();
+        minuteLabel2.setText("minutes");
+        timePanel.add(minuteLabel2, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        inactivityPeriodPanel = new JPanel();
+        inactivityPeriodPanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        autoPanel.add(inactivityPeriodPanel, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        inactivityHourInputField = new JTextField();
+        inactivityHourInputField.setText("00");
+        inactivityPeriodPanel.add(inactivityHourInputField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
+        inactivityMinutesInputField = new JTextField();
+        inactivityMinutesInputField.setText("15");
+        inactivityPeriodPanel.add(inactivityMinutesInputField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
+        final Spacer spacer10 = new Spacer();
+        inactivityPeriodPanel.add(spacer10, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        hourLabel1 = new JLabel();
+        hourLabel1.setText("hours");
+        inactivityPeriodPanel.add(hourLabel1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        minuteLabel1 = new JLabel();
+        minuteLabel1.setText("minutes");
+        inactivityPeriodPanel.add(minuteLabel1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        inactivityTextField = new JLabel();
+        inactivityTextField.setText("Inactivity period:");
+        autoPanel.add(inactivityTextField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        preferencesPanel = new JPanel();
+        preferencesPanel.setLayout(new GridLayoutManager(3, 7, new Insets(10, 10, 10, 10), -1, -1));
+        timeTrackingTab.add(preferencesPanel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        preferencesPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Preferences", TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION, null, null));
+        typeLabel = new JLabel();
+        typeLabel.setText("Work type:");
+        preferencesPanel.add(typeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        commentLabel = new JLabel();
+        commentLabel.setText("Comment:");
+        preferencesPanel.add(commentLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        typeComboBox = new JComboBox();
+        preferencesPanel.add(typeComboBox, new GridConstraints(0, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        commentTextField = new JTextField();
+        preferencesPanel.add(commentTextField, new GridConstraints(2, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final Spacer spacer11 = new Spacer();
+        preferencesPanel.add(spacer11, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
+        trackingModePanel = new JPanel();
+        trackingModePanel.setLayout(new GridLayoutManager(1, 3, new Insets(10, 10, 10, 10), 20, 20));
+        timeTrackingTab.add(trackingModePanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        trackingModePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Tracking mode", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        isAutoTrackingEnabledRadioButton = new JRadioButton();
+        isAutoTrackingEnabledRadioButton.setText("Automatic");
+        trackingModePanel.add(isAutoTrackingEnabledRadioButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        isManualModeRadioButton = new JRadioButton();
+        isManualModeRadioButton.setText("Manual");
+        trackingModePanel.add(isManualModeRadioButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        noTrackingButton = new JRadioButton();
+        noTrackingButton.setText("Off");
+        trackingModePanel.add(noTrackingButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 3), -1, -1));
+        timeTrackingTab.add(panel1, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final Spacer spacer12 = new Spacer();
+        panel1.add(spacer12, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return myRootPane;
     }
 
 }
