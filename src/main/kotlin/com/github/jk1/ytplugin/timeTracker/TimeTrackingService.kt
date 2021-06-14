@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
+import com.github.jk1.ytplugin.setup.NewSetupDialog
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
@@ -38,30 +39,30 @@ class TimeTrackingService {
         }
     }
 
-    private fun configureTimerForTracking(timeTrackingTab: TimeTrackerSettingsTab, project: Project) {
+    private fun configureTimerForTracking(timeTrackingDialog: NewSetupDialog, project: Project) {
 
         val timer = ComponentAware.of(project).timeTrackerComponent
-        val timeToSchedule = timeTrackingTab.getScheduledTime()
+        val timeToSchedule = timeTrackingDialog.scheduledTime
 
-        val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingTab.getInactivityHours().toLong()) +
-                TimeUnit.MINUTES.toMillis(timeTrackingTab.getInactivityMinutes().toLong())
+        val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingDialog.inactivityHours.toLong()) +
+                TimeUnit.MINUTES.toMillis(timeTrackingDialog.inactivityMinutes.toLong())
 
-        timer.setupTimerProperties(timeTrackingTab.getComment(), timeTrackingTab.getPostWhenCommitCheckbox().isSelected,
-                timeTrackingTab.getAutoTrackingEnabledCheckBox().isSelected,
-                timeTrackingTab.getType().toString(), timeTrackingTab.getManualModeCheckbox().isSelected,
-                timeTrackingTab.getScheduledCheckbox().isSelected, timeToSchedule,
-                inactivityTime, timeTrackingTab.getPostOnClose().isSelected)
+        timer.setupTimerProperties(timeTrackingDialog.comment, timeTrackingDialog.postWhenCommitCheckbox.isSelected,
+                timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected,
+                timeTrackingDialog.type.toString(), timeTrackingDialog.manualModeCheckbox.isSelected,
+                timeTrackingDialog.scheduledCheckbox.isSelected, timeToSchedule,
+                inactivityTime, timeTrackingDialog.postOnClose.isSelected)
         timer.timeInMills = 0
         timer.pausedTime = 0
         timer.isAutoTrackingTemporaryDisabled = false
 
     }
 
-    fun setupTimeTracking(timeTrackingTab: TimeTrackerSettingsTab, project: Project) {
+    fun setupTimeTracking(timeTrackingDialog: NewSetupDialog, project: Project) {
 
         val timer = ComponentAware.of(project).timeTrackerComponent
 
-        configureTimerForTracking(timeTrackingTab, project)
+        configureTimerForTracking(timeTrackingDialog, project)
 
         try {
             if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&

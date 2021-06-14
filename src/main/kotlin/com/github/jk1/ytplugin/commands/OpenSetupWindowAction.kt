@@ -23,13 +23,7 @@ class OpenSetupWindowAction(repo: YouTrackServer, private val fromTracker: Boole
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
-            // use reflection to avoid IDE version compatibility issues
-//            SetupDialogTmp::class.java.getMethod("show").invoke(project, repository, fromTracker)
-//            NewSetupDialog(project, repository, fromTracker).show()
-           val dialog = NewSetupDialog(project)
-            if (!dialog.showAndGet()) {
-                return
-            }
+            NewSetupDialog(project).show()
 //            SetupDialog(project, repository, fromTracker).show()
         } else {
             showError("Can't open YouTrack setup window", "No open project found")
