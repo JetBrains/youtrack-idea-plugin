@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.issues
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.setup.NewSetupDialog
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.ui.IssueListToolWindowContent
@@ -29,7 +28,6 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-import javax.swing.event.ChangeListener
 
 /**
  *
@@ -98,7 +96,11 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = JPanel(BorderLayout())
         val labelContainer = JPanel()
         val messageLabel = JLabel("No YouTrack server found")
-        val configureLabel = createLink("Configure") { NewSetupDialog(project, repo, false).show() }
+        val configureLabel = createLink("Configure") { SetupDialog(
+            project,
+            repo,
+            false
+        ).show() }
         messageLabel.alignmentX = Component.CENTER_ALIGNMENT
         configureLabel.alignmentX = Component.CENTER_ALIGNMENT
         labelContainer.add(messageLabel)

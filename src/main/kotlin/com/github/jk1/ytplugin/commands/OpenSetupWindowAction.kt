@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.commands
 
 import com.github.jk1.ytplugin.notifications.IdeNotificationsTrait
-import com.github.jk1.ytplugin.setup.NewSetupDialog
+import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
@@ -23,8 +23,7 @@ class OpenSetupWindowAction(repo: YouTrackServer, private val fromTracker: Boole
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         if (project != null && project.isInitialized) {
-            NewSetupDialog(project, repository, fromTracker).show()
-//            SetupDialog(project, repository, fromTracker).show()
+            SetupDialog(project, repository, fromTracker).show()
         } else {
             showError("Can't open YouTrack setup window", "No open project found")
         }

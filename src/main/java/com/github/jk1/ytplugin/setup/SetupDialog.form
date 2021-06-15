@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.github.jk1.ytplugin.setup.NewSetupDialog">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.github.jk1.ytplugin.setup.SetupDialog">
   <grid id="cbd77" binding="myRootPane" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
@@ -20,7 +20,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <grid id="f0387" binding="connectionTab" layout-manager="GridLayoutManager" row-count="13" column-count="17" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="f0387" binding="connectionTab" layout-manager="GridLayoutManager" row-count="12" column-count="17" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="20" left="20" bottom="30" right="20"/>
             <constraints>
               <tabbedpane title="General"/>
@@ -56,22 +56,6 @@
                   <grid row="4" column="12" row-span="1" col-span="5" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                 </constraints>
               </vspacer>
-              <component id="b2d39" class="javax.swing.JButton" binding="testConnectionButton">
-                <constraints>
-                  <grid row="12" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Test connection"/>
-                </properties>
-              </component>
-              <component id="279a6" class="javax.swing.JButton" binding="proxyButton">
-                <constraints>
-                  <grid row="12" column="10" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Proxy settings..."/>
-                </properties>
-              </component>
               <component id="e0f7f" class="com.github.jk1.ytplugin.ui.HyperlinkLabel" binding="getTokenInfoLabel" custom-create="true">
                 <constraints>
                   <grid row="6" column="11" row-span="1" col-span="6" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
@@ -347,13 +331,17 @@
                     </constraints>
                     <properties/>
                   </component>
-                  <component id="23099" class="javax.swing.JTextField" binding="commentTextField">
+                  <component id="23099" class="com.github.jk1.ytplugin.timeTracker.PlaceholderTextField" binding="commentTextField" custom-create="true">
                     <constraints>
                       <grid row="2" column="1" row-span="1" col-span="6" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <placeholder value="Enter default comment text"/>
+                      <text value="  a"/>
+                      <toolTipText value=""/>
+                    </properties>
                   </component>
                   <vspacer id="32bc7">
                     <constraints>

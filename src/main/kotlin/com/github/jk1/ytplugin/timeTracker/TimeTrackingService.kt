@@ -3,7 +3,7 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
-import com.github.jk1.ytplugin.setup.NewSetupDialog
+import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
@@ -39,7 +39,7 @@ class TimeTrackingService {
         }
     }
 
-    private fun configureTimerForTracking(timeTrackingDialog: NewSetupDialog, project: Project) {
+    private fun configureTimerForTracking(timeTrackingDialog: SetupDialog, project: Project) {
 
         val timer = ComponentAware.of(project).timeTrackerComponent
         val timeToSchedule = timeTrackingDialog.scheduledTime
@@ -58,7 +58,7 @@ class TimeTrackingService {
 
     }
 
-    fun setupTimeTracking(timeTrackingDialog: NewSetupDialog, project: Project) {
+    fun setupTimeTracking(timeTrackingDialog: SetupDialog, project: Project) {
 
         val timer = ComponentAware.of(project).timeTrackerComponent
 

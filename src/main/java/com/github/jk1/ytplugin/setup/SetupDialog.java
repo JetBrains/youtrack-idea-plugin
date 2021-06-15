@@ -11,6 +11,7 @@ import com.github.jk1.ytplugin.navigator.SourceNavigatorService;
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.github.jk1.ytplugin.timeTracker.*;
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction;
 import com.github.jk1.ytplugin.ui.HyperlinkLabel;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder;
@@ -28,8 +29,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.net.HttpConfigurable;
 import kotlin.jvm.internal.Intrinsics;
+import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -46,7 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class NewSetupDialog extends DialogWrapper implements ComponentAware {
+public class SetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel myRootPane;
     private JTabbedPane mainPane;
     private JTextPane inputUrlTextPane;
@@ -57,8 +58,6 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private JCheckBox postWhenProjectClosedCheckbox;
     private JCheckBox postWhenCommitCheckbox;
     private JCheckBox isScheduledCheckbox;
-    private JButton testConnectionButton;
-    private JButton proxyButton;
     private JLabel serverUrlLabel;
     private HyperlinkLabel advertiserLabel;
     private HyperlinkLabel getTokenInfoLabel;
@@ -69,7 +68,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel autoPanel;
     private JPanel trackingModePanel;
     private JLabel typeLabel;
-    private JTextField commentTextField;
+    private PlaceholderTextField commentTextField;
     private JLabel commentLabel;
     private JComboBox typeComboBox;
     private JPanel preferencesPanel;
@@ -96,6 +95,9 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private final SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
     private boolean fromTracker;
 
+    TestConnectionAction testConnectionAction = new TestConnectionAction();
+    ProxyAction proxyAction = new ProxyAction();
+
     @NotNull
     private final Project project;
 
@@ -103,10 +105,10 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private YouTrackServer repo;
 
     @NotNull
-    private TimeTracker timer;
+    private final TimeTracker timer;
 
 
-    public NewSetupDialog(@NotNull Project project, YouTrackServer repo, Boolean fromTracker) {
+    public SetupDialog(@NotNull Project project, @NotNull YouTrackServer repo, Boolean fromTracker) {
         super(project, true);
         this.project = project;
         this.repo = repo;
@@ -119,29 +121,23 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     }
 
     @Override
-    protected JButton createJButtonForAction(Action action) {
-        JButton button = super.createJButtonForAction(action);
-        button.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
-        button.getActionMap().put("apply", action);
-        return button;
-    }
-
-    void installDefaultBorder() {
-        inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new JTabbedPane().getBackground(), 2),
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                        BorderFactory.createEmptyBorder(0, 5, 2, 2)
-                )
-        ));
-    }
-
-    @Override
     protected void init() {
-        if (fromTracker) {
-            proxyButton.setVisible(false);
-            testConnectionButton.setVisible(false);
+        if (timer.isRunning()) {
+            new StopTrackerAction().stopTimer(project);
+            timer.setAutoTrackingTemporaryDisabled(true);
         }
+        setupGeneralTab();
+        setupTimeTrackingTab();
+
+        if (fromTracker) {
+            proxyAction.setEnabled(false);
+            testConnectionAction.setEnabled(false);
+        }
+        mainPane.setSelectedIndex(fromTracker ? 1 : 0);
+        super.init();
+    }
+
+    private void setupGeneralTab() {
 
         if (!repo.getRepo().isConfigured()) {
             forbidSelection();
@@ -153,7 +149,6 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         inputUrlTextPane.setText(repo.getUrl());
         inputUrlTextPane.setBackground(inputTokenField.getBackground());
         // reset the default text area behavior to make TAB key transfer focus
-
         inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
         inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
         // make text area border behave similar to the one of the text field
@@ -175,38 +170,44 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
             }
         });
 
+        inputTokenField.setText(repo.getPassword());
+
         isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
         scheduledFieldsEnabling(timer.isAutoTrackingEnable());
 
-        testConnectionButton.addActionListener(it -> testConnectionAction());
-
         controlPanel = new JBPanel<>();
         controlPanel.setLayout(null);
-        proxyButton.addActionListener(it -> HttpConfigurable.editConfigurable(controlPanel));
 
         mainPane.setMnemonicAt(0, KeyEvent.VK_1);
-
         mainPane.addChangeListener(e -> {
             if (mainPane.getSelectedIndex() == 1) {
-                proxyButton.setVisible(false);
-                testConnectionButton.setVisible(false);
+                proxyAction.setEnabled(false);
+                testConnectionAction.setEnabled(false);
             } else {
-                proxyButton.setVisible(true);
-                testConnectionButton.setVisible(true);
+                proxyAction.setEnabled(true);
+                testConnectionAction.setEnabled(true);
             }
         });
+    }
+
+    private void setupTimeTrackingTab() {
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(isAutoTrackingEnabledRadioButton);
+        buttonGroup.add(isManualModeRadioButton);
+        buttonGroup.add(noTrackingButton);
+
+        noTrackingButton.setSelected(true);
 
         noTrackingButton.addActionListener(e ->
                 isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
                         isManualModeRadioButton.isSelected(), noTrackingButton.isSelected())
         );
-        noTrackingButton.setSelected(true);
 
         isAutoTrackingEnabledRadioButton.setSelected(timer.isAutoTrackingEnable());
         isAutoTrackingEnabledRadioButton.addActionListener(e ->
                 isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
                         isManualModeRadioButton.isSelected(), noTrackingButton.isSelected()));
-
 
         isManualModeRadioButton.setSelected(timer.isManualTrackingEnable());
         isManualModeRadioButton.addActionListener(e ->
@@ -214,31 +215,50 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
                         isManualModeRadioButton.isSelected(), noTrackingButton.isSelected())
         );
 
-        ButtonGroup buttonGroup = new ButtonGroup();
-        buttonGroup.add(isAutoTrackingEnabledRadioButton);
-        buttonGroup.add(isManualModeRadioButton);
-        buttonGroup.add(noTrackingButton);
-
         postWhenCommitCheckbox.setSelected(timer.isPostAfterCommitEnabled());
         postWhenProjectClosedCheckbox.setSelected(timer.isWhenProjectClosedEnabled());
 
         postWhenProjectClosedCheckbox.setEnabled(timer.isAutoTrackingEnable());
         postWhenCommitCheckbox.setEnabled(timer.isAutoTrackingEnable());
 
-
-        //todo
-//        typeComboBox.setSelectedIndex(0);
         typeComboBox.setEditable(true);
         typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
         typeLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
+        Long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
+        Long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
+                TimeUnit.HOURS.toMillis(inactivityHours));
+
+        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours.toString());
+        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes.toString());
+
+
+        scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
+        scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
+
+        commentTextField.setText(timer.getComment());
         commentLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
         commentTextField.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
-        super.init();
-
     }
 
+    @Override
+    protected JButton createJButtonForAction(Action action) {
+        JButton button = super.createJButtonForAction(action);
+        button.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
+        button.getActionMap().put("apply", action);
+        return button;
+    }
+
+    void installDefaultBorder() {
+        inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new JTabbedPane().getBackground(), 2),
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                        BorderFactory.createEmptyBorder(0, 5, 2, 2)
+                )
+        ));
+    }
 
     @Override
     public JComponent getPreferredFocusedComponent() {
@@ -247,9 +267,8 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 
     @Override
     protected Action @NotNull [] createActions() {
-        return new Action[]{getOKAction(), getCancelAction(), getHelpAction()};
+        return new Action[]{testConnectionAction, proxyAction, getOKAction(), getCancelAction()};
     }
-
 
     private void testConnectionAction() {
 
@@ -327,19 +346,18 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         this.isManualModeRadioButton.setEnabled(true);
 
         try {
-            final Collection types = (new TimeTrackingService()).getAvailableWorkItemsTypes(repository);
+            final Collection<String> types = (new TimeTrackingService()).getAvailableWorkItemsTypes(repository);
             ApplicationManager.getApplication().invokeLater(() -> {
                 int idx = 0;
-                //todo
-//        if (types.isNotEmpty()) {
-//          typeComboBox.model = DefaultComboBoxModel(types.toTypedArray())
-//          types.mapIndexed { index, value ->
-//            if (value == timeTrackerComponent.type) {
-//              idx = index
-//            }
-//          }
-//        }
-//                typeComboBox.setSelectedIndex(idx);
+                if (!types.isEmpty()) {
+                    typeComboBox.setModel(new DefaultComboBoxModel(types.toArray()));
+                    for (String type : types) {
+                        if (type.equals(timer.getType())) {
+                            idx = ArrayUtils.indexOf(types.toArray(), type);
+                        }
+                    }
+                }
+                typeComboBox.setSelectedIndex(idx);
             }, AnyModalityState.ANY);
         } catch (Exception var3) {
             HelpersKt.getLogger().info("Work item types cannot be loaded: " + var3.getMessage());
@@ -588,23 +606,37 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 
     private void createUIComponents() {
 
+        commentTextField = new PlaceholderTextField(timer.getComment());
+        commentTextField.setPlaceholder("Enter default comment text");
+
         advertiserLabel = new HyperlinkLabel("Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration", null);
         getTokenInfoLabel = new HyperlinkLabel("Learn how to generate a permanent token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html", null);
-
-        Long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
-        Long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
-                TimeUnit.HOURS.toMillis(inactivityHours));
-
-        inactivityHourInputField = new JTextField((inactivityHours < 10 ? "0" : "") + inactivityHours.toString());
-        inactivityMinutesInputField = new JTextField((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes.toString());
-
-        scheduledHour = new JTextField(timer.getScheduledPeriod().substring(0, 2));
-        scheduledMinutes = new JTextField(timer.getScheduledPeriod().substring(3, 5));
-
     }
 
+
+    protected class TestConnectionAction extends DialogWrapperAction {
+        protected TestConnectionAction() {
+            super("Test Connection");
+        }
+
+        @Override
+        protected void doAction(ActionEvent e) {
+            testConnectionAction();
+        }
+    }
+
+    protected class ProxyAction extends DialogWrapperAction {
+        protected ProxyAction() {
+            super("Proxy settings...");
+        }
+
+        @Override
+        protected void doAction(ActionEvent e) {
+            HttpConfigurable.editConfigurable(controlPanel);
+        }
+    }
 
     /**
      * Method generated by IntelliJ IDEA GUI Designer
@@ -622,7 +654,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         mainPane = new JTabbedPane();
         myRootPane.add(mainPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(100, 200), null, 0, false));
         connectionTab = new JPanel();
-        connectionTab.setLayout(new GridLayoutManager(13, 17, new Insets(20, 20, 30, 20), -1, -1));
+        connectionTab.setLayout(new GridLayoutManager(12, 17, new Insets(20, 20, 30, 20), -1, -1));
         connectionTab.setInheritsPopupMenu(false);
         mainPane.addTab("General", connectionTab);
         inputUrlTextPane = new JTextPane();
@@ -634,12 +666,6 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         connectionTab.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
         connectionTab.add(spacer2, new GridConstraints(4, 12, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        testConnectionButton = new JButton();
-        testConnectionButton.setText("Test connection");
-        connectionTab.add(testConnectionButton, new GridConstraints(12, 9, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        proxyButton = new JButton();
-        proxyButton.setText("Proxy settings...");
-        connectionTab.add(proxyButton, new GridConstraints(12, 10, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         getTokenInfoLabel.setText("Learn how to generate a permanent token");
         connectionTab.add(getTokenInfoLabel, new GridConstraints(6, 11, 1, 6, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         shareUrlCheckBox = new JCheckBox();
@@ -736,7 +762,9 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         preferencesPanel.add(commentLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         typeComboBox = new JComboBox();
         preferencesPanel.add(typeComboBox, new GridConstraints(0, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        commentTextField = new JTextField();
+        commentTextField.setPlaceholder("Enter default comment text");
+        commentTextField.setText("  a");
+        commentTextField.setToolTipText("");
         preferencesPanel.add(commentTextField, new GridConstraints(2, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final Spacer spacer11 = new Spacer();
         preferencesPanel.add(spacer11, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
@@ -768,3 +796,5 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     }
 
 }
+
+
