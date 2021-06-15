@@ -38,14 +38,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel myRootPane;
@@ -103,12 +102,16 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
     @NotNull
     private YouTrackServer repo;
 
+    @NotNull
+    private TimeTracker timer;
+
 
     public NewSetupDialog(@NotNull Project project, YouTrackServer repo, Boolean fromTracker) {
         super(project, true);
         this.project = project;
         this.repo = repo;
         this.fromTracker = fromTracker;
+        this.timer = getTimeTrackerComponent();
         setTitle("YouTrack");
         $$$setupUI$$$();
         init();
@@ -171,6 +174,8 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
             }
         });
 
+        isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
+        scheduledFieldsEnabling(timer.isAutoTrackingEnable());
 
         testConnectionButton.addActionListener(it -> testConnectionAction());
 
@@ -189,6 +194,45 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
                 testConnectionButton.setVisible(true);
             }
         });
+
+        noTrackingButton.addActionListener(e ->
+                isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
+                        isManualModeRadioButton.isSelected(), noTrackingButton.isSelected())
+        );
+        noTrackingButton.setSelected(true);
+
+        isAutoTrackingEnabledRadioButton.setSelected(timer.isAutoTrackingEnable());
+        isAutoTrackingEnabledRadioButton.addActionListener(e ->
+                isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
+                        isManualModeRadioButton.isSelected(), noTrackingButton.isSelected()));
+
+
+        isManualModeRadioButton.setSelected(timer.isManualTrackingEnable());
+        isManualModeRadioButton.addActionListener(e ->
+                isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
+                        isManualModeRadioButton.isSelected(), noTrackingButton.isSelected())
+        );
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(isAutoTrackingEnabledRadioButton);
+        buttonGroup.add(isManualModeRadioButton);
+        buttonGroup.add(noTrackingButton);
+
+        postWhenCommitCheckbox.setSelected(timer.isPostAfterCommitEnabled());
+        postWhenProjectClosedCheckbox.setSelected(timer.isWhenProjectClosedEnabled());
+
+        postWhenProjectClosedCheckbox.setEnabled(timer.isAutoTrackingEnable());
+        postWhenCommitCheckbox.setEnabled(timer.isAutoTrackingEnable());
+
+
+        //todo
+//        typeComboBox.setSelectedIndex(0);
+        typeComboBox.setEditable(true);
+        typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+        typeLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+
+        commentLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+        commentTextField.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
         super.init();
 
@@ -295,7 +339,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 //        if (types.isNotEmpty()) {
 //          typeComboBox.model = DefaultComboBoxModel(types.toTypedArray())
 //          types.mapIndexed { index, value ->
-//            if (value == ComponentAware.of(repo.project).timeTrackerComponent.type) {
+//            if (value == timeTrackerComponent.type) {
 //              idx = index
 //            }
 //          }
@@ -304,8 +348,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
             }, AnyModalityState.ANY);
         } catch (Exception var3) {
             HelpersKt.getLogger().info("Work item types cannot be loaded: " + var3.getMessage());
-            typeComboBox.setModel(new DefaultComboBoxModel(new String[]{ComponentAware.Companion.of(repo.getProject())
-                    .getTimeTrackerComponent().getType()}));
+            typeComboBox.setModel(new DefaultComboBoxModel(new String[]{timer.getType()}));
         }
 
     }
@@ -454,97 +497,74 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         return this.fromTracker;
     }
 
-    @NotNull
     public TaskManagerProxyService getTaskManagerComponent() {
         return DefaultImpls.getTaskManagerComponent(this);
     }
 
-    @NotNull
     public ICommandService getCommandComponent() {
         return DefaultImpls.getCommandComponent(this);
     }
 
-    @NotNull
     public SourceNavigatorService getSourceNavigatorComponent() {
         return DefaultImpls.getSourceNavigatorComponent(this);
     }
 
-    @NotNull
     public PersistentIssueWorkItemsStore getIssueWorkItemsStoreComponent() {
         return DefaultImpls.getIssueWorkItemsStoreComponent(this);
     }
 
-    @NotNull
     public IssueWorkItemsStoreUpdaterService getIssueWorkItemsUpdaterComponent() {
         return DefaultImpls.getIssueWorkItemsUpdaterComponent(this);
     }
 
-    @NotNull
     public PersistentIssueStore getIssueStoreComponent() {
         return DefaultImpls.getIssueStoreComponent(this);
     }
 
-    @NotNull
     public IssueStoreUpdaterService getIssueUpdaterComponent() {
         return DefaultImpls.getIssueUpdaterComponent(this);
     }
 
-    @NotNull
     public YouTrackPluginApiService getPluginApiComponent() {
         return DefaultImpls.getPluginApiComponent(this);
     }
 
-    @NotNull
     public TimeTracker getTimeTrackerComponent() {
         return DefaultImpls.getTimeTrackerComponent(this);
     }
 
-    @NotNull
     public CredentialsChecker getCredentialsCheckerComponent() {
         return DefaultImpls.getCredentialsCheckerComponent(this);
     }
 
-
-    @NotNull
     public final JRadioButton getAutoTrackingEnabledCheckBox() {
         return isAutoTrackingEnabledRadioButton;
     }
 
-    @Nullable
     public final String getType() {
         return (String) this.typeComboBox.getItemAt(this.typeComboBox.getSelectedIndex());
     }
 
-    @NotNull
     public final String getInactivityHours() {
-        String var10000 = this.inactivityHourInputField.getText();
-        Intrinsics.checkNotNullExpressionValue(var10000, "inactivityHourInputField.text");
-        return var10000;
+        return inactivityHourInputField.getText();
     }
 
-    @NotNull
     public final String getInactivityMinutes() {
-        String var10000 = this.inactivityMinutesInputField.getText();
-        Intrinsics.checkNotNullExpressionValue(var10000, "inactivityMinutesInputField.text");
-        return var10000;
+        return inactivityMinutesInputField.getText();
     }
 
-    @NotNull
     public final JRadioButton getManualModeCheckbox() {
         return isManualModeRadioButton;
     }
 
-    @NotNull
     public final JCheckBox getScheduledCheckbox() {
         return isScheduledCheckbox;
     }
 
-    @NotNull
     public final JCheckBox getPostWhenCommitCheckbox() {
         return postWhenCommitCheckbox;
     }
 
-    @NotNull
     public final String getScheduledTime() {
         SimpleDateFormat formatter = new SimpleDateFormat("mm");
         try {
@@ -556,14 +576,10 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         return null;
     }
 
-    @NotNull
     public final String getComment() {
-        String var10000 = this.commentTextField.getText();
-        Intrinsics.checkNotNullExpressionValue(var10000, "commentTextField.text");
-        return var10000;
+        return commentTextField.getText();
     }
 
-    @NotNull
     public final JCheckBox getPostOnClose() {
         return postWhenProjectClosedCheckbox;
     }
@@ -575,10 +591,21 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 
 
     private void createUIComponents() {
+
         advertiserLabel = new HyperlinkLabel("Get YouTrack",
                 "https://www.jetbrains.com/youtrack/download/get_youtrack.html?idea_integration", null);
         getTokenInfoLabel = new HyperlinkLabel("Learn how to generate a permanent token",
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html", null);
+
+        Long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
+        Long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
+                TimeUnit.HOURS.toMillis(inactivityHours));
+
+        inactivityHourInputField = new JTextField((inactivityHours < 10 ? "0" : "") + inactivityHours.toString());
+        inactivityMinutesInputField = new JTextField((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes.toString());
+
+        scheduledHour = new JTextField(timer.getScheduledPeriod().substring(0, 2));
+        scheduledMinutes = new JTextField(timer.getScheduledPeriod().substring(3, 5));
 
     }
 
