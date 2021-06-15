@@ -112,6 +112,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         this.repo = repo;
         this.fromTracker = fromTracker;
         this.timer = getTimeTrackerComponent();
+        this.credentialsChecker = getCredentialsCheckerComponent();
         setTitle("YouTrack");
         $$$setupUI$$$();
         init();
@@ -259,10 +260,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         Color fontColor = inputTokenField.getForeground();
 
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
-        //todo
         if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-
-//            if (!inputUrlTextPane.getText().isBlank() && inputTokenField.getPassword().length != 0) {
 
             YouTrackRepositoryType myRepositoryType = new YouTrackRepositoryType();
             connectedRepository.setLoginAnonymously(false);
@@ -294,10 +292,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
 
         drawAutoCorrection(fontColor);
 
-        //todo
         if (inputUrlTextPane.getText().isEmpty() || inputTokenField.getPassword().length == 0) {
-
-//        if (inputUrlTextPane.getText().isBlank() || inputTokenField.getPassword().length == 0) {
             repoConnector.setNoteState(NotifierState.EMPTY_FIELD);
         } else if (!(credentialsChecker.isMatchingAppPassword(connectedRepository.getPassword())
                 || credentialsChecker.isMatchingBearerToken(connectedRepository.getPassword()))) {
@@ -393,6 +388,7 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
         if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
             logger.info("YouTrack repository " + connectedRepository.getUrl() + " is connected");
             String oldAddress = inputUrlTextPane.getText();
+
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
 
             URL oldUrl = null;
@@ -407,9 +403,9 @@ public class NewSetupDialog extends DialogWrapper implements ComponentAware {
             inputUrlTextPane.setText("");
 
             Color protocolColor = (oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
-                    ? protocolColor = fontColor : Color.GREEN;
+                    ? fontColor : Color.GREEN;
 
-            appendToPane(inputUrlTextPane, fixedUrl.getPath(), protocolColor);
+            appendToPane(inputUrlTextPane, fixedUrl.getProtocol(), protocolColor);
             appendToPane(inputUrlTextPane, "://", protocolColor);
             appendToPane(inputUrlTextPane, fixedUrl.getHost(), (oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : Color.GREEN);
             if (fixedUrl.getPort() != -1) {
