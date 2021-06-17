@@ -83,11 +83,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         super<LocatableConfigurationBase>.readExternal(element)
         XmlSerializer.deserializeInto(this, element)
         if (port <= 0) {
-            if ("http" == URI(host!!).scheme) {
-                port = ProtocolDefaultPorts.HTTP
-            } else if ("https" == URI(host!!).scheme) {
-                port = ProtocolDefaultPorts.SSL
-            }
+            port = ProtocolDefaultPorts.SSL
         }
     }
 

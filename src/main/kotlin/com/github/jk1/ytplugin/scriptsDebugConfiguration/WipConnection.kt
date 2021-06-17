@@ -73,22 +73,20 @@ class WipConnection : WipRemoteVmConnection() {
         fun connectToWebSocket() {
             if (webSocketDebuggerUrl != null) {
                 if (URI(webSocketDebuggerUrl).port <= 0) {
-                    if ("http" == URI(webSocketDebuggerUrl!!).scheme) {
-                        super.doOpen(
-                            result,
-                            InetSocketAddress(URI(webSocketDebuggerUrl!!).host, ProtocolDefaultPorts.HTTP),
-                            stopCondition
-                        )
-                    } else if ("https" == URI(webSocketDebuggerUrl!!).scheme) {
-                        super.doOpen(
-                            result,
-                            InetSocketAddress(URI(webSocketDebuggerUrl!!).host, ProtocolDefaultPorts.SSL),
-                            stopCondition
-                        )
-                    }
+                    super.doOpen(
+                        result,
+                        InetSocketAddress(URI(webSocketDebuggerUrl!!).host, ProtocolDefaultPorts.SSL),
+                        stopCondition
+                    )
+                } else {
+                    super.doOpen(
+                        result,
+                        InetSocketAddress(URI(webSocketDebuggerUrl!!).host, URI(webSocketDebuggerUrl!!).port),
+                        stopCondition
+                    )
                 }
             } else {
-                result.setError("Please check your permissions to debug")
+                result.setError("Please check your permissions, you should be able to update any project to debug scripts")
             }
         }
 
@@ -255,7 +253,7 @@ class WipConnection : WipRemoteVmConnection() {
             result.setError("Please check your permissions, you should be able to update any project to debug scripts")
 
         pageConnections.add(PageConnection(pageUrl, title, type, webSocketDebuggerUrl, id, address))
-        return !processPageConnections(context,null, pageConnections, result)
+        return !processPageConnections(context, null, pageConnections, result)
     }
 
     override fun connectDebugger(
