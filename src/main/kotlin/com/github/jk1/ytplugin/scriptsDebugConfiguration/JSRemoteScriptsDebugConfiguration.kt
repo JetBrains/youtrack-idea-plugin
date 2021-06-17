@@ -41,7 +41,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 
-private const val DEFAULT_PORT = 9229
+private const val DEFAULT_PORT = -1
 private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
 class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
@@ -80,9 +80,6 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     override fun readExternal(element: Element) {
         super<LocatableConfigurationBase>.readExternal(element)
         XmlSerializer.deserializeInto(this, element)
-        if (port <= 0) {
-            port = DEFAULT_PORT
-        }
     }
 
     override fun writeExternal(element: Element) {

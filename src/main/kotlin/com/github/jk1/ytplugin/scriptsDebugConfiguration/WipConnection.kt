@@ -145,7 +145,6 @@ class WipConnection : WipRemoteVmConnection() {
         // get active project to detect YouTrack repo
         val activeProject = getActiveProject()
 
-        // todo cloud
         val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/scripts/debug/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
@@ -197,10 +196,7 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    fun getJsonInfo(
-        connectionsJson: ByteBuf,
-        result: AsyncPromise<WipVm>
-    ) {
+    fun getJsonInfo(connectionsJson: ByteBuf, result: AsyncPromise<WipVm>) {
 
         if (!connectionsJson.isReadable) {
             result.setError("Malformed response")

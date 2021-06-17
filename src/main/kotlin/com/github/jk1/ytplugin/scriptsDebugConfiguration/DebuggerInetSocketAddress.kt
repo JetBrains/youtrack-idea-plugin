@@ -5,7 +5,7 @@ import org.apache.http.util.Args
 import java.net.InetAddress
 import java.net.InetSocketAddress
 
-private const val DEFAULT_PORT = 9229
+private const val DEFAULT_PORT = -1
 
 class DebuggerInetSocketAddress(private val httphost: HttpHost?, addr: InetAddress?, port: Int) :
     InetSocketAddress(addr, port) {
