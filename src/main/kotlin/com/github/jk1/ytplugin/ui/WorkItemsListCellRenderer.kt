@@ -14,6 +14,12 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import java.lang.Integer.max
 import java.lang.Math.min
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
+import java.time.temporal.TemporalAccessor
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
@@ -39,6 +45,26 @@ class WorkItemsListCellRenderer(
 
 
     private var maxIssueIdWidth = 0
+
+    companion object {
+        fun composeWorkItemDate(item: IssueWorkItem): ZonedDateTime {
+            val timeZone = ZoneId.of(item.timeZone)
+
+            val formatter = DateTimeFormatterBuilder()
+                .appendPattern("dd MMM yyyy")
+                .parseDefaulting(ChronoField.NANO_OF_DAY, 0)
+                .toFormatter()
+                .withZone(timeZone)
+
+            val instant = formatter.parse(item.date.format().substring(0, item.date.format().length - 6)) { temporal: TemporalAccessor? ->
+                Instant.from(
+                    temporal
+                )
+            }
+
+            return ZonedDateTime.ofInstant(instant, timeZone)
+        }
+    }
 
     fun getIssuePosition(): List<Int> {
         val panelWidth = viewportWidthProvider.invoke()
@@ -72,7 +98,12 @@ class WorkItemsListCellRenderer(
         val date = SimpleColoredComponent()
         date.isOpaque = false
         date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-        date.append(issueWorkItem.date.format().substring(0, issueWorkItem.date.format().length - 5), SimpleTextAttributes(idStyle, complimentaryColor))
+
+        val zonedDate = composeWorkItemDate(issueWorkItem)
+
+        date.append("${zonedDate.dayOfMonth}  ${zonedDate.month.name} ${zonedDate.year}",
+            SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
+        )
 
         val value = SimpleColoredComponent()
         value.isOpaque = false

@@ -185,22 +185,8 @@ class IssueViewer : JPanel(BorderLayout()) {
         // post date without time
         val date = SimpleColoredComponent()
 
-        val timeZone = ZoneId.of(workItem.timeZone)
 
-        val formatter = DateTimeFormatterBuilder()
-            .appendPattern("dd MMM yyyy")
-            .parseDefaulting(ChronoField.NANO_OF_DAY, 0)
-            .toFormatter()
-            .withZone(timeZone)
-
-        val instant = formatter.parse(workItem.date.format().substring(0, workItem.date.format().length - 6)) { temporal: TemporalAccessor? ->
-            Instant.from(
-                temporal
-            )
-        }
-
-        val zonedDate = ZonedDateTime.ofInstant(instant, timeZone)
-
+        val zonedDate = WorkItemsListCellRenderer.composeWorkItemDate(workItem)
 
         date.append("${zonedDate.dayOfMonth}  ${zonedDate.month.name} ${zonedDate.year}", REGULAR_BOLD_ATTRIBUTES)
 
