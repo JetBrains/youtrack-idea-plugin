@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.commands.CommandService
 import com.github.jk1.ytplugin.commands.ICommandService
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService
 import com.github.jk1.ytplugin.issues.PersistentIssueStore
+import com.github.jk1.ytplugin.issues.model.TimeZone
 import com.github.jk1.ytplugin.navigator.SourceNavigatorService
 import com.github.jk1.ytplugin.setup.CredentialsChecker
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService
@@ -53,6 +54,8 @@ interface ComponentAware {
     val pluginApiComponent: YouTrackPluginApiService
         get() = project.getService(YouTrackPluginApiService::class.java) as YouTrackPluginApiService
 
+    val timeZoneComponent: TimeZone
+        get() = project.getService(TimeZone::class.java)!!
 
     val timeTrackerComponent: TimeTracker
         get() = project.getService(TimeTracker::class.java)!!

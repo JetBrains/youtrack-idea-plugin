@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.issues.model
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.YouTrackIssue
 import com.github.jk1.ytplugin.rest.IssueJsonParser
 import com.google.gson.JsonArray

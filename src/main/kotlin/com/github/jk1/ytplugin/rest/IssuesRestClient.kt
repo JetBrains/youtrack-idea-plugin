@@ -15,6 +15,8 @@ import java.net.URL
  */
 class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClientBase, RestClientTrait {
 
+    private val timeZone = AdminRestClient(repository).getTimeZone()
+
     companion object {
         const val ISSUE_FIELDS = "id,idReadable,updated,created," +
                 "tags(color(foreground,background),name),project(shortName),links(value,direction,issues(idReadable)," +
@@ -95,7 +97,10 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 .addParameter("fields", "text,type(name),created,issue(idReadable)," +
                         "duration(presentation,minutes),author(name),creator(name),date,id")
         return HttpGet(builder.build()).execute { element ->
-            element.asJsonArray.mapNotNull { IssueJsonParser.parseWorkItem(it) }
+            val items = element.asJsonArray.mapNotNull { IssueJsonParser.parseWorkItem(it) }
+            items.forEach{it.timeZone = timeZone}
+            items
         }
     }
+
 }

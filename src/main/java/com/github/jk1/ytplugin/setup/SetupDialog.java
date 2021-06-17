@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.YouTrackPluginApiService;
 import com.github.jk1.ytplugin.commands.ICommandService;
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService;
 import com.github.jk1.ytplugin.issues.PersistentIssueStore;
+import com.github.jk1.ytplugin.issues.model.TimeZone;
 import com.github.jk1.ytplugin.navigator.SourceNavigatorService;
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
@@ -547,6 +548,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     @NotNull
     public TimeTracker getTimeTrackerComponent() {
         return DefaultImpls.getTimeTrackerComponent(this);
+    }
+
+    @NotNull
+    @Override
+    public TimeZone getTimeZoneComponent() {
+        return DefaultImpls.getTimeZoneComponent(this);
     }
 
     @NotNull

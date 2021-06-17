@@ -15,6 +15,14 @@ import java.awt.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+import java.time.ZoneId
+
+import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoField
+
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.TemporalAccessor
 
 
 class IssueViewer : JPanel(BorderLayout()) {
@@ -174,9 +182,28 @@ class IssueViewer : JPanel(BorderLayout()) {
         header.append(workItem.author, REGULAR_BOLD_ATTRIBUTES)
         header.alignmentX = Component.LEFT_ALIGNMENT
 
-        val date = SimpleColoredComponent()
         // post date without time
-        date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), REGULAR_BOLD_ATTRIBUTES)
+        val date = SimpleColoredComponent()
+
+        val timeZone = ZoneId.of(workItem.timeZone)
+
+        val formatter = DateTimeFormatterBuilder()
+            .appendPattern("dd MMM yyyy")
+            .parseDefaulting(ChronoField.NANO_OF_DAY, 0)
+            .toFormatter()
+            .withZone(timeZone)
+
+        val instant = formatter.parse(workItem.date.format().substring(0, workItem.date.format().length - 6)) { temporal: TemporalAccessor? ->
+            Instant.from(
+                temporal
+            )
+        }
+
+        val zonedDate = ZonedDateTime.ofInstant(instant, timeZone)
+
+
+        date.append("${zonedDate.dayOfMonth}  ${zonedDate.month.name} ${zonedDate.year}", REGULAR_BOLD_ATTRIBUTES)
+
         date.alignmentX = Component.LEFT_ALIGNMENT
 
         var value = SimpleColoredComponent()

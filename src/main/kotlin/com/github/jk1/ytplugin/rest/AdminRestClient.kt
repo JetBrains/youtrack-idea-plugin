@@ -31,6 +31,14 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         return recommendedGroups.map { it.asJsonObject.get("name").asString }
     }
 
+    fun getTimeZone(): String {
+        val builder = URIBuilder("${repository.url}/api/admin/globalSettings/appearanceSettings")
+        builder.addParameter("fields", "timeZone(id)")
+        return HttpGet(builder.build()).execute { element ->
+            element.asJsonObject.get("timeZone").asJsonObject.get("id").toString()
+        }
+    }
+
     override fun getAccessibleProjects(): List<String> {
         val builder = URIBuilder("${repository.url}/api/admin/projects")
         builder.setParameter("fields", "shortName")

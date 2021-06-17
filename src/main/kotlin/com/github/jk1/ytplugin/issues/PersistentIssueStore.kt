@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.issues
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.PersistentIssueStore.Memento
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.IssueJsonParser
@@ -62,6 +63,8 @@ class PersistentIssueStore : PersistentStateComponent<Memento> {
 
                 val issues = JsonParser.parseString(issuesJson).asJsonArray
                         .mapNotNull { IssueJsonParser.parseIssue(it, repo.url) }
+
+                issues.forEach {it -> it.workItems.forEach{ it.timeZone = ComponentAware.of(repo.project).timeZoneComponent.zone}}
 
                 logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
                 return IssueStore(issues)
