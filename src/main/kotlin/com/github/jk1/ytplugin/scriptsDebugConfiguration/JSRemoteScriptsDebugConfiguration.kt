@@ -32,11 +32,11 @@ import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
 import org.apache.http.HttpHost
+import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import java.net.InetAddress
 import java.net.InetSocketAddress
-import java.net.URI
 import java.net.URL
 import java.util.concurrent.Callable
 import javax.swing.JComponent
@@ -93,9 +93,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
-        return host?.let {
-            DebuggerInetSocketAddress(HttpHost(it), InetAddress.getLoopbackAddress(), port)
-        } ?: DebuggerInetSocketAddress(null, InetAddress.getLoopbackAddress(), port)
+        return InetSocketAddress(InetAddress.getLoopbackAddress(), port)
     }
 
     private fun loadScripts() {

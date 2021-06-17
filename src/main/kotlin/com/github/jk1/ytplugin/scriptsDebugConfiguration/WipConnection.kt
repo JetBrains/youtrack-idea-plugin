@@ -72,19 +72,14 @@ class WipConnection : WipRemoteVmConnection() {
         val combinedCondition = Conditions.or(stopCondition ?: Conditions.alwaysFalse(), resultRejected)
         fun connectToWebSocket() {
             if (webSocketDebuggerUrl != null) {
-                if (URI(webSocketDebuggerUrl).port <= 0) {
-                    super.doOpen(
-                        result,
-                        InetSocketAddress(URI(webSocketDebuggerUrl!!).host, ProtocolDefaultPorts.SSL),
-                        stopCondition
-                    )
-                } else {
-                    super.doOpen(
-                        result,
-                        InetSocketAddress(URI(webSocketDebuggerUrl!!).host, URI(webSocketDebuggerUrl!!).port),
-                        stopCondition
-                    )
-                }
+                super.doOpen(
+                    result,
+                    InetSocketAddress(
+                        URI(webSocketDebuggerUrl!!).host,
+                        if (URI(webSocketDebuggerUrl).port <= 0) ProtocolDefaultPorts.SSL else URI(webSocketDebuggerUrl!!).port
+                    ),
+                    stopCondition
+                )
             } else {
                 result.setError("Please check your permissions, you should be able to update any project to debug scripts")
             }
