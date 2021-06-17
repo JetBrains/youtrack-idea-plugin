@@ -21,6 +21,7 @@ import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.util.SmartList
+import com.intellij.util.proxy.ProtocolDefaultPorts
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
 import com.intellij.util.xmlb.XmlSerializer
@@ -35,6 +36,7 @@ import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.net.URI
 import java.net.URL
 import java.util.concurrent.Callable
 import javax.swing.JComponent
@@ -80,6 +82,13 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     override fun readExternal(element: Element) {
         super<LocatableConfigurationBase>.readExternal(element)
         XmlSerializer.deserializeInto(this, element)
+        if (port <= 0) {
+            if ("http" == URI(host!!).scheme) {
+                port = ProtocolDefaultPorts.HTTP
+            } else if ("https" == URI(host!!).scheme) {
+                port = ProtocolDefaultPorts.SSL
+            }
+        }
     }
 
     override fun writeExternal(element: Element) {

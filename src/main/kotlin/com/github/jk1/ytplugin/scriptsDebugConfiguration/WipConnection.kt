@@ -37,6 +37,7 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.project.ProjectManager
 import java.awt.Window
 import com.intellij.util.io.socketConnection.ConnectionStatus
+import com.intellij.util.proxy.ProtocolDefaultPorts
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
@@ -71,11 +72,21 @@ class WipConnection : WipRemoteVmConnection() {
         val combinedCondition = Conditions.or(stopCondition ?: Conditions.alwaysFalse(), resultRejected)
         fun connectToWebSocket() {
             if (webSocketDebuggerUrl != null) {
-                super.doOpen(
-                    result,
-                    InetSocketAddress(URI(webSocketDebuggerUrl!!).host, URI(webSocketDebuggerUrl!!).port),
-                    stopCondition
-                )
+                if (URI(webSocketDebuggerUrl).port <= 0) {
+                    if ("http" == URI(webSocketDebuggerUrl!!).scheme) {
+                        super.doOpen(
+                            result,
+                            InetSocketAddress(URI(webSocketDebuggerUrl!!).host, ProtocolDefaultPorts.HTTP),
+                            stopCondition
+                        )
+                    } else if ("https" == URI(webSocketDebuggerUrl!!).scheme) {
+                        super.doOpen(
+                            result,
+                            InetSocketAddress(URI(webSocketDebuggerUrl!!).host, ProtocolDefaultPorts.SSL),
+                            stopCondition
+                        )
+                    }
+                }
             } else {
                 result.setError("Please check your permissions to debug")
             }

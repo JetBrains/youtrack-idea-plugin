@@ -5,20 +5,13 @@ import org.apache.http.util.Args
 import java.net.InetAddress
 import java.net.InetSocketAddress
 
-private const val DEFAULT_PORT = -1
 
 class DebuggerInetSocketAddress(private val httphost: HttpHost?, addr: InetAddress?, port: Int) :
     InetSocketAddress(addr, port) {
 
     private val httpHost: HttpHost
 
-    override fun toString(): String {
-        return if (port != DEFAULT_PORT){
-            httphost!!.hostName + ":" + port
-        } else {
-            httphost!!.hostName
-        }
-    }
+    override fun toString(): String = httphost!!.hostName + ":" + port
 
     init {
         Args.notNull(httphost, "HTTP host")
