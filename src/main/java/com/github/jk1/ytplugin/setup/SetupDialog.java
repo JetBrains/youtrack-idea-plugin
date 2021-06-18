@@ -2,7 +2,6 @@
 package com.github.jk1.ytplugin.setup;
 
 import com.github.jk1.ytplugin.ComponentAware;
-import com.github.jk1.ytplugin.HelpersKt;
 import com.github.jk1.ytplugin.YouTrackPluginApiService;
 import com.github.jk1.ytplugin.commands.ICommandService;
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService;
@@ -99,8 +98,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     @NotNull
     private final Project project;
 
-    @NotNull
-    private YouTrackServer repo;
+    private final YouTrackServer repo;
 
     @NotNull
     private final TimeTracker timer;
@@ -203,13 +201,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
         typeLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
-        Long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
-        Long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
+        long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
+        long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
                 TimeUnit.HOURS.toMillis(inactivityHours));
 
-        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours.toString());
-        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes.toString());
-
+        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours);
+        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes);
 
         scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
         scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
@@ -240,7 +237,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
     private void testConnectionAction() {
 
-        Boolean isRememberPassword = PasswordSafe.getInstance().isRememberPasswordByDefault();
+        boolean isRememberPassword = PasswordSafe.getInstance().isRememberPasswordByDefault();
         if (!isRememberPassword) {
             repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
         }
@@ -294,6 +291,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             allowSelection(new YouTrackServer(connectedRepository, project));
         }
 
+        logger.debug("connection is tested, result is: " + repoConnector.getNoteState());
         repoConnector.setNotifier(notifyFieldLabel);
         isConnectionTested = true;
     }
@@ -324,11 +322,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                             idx = ArrayUtils.indexOf(types.toArray(), type);
                         }
                     }
+                    typeComboBox.setSelectedIndex(idx);
                 }
-                typeComboBox.setSelectedIndex(idx);
             }, AnyModalityState.ANY);
-        } catch (Exception var3) {
-            HelpersKt.getLogger().info("Work item types cannot be loaded: " + var3.getMessage());
+        } catch (Exception e) {
+            logger.info("Work item types cannot be loaded: " + e.getMessage());
             typeComboBox.setModel(new DefaultComboBoxModel(new String[]{timer.getType()}));
         }
 
@@ -376,13 +374,13 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             String oldAddress = inputUrlTextPane.getText();
 
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
-
             URL oldUrl = null;
             URL fixedUrl = null;
             try {
                 oldUrl = (oldAddress.startsWith("http")) ? new URL(oldAddress) : new URL("http://" + oldAddress);
                 fixedUrl = new URL(connectedRepository.getUrl());
             } catch (MalformedURLException e) {
+                logger.debug("Malformed URL: " + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -462,6 +460,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         if (repoConnector.getNoteState() != NotifierState.NULL_PROXY_HOST && repoConnector.getNoteState() !=
                 NotifierState.PASSWORD_NOT_STORED && repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
+            logger.debug("Setup dialog can be closed");
             this.close(0);
         }
         super.doOKAction();
@@ -476,11 +475,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     @NotNull
     public Project getProject() {
         return this.project;
-    }
-
-    @NotNull
-    public final YouTrackServer getRepo() {
-        return this.repo;
     }
 
     @NotNull
@@ -567,7 +561,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             String hours = formatter.format((new SimpleDateFormat("mm")).parse(this.scheduledHour.getText()));
             return hours + ':' + formatter.format((new SimpleDateFormat("mm")).parse(this.scheduledMinutes.getText())) + ":0";
         } catch (ParseException e) {
-            e.printStackTrace();
+            logger.debug("Failed to parse scheduled time: " + e.getMessage());
         }
         return null;
     }
@@ -580,14 +574,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         return postWhenProjectClosedCheckbox;
     }
 
-    public final void setRepo(@NotNull YouTrackServer var1) {
-        Intrinsics.checkNotNullParameter(var1, "<set-?>");
-        this.repo = var1;
-    }
-
 
     private void createUIComponents() {
-
         commentTextField = new PlaceholderTextField(timer.getComment());
         commentTextField.setPlaceholder("Enter default comment text");
 
@@ -721,22 +709,28 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         timePanel.add(minuteLabel2, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         inactivityPeriodPanel = new JPanel();
         inactivityPeriodPanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        inactivityPeriodPanel.setEnabled(false);
         autoPanel.add(inactivityPeriodPanel, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         inactivityHourInputField = new JBTextField();
+        inactivityHourInputField.setEnabled(false);
         inactivityHourInputField.setText("00");
         inactivityPeriodPanel.add(inactivityHourInputField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
         inactivityMinutesInputField = new JBTextField();
+        inactivityMinutesInputField.setEnabled(false);
         inactivityMinutesInputField.setText("15");
         inactivityPeriodPanel.add(inactivityMinutesInputField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
         final Spacer spacer12 = new Spacer();
         inactivityPeriodPanel.add(spacer12, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         hourLabel1 = new JLabel();
+        hourLabel1.setEnabled(false);
         hourLabel1.setText("hours");
         inactivityPeriodPanel.add(hourLabel1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         minuteLabel1 = new JBLabel();
+        minuteLabel1.setEnabled(false);
         minuteLabel1.setText("minutes");
         inactivityPeriodPanel.add(minuteLabel1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         inactivityTextField = new JBLabel();
+        inactivityTextField.setEnabled(false);
         inactivityTextField.setText("Inactivity period:");
         autoPanel.add(inactivityTextField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         preferencesPanel = new JPanel();
