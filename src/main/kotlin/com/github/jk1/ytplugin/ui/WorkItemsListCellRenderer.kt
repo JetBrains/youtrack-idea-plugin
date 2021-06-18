@@ -14,8 +14,6 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import java.lang.Integer.max
 import java.lang.Math.min
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
@@ -74,10 +72,7 @@ class WorkItemsListCellRenderer(
         val date = SimpleColoredComponent()
         date.isOpaque = false
         date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-
-        val sdf = SimpleDateFormat("MMM dd yyyy")
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-        date.append(sdf.format(issueWorkItem.date), SimpleTextAttributes(idStyle, complimentaryColor))
+        date.append(issueWorkItem.date.format().substring(0, issueWorkItem.date.format().length - 5), SimpleTextAttributes(idStyle, complimentaryColor))
 
         val value = SimpleColoredComponent()
         value.isOpaque = false
