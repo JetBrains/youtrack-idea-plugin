@@ -2,7 +2,6 @@
 package com.github.jk1.ytplugin.setup;
 
 import com.github.jk1.ytplugin.ComponentAware;
-import com.github.jk1.ytplugin.HelpersKt;
 import com.github.jk1.ytplugin.YouTrackPluginApiService;
 import com.github.jk1.ytplugin.commands.ICommandService;
 import com.github.jk1.ytplugin.issues.IssueStoreUpdaterService;
@@ -14,14 +13,16 @@ import com.github.jk1.ytplugin.timeTracker.*;
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction;
 import com.github.jk1.ytplugin.ui.HyperlinkLabel;
 import com.intellij.ide.passwordSafe.PasswordSafe;
-import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.impl.AnyModalityState;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.markup.HighlighterTargetArea;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.tasks.youtrack.YouTrackRepository;
 import com.intellij.tasks.youtrack.YouTrackRepositoryType;
+import com.intellij.ui.EditorTextField;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.*;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -34,10 +35,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.MalformedURLException;
@@ -50,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 public class SetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel myRootPane;
     private JTabbedPane mainPane;
-    private JTextPane inputUrlTextPane;
+    private EditorTextField inputUrlTextPane;
     private JBPasswordField inputTokenField;
     private JBRadioButton isAutoTrackingEnabledRadioButton;
     private JBRadioButton isManualModeRadioButton;
@@ -101,8 +98,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     @NotNull
     private final Project project;
 
-    @NotNull
-    private YouTrackServer repo;
+    private final YouTrackServer repo;
 
     @NotNull
     private final TimeTracker timer;
@@ -146,31 +142,10 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             allowSelection(repo);
         }
 
-        inputUrlTextPane.setBorder(BorderFactory.createLineBorder(JBColor.LIGHT_GRAY));
-        inputUrlTextPane.setText(repo.getUrl());
         inputUrlTextPane.setBackground(inputTokenField.getBackground());
-        // reset the default text area behavior to make TAB key transfer focus
-        inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-        // make text area border behave similar to the one of the text field
-        installDefaultBorder();
+        inputUrlTextPane.setForeground(inputTokenField.getForeground());
 
-        inputUrlTextPane.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent arg0) {
-                inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
-                        new DarculaTextBorder(),
-                        BorderFactory.createEmptyBorder(0, 5, 0, 0)));
-                repaint();
-            }
-
-            @Override
-            public void focusLost(FocusEvent arg0) {
-                installDefaultBorder();
-                repaint();
-            }
-        });
-
+        inputUrlTextPane.setText(repo.getUrl());
         inputTokenField.setText(repo.getPassword());
 
         isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
@@ -226,13 +201,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
         typeLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
-        Long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
-        Long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
+        long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
+        long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
                 TimeUnit.HOURS.toMillis(inactivityHours));
 
-        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours.toString());
-        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes.toString());
-
+        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours);
+        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes);
 
         scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
         scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
@@ -251,16 +225,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         return button;
     }
 
-    void installDefaultBorder() {
-        inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new JTabbedPane().getBackground(), 2),
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                        BorderFactory.createEmptyBorder(0, 5, 2, 2)
-                )
-        ));
-    }
-
     @Override
     public JComponent getPreferredFocusedComponent() {
         return myRootPane;
@@ -273,7 +237,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
     private void testConnectionAction() {
 
-        Boolean isRememberPassword = PasswordSafe.getInstance().isRememberPasswordByDefault();
+        boolean isRememberPassword = PasswordSafe.getInstance().isRememberPasswordByDefault();
         if (!isRememberPassword) {
             repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
         }
@@ -327,6 +291,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             allowSelection(new YouTrackServer(connectedRepository, project));
         }
 
+        logger.debug("connection is tested, result is: " + repoConnector.getNoteState());
         repoConnector.setNotifier(notifyFieldLabel);
         isConnectionTested = true;
     }
@@ -357,11 +322,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                             idx = ArrayUtils.indexOf(types.toArray(), type);
                         }
                     }
+                    typeComboBox.setSelectedIndex(idx);
                 }
-                typeComboBox.setSelectedIndex(idx);
             }, AnyModalityState.ANY);
-        } catch (Exception var3) {
-            HelpersKt.getLogger().info("Work item types cannot be loaded: " + var3.getMessage());
+        } catch (Exception e) {
+            logger.info("Work item types cannot be loaded: " + e.getMessage());
             typeComboBox.setModel(new DefaultComboBoxModel(new String[]{timer.getType()}));
         }
 
@@ -409,42 +374,54 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             String oldAddress = inputUrlTextPane.getText();
 
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
-
             URL oldUrl = null;
             URL fixedUrl = null;
             try {
                 oldUrl = (oldAddress.startsWith("http")) ? new URL(oldAddress) : new URL("http://" + oldAddress);
                 fixedUrl = new URL(connectedRepository.getUrl());
             } catch (MalformedURLException e) {
+                logger.debug("Malformed URL: " + e.getMessage());
                 e.printStackTrace();
             }
 
             inputUrlTextPane.setText("");
 
-            Color protocolColor = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
+            Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
                     ? fontColor : JBColor.GREEN;
 
-            appendToPane(inputUrlTextPane, fixedUrl.getProtocol(), protocolColor);
-            appendToPane(inputUrlTextPane, "://", protocolColor);
-            appendToPane(inputUrlTextPane, fixedUrl.getHost(), (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN);
+            drawUrlComponent(color, 0, fixedUrl.getProtocol().length() + 3, fixedUrl.getProtocol() + "://");
+
+            color = (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN;
+            drawUrlComponent(color, fixedUrl.getProtocol().length() + 3,
+                    fixedUrl.getProtocol().length() + 3 + fixedUrl.getHost().length(),
+                    inputUrlTextPane.getText() + fixedUrl.getHost());
+
             if (fixedUrl.getPort() != -1) {
-                Color color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
-                appendToPane(inputUrlTextPane, ":", color);
-                appendToPane(inputUrlTextPane, Integer.toString(fixedUrl.getPort()), color);
+                color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
+                drawUrlComponent(color, fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length(),
+                        fixedUrl.toString().length(),
+                        inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
             }
+
             if (!fixedUrl.getPath().isEmpty()) {
-                appendToPane(inputUrlTextPane, fixedUrl.getPath(), (oldUrl.getPath().equals(fixedUrl.getPath())) ? fontColor : JBColor.GREEN);
+                color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
+                drawUrlComponent(color, fixedUrl.toString().length() - fixedUrl.getPath().length(),
+                        fixedUrl.toString().length(),
+                        inputUrlTextPane.getText() + fixedUrl.getPath());
             }
         }
     }
 
-    private void appendToPane(JTextPane tp, String msg, Color c) {
-        StyleContext sc = StyleContext.getDefaultStyleContext();
-        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
-        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
-        tp.setCaretPosition(tp.getDocument().getLength());
-        tp.setCharacterAttributes(aset, false);
-        tp.replaceSelection(msg);
+    private void drawUrlComponent(Color color, int start, int end, String text) {
+
+        TextAttributes textAttributes = new TextAttributes();
+        textAttributes.setAttributes(color, textAttributes.getBackgroundColor(), textAttributes.getEffectColor(),
+                textAttributes.getErrorStripeColor(), textAttributes.getEffectType(), textAttributes.getFontType());
+
+        inputUrlTextPane.setText(text);
+        inputUrlTextPane.getEditor().getMarkupModel().addRangeHighlighter(start, end, 0,
+                textAttributes, HighlighterTargetArea.EXACT_RANGE);
+
     }
 
     @Override
@@ -483,6 +460,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         if (repoConnector.getNoteState() != NotifierState.NULL_PROXY_HOST && repoConnector.getNoteState() !=
                 NotifierState.PASSWORD_NOT_STORED && repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
+            logger.debug("Setup dialog can be closed");
             this.close(0);
         }
         super.doOKAction();
@@ -497,11 +475,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     @NotNull
     public Project getProject() {
         return this.project;
-    }
-
-    @NotNull
-    public final YouTrackServer getRepo() {
-        return this.repo;
     }
 
     @NotNull
@@ -588,7 +561,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             String hours = formatter.format((new SimpleDateFormat("mm")).parse(this.scheduledHour.getText()));
             return hours + ':' + formatter.format((new SimpleDateFormat("mm")).parse(this.scheduledMinutes.getText())) + ":0";
         } catch (ParseException e) {
-            e.printStackTrace();
+            logger.debug("Failed to parse scheduled time: " + e.getMessage());
         }
         return null;
     }
@@ -601,14 +574,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         return postWhenProjectClosedCheckbox;
     }
 
-    public final void setRepo(@NotNull YouTrackServer var1) {
-        Intrinsics.checkNotNullParameter(var1, "<set-?>");
-        this.repo = var1;
-    }
-
 
     private void createUIComponents() {
-
         commentTextField = new PlaceholderTextField(timer.getComment());
         commentTextField.setPlaceholder("Enter default comment text");
 
@@ -660,7 +627,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         connectionTab.setLayout(new GridLayoutManager(12, 23, new Insets(20, 20, 30, 20), -1, -1));
         connectionTab.setInheritsPopupMenu(false);
         mainPane.addTab("General", connectionTab);
-        inputUrlTextPane = new JTextPane();
+        inputUrlTextPane = new EditorTextField();
         connectionTab.add(inputUrlTextPane, new GridConstraints(2, 1, 1, 22, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(500, -1), null, 0, false));
         serverUrlLabel = new JBLabel();
         serverUrlLabel.setText("Server URL:");
@@ -742,22 +709,28 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         timePanel.add(minuteLabel2, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         inactivityPeriodPanel = new JPanel();
         inactivityPeriodPanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        inactivityPeriodPanel.setEnabled(false);
         autoPanel.add(inactivityPeriodPanel, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         inactivityHourInputField = new JBTextField();
+        inactivityHourInputField.setEnabled(false);
         inactivityHourInputField.setText("00");
         inactivityPeriodPanel.add(inactivityHourInputField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
         inactivityMinutesInputField = new JBTextField();
+        inactivityMinutesInputField.setEnabled(false);
         inactivityMinutesInputField.setText("15");
         inactivityPeriodPanel.add(inactivityMinutesInputField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
         final Spacer spacer12 = new Spacer();
         inactivityPeriodPanel.add(spacer12, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         hourLabel1 = new JLabel();
+        hourLabel1.setEnabled(false);
         hourLabel1.setText("hours");
         inactivityPeriodPanel.add(hourLabel1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         minuteLabel1 = new JBLabel();
+        minuteLabel1.setEnabled(false);
         minuteLabel1.setText("minutes");
         inactivityPeriodPanel.add(minuteLabel1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         inactivityTextField = new JBLabel();
+        inactivityTextField.setEnabled(false);
         inactivityTextField.setText("Inactivity period:");
         autoPanel.add(inactivityTextField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         preferencesPanel = new JPanel();
