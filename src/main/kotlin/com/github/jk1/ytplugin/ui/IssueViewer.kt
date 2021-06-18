@@ -6,12 +6,15 @@ import com.github.jk1.ytplugin.ui.WikiHtmlPaneFactory.setHtml
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.ui.SimpleColoredComponent
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -175,8 +178,10 @@ class IssueViewer : JPanel(BorderLayout()) {
         header.alignmentX = Component.LEFT_ALIGNMENT
 
         val date = SimpleColoredComponent()
-        // post date without time
-        date.append(workItem.date.format().substring(0, workItem.date.format().length - 6), REGULAR_BOLD_ATTRIBUTES)
+
+        val sdf = SimpleDateFormat("MMM dd yyyy")
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        date.append(sdf.format(workItem.date), REGULAR_BOLD_ATTRIBUTES)
         date.alignmentX = Component.LEFT_ALIGNMENT
 
         var value = SimpleColoredComponent()
