@@ -14,14 +14,16 @@ import com.github.jk1.ytplugin.timeTracker.*;
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction;
 import com.github.jk1.ytplugin.ui.HyperlinkLabel;
 import com.intellij.ide.passwordSafe.PasswordSafe;
-import com.intellij.ide.ui.laf.darcula.ui.DarculaTextBorder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.impl.AnyModalityState;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.markup.HighlighterTargetArea;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.tasks.youtrack.YouTrackRepository;
 import com.intellij.tasks.youtrack.YouTrackRepositoryType;
+import com.intellij.ui.EditorTextField;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.*;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -34,10 +36,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.MalformedURLException;
@@ -50,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class SetupDialog extends DialogWrapper implements ComponentAware {
     private JPanel myRootPane;
     private JTabbedPane mainPane;
-    private JTextPane inputUrlTextPane;
+    private EditorTextField inputUrlTextPane;
     private JBPasswordField inputTokenField;
     private JBRadioButton isAutoTrackingEnabledRadioButton;
     private JBRadioButton isManualModeRadioButton;
@@ -146,31 +144,10 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             allowSelection(repo);
         }
 
-        inputUrlTextPane.setBorder(BorderFactory.createLineBorder(JBColor.LIGHT_GRAY));
-        inputUrlTextPane.setText(repo.getUrl());
         inputUrlTextPane.setBackground(inputTokenField.getBackground());
-        // reset the default text area behavior to make TAB key transfer focus
-        inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        inputUrlTextPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-        // make text area border behave similar to the one of the text field
-        installDefaultBorder();
+        inputUrlTextPane.setForeground(inputTokenField.getForeground());
 
-        inputUrlTextPane.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent arg0) {
-                inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
-                        new DarculaTextBorder(),
-                        BorderFactory.createEmptyBorder(0, 5, 0, 0)));
-                repaint();
-            }
-
-            @Override
-            public void focusLost(FocusEvent arg0) {
-                installDefaultBorder();
-                repaint();
-            }
-        });
-
+        inputUrlTextPane.setText(repo.getUrl());
         inputTokenField.setText(repo.getPassword());
 
         isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
@@ -249,16 +226,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         button.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "apply");
         button.getActionMap().put("apply", action);
         return button;
-    }
-
-    void installDefaultBorder() {
-        inputUrlTextPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new JTabbedPane().getBackground(), 2),
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                        BorderFactory.createEmptyBorder(0, 5, 2, 2)
-                )
-        ));
     }
 
     @Override
@@ -421,30 +388,42 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             inputUrlTextPane.setText("");
 
-            Color protocolColor = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
+            Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
                     ? fontColor : JBColor.GREEN;
 
-            appendToPane(inputUrlTextPane, fixedUrl.getProtocol(), protocolColor);
-            appendToPane(inputUrlTextPane, "://", protocolColor);
-            appendToPane(inputUrlTextPane, fixedUrl.getHost(), (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN);
+            drawUrlComponent(color, 0, fixedUrl.getProtocol().length() + 3, fixedUrl.getProtocol() + "://");
+
+            color = (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN;
+            drawUrlComponent(color, fixedUrl.getProtocol().length() + 3,
+                    fixedUrl.getProtocol().length() + 3 + fixedUrl.getHost().length(),
+                    inputUrlTextPane.getText() + fixedUrl.getHost());
+
             if (fixedUrl.getPort() != -1) {
-                Color color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
-                appendToPane(inputUrlTextPane, ":", color);
-                appendToPane(inputUrlTextPane, Integer.toString(fixedUrl.getPort()), color);
+                color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
+                drawUrlComponent(color, fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length(),
+                        fixedUrl.toString().length(),
+                        inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
             }
+
             if (!fixedUrl.getPath().isEmpty()) {
-                appendToPane(inputUrlTextPane, fixedUrl.getPath(), (oldUrl.getPath().equals(fixedUrl.getPath())) ? fontColor : JBColor.GREEN);
+                color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
+                drawUrlComponent(color, fixedUrl.toString().length() - fixedUrl.getPath().length(),
+                        fixedUrl.toString().length(),
+                        inputUrlTextPane.getText() + fixedUrl.getPath());
             }
         }
     }
 
-    private void appendToPane(JTextPane tp, String msg, Color c) {
-        StyleContext sc = StyleContext.getDefaultStyleContext();
-        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
-        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
-        tp.setCaretPosition(tp.getDocument().getLength());
-        tp.setCharacterAttributes(aset, false);
-        tp.replaceSelection(msg);
+    private void drawUrlComponent(Color color, int start, int end, String text) {
+
+        TextAttributes textAttributes = new TextAttributes();
+        textAttributes.setAttributes(color, textAttributes.getBackgroundColor(), textAttributes.getEffectColor(),
+                textAttributes.getErrorStripeColor(), textAttributes.getEffectType(), textAttributes.getFontType());
+
+        inputUrlTextPane.setText(text);
+        inputUrlTextPane.getEditor().getMarkupModel().addRangeHighlighter(start, end, 0,
+                textAttributes, HighlighterTargetArea.EXACT_RANGE);
+
     }
 
     @Override
@@ -660,7 +639,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         connectionTab.setLayout(new GridLayoutManager(12, 23, new Insets(20, 20, 30, 20), -1, -1));
         connectionTab.setInheritsPopupMenu(false);
         mainPane.addTab("General", connectionTab);
-        inputUrlTextPane = new JTextPane();
+        inputUrlTextPane = new EditorTextField();
         connectionTab.add(inputUrlTextPane, new GridConstraints(2, 1, 1, 22, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(500, -1), null, 0, false));
         serverUrlLabel = new JBLabel();
         serverUrlLabel.setText("Server URL:");
