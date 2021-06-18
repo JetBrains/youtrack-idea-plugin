@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.ui
 
-import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.intellij.icons.AllIcons
 import com.intellij.tasks.youtrack.YouTrackRepository
@@ -14,12 +13,8 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import java.lang.Integer.max
 import java.lang.Math.min
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatterBuilder
-import java.time.temporal.ChronoField
-import java.time.temporal.TemporalAccessor
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
@@ -43,28 +38,8 @@ class WorkItemsListCellRenderer(
     private fun getValuePanelPosition() = valuePanel.preferredSize.getWidth()
     private fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
 
-
     private var maxIssueIdWidth = 0
 
-    companion object {
-        fun composeWorkItemDate(item: IssueWorkItem): ZonedDateTime {
-            val timeZone = ZoneId.of(item.timeZone)
-
-            val formatter = DateTimeFormatterBuilder()
-                .appendPattern("dd MMM yyyy")
-                .parseDefaulting(ChronoField.NANO_OF_DAY, 0)
-                .toFormatter()
-                .withZone(timeZone)
-
-            val instant = formatter.parse(item.date.format().substring(0, item.date.format().length - 6)) { temporal: TemporalAccessor? ->
-                Instant.from(
-                    temporal
-                )
-            }
-
-            return ZonedDateTime.ofInstant(instant, timeZone)
-        }
-    }
 
     fun getIssuePosition(): List<Int> {
         val panelWidth = viewportWidthProvider.invoke()
@@ -99,11 +74,9 @@ class WorkItemsListCellRenderer(
         date.isOpaque = false
         date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
 
-        val zonedDate = composeWorkItemDate(issueWorkItem)
-
-        date.append("${zonedDate.dayOfMonth}  ${zonedDate.month.name} ${zonedDate.year}",
-            SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
-        )
+        val sdf = SimpleDateFormat("MMM dd yyyy")
+        sdf.timeZone = if (issueWorkItem.timeZone != "") TimeZone.getTimeZone(issueWorkItem.timeZone) else TimeZone.getDefault()
+        date.append(sdf.format(issueWorkItem.date), SimpleTextAttributes(idStyle, complimentaryColor))
 
         val value = SimpleColoredComponent()
         value.isOpaque = false

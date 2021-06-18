@@ -12,17 +12,11 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
+import java.text.SimpleDateFormat
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-import java.time.ZoneId
-
-import java.time.Instant
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoField
-
-import java.time.format.DateTimeFormatterBuilder
-import java.time.temporal.TemporalAccessor
+import java.util.TimeZone
 
 
 class IssueViewer : JPanel(BorderLayout()) {
@@ -185,10 +179,9 @@ class IssueViewer : JPanel(BorderLayout()) {
         // post date without time
         val date = SimpleColoredComponent()
 
-
-        val zonedDate = WorkItemsListCellRenderer.composeWorkItemDate(workItem)
-
-        date.append("${zonedDate.dayOfMonth}  ${zonedDate.month.name} ${zonedDate.year}", REGULAR_BOLD_ATTRIBUTES)
+        val sdf = SimpleDateFormat("MMM dd yyyy")
+        sdf.timeZone = if (workItem.timeZone != "") TimeZone.getTimeZone(workItem.timeZone) else TimeZone.getDefault()
+        date.append(sdf.format(workItem.date),  REGULAR_BOLD_ATTRIBUTES)
 
         date.alignmentX = Component.LEFT_ALIGNMENT
 

@@ -64,7 +64,8 @@ class PersistentIssueStore : PersistentStateComponent<Memento> {
                 val issues = JsonParser.parseString(issuesJson).asJsonArray
                         .mapNotNull { IssueJsonParser.parseIssue(it, repo.url) }
 
-                issues.forEach {it -> it.workItems.forEach{ it.timeZone = ComponentAware.of(repo.project).timeZoneComponent.zone}}
+                val timeZone = ComponentAware.of(repo.project).timeZoneComponent.zone
+                issues.forEach {it -> it.workItems.forEach{ it.timeZone = timeZone}}
 
                 logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
                 return IssueStore(issues)

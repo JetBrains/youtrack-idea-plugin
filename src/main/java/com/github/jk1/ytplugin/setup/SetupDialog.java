@@ -358,8 +358,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                             idx = ArrayUtils.indexOf(types.toArray(), type);
                         }
                     }
+                    typeComboBox.setSelectedIndex(idx);
                 }
-                typeComboBox.setSelectedIndex(idx);
             }, AnyModalityState.ANY);
         } catch (Exception var3) {
             HelpersKt.getLogger().info("Work item types cannot be loaded: " + var3.getMessage());
