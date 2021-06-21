@@ -36,8 +36,9 @@
     <!-- We depend on bundled task management plugin -->
     <depends>com.intellij.tasks</depends>
     <depends>com.intellij.modules.ultimate</depends>
-    <depends>JavaScript</depends>
-    <depends>JavaScriptDebugger</depends>
+    <depends optional="true" config-file="com.github.jk1.ytplugin-javaScriptSupport.xml">JavaScript</depends>
+    <depends config-file="com.github.jk1.ytplugin-javaScriptDebuggerSupport.xml" optional="true"> JavaScriptDebugger</depends>
+
 
     <actions>
         <action id="com.github.jk1.ytplugin.issues.actions.EditorCreateIssueAction"
@@ -113,7 +114,7 @@
         <configurationType
                 implementation="com.github.jk1.ytplugin.scriptsDebugConfiguration.JSRemoteScriptsDebugConfigurationType"/>
 
-        <registryKey key="youtrack.script.debug" defaultValue="false" restartRequired="true"
+        <registryKey key="youtrack.script.debug" defaultValue="true" restartRequired="true"
                      description="Enables YouTrack scripts debug configuration"/>
 
     </extensions>
