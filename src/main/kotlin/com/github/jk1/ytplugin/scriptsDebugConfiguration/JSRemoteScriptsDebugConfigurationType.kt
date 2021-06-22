@@ -23,24 +23,21 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
 
     init {
         val edition = ApplicationNamesInfo.getInstance().editionName
+        logger.debug("IDE edition: $edition")
 
-        if (Registry.`is`("youtrack.script.debug", false)) {
-            if (edition != "Community Edition"){
-                logger.debug("IDE edition: $edition")
-                addFactory(object : ConfigurationFactory(this) {
-                    override fun getSingletonPolicy() = RunConfigurationSingletonPolicy.SINGLE_INSTANCE_ONLY
+        if (Registry.`is`("youtrack.script.debug", false) && edition != "Community Edition") {
+            addFactory(object : ConfigurationFactory(this) {
+                override fun getSingletonPolicy() = RunConfigurationSingletonPolicy.SINGLE_INSTANCE_ONLY
 
-                    override fun getId() = FACTORY_ID
+                override fun getId() = FACTORY_ID
 
-                    override fun createTemplateConfiguration(project: Project) =
-                        JSRemoteScriptsDebugConfiguration(project, this, configurationTypeDescription)
+                override fun createTemplateConfiguration(project: Project) =
+                    JSRemoteScriptsDebugConfiguration(project, this, configurationTypeDescription)
 
-                    override fun isEditableInDumbMode() = true
-                })
-            } else {
-                logger.debug("IDE edition is not compatible with scripts debugger: $edition")
-            }
+                override fun isEditableInDumbMode() = true
 
+                override fun isApplicable(project: Project) = true
+            })
         } else {
             throw ExtensionNotApplicableException.INSTANCE
         }
