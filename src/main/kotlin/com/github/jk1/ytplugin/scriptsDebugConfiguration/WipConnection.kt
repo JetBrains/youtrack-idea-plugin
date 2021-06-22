@@ -3,9 +3,16 @@ package com.github.jk1.ytplugin.scriptsDebugConfiguration
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.github.jk1.ytplugin.whenActive
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Conditions
 import com.intellij.openapi.util.SystemInfo
@@ -46,6 +53,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import org.jetbrains.io.webSocket.WebSocketProtocolHandler
 import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
 import org.jetbrains.wip.protocol.inspector.DetachedEventData
+import java.awt.Desktop
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -70,18 +78,22 @@ class WipConnection : WipRemoteVmConnection() {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
         val resultRejected = Condition<Void> { result.state == Promise.State.REJECTED }
         val combinedCondition = Conditions.or(stopCondition ?: Conditions.alwaysFalse(), resultRejected)
+        @Synchronized
         fun connectToWebSocket() {
-            if (webSocketDebuggerUrl != null) {
-                super.doOpen(
-                    result,
-                    InetSocketAddress(
-                        URI(webSocketDebuggerUrl!!).host,
-                        if (URI(webSocketDebuggerUrl).port <= 0) ProtocolDefaultPorts.SSL else URI(webSocketDebuggerUrl!!).port
-                    ),
-                    stopCondition
-                )
-            } else {
-                result.setError("Please check your permissions, you should be able to update any project to debug scripts")
+            when {
+                isBaseurlMatchingActual() -> {
+                    super.doOpen(
+                        result,
+                        InetSocketAddress(
+                            URI(webSocketDebuggerUrl!!).host,
+                            if (URI(webSocketDebuggerUrl).port <= 0) ProtocolDefaultPorts.SSL else URI(
+                                webSocketDebuggerUrl!!
+                            ).port
+                        ),
+                        stopCondition
+                    )
+
+                }
             }
         }
 
@@ -225,6 +237,60 @@ class WipConnection : WipRemoteVmConnection() {
             }
             reader.endObject()
         }
+        notifyUrlsShouldMatch()
+    }
+
+
+    private fun getYouTrackRepo() : YouTrackServer? {
+        val repositories =
+            getActiveProject()?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
+        if (repositories != null && repositories.isNotEmpty()) {
+            return repositories.first()
+        }
+        return null
+    }
+
+    private fun isBaseurlMatchingActual(): Boolean {
+        return webSocketDebuggerUrl != null && getYouTrackRepo() != null  &&
+                URI(webSocketDebuggerUrl).authority == URI(getYouTrackRepo()?.url).authority
+    }
+
+    private fun notifyUrlsShouldMatch() {
+        val repo = getYouTrackRepo()
+        when {
+            !isBaseurlMatchingActual() && repo != null && webSocketDebuggerUrl != null -> {
+                val note = "To start using scripts debugger Base URL of the YouTrack instance should match its actual URL"
+                val trackerNote = TrackerNotification()
+                trackerNote.notifyWithHelper(note, NotificationType.WARNING, object : AnAction("Settings"), DumbAware {
+                    override fun actionPerformed(event: AnActionEvent) {
+                        event.whenActive {
+                            val desktop: Desktop? = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
+                            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                                try {
+                                    val repository =  getYouTrackRepo()
+                                    desktop.browse(URI("${repository?.url}/admin/settings"))
+                                } catch (e: java.lang.Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+            repo == null -> {
+                val note = "YouTrack server integration is not configured yet"
+                val trackerNote = TrackerNotification()
+                trackerNote.notify(note, NotificationType.WARNING)
+            }
+            webSocketDebuggerUrl == null -> {
+                val note =
+                    "Please check your permissions, you should be able to update any project to debug scripts"
+                val trackerNote = TrackerNotification()
+                trackerNote.notify(note, NotificationType.WARNING)
+            }
+        }
+
+
     }
 
     override fun connectToPage(
