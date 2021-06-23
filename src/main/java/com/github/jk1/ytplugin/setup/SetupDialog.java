@@ -424,11 +424,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     }
 
     @Override
-    public void doCancelAction() {
-        super.doCancelAction();
-    }
-
-    @Override
     protected void doOKAction() {
         if (!isConnectionTested) {
             testConnectionAction();
