@@ -426,7 +426,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
     @Override
     public void doCancelAction() {
-        new TimeTrackingService().setupTimeTracking(this, project);
         super.doCancelAction();
     }
 
