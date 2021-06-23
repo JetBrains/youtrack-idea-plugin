@@ -4,7 +4,9 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.*
+import com.intellij.notification.NotificationType
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
@@ -24,15 +26,22 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
                 "id,projectCustomField(emptyFieldText)),resolved,attachments(name,url),reporter(login)"
     }
 
-    override fun createDraft(summary: String): String {
+    override fun createDraft(summary: String): String? {
         val method = HttpPost("${repository.url}/api/admin/users/me/drafts")
         val res: URL? = this::class.java.classLoader.getResource("create_draft_body.json")
         val summaryFormatted = summary.replace("\n", "\\n").replace("\"", "\\\"")
         method.entity = res?.readText()?.replace("{description}", summaryFormatted)?.jsonEntity
-        return method.execute { element ->
-            val id = element.asJsonObject.get("id").asString
-            logger.debug("Successfully created issue draft: $id")
-            id
+        try {
+            return method.execute { element ->
+                val id = element.asJsonObject.get("id").asString
+                logger.debug("Successfully created issue draft: $id")
+                id
+            }
+        } catch (e: Exception){
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("YouTrack server integration is not configured yet " +
+                    "or the connection might be lost", NotificationType.WARNING)
+            return ""
         }
     }
 

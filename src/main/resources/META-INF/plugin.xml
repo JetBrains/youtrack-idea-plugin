@@ -39,7 +39,7 @@
     <actions>
         <action id="com.github.jk1.ytplugin.issues.actions.EditorCreateIssueAction"
                 class="com.github.jk1.ytplugin.issues.actions.EditorCreateIssueAction">
-            <keyboard-shortcut first-keystroke="control shift Z" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="shift alt K" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ConsoleEditorPopupMenu"/>
         </action>

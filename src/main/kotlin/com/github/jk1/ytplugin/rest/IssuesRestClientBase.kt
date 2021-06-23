@@ -7,7 +7,7 @@ import com.github.jk1.ytplugin.issues.model.Issue
  */
 interface IssuesRestClientBase {
 
-    fun createDraft(summary: String): String
+    fun createDraft(summary: String): String?
 
     fun getIssue(id: String): Issue?
 
