@@ -10,6 +10,7 @@ import com.google.gson.JsonObject
 import com.intellij.notification.NotificationType
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
+import org.apache.http.conn.HttpHostConnectException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -34,7 +35,8 @@ class ScriptsRestClient(override val repository: YouTrackServer) : RestClientTra
                 scriptsList
             }
         } catch (e: Exception) {
-            e.multicatchException(UnknownHostException::class.java, RuntimeException::class.java) {
+            e.multicatchException(UnknownHostException::class.java, HttpHostConnectException::class.java,
+                RuntimeException::class.java) {
                 logger.debug("Unable to load YouTrack Scripts: ${e.message}")
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Connection to the YouTrack might be lost", NotificationType.WARNING)
