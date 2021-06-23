@@ -27,7 +27,9 @@ open class CreateIssueAction(val allowEmptyIssue: Boolean, icon: Icon) : AnActio
             val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories().firstOrNull()
             if (repo != null) {
                 val id = IssuesRestClient(repo).createDraft(text?.asCodeBlock() ?: "")
-                BrowserUtil.browse("${repo.url}/newIssue?draftId=$id")
+                if (id != "") {
+                    BrowserUtil.browse("${repo.url}/newIssue?draftId=$id")
+                }
             }
         }
     }
