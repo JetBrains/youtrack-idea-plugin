@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.scriptsDebugConfiguration
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
 import com.google.common.collect.ImmutableBiMap
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -31,8 +32,6 @@ import com.intellij.util.xmlb.annotations.XCollection
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
-import org.apache.http.HttpHost
-import org.apache.http.conn.HttpInetSocketAddress
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import java.net.InetAddress
@@ -117,12 +116,21 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         session: XDebugSession,
         executionResult: ExecutionResult?
     ): BrowserChromeDebugProcess {
-        loadScripts()
-        val connection = WipConnection()
-        val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
-        val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
-        connection.open(socketAddress)
-        return process
+        val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
+
+        val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
+        when (version) {
+            null -> throw InvalidDataException("YouTrack server integration is not configured yet")
+            in 2021.3 .. Double.MAX_VALUE -> {
+                loadScripts()
+                val connection = WipConnection()
+                val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
+                val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+                connection.open(socketAddress)
+                return process
+            }
+            else -> throw InvalidDataException("YouTrack version is not sufficient")
+        }
     }
 
     private inner class WipRemoteDebugConfigurationSettingsEditor :
