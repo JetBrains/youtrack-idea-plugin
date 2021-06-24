@@ -13,22 +13,33 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Conditions
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.util.SmartList
 import com.intellij.util.Urls
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.connectRetrying
 import com.intellij.util.io.handler
+import com.intellij.util.io.socketConnection.ConnectionStatus
+import com.intellij.util.proxy.ProtocolDefaultPorts
 import com.jetbrains.debugger.wip.PageConnection
 import com.jetbrains.debugger.wip.WipRemoteVmConnection
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
+import io.netty.channel.Channel
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.*
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
+import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator
+import io.netty.handler.codec.http.websocketx.WebSocketVersion
+import io.netty.util.CharsetUtil
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.isPending
@@ -36,24 +47,14 @@ import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.debugger.connection.chooseDebuggee
 import org.jetbrains.io.NettyUtil
 import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
-import org.jetbrains.wip.WipVm
-import java.net.InetSocketAddress
-import java.net.URI
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.WindowManager
-import com.intellij.openapi.project.ProjectManager
-import java.awt.Window
-import com.intellij.util.io.socketConnection.ConnectionStatus
-import com.intellij.util.proxy.ProtocolDefaultPorts
-import io.netty.channel.Channel
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
-import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator
-import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import org.jetbrains.io.webSocket.WebSocketProtocolHandler
 import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
+import org.jetbrains.wip.WipVm
 import org.jetbrains.wip.protocol.inspector.DetachedEventData
 import java.awt.Desktop
+import java.awt.Window
+import java.net.InetSocketAddress
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -65,7 +66,6 @@ class WipConnection : WipRemoteVmConnection() {
     @Volatile
     private var connectionsData: ByteBuf? = null
 
-    private var pageUrl: String? = null
     private var webSocketDebuggerUrl: String? = null
     private var title: String? = null
     private var type: String? = null
@@ -112,10 +112,12 @@ class WipConnection : WipRemoteVmConnection() {
                             context.pipeline().remove(this)
                             context.close()
                             connectionsData = message.content().copy()
-                            getJsonInfo(connectionsData!!, result)
+                            getJsonInfo(connectionsData!!)
                             connectToWebSocket()
                         } catch (e: Throwable) {
-                            handleExceptionOnGettingWebSockets(e, result)
+                            logger.debug("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
+                                connectionsData!!.writerIndex(),
+                                CharsetUtil.UTF_8).toString()}")
                         }
                     }
 
@@ -212,10 +214,10 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    fun getJsonInfo(connectionsJson: ByteBuf, result: AsyncPromise<WipVm>) {
+    fun getJsonInfo(connectionsJson: ByteBuf) {
 
         if (!connectionsJson.isReadable) {
-            result.setError("Malformed response")
+            logger.debug("Malformed response: $connectionsJson")
             return
         }
 
@@ -227,7 +229,6 @@ class WipConnection : WipRemoteVmConnection() {
             reader.beginObject()
             while (reader.hasNext()) {
                 when (reader.nextName()) {
-                    "devtoolsFrontendUrl" -> pageUrl = reader.nextString()
                     "title" -> title = reader.nextString()
                     "type" -> type = reader.nextString()
                     "webSocketDebuggerUrl" -> webSocketDebuggerUrl = reader.nextString()
@@ -313,7 +314,7 @@ class WipConnection : WipRemoteVmConnection() {
         if (webSocketDebuggerUrl == null)
             result.setError("Please check your permissions, you should be able to update any project to debug scripts")
 
-        pageConnections.add(PageConnection(pageUrl, title, type, webSocketDebuggerUrl, id, address))
+        pageConnections.add(PageConnection(webSocketDebuggerUrl, title, type, webSocketDebuggerUrl, id, address))
         return !processPageConnections(context, null, pageConnections, result)
     }
 
