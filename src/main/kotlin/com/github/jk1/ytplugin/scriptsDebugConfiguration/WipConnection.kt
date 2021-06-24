@@ -147,7 +147,7 @@ class WipConnection : WipRemoteVmConnection() {
                     window = WindowManager.getInstance().suggestParentWindow(project)
                 }
             } catch (e: Exception) {
-                logger.error("IUnable to get the window: ${e.message}")
+                logger.error("Unable to get the window: ${e.message}")
             }
 
             if (window != null && window!!.isActive) {
