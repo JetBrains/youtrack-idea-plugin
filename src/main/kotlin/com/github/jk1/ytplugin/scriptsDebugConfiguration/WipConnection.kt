@@ -121,7 +121,6 @@ class WipConnection : WipRemoteVmConnection() {
                         }
                     }
 
-                    @Suppress("OverridingDeprecatedMember")
                     override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                         result.setError(cause)
                         context.close()
@@ -206,7 +205,6 @@ class WipConnection : WipRemoteVmConnection() {
 
             }
 
-            @Suppress("OverridingDeprecatedMember")
             override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                 vmResult.setError(cause)
                 context.close()
@@ -354,20 +352,14 @@ class WipConnection : WipRemoteVmConnection() {
                     vm.ready()
                 }
 
-                override fun exceptionCaught(
-                    @Suppress("NAME_SHADOWING") context: ChannelHandlerContext,
-                    cause: Throwable
-                ) {
+                override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                     result.setError(cause)
                     context.fireExceptionCaught(cause)
                 }
             },
             WebSocketFrameAggregator(NettyUtil.MAX_CONTENT_LENGTH),
             object : WebSocketProtocolHandler() {
-                override fun textFrameReceived(
-                    @Suppress("NAME_SHADOWING") channel: Channel,
-                    message: TextWebSocketFrame
-                ) {
+                override fun textFrameReceived(channel: Channel, message: TextWebSocketFrame) {
                     vm.textFrameReceived(message)
                 }
             }
