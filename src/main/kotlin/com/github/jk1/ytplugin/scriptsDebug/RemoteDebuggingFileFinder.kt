@@ -19,14 +19,9 @@ import com.intellij.util.Urls
 private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
 class RemoteDebuggingFileFinder(
-    mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
+    private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
     private val parent: DebuggableFileFinder? = null
 ) : DebuggableFileFinder {
-
-    private var mappings = mappings
-
-    @Deprecated("Use constructor with DebuggableFileFinder")
-    constructor(mappings: BiMap<String, VirtualFile>) : this(mappings, null)
 
     override fun findNavigatable(url: Url, project: Project): Navigatable? {
         findMapping(url, project)?.let {
