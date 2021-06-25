@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.scriptsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
@@ -185,7 +185,7 @@ class WipConnection : WipRemoteVmConnection() {
                 }
             }
         } catch (e: NoYouTrackRepositoryException) {
-            vmResult.setError("Please check your permissions to debug")
+            vmResult.setError("YouTrack server integration is not configured yet")
         }
 
     }
@@ -290,8 +290,6 @@ class WipConnection : WipRemoteVmConnection() {
                 trackerNote.notify(note, NotificationType.WARNING)
             }
         }
-
-
     }
 
     override fun connectToPage(
@@ -340,7 +338,7 @@ class WipConnection : WipRemoteVmConnection() {
                 close("${ConnectionStatus.DISCONNECTED.statusText} (debugger crashed)", ConnectionStatus.DISCONNECTED)
             } else {
                 close(
-                    "${ConnectionStatus.DISCONNECTED.statusText} (debugger was closed or Web Inspector was opened)",
+                    "${ConnectionStatus.DISCONNECTED.statusText} (connection was closed)",
                     ConnectionStatus.DETACHED
                 )
             }

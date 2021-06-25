@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.scriptsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger

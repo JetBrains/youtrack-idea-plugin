@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.scriptsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebug
 
 import com.google.common.base.Joiner
 import com.google.common.collect.BiMap

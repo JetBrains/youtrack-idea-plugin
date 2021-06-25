@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin.scriptsDebugConfiguration
+package com.github.jk1.ytplugin.scriptsDebug
 
 import com.intellij.util.Urls
 import com.intellij.util.io.addChannelListener
