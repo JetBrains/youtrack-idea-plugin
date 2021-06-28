@@ -34,14 +34,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -365,7 +361,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeLabel.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
         typeComboBox.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
 
-        System.out.println("hello2");
         shouldStopTimer = true;
 
     }
@@ -455,6 +450,9 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 new StopTrackerAction().stopTimer(project);
                 timer.setAutoTrackingTemporaryDisabled(true);
             }
+            if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
+                new TimeTrackingService().setupTimeTracking(this, project);
+            }
         }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
         if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
@@ -473,9 +471,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
                 repoConnector.showIssuesForConnectedRepo(myRepository, project);
             }
-
-            new TimeTrackingService().setupTimeTracking(this, project);
-
         }
 
         if (repoConnector.getNoteState() != NotifierState.NULL_PROXY_HOST && repoConnector.getNoteState() !=
