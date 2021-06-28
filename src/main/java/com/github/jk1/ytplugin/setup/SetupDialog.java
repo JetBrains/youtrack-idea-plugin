@@ -34,8 +34,14 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -90,6 +96,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     private final YouTrackRepository connectedRepository = new YouTrackRepository();
     private final SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
     private final boolean fromTracker;
+    private boolean shouldStopTimer = false;
 
     TestConnectionAction testConnectionAction = new TestConnectionAction();
     ProxyAction proxyAction = new ProxyAction();
@@ -117,11 +124,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
     @Override
     protected void init() {
-        if (timer.isRunning()) {
-            new StopTrackerAction().stopTimer(project);
-            timer.setAutoTrackingTemporaryDisabled(true);
-        }
-
         setupGeneralTab();
         setupTimeTrackingTab();
 
@@ -209,6 +211,21 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
         scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
+
+        DocumentListener stopOnScheduleUpdate = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                shouldStopTimer = true;
+            }
+            public void removeUpdate(DocumentEvent e) {
+                shouldStopTimer = true;
+            }
+            public void insertUpdate(DocumentEvent e) {
+                shouldStopTimer = true;
+            }
+        };
+
+        scheduledMinutes.getDocument().addDocumentListener(stopOnScheduleUpdate);
+        scheduledHour.getDocument().addDocumentListener(stopOnScheduleUpdate);
 
         commentTextField.setText(timer.getComment());
         commentLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
@@ -348,6 +365,9 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeLabel.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
         typeComboBox.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
 
+        System.out.println("hello2");
+        shouldStopTimer = true;
+
     }
 
     private void inactivityFieldsEnabling(Boolean enable) {
@@ -429,6 +449,13 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             testConnectionAction();
         }
 
+        // post time if any relevant changes in settings were made
+        if (shouldStopTimer){
+            if (timer.isRunning()) {
+                new StopTrackerAction().stopTimer(project);
+                timer.setAutoTrackingTemporaryDisabled(true);
+            }
+        }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
         if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
             YouTrackRepository myRepository = repo.getRepo();
