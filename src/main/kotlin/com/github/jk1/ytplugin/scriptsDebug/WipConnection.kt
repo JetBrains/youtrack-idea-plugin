@@ -195,7 +195,8 @@ class WipConnection : WipRemoteVmConnection() {
                 super.channelActive(context)
                 try {
                     context.pipeline().remove(this)
-                    connectToPage(context, address, connectionsData!!, vmResult)
+                    connectDebugger(PageConnection(webSocketDebuggerUrl, title, type, webSocketDebuggerUrl, id, address),
+                        context, vmResult,null)
                 } catch (e: Throwable) {
                     handleExceptionOnGettingWebSockets(e, vmResult)
                 }
@@ -290,30 +291,6 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    override fun connectToPage(
-        context: ChannelHandlerContext,
-        address: InetSocketAddress,
-        connectionsJson: ByteBuf,
-        result: AsyncPromise<WipVm>
-    ): Boolean {
-
-        logger.debug("On connection to page: $connectionsJson")
-        result.onError {
-            logger.debug("Error: $it")
-        }
-
-        val pageConnections = SmartList<PageConnection>()
-
-        // read is allowed if the user can update any project  (e.g. he can read this workflow and write the similar one for his own projects);
-        // read project permission for any project is not sufficient as reading workflows without being able to update
-        // any of them seems to be a security leak
-        if (webSocketDebuggerUrl == null)
-            result.setError("Please check your permissions, you should be able to update any project to debug scripts")
-
-        pageConnections.add(PageConnection(webSocketDebuggerUrl, title, type, webSocketDebuggerUrl, id, address))
-        return !processPageConnections(context, null, pageConnections, result)
-    }
-
     override fun connectDebugger(
         page: PageConnection,
         context: ChannelHandlerContext,
@@ -368,45 +345,6 @@ class WipConnection : WipRemoteVmConnection() {
                 context.fireExceptionCaught(it.cause())
             }
         }
-    }
-
-    override fun processPageConnections(
-        context: ChannelHandlerContext,
-        debugMessageQueue: MessagingLogger?,
-        pageConnections: List<PageConnection>,
-        result: AsyncPromise<WipVm>,
-    ): Boolean {
-        val debuggablePages = SmartList<PageConnection>()
-
-        for (p in pageConnections) {
-            if (url == null) {
-                debuggablePages.add(p)
-            } else if (Urls.equals(url, Urls.newFromEncoded(p.url!!), SystemInfo.isFileSystemCaseSensitive, true)) {
-                connectDebugger(p, context, result, null)
-                return true
-            }
-        }
-
-        if (url == null) {
-            chooseDebuggee(debuggablePages, -1) { item, renderer ->
-                renderer.append("${item.title} ${item.url?.let { "($it)" } ?: ""}",
-                    if (item.webSocketDebuggerUrl == null) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES)
-            }.onSuccess {
-                val webSocketDebuggerUrl = it.webSocketDebuggerUrl
-                if (webSocketDebuggerUrl == null) {
-                    result.setError("Another debugger is attached, please ensure that DevTools is closed or restart application to force detach")
-                    return@onSuccess
-                }
-
-                currentPageTitle = it.title
-
-                connectDebugger(it, context, result, null)
-            }
-                .onError { result.setError(it) }
-        } else {
-            result.setError("Cannot find page $url to connect")
-        }
-        return true
     }
 
     override fun detachAndClose(): Promise<*> {
