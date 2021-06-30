@@ -42,7 +42,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 
-private const val DEFAULT_PORT = -1
+private const val DEFAULT_PORT = 443
 private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
 class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String) :

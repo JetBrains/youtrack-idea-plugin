@@ -1,6 +1,5 @@
 package com.github.jk1.ytplugin.scriptsDebug
 
-
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.intellij.notification.NotificationType

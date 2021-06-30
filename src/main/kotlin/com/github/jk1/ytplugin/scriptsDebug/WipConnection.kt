@@ -17,11 +17,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Conditions
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.ui.SimpleTextAttributes
-import com.intellij.util.SmartList
-import com.intellij.util.Urls
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.connectRetrying
 import com.intellij.util.io.handler
@@ -44,7 +40,6 @@ import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.isPending
 import org.jetbrains.debugger.MessagingLogger
-import org.jetbrains.debugger.connection.chooseDebuggee
 import org.jetbrains.io.NettyUtil
 import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
 import org.jetbrains.io.webSocket.WebSocketProtocolHandler
@@ -60,8 +55,6 @@ import java.util.*
 
 
 class WipConnection : WipRemoteVmConnection() {
-
-    private var currentPageTitle: String? = null
 
     @Volatile
     private var connectionsData: ByteBuf? = null
@@ -202,9 +195,7 @@ class WipConnection : WipRemoteVmConnection() {
                 }
             }
 
-            override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
-
-            }
+            override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {}
 
             override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                 vmResult.setError(cause)
