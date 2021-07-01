@@ -155,9 +155,13 @@ class WipConnection : WipRemoteVmConnection() {
         // get active project to detect YouTrack repo
         val activeProject = getActiveProject()
 
-        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/scripts/debug/json")
+        // todo check which protocol
+        val version = HttpVersion("HTTP", 1, 1, true)
+        val request = DefaultFullHttpRequest(version,  HttpMethod.GET, "/api/debug/scripts/json")
         request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
+        request.headers().set(HttpHeaderNames.CONNECTION, "Upgrade")
+
 
         try {
             val repositories =

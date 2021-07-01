@@ -92,7 +92,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
-        return InetSocketAddress(InetAddress.getLoopbackAddress(), port)
+        return InetSocketAddress(host, port)
     }
 
     private fun loadScripts() {
