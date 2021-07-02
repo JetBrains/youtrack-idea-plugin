@@ -64,6 +64,8 @@ class WipConnection : WipRemoteVmConnection() {
     private var type: String? = null
     private var id: String? = null
 
+    private val DEBUG_INFO_ENDPOINT = "/api/debug/scripts/json"
+
     private val String.b64Encoded: String
         get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
@@ -79,7 +81,7 @@ class WipConnection : WipRemoteVmConnection() {
                         result,
                         InetSocketAddress(
                             URI(webSocketDebuggerUrl!!).host,
-                            if (URI(webSocketDebuggerUrl).port <= 0) ProtocolDefaultPorts.SSL else URI(
+                            if (URI(webSocketDebuggerUrl!!).port <= 0) ProtocolDefaultPorts.SSL else URI(
                                 webSocketDebuggerUrl!!
                             ).port
                         ),
@@ -155,26 +157,24 @@ class WipConnection : WipRemoteVmConnection() {
         // get active project to detect YouTrack repo
         val activeProject = getActiveProject()
 
-        // todo check which protocol
-        val version = HttpVersion("HTTP", 1, 1, true)
-        val request = DefaultFullHttpRequest(version,  HttpMethod.GET, "/api/debug/scripts/json")
-        request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
-        request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
-        request.headers().set(HttpHeaderNames.CONNECTION, "Upgrade")
-
-
         try {
             val repositories =
                 activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
 
             val password = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
             val username = if (repositories != null && repositories.isNotEmpty()) repositories[0].username else ""
+            val scheme = if (repositories != null && repositories.isNotEmpty()) URI(repositories[0].url).scheme else null
+
+            val version = HttpVersion(scheme?.toUpperCase() ?: "HTTP", 1, 1, true)
+            val request = DefaultFullHttpRequest(version,  HttpMethod.GET, DEBUG_INFO_ENDPOINT)
 
             val authCredentials = "${username}:${password}".b64Encoded
 
             request.headers().set(HttpHeaderNames.AUTHORIZATION, "Basic $authCredentials")
-
             request.headers().set(HttpHeaderNames.ACCEPT, "application/json")
+            request.headers().set(HttpHeaderNames.CONNECTION, "Upgrade")
+            request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
+
             context.channel().writeAndFlush(request).addChannelListener {
                 if (!it.isSuccess) {
                     vmResult.setError(it.cause())

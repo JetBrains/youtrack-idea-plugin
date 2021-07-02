@@ -34,7 +34,6 @@ import com.intellij.xdebugger.XDebugSession
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
-import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URL
 import java.util.concurrent.Callable
