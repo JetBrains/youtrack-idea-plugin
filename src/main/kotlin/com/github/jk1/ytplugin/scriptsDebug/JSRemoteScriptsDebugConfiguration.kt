@@ -91,6 +91,9 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
+        if (port < 0){
+            port = 443
+        }
         return InetSocketAddress(host, port)
     }
 
