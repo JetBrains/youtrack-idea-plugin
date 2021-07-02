@@ -19,7 +19,6 @@ import java.awt.Color
 import java.io.InputStreamReader
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.util.*
 import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
@@ -27,10 +26,6 @@ class SetupRepositoryConnector {
 
     @Volatile
     var noteState = NotifierState.INVALID_TOKEN
-
-    private val String.b64Encoded: String
-        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
-
 
     fun setNotifier(note: JLabel) {
         note.foreground = Color.red
@@ -57,14 +52,11 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
+    fun getYouTrackVersion(url: String): Double? {
         val client = HttpClientBuilder.create().build()
-        val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
+        val builder = URIBuilder(url.trimEnd('/') + "/api/config")
         builder.addParameter("fields", "version")
         val method = HttpGet(builder.build())
-
-        val auth = "${repository.username}:${repository.password}".b64Encoded
-        method.setHeader("Authorization", "Basic $auth")
 
         try {
             val response = client.execute(method)
@@ -73,19 +65,26 @@ class SetupRepositoryConnector {
                 val json: JsonObject = JsonParser.parseReader(reader).asJsonObject
                 if (json.get("version") == null || json.get("version").isJsonNull) {
                     noteState = NotifierState.LOGIN_ERROR
-                    false
+                    null
                 } else {
-                    json.get("version").asString.toDouble() >= 2017.1
+                    val version = json.get("version").asString.toDouble()
+                    logger.debug("YouTrack version: $version")
+                    version
                 }
             } else {
                 noteState = NotifierState.LOGIN_ERROR
                 logger.warn("invalid token or login, failed on version validation: ${response.statusLine.statusCode}")
-                false
+                null
             }
         } catch (e: Exception) {
             logger.warn("invalid token or login, failed on version validation: ${e.message}")
         }
-        return false
+        return null
+    }
+
+    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
+        val version = getYouTrackVersion(repository.url)
+        return version != null && version >= 2017.1
     }
 
 

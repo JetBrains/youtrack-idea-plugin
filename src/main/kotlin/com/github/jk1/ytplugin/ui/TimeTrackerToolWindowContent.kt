@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.HelpAction
 import com.github.jk1.ytplugin.issues.actions.IssueActionGroup
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.*
 import com.intellij.openapi.project.Project

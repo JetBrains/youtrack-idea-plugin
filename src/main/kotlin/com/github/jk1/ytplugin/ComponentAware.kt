@@ -58,6 +58,7 @@ interface ComponentAware {
         get() = project.getService(TimeTracker::class.java)!!
 
     val credentialsCheckerComponent: CredentialsChecker
-        get() = project.getService(CredentialsChecker::class.java)
+        get() = project.getService(CredentialsChecker::class.java)!!
+
 
 }
