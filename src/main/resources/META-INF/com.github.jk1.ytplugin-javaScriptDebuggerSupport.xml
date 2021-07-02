@@ -1,3 +1,4 @@
 <idea-plugin>
     <depends>JavaScriptDebugger</depends>
+    <depends>JavaScript</depends>
 </idea-plugin>
