@@ -1,14 +1,19 @@
 package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.*
+import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.net.InetSocketAddress
-import java.net.URI
+import java.util.concurrent.Callable
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 
 class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
@@ -17,6 +22,7 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
 
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
+
 
     @Before
     fun setUp() {
@@ -42,10 +48,56 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
     }
 
 
+    @Test
+    fun `test scripts loading`() {
+        val scriptsList = ScriptsRestClient(repository).getScriptsWithRules()
+        assertEquals(scriptsList.size, 51)
+    }
+
+
+    @Test
+    fun `test scripts placement in project`() {
+
+        var srcDir: VirtualFile? = null
+        ApplicationManager.getApplication().invokeAndWait {
+            ApplicationManager.getApplication().runWriteAction {
+                srcDir = project.guessProjectDir()?.createChildDirectory(null, "src")
+            }
+        }
+
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Callable {
+                ScriptsRulesHandler(project).loadWorkflowRules()
+                assert(srcDir?.exists() == true && srcDir!!.children != null)
+                val scriptsList = ScriptsRestClient(repository).getScriptsWithRules()
+
+                // sublist is taken to reduce test execution time
+                scriptsList.subList(1, 5).map { workflow ->
+                    workflow.rules.map { rule ->
+                        val existingScript = project.guessProjectDir()?.findFileByRelativePath(
+                            "src/${workflow.name.split('/').last()}/${rule.name}.js"
+                        )
+                        assertNotEquals(existingScript, null)
+                        //we can add more assertions on files names here
+                    }
+                }
+            })
+
+    }
+
+
     @After
     fun tearDown() {
         issueStoreComponent.remove(repository)
         cleanUpTaskManager()
+        val srcDir = project.guessProjectDir()?.findFileByRelativePath("src")
+
+        ApplicationManager.getApplication().invokeAndWait {
+            ApplicationManager.getApplication().runWriteAction {
+                srcDir?.delete(null)
+            }
+        }
+
         fixture.tearDown()
     }
 }

@@ -36,7 +36,6 @@ class ScriptsRulesHandler(val project: Project) {
                 val trackerNote = TrackerNotification()
 
                 createScriptDirectory("src")
-                srcDir = project.guessProjectDir()?.findFileByRelativePath("src")
 
                 scriptsList.map { workflow ->
                     val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
@@ -78,6 +77,9 @@ class ScriptsRulesHandler(val project: Project) {
 
     private fun createScriptDirectory(name: String): PsiDirectory {
         var targetDirectory: PsiDirectory? = null
+        if (name != "src") {
+            srcDir = project.guessProjectDir()?.findFileByRelativePath("src")
+        }
 
         ApplicationManager.getApplication().invokeAndWait {
             ApplicationManager.getApplication().runWriteAction {
