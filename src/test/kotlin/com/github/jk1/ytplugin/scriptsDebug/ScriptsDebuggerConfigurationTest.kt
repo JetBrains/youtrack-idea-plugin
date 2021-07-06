@@ -8,11 +8,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
+import com.intellij.util.EventDispatcher
+import io.netty.channel.embedded.EmbeddedChannel
+import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec
+import org.jetbrains.debugger.DebugEventListener
+import org.jetbrains.io.JsonReaderEx
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Callable
-import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 
@@ -22,6 +27,8 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
 
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
+    private val dispatcher: EventDispatcher<DebugEventListener> = EventDispatcher.create(DebugEventListener::class.java)
+    private val debugEventListener: DebugEventListener get() = dispatcher.multicaster
 
 
     @Before
@@ -82,7 +89,21 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
                     }
                 }
             })
+    }
 
+
+    // id = 1 indicates that the artificial resume message was sent to debugger to reduce server load
+    @Test(expected = IllegalArgumentException::class)
+    fun `test artificial resume message`() {
+        val message = " {\"result\":{},\"id\":1}"
+        try {
+            val channel = EmbeddedChannel(Http2StreamFrameToHttpObjectCodec(false))
+            val vm = DebuggerWipVm(debugEventListener, getWsUrl(), channel)
+            vm.commandProcessor.processIncomingJson(JsonReaderEx(message))
+        } catch (e: IllegalArgumentException) {
+            assertEquals("Cannot find callback with id 1", e.message)
+            throw e
+        }
     }
 
 
