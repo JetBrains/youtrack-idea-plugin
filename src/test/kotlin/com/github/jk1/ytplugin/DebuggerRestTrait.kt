@@ -28,8 +28,8 @@ interface DebuggerRestTrait : RestClientTrait, YouTrackConnectionTrait {
     private val String.b64Encoded: String
         get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
-    fun getWsUrl(): String? {
-        val request = HttpGet("$serverUrl/api/debug/scripts/json")
+    fun getWsUrl(url: String = serverUrl): String? {
+        val request = HttpGet("$url/api/debug/scripts/json")
         return try {
             request.execute { it.asJsonArray[0].asJsonObject.get("webSocketDebuggerUrl").asString }
         } catch (e: RuntimeException){

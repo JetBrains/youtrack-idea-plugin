@@ -69,6 +69,10 @@ class WipConnection : WipRemoteVmConnection() {
     private val String.b64Encoded: String
         get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
+    private var errorNote: String = ""
+
+    fun getErrorNote() = errorNote
+
     override fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?) {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
         val resultRejected = Condition<Void> { result.state == Promise.State.REJECTED }
@@ -254,9 +258,9 @@ class WipConnection : WipRemoteVmConnection() {
         val repo = getYouTrackRepo()
         when {
             !isBaseurlMatchingActual() && repo != null && webSocketDebuggerUrl != null -> {
-                val note = "To start using scripts debugger Base URL of the YouTrack instance should match its actual URL"
+                errorNote = "To start using scripts debugger Base URL of the YouTrack instance should match its actual URL"
                 val trackerNote = TrackerNotification()
-                trackerNote.notifyWithHelper(note, NotificationType.WARNING, object : AnAction("Settings"), DumbAware {
+                trackerNote.notifyWithHelper(errorNote, NotificationType.WARNING, object : AnAction("Settings"), DumbAware {
                     override fun actionPerformed(event: AnActionEvent) {
                         event.whenActive {
                             val desktop: Desktop? = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
@@ -273,15 +277,15 @@ class WipConnection : WipRemoteVmConnection() {
                 })
             }
             repo == null -> {
-                val note = "YouTrack server integration is not configured yet"
+                errorNote = "YouTrack server integration is not configured yet"
                 val trackerNote = TrackerNotification()
-                trackerNote.notify(note, NotificationType.WARNING)
+                trackerNote.notify(errorNote, NotificationType.WARNING)
             }
             webSocketDebuggerUrl == null -> {
-                val note =
+                errorNote =
                     "Please check your permissions, you should be able to update any project to debug scripts"
                 val trackerNote = TrackerNotification()
-                trackerNote.notify(note, NotificationType.WARNING)
+                trackerNote.notify(errorNote, NotificationType.WARNING)
             }
         }
     }

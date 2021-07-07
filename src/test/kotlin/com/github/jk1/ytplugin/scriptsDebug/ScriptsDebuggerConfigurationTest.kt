@@ -9,6 +9,8 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.util.EventDispatcher
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled.directBuffer
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec
 import org.jetbrains.debugger.DebugEventListener
@@ -17,11 +19,13 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.Callable
 import kotlin.test.assertNotEquals
 
 
-class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
+class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, SetupConnectionTrait, ComponentAware {
 
     private lateinit var fixture: IdeaProjectTestFixture
 
@@ -35,7 +39,7 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
     fun setUp() {
         fixture = getLightCodeInsightFixture()
         fixture.setUp()
-        repository = createYouTrackRepository()
+        repository = createYouTrackRepository(serverUrl, token)
     }
 
 //    @Test
@@ -51,9 +55,21 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
     fun `test getting debug ws url without netty`() {
         val wsUrl = getWsUrl()
         logger.info("ws url: $wsUrl")
-        assert(wsUrl != null)
+        assertNotEquals(wsUrl, null)
     }
 
+    @Test
+    fun `test getting debug ws url with feature being turned off`() {
+        val wsUrl: String? = getWsUrl("http://some-random-host:8080")
+        assertEquals(wsUrl, null)
+    }
+
+    @Test
+    fun `test getting debug ws url with not sufficient permissions`() {
+        repository = createYouTrackRepository(serverUrl, "some-random-token")
+        val wsUrl: String? = getWsUrl()
+        assertEquals(wsUrl, null)
+    }
 
     @Test
     fun `test scripts loading`() {
@@ -89,6 +105,23 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Ta
                     }
                 }
             })
+    }
+
+
+
+    @Test
+    fun `test getting address with the repository being not configured`() {
+
+        val file = "src/test/resources/com/github/jk1/ytplugin/issues/debugger_endpoint_response.json"
+        val json = Files.readAllBytes(Paths.get(file))
+
+        val directBuffer: ByteBuf = directBuffer(256)
+
+        val bytes = directBuffer.writeBytes(json)
+        val wipConnection = WipConnection()
+        wipConnection.getJsonInfo(bytes)
+
+        assertEquals(wipConnection.getErrorNote(), "YouTrack server integration is not configured yet")
     }
 
 

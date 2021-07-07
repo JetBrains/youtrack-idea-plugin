@@ -1,0 +1,10 @@
+[
+  {
+    "devtoolsFrontendUrl": "devtools://devtools/bundled/js_app.html?ws=localhost:8080/debug/1b7d052adb194d95a330f43adc605fca",
+    "description": "GraalVM",
+    "id": "1b7d052adb194d95a330f43adc605fca",
+    "title": "YouTrack",
+    "type": "node",
+    "webSocketDebuggerUrl": "ws://localhost:8080/debug/1b7d052adb194d95a330f43adc605fca"
+  }
+]
