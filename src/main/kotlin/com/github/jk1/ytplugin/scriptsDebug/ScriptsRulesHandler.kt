@@ -12,7 +12,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFileFactory
 import org.jetbrains.annotations.NotNull
-import java.util.concurrent.Callable
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 
 import com.intellij.psi.PsiFile
@@ -30,31 +29,28 @@ class ScriptsRulesHandler(val project: Project) {
             repositories.first()
         } else null
 
-        ApplicationManager.getApplication().executeOnPooledThread(
-            Callable {
-                val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
-                val trackerNote = TrackerNotification()
+        val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
+        val trackerNote = TrackerNotification()
 
-                createScriptDirectory("src")
+        createScriptDirectory("src")
 
-                scriptsList.map { workflow ->
-                    val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
-                    workflow.rules.map { rule ->
-                        val existingScript = project.guessProjectDir()?.findFileByRelativePath(
-                            "src/${workflow.name.split('/').last()}/${rule.name}.js"
-                        )
-                        if (existingScript == null) {
-                            ScriptsRestClient(repo).getScriptsContent(workflow, rule)
-                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
-                            trackerNote.notify(
-                                "Successfully loaded script \"${workflow.name}\"",
-                                NotificationType.INFORMATION
-                            )
-                        }
-                    }
+        scriptsList.map { workflow ->
+            val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
+            workflow.rules.map { rule ->
+                val existingScript = project.guessProjectDir()?.findFileByRelativePath(
+                    "src/${workflow.name.split('/').last()}/${rule.name}.js"
+                )
+                if (existingScript == null) {
+                    ScriptsRestClient(repo).getScriptsContent(workflow, rule)
+                    createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                    trackerNote.notify(
+                        "Successfully loaded script \"${workflow.name}\"",
+                        NotificationType.INFORMATION
+                    )
                 }
+            }
+        }
 
-            })
     }
 
     private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
