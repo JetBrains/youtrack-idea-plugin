@@ -15,7 +15,6 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.*
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
@@ -36,7 +35,6 @@ import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import java.net.InetSocketAddress
 import java.net.URL
-import java.util.concurrent.Callable
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -91,17 +89,14 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
-        if (port < 0){
+        if (port < 0) {
             port = 443
         }
         return InetSocketAddress(host, port)
     }
 
     private fun loadScripts() {
-        ApplicationManager.getApplication().executeOnPooledThread(
-            Callable {
-                ScriptsRulesHandler(project).loadWorkflowRules()
-            })
+        ScriptsRulesHandler(project).loadWorkflowRules()
     }
 
     override fun createDebugProcess(
@@ -123,7 +118,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
         when (version) {
             null -> throw InvalidDataException("YouTrack server integration is not configured yet")
-            in 2021.3 .. Double.MAX_VALUE -> {
+            in 2021.3..Double.MAX_VALUE -> {
                 loadScripts()
                 val connection = WipConnection()
                 val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
