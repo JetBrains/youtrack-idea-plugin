@@ -19,8 +19,7 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         val items = method.execute { element ->
             element.asJsonArray.mapNotNull { IssueJsonParser.parseWorkItem(it) }
         }
-        return items.sortedWith(compareByDescending { it.created })
-                .sortedWith(compareByDescending { it.date })
+        return items.sortedWith(compareByDescending { it.date })
     }
 
 }
