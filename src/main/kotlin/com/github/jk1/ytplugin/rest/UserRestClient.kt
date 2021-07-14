@@ -13,6 +13,8 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         builder.addParameter("author", "me")
                 .addParameter("fields", "text,issue(idReadable),type(name),created," +
                         "duration(presentation,minutes),author(name),creator(name),date,id")
+                .addParameter("sort", "descending")
+
         val method = HttpGet(builder.build())
         val items = method.execute { element ->
             element.asJsonArray.mapNotNull { IssueJsonParser.parseWorkItem(it) }
