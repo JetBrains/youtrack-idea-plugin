@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
 import com.google.common.collect.ImmutableBiMap
 import com.intellij.execution.ExecutionResult
@@ -144,6 +145,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         override fun applyEditorTo(configuration: JSRemoteScriptsDebugConfiguration) {
             val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
             if (repositories.isNotEmpty()) {
+                logger.info("Apply Editor: $host, $port")
                 configuration.host = URL(repositories[0].url).host
                 configuration.port = URL(repositories[0].url).port
             }

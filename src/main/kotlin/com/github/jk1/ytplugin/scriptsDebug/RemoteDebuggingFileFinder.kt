@@ -56,6 +56,7 @@ class RemoteDebuggingFileFinder(
 
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
+        logger.info("Get remote urls for: ${file.name}")
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
             val map = mappings.inverse()

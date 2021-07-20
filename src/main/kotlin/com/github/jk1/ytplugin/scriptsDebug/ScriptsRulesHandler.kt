@@ -14,8 +14,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.util.IncorrectOperationException
-import org.jetbrains.annotations.NonNls
-import org.jetbrains.annotations.NotNull
+
 
 
 class ScriptsRulesHandler(val project: Project) {
@@ -55,16 +54,20 @@ class ScriptsRulesHandler(val project: Project) {
     private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
         ApplicationManager.getApplication().invokeAndWait {
             val psiFileFactory = PsiFileFactory.getInstance(project)
-            val file: PsiFile = psiFileFactory.createFileFromText(name, INSTANCE, text as @NotNull @NonNls CharSequence)
-            logger.info("Attempt to load file $name")
+
             ApplicationManager.getApplication().runWriteAction {
                 //find or create file
                 try {
+                    val file: PsiFile = psiFileFactory.createFileFromText(name, INSTANCE, text as CharSequence)
+                    logger.info("Attempt to load file $name")
                     directory.add(file)
                     logger.info("File $name is loaded")
                 } catch (e: IncorrectOperationException) {
                     logger.info("File $name is already loaded")
                 } catch (e: AssertionError){
+                    val file: PsiFile = psiFileFactory.createFileFromText(name, INSTANCE,
+                        "Please enter the content manually as it seem to contain incompatible line separators" as CharSequence)
+                    directory.add(file)
                     logger.info("File $name is skipped as it contains wrong line separator")
                 }
             }
@@ -79,7 +82,7 @@ class ScriptsRulesHandler(val project: Project) {
             ApplicationManager.getApplication().runWriteAction {
                 // find or create directory
                 val targetVirtualDir = if (srcDir?.findFileByRelativePath(name) == null) {
-                    logger.debug("Directory $name is created")
+                    logger.info("Directory $name is created")
                     srcDir?.createChildDirectory(this, name)
                 } else {
                     srcDir.findFileByRelativePath(name)

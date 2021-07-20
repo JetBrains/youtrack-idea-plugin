@@ -110,7 +110,7 @@ class WipConnection : WipRemoteVmConnection() {
                             getJsonInfo(connectionsData!!)
                             connectToWebSocket()
                         } catch (e: Throwable) {
-                            logger.debug("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
+                            logger.info("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
                                 connectionsData!!.writerIndex(),
                                 CharsetUtil.UTF_8).toString()}")
                         }
@@ -211,7 +211,7 @@ class WipConnection : WipRemoteVmConnection() {
     fun getJsonInfo(connectionsJson: ByteBuf) {
 
         if (!connectionsJson.isReadable) {
-            logger.debug("Malformed response: $connectionsJson")
+            logger.info("Malformed response: $connectionsJson")
             return
         }
 
