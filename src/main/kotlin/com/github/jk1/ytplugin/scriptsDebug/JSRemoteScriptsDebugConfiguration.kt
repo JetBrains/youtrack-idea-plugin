@@ -18,6 +18,7 @@ import com.intellij.javascript.debugger.*
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
@@ -103,7 +104,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         ApplicationManager.getApplication().executeOnPooledThread(
             Callable {
                 ScriptsRulesHandler(project).loadWorkflowRules()
-            })
+        })
     }
 
     override fun createDebugProcess(
@@ -127,15 +128,19 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
             null -> throw InvalidDataException("YouTrack server integration is not configured yet")
             in 2021.3..Double.MAX_VALUE -> {
                 loadScripts()
-                val connection = WipConnection()
-                val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
-                val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
-                connection.open(socketAddress)
-                return process
+
+                    val connection = WipConnection()
+                    val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
+                    val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+                    connection.open(socketAddress)
+                    return process
+
+
             }
             else -> throw InvalidDataException("YouTrack version is not sufficient")
         }
     }
+
 
     private inner class WipRemoteDebugConfigurationSettingsEditor :
         SettingsEditor<JSRemoteScriptsDebugConfiguration>() {

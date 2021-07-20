@@ -15,6 +15,8 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.DumbService
 
 private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
@@ -23,7 +25,10 @@ class RemoteDebuggingFileFinder(
     private val parent: DebuggableFileFinder? = null
 ) : DebuggableFileFinder {
 
+    private lateinit var myProject: Project
+
     override fun findNavigatable(url: Url, project: Project): Navigatable? {
+        myProject = project
         findMapping(url, project)?.let {
             return JsFileUtil.createNavigatable(project, it)
         }
@@ -31,10 +36,21 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun findFile(url: Url, project: Project): VirtualFile? {
+        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
+            DumbService.getInstance(project).waitForSmartMode()
+        })
+        myExpandedPreviewFuture.get()
+        myProject = project
+
         return findByMappings(url, mappings)
     }
 
     override fun guessFile(url: Url, project: Project): VirtualFile? {
+        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
+            DumbService.getInstance(project).waitForSmartMode()
+        })
+        myExpandedPreviewFuture.get()
+
         parent?.findFile(url, project)?.let {
             return it
         }
@@ -50,12 +66,20 @@ class RemoteDebuggingFileFinder(
     override fun searchesByName(): Boolean = true
 
     private fun createPredefinedMappings(project: Project): BiMap<String, VirtualFile> {
+        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
+            DumbService.getInstance(project).waitForSmartMode()
+        })
+        myExpandedPreviewFuture.get()
         val projectDir = project.guessProjectDir()
         return if (projectDir != null) ImmutableBiMap.of("webpack:///.", projectDir) else ImmutableBiMap.of()
     }
 
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
+//        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
+//            DumbService.getInstance(myProject).waitForSmartMode()
+//        })
+//        myExpandedPreviewFuture.get()
         logger.info("Get remote urls for: ${file.name}")
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
@@ -79,8 +103,13 @@ class RemoteDebuggingFileFinder(
 
 
 fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
+    val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
+        DumbService.getInstance(project).waitForSmartMode()
+    })
+    myExpandedPreviewFuture.get()
+
     val url = parsedUrl.trimParameters().toDecodedForm()
-    val filename = if (url.split("/").size > 1){
+    val filename = if (url.split("/").size > 1) {
         url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
     } else {
         url
@@ -92,14 +121,13 @@ fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
     val projectBaseDir: VirtualFile = project.baseDir
     val child = if (systemIndependentPath.isEmpty()) {
         projectBaseDir
-    } else projectBaseDir.findFileByRelativePath(systemIndependentPath)
+    } else projectBaseDir.findFileByRelativePath("src/$filename")
 
     if (child != null) {
         return child
     }
     return null
 }
-
 
 
 private fun findByMappings(parsedUrl: Url, mappings: BiMap<String, VirtualFile>): VirtualFile? {
