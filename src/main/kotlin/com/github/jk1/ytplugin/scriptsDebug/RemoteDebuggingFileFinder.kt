@@ -27,7 +27,13 @@ class RemoteDebuggingFileFinder(
 
     private lateinit var myProject: Project
 
+    init {
+        logger.info("Remote File Finder is initialized")
+    }
+
     override fun findNavigatable(url: Url, project: Project): Navigatable? {
+        logger.info("find navigatable file ${url.path}")
+
         myProject = project
         findMapping(url, project)?.let {
             return JsFileUtil.createNavigatable(project, it)
@@ -36,6 +42,8 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun findFile(url: Url, project: Project): VirtualFile? {
+        logger.info("find file ${url.path}")
+
         val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
             DumbService.getInstance(project).waitForSmartMode()
         })
@@ -46,6 +54,7 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun guessFile(url: Url, project: Project): VirtualFile? {
+        logger.info("guess file ${url.path}")
         val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
             DumbService.getInstance(project).waitForSmartMode()
         })
@@ -66,6 +75,8 @@ class RemoteDebuggingFileFinder(
     override fun searchesByName(): Boolean = true
 
     private fun createPredefinedMappings(project: Project): BiMap<String, VirtualFile> {
+        logger.info("create predefined mappings")
+
         val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
             DumbService.getInstance(project).waitForSmartMode()
         })
@@ -103,6 +114,9 @@ class RemoteDebuggingFileFinder(
 
 
 fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
+
+    logger.info("Find file mapping for: ${parsedUrl.path}")
+
     val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
         DumbService.getInstance(project).waitForSmartMode()
     })

@@ -104,7 +104,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         ApplicationManager.getApplication().executeOnPooledThread(
             Callable {
                 ScriptsRulesHandler(project).loadWorkflowRules()
-        })
+            })
     }
 
     override fun createDebugProcess(
@@ -127,15 +127,17 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         when (version) {
             null -> throw InvalidDataException("YouTrack server integration is not configured yet")
             in 2021.3..Double.MAX_VALUE -> {
+
                 loadScripts()
 
-                    val connection = WipConnection()
-                    val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
-                    val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
-                    connection.open(socketAddress)
-                    return process
+                val connection = WipConnection()
+                val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
+                val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+                connection.open(socketAddress)
 
+                logger.info("connection is opened")
 
+                return process
             }
             else -> throw InvalidDataException("YouTrack version is not sufficient")
         }
