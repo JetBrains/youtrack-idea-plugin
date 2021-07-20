@@ -14,7 +14,7 @@ import com.intellij.openapi.vfs.impl.http.HttpVirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
-
+import com.github.jk1.ytplugin.logger
 
 private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
@@ -79,7 +79,12 @@ class RemoteDebuggingFileFinder(
 
 fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
     val url = parsedUrl.trimParameters().toDecodedForm()
-    val filename = url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
+    val filename = if (url.split("/").size > 1){
+        url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
+    } else {
+        url
+    }
+    logger.info("File mapping is found: $filename")
     val systemIndependentPath: String =
         FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("src/$filename").toString())
 
@@ -93,6 +98,7 @@ fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
     }
     return null
 }
+
 
 
 private fun findByMappings(parsedUrl: Url, mappings: BiMap<String, VirtualFile>): VirtualFile? {

@@ -15,6 +15,7 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.*
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.VerticalFlowLayout
@@ -35,6 +36,7 @@ import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import java.net.InetSocketAddress
 import java.net.URL
+import java.util.concurrent.Callable
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -95,8 +97,12 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         return InetSocketAddress(host, port)
     }
 
+
     private fun loadScripts() {
-        ScriptsRulesHandler(project).loadWorkflowRules()
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Callable {
+                ScriptsRulesHandler(project).loadWorkflowRules()
+            })
     }
 
     override fun createDebugProcess(

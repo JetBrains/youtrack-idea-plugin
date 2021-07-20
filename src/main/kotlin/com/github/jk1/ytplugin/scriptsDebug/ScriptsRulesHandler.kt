@@ -56,14 +56,16 @@ class ScriptsRulesHandler(val project: Project) {
         ApplicationManager.getApplication().invokeAndWait {
             val psiFileFactory = PsiFileFactory.getInstance(project)
             val file: PsiFile = psiFileFactory.createFileFromText(name, INSTANCE, text as @NotNull @NonNls CharSequence)
-
+            logger.info("Attempt to load file $name")
             ApplicationManager.getApplication().runWriteAction {
                 //find or create file
                 try {
                     directory.add(file)
-                    logger.debug("File $name is loaded")
+                    logger.info("File $name is loaded")
                 } catch (e: IncorrectOperationException) {
-                    logger.debug("File $name is already loaded")
+                    logger.info("File $name is already loaded")
+                } catch (e: AssertionError){
+                    logger.info("File $name is skipped as it contains wrong line separator")
                 }
             }
         }
