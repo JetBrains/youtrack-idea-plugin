@@ -92,6 +92,7 @@ class RemoteDebuggingFileFinder(
 //        })
 //        myExpandedPreviewFuture.get()
         logger.info("Get remote urls for: ${file.name}")
+
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
             val map = mappings.inverse()
@@ -128,14 +129,16 @@ fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
     } else {
         url
     }
-    logger.info("File mapping is found: $filename")
-    val systemIndependentPath: String =
-        FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("src/$filename").toString())
+    logger.info("File mapping is found: $filename \n \n")
 
-    val projectBaseDir: VirtualFile = project.baseDir
+    // todo: not that explicit folder name
+    val systemIndependentPath: String =
+        FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("src/@jetbrains/$filename").toString())
+
+    val projectBaseDir: VirtualFile? = project.guessProjectDir()
     val child = if (systemIndependentPath.isEmpty()) {
         projectBaseDir
-    } else projectBaseDir.findFileByRelativePath("src/$filename")
+    } else projectBaseDir?.findFileByRelativePath("src/@jetbrains/$filename")
 
     if (child != null) {
         return child

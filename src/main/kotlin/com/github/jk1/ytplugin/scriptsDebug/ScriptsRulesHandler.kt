@@ -57,7 +57,6 @@ class ScriptsRulesHandler(val project: Project) {
 
     private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
         DumbService.getInstance(project).runWhenSmart {
-            println("is dumb mode: ${ DumbService.getInstance(project).isDumb}")
             ApplicationManager.getApplication().invokeAndWait {
                 val psiFileFactory = PsiFileFactory.getInstance(project)
 

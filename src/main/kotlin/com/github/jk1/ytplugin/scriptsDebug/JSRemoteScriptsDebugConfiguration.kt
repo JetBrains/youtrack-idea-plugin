@@ -121,26 +121,34 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         session: XDebugSession,
         executionResult: ExecutionResult?
     ): BrowserChromeDebugProcess {
-        val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
+        var process: BrowserChromeDebugProcess? = null
 
-        val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
-        when (version) {
-            null -> throw InvalidDataException("YouTrack server integration is not configured yet")
-            in 2021.3..Double.MAX_VALUE -> {
+        // todo: check for version
+        loadScripts()
 
-                loadScripts()
+        DumbService.getInstance(project).runReadActionInSmartMode() {
 
-                val connection = WipConnection()
-                val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
-                val process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
-                connection.open(socketAddress)
+            val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
+            val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
+            when (version) {
+                null -> throw InvalidDataException("YouTrack server integration is not configured yet")
+                in 2021.3..Double.MAX_VALUE -> {
 
-                logger.info("connection is opened")
+//                    loadScripts()
 
-                return process
+                    val connection = WipConnection()
+                    val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
+                    process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+                    connection.open(socketAddress)
+
+                    logger.info("connection is opened")
+
+                    return@runReadActionInSmartMode
+                }
+                else -> throw InvalidDataException("YouTrack version is not sufficient")
             }
-            else -> throw InvalidDataException("YouTrack version is not sufficient")
         }
+        return process!!
     }
 
 
