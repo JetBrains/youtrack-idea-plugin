@@ -15,8 +15,6 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.project.DumbService
 
 private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
@@ -44,10 +42,6 @@ class RemoteDebuggingFileFinder(
     override fun findFile(url: Url, project: Project): VirtualFile? {
         logger.info("find file ${url.path}")
 
-        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
-            DumbService.getInstance(project).waitForSmartMode()
-        })
-        myExpandedPreviewFuture.get()
         myProject = project
 
         return findByMappings(url, mappings)
@@ -55,10 +49,6 @@ class RemoteDebuggingFileFinder(
 
     override fun guessFile(url: Url, project: Project): VirtualFile? {
         logger.info("guess file ${url.path}")
-        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
-            DumbService.getInstance(project).waitForSmartMode()
-        })
-        myExpandedPreviewFuture.get()
 
         parent?.findFile(url, project)?.let {
             return it
@@ -77,20 +67,13 @@ class RemoteDebuggingFileFinder(
     private fun createPredefinedMappings(project: Project): BiMap<String, VirtualFile> {
         logger.info("create predefined mappings")
 
-        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
-            DumbService.getInstance(project).waitForSmartMode()
-        })
-        myExpandedPreviewFuture.get()
         val projectDir = project.guessProjectDir()
         return if (projectDir != null) ImmutableBiMap.of("webpack:///.", projectDir) else ImmutableBiMap.of()
     }
 
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
-//        val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
-//            DumbService.getInstance(myProject).waitForSmartMode()
-//        })
-//        myExpandedPreviewFuture.get()
+
         logger.info("Get remote urls for: ${file.name}")
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
@@ -116,11 +99,6 @@ class RemoteDebuggingFileFinder(
 fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
 
     logger.info("Find file mapping for: ${parsedUrl.path}")
-
-    val myExpandedPreviewFuture = ApplicationManager.getApplication().executeOnPooledThread(Runnable {
-        DumbService.getInstance(project).waitForSmartMode()
-    })
-    myExpandedPreviewFuture.get()
 
     val url = parsedUrl.trimParameters().toDecodedForm()
     val filename = if (url.split("/").size > 1) {

@@ -17,7 +17,6 @@ import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.util.IncorrectOperationException
 
 
-
 class ScriptsRulesHandler(val project: Project) {
 
     private var srcDir = project.baseDir
@@ -55,8 +54,9 @@ class ScriptsRulesHandler(val project: Project) {
         }
     }
 
+    //todo: check runWhenSmart if needed
     private fun createRuleFile(name: String, text: String?, directory: PsiDirectory) {
-        DumbService.getInstance(project).runWhenSmart {
+//        DumbService.getInstance(project).runWhenSmart {
             ApplicationManager.getApplication().invokeAndWait {
                 val psiFileFactory = PsiFileFactory.getInstance(project)
 
@@ -79,7 +79,7 @@ class ScriptsRulesHandler(val project: Project) {
                     }
                 }
             }
-        }
+//        }
     }
 
     private fun createScriptDirectory(name: String): PsiDirectory {
