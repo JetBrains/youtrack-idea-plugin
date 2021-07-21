@@ -92,7 +92,6 @@ class RemoteDebuggingFileFinder(
 //        })
 //        myExpandedPreviewFuture.get()
         logger.info("Get remote urls for: ${file.name}")
-
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
             val map = mappings.inverse()

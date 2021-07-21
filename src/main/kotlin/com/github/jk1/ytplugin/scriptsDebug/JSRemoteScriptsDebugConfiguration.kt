@@ -123,18 +123,18 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     ): BrowserChromeDebugProcess {
         var process: BrowserChromeDebugProcess? = null
 
-        // todo: check for version
-        loadScripts()
+        val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
+        val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
+
+        if (version != null && version in 2021.3..Double.MAX_VALUE) {
+                loadScripts()
+        }
 
         DumbService.getInstance(project).runReadActionInSmartMode() {
 
-            val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
-            val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
             when (version) {
                 null -> throw InvalidDataException("YouTrack server integration is not configured yet")
                 in 2021.3..Double.MAX_VALUE -> {
-
-//                    loadScripts()
 
                     val connection = WipConnection()
                     val finder = RemoteDebuggingFileFinder(ImmutableBiMap.of(), LocalFileSystemFileFinder())
