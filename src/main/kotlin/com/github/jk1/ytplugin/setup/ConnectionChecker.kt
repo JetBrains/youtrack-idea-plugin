@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.util.net.ssl.CertificateManager
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
@@ -43,6 +44,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
             val config = RequestConfig.custom().setConnectTimeout(60000).build()
             val response = HttpClientBuilder.create()
                 .disableRedirectHandling()
+                .setSSLContext(CertificateManager.getInstance().sslContext)
                 .setDefaultRequestConfig(config).build()
                 .execute(method)
             if (response.statusLine.statusCode == 200) {
