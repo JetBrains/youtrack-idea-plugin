@@ -18,7 +18,7 @@ import java.util.*
 
 
 class StopTrackerAction : AnAction(
-        "Post Time",
+        "Stop Work Timer",
         "Stop tracking and post spent time to the current issue",
         YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER) {
 
@@ -34,7 +34,15 @@ class StopTrackerAction : AnAction(
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isEnabled = timer.isRunning
             event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
-            event.presentation.text = "Post Time"
+            if (timer.isAutoTrackingEnable){
+                event.presentation.icon = YouTrackPluginIcons.YOUTRACK_POST_FROM_TIME_TRACKER
+                event.presentation.description = "Post spent time to the current issue and continue tracking"
+                event.presentation.text = "Post Time To Server"
+            } else {
+                event.presentation.icon = YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER
+                event.presentation.description = "Stop tracking and post spent time to the current issue"
+                event.presentation.text = "Stop Work Timer"
+            }
         }
     }
 

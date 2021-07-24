@@ -10,6 +10,7 @@ object YouTrackPluginIcons {
     val YOUTRACK_MANUAL_ADD_TIME_TRACKER = IconLoader.getIcon("/icons/add_workitem_manually.png", YouTrackPluginIcons::class.java)  // 16x16
     val YOUTRACK_PAUSE_TIME_TRACKER = IconLoader.getIcon("/icons/time_tracker_pause.png", YouTrackPluginIcons::class.java)  // 16x16
     val YOUTRACK_STOP_TIME_TRACKER = IconLoader.getIcon("/icons/time_tracker_stop.png", YouTrackPluginIcons::class.java)  // 16x16
+    val YOUTRACK_POST_FROM_TIME_TRACKER = IconLoader.getIcon("/icons/time_tracker_post.png", YouTrackPluginIcons::class.java)  // 16x16
     val YOUTRACK_RESET_TIME_TRACKER = IconLoader.getIcon("/icons/time_tracker_reset.png", YouTrackPluginIcons::class.java)  // 16x16
 
 }
