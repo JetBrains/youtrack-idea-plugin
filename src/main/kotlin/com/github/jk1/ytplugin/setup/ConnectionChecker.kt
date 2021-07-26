@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.net.ssl.CertificateManager
@@ -10,7 +9,6 @@ import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.http.util.EntityUtils
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -48,13 +46,9 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
                 .setDefaultRequestConfig(config).build()
                 .execute(method)
             if (response.statusLine.statusCode == 200) {
-                val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
-                    .asJsonObject.get("name").toString()
-                if (user != "\"guest\""){
-                    logger.debug("connection status: SUCCESS")
-                    method.releaseConnection()
-                    onSuccess(method)
-                }
+                logger.debug("connection status: SUCCESS")
+                method.releaseConnection()
+                onSuccess(method)
             } else {
                 logger.debug("connection status: APPLICATION ERROR")
                 method.releaseConnection()

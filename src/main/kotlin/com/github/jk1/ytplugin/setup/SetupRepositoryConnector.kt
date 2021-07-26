@@ -49,6 +49,8 @@ class SetupRepositoryConnector {
             NotifierState.TIMEOUT -> note.text = "Connection timeout: check login and token"
             NotifierState.UNAUTHORIZED -> note.text = "Unauthorized: check login and token"
             NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1 or later</html>"
+            NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION -> note.text = "<html>YouTrack version is not compatible with" +
+                    " token authentication,<br/>please use [username]:[application password] format to login</html>"
         }
     }
 
@@ -82,19 +84,17 @@ class SetupRepositoryConnector {
         return null
     }
 
-    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
-        val version = getYouTrackVersion(repository.url)
-        return version != null && version >= 2017.1
-    }
-
-
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            noteState = if (isValidYouTrackVersion(repository)) {
+            val version = getYouTrackVersion(repository.url)
+            noteState = if (version != null && version >= 2020.4) {
                 repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
+            } else if (version != null && version >= 2017.1) {
+                logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
+                NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
                 logger.debug("invalid YouTrack version detected")
                 NotifierState.INVALID_VERSION
@@ -199,5 +199,6 @@ enum class NotifierState {
     UNAUTHORIZED,
     EMPTY_FIELD,
     GUEST_LOGIN,
-    PASSWORD_NOT_STORED
+    PASSWORD_NOT_STORED,
+    INSUFFICIENT_FOR_TOKEN_VERSION
 }
