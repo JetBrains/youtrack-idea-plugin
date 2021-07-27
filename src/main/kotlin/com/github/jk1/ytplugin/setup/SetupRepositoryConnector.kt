@@ -84,20 +84,32 @@ class SetupRepositoryConnector {
         return null
     }
 
+    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
+        val version = getYouTrackVersion(repository.url)
+        return version != null && version >= 2017.1
+    }
+
+
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            val version = getYouTrackVersion(repository.url)
-            noteState = if (version != null && version >= 2020.4) {
+            noteState = if (isValidYouTrackVersion(repository)) {
                 repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 NotifierState.SUCCESS
-            } else if (version != null && version >= 2017.1) {
-                logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
-                NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
                 logger.debug("invalid YouTrack version detected")
                 NotifierState.INVALID_VERSION
+            }
+        }
+        checker.onVersionError { _ ->
+            val version = getYouTrackVersion(repository.url)
+            noteState = if (version != null && version >= 2017.1 && version <= 2020.4) {
+                logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
+                NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
+            } else {
+                logger.debug("guest login is not allowed")
+                NotifierState.INVALID_TOKEN
             }
         }
         checker.onApplicationError { request, response ->
