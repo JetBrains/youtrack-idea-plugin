@@ -46,7 +46,7 @@ class ScriptsRulesHandler(val project: Project) {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                     trackerNote.notify(
-                        "Successfully loaded script \"${workflow.name}\"",
+                        "Script loaded \"${workflow.name}\"",
                         NotificationType.INFORMATION
                     )
                 }
@@ -72,10 +72,10 @@ class ScriptsRulesHandler(val project: Project) {
                     } catch (e: AssertionError) {
                         val file: PsiFile = psiFileFactory.createFileFromText(
                             name, INSTANCE,
-                            "Please enter the content manually as it seem to contain incompatible line separators" as CharSequence
+                            "The source script appears to contain unsupported line separators. Please enter the content manually." as CharSequence
                         )
                         directory.add(file)
-                        logger.info("File $name is skipped as it contains wrong line separator")
+                        logger.info("The $name file contains unsupported line separators and was not imported from YouTrack")
                     }
                 }
             }

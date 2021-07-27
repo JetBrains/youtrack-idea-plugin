@@ -133,7 +133,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         DumbService.getInstance(project).runReadActionInSmartMode() {
 
             when (version) {
-                null -> throw InvalidDataException("YouTrack server integration is not configured yet")
+                null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
                 in 2021.3..Double.MAX_VALUE -> {
 
                     val connection = WipConnection()
