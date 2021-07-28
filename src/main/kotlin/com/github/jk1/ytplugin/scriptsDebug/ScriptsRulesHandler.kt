@@ -70,6 +70,10 @@ class ScriptsRulesHandler(val project: Project) {
                     } catch (e: IncorrectOperationException) {
                         logger.info("File $name is already loaded")
                     } catch (e: AssertionError) {
+                        val note = "The $name file contains unsupported line separators and was not imported from YouTrack"
+                        val trackerNote = TrackerNotification()
+                        trackerNote.notify(note, NotificationType.WARNING)
+
                         val file: PsiFile = psiFileFactory.createFileFromText(
                             name, INSTANCE,
                             "The source script appears to contain unsupported line separators. Please enter the content manually." as CharSequence
