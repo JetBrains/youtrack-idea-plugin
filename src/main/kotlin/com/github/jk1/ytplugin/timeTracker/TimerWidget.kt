@@ -27,17 +27,9 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
                 TimeUnit.MILLISECONDS.toHours(recordedTime),
                 TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
                         TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(recordedTime)))
-        return mode() + "Time spent: $time"
+        return "Time spent: $time"
     }
 
-    private fun mode(): String {
-        return if (timeTracker.isAutoTrackingEnable && timeTracker.isManualTrackingEnable)
-            "Automatic and Manual tracking mode is on. "
-        else if (timeTracker.isAutoTrackingEnable)
-            "Automatic tracking mode is on. "
-        else
-            "Manual tracking mode is on. "
-    }
 
     override fun install(statusBar: StatusBar) {
 
