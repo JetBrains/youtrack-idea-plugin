@@ -92,7 +92,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!--Main issue tool window-->
-        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youtrack_13.png"
+        <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youTrack.svg"
                     factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
         <!-- Scheduled tasks-->
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.editor.IssueLinkProviderExtension"/>

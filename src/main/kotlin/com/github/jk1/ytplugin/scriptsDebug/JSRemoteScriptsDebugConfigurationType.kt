@@ -1,7 +1,7 @@
 package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.ui.YouTrackPluginIcons.YOUTRACK_TOOL_WINDOW
+import com.github.jk1.ytplugin.ui.YouTrackPluginIcons.YOUTRACK
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.RunConfigurationSingletonPolicy
@@ -18,7 +18,7 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
     ID,
     "Remote Debug Of YouTrack Scripts",
     null,
-    YOUTRACK_TOOL_WINDOW
+    YOUTRACK
 ), DumbAware {
 
     init {
