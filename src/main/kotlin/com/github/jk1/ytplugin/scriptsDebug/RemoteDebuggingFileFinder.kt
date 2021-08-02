@@ -15,6 +15,9 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
+import com.google.common.collect.HashBiMap
+import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
+import org.jetbrains.io.LocalFileFinder
 
 private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
@@ -53,7 +56,7 @@ class RemoteDebuggingFileFinder(
         parent?.findFile(url, project)?.let {
             return it
         }
-        var predefinedMappings = project.getUserData(PREDEFINED_MAPPINGS_KEY)
+        var predefinedMappings = mappings
         if (predefinedMappings == null) {
             predefinedMappings = createPredefinedMappings(project)
             project.putUserData(PREDEFINED_MAPPINGS_KEY, predefinedMappings)
@@ -61,6 +64,7 @@ class RemoteDebuggingFileFinder(
 
         return findByMappings(url, predefinedMappings) ?: parent?.guessFile(url, project)
     }
+
 
     override fun searchesByName(): Boolean = true
 
@@ -71,6 +75,8 @@ class RemoteDebuggingFileFinder(
         return if (projectDir != null) ImmutableBiMap.of("webpack:///.", projectDir) else ImmutableBiMap.of()
     }
 
+
+    // TODO: trace files loading with debug
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
 

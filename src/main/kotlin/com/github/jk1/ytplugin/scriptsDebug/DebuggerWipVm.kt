@@ -10,6 +10,7 @@ import org.jetbrains.debugger.DebugEventListener
 import org.jetbrains.io.JsonReaderEx
 import org.jetbrains.wip.node.NodeWipWorkerManager
 import org.jetbrains.wip.protocol.runtime.Enable
+import java.nio.charset.Charset
 
 class DebuggerWipVm(
     tabListener: DebugEventListener,

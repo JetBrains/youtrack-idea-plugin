@@ -4,10 +4,10 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.lang.javascript.JavaScriptFileType.INSTANCE
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiDirectory
@@ -21,7 +21,7 @@ class ScriptsRulesHandler(val project: Project) {
 
     private var srcDir = project.baseDir
 
-    fun loadWorkflowRules() {
+    fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>) {
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) {
             repositories.first()
@@ -45,6 +45,17 @@ class ScriptsRulesHandler(val project: Project) {
                 if (existingScript == null) {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                    val local = project.guessProjectDir()?.path +
+                        "/src/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
+
+
+                    val localUrls = mutableListOf<String>()
+                    mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
+
+                    if (!localUrls.contains(local)){
+                        mappings.add(RemoteUrlMappingBean(local, "/dir1627909453965/${workflow.name}/${rule.name}.js"))
+                    }
+
                     trackerNote.notify(
                         "Script loaded \"${workflow.name}\"",
                         NotificationType.INFORMATION
