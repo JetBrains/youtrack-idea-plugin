@@ -1,5 +1,6 @@
 package com.github.jk1.ytplugin.scriptsDebug
 
+import com.github.jk1.ytplugin.logger
 import com.intellij.util.Urls
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.readUtf8
@@ -17,6 +18,7 @@ import org.jetbrains.jsonProtocol.Request
 import org.jetbrains.rpc.LOG
 import org.jetbrains.wip.WipVm
 import org.jetbrains.wip.WipWorkerManager
+import java.nio.charset.Charset
 
 abstract class StandaloneDebuggerWipVm(
     tabListener: DebugEventListener,
@@ -49,6 +51,8 @@ abstract class StandaloneDebuggerWipVm(
 
     open fun textFrameReceived(message: TextWebSocketFrame) {
         debugMessageQueue?.add(message.content(), "IN")
+        logger.info("Debugger Text Frame Received: ${message.content()
+            .readCharSequence(message.content().readableBytes(), Charset.forName("utf-8"))}")
         try {
             commandProcessor.processIncomingJson(JsonReaderEx(message.content().readUtf8()))
         } catch (e: Exception) {

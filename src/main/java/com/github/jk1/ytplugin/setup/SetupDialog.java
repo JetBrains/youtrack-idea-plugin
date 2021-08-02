@@ -1,4 +1,3 @@
-// Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.github.jk1.ytplugin.setup;
 
 import com.github.jk1.ytplugin.ComponentAware;
@@ -35,6 +34,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.MalformedURLException;
@@ -91,6 +92,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     private final YouTrackRepository connectedRepository = new YouTrackRepository();
     private final SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
     private final boolean fromTracker;
+    private boolean shouldStopTimer = false;
 
     TestConnectionAction testConnectionAction = new TestConnectionAction();
     ProxyAction proxyAction = new ProxyAction();
@@ -118,11 +120,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
     @Override
     protected void init() {
-        if (timer.isRunning()) {
-            new StopTrackerAction().stopTimer(project);
-            timer.setAutoTrackingTemporaryDisabled(true);
-        }
-
         setupGeneralTab();
         setupTimeTrackingTab();
 
@@ -210,6 +207,21 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
         scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
+
+        DocumentListener stopOnScheduleUpdate = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                shouldStopTimer = true;
+            }
+            public void removeUpdate(DocumentEvent e) {
+                shouldStopTimer = true;
+            }
+            public void insertUpdate(DocumentEvent e) {
+                shouldStopTimer = true;
+            }
+        };
+
+        scheduledMinutes.getDocument().addDocumentListener(stopOnScheduleUpdate);
+        scheduledHour.getDocument().addDocumentListener(stopOnScheduleUpdate);
 
         commentTextField.setText(timer.getComment());
         commentLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
@@ -349,6 +361,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeLabel.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
         typeComboBox.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
 
+        shouldStopTimer = true;
+
     }
 
     private void inactivityFieldsEnabling(Boolean enable) {
@@ -425,17 +439,21 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     }
 
     @Override
-    public void doCancelAction() {
-        new TimeTrackingService().setupTimeTracking(this, project);
-        super.doCancelAction();
-    }
-
-    @Override
     protected void doOKAction() {
         if (!isConnectionTested) {
             testConnectionAction();
         }
 
+        // post time if any relevant changes in settings were made
+        if (shouldStopTimer){
+            if (timer.isRunning()) {
+                new StopTrackerAction().stopTimer(project);
+                timer.setAutoTrackingTemporaryDisabled(true);
+            }
+            if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
+                new TimeTrackingService().setupTimeTracking(this, project);
+            }
+        }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
         if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
             YouTrackRepository myRepository = repo.getRepo();
@@ -453,9 +471,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
                 repoConnector.showIssuesForConnectedRepo(myRepository, project);
             }
-
-            new TimeTrackingService().setupTimeTracking(this, project);
-
         }
 
         if (repoConnector.getNoteState() != NotifierState.NULL_PROXY_HOST && repoConnector.getNoteState() !=

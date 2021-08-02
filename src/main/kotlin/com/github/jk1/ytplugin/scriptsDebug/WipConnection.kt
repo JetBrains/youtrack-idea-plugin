@@ -69,10 +69,6 @@ class WipConnection : WipRemoteVmConnection() {
     private val String.b64Encoded: String
         get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
-    private var errorNote: String = ""
-
-    fun getErrorNote() = errorNote
-
     override fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?) {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
         val resultRejected = Condition<Void> { result.state == Promise.State.REJECTED }
@@ -114,7 +110,7 @@ class WipConnection : WipRemoteVmConnection() {
                             getJsonInfo(connectionsData!!)
                             connectToWebSocket()
                         } catch (e: Throwable) {
-                            logger.debug("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
+                            logger.info("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
                                 connectionsData!!.writerIndex(),
                                 CharsetUtil.UTF_8).toString()}")
                         }
@@ -129,7 +125,7 @@ class WipConnection : WipRemoteVmConnection() {
         }.connectRetrying(address, maxAttemptCount, combinedCondition)
 
         if (connectResult.channel == null && result.isPending) {
-            result.setError("Cannot connect to $address")
+            result.setError("Unable to connect to $address")
         }
     }
 
@@ -185,7 +181,7 @@ class WipConnection : WipRemoteVmConnection() {
                 }
             }
         } catch (e: NoYouTrackRepositoryException) {
-            vmResult.setError("YouTrack server integration is not configured yet")
+            vmResult.setError("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
         }
 
     }
@@ -215,7 +211,7 @@ class WipConnection : WipRemoteVmConnection() {
     fun getJsonInfo(connectionsJson: ByteBuf) {
 
         if (!connectionsJson.isReadable) {
-            logger.debug("Malformed response: $connectionsJson")
+            logger.info("Malformed response: $connectionsJson")
             return
         }
 
@@ -258,9 +254,9 @@ class WipConnection : WipRemoteVmConnection() {
         val repo = getYouTrackRepo()
         when {
             !isBaseurlMatchingActual() && repo != null && webSocketDebuggerUrl != null -> {
-                errorNote = "To start using scripts debugger Base URL of the YouTrack instance should match its actual URL"
+                val note = "Please verify that the server URL stored in settings for the YouTrack Integration plugin matches the base URL of your YouTrack site"
                 val trackerNote = TrackerNotification()
-                trackerNote.notifyWithHelper(errorNote, NotificationType.WARNING, object : AnAction("Settings"), DumbAware {
+                trackerNote.notifyWithHelper(note, NotificationType.WARNING, object : AnAction("Settings"), DumbAware {
                     override fun actionPerformed(event: AnActionEvent) {
                         event.whenActive {
                             val desktop: Desktop? = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
@@ -277,15 +273,15 @@ class WipConnection : WipRemoteVmConnection() {
                 })
             }
             repo == null -> {
-                errorNote = "YouTrack server integration is not configured yet"
+                val note = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
                 val trackerNote = TrackerNotification()
-                trackerNote.notify(errorNote, NotificationType.WARNING)
+                trackerNote.notify(note, NotificationType.WARNING)
             }
             webSocketDebuggerUrl == null -> {
-                errorNote =
-                    "Please check your permissions, you should be able to update any project to debug scripts"
+                val note =
+                    "The debug operation requires that you have permission to update at least one project in YouTrack"
                 val trackerNote = TrackerNotification()
-                trackerNote.notify(errorNote, NotificationType.WARNING)
+                trackerNote.notify(note, NotificationType.WARNING)
             }
         }
     }

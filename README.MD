@@ -7,6 +7,8 @@ This plugin brings Jetbrains YouTrack bugtracker features to Intellij IDE family
 
 The latest released version can be found at [JetBrains IDE plugin repository](https://plugins.jetbrains.com/plugin/8215) or installed directly from an IDE itself.
 
+Looking to report a bug or suggest a feature? Feel free to [file a YouTrack issue](https://youtrack.jetbrains.com/newIssue?project=JT&c=State%20Open&c=Subsystem%20IDE%20plugin) about it.
+
 [![](http://img.youtube.com/vi/gGVEwlZpvj8/0.jpg)](http://www.youtube.com/watch?v=gGVEwlZpvj8)
 
 **Compatible IDEs:** IntelliJ IDE family 2017.1+

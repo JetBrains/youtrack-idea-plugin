@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.util.net.ssl.CertificateManager
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
@@ -19,6 +20,7 @@ import org.apache.http.client.config.RequestConfig
 class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     private var onSuccess: (method: HttpRequest) -> Unit = {}
+    private var onVersionError: (method: HttpRequest) -> Unit = {}
     private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
     private var onApplicationError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
 
@@ -43,6 +45,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
             val config = RequestConfig.custom().setConnectTimeout(60000).build()
             val response = HttpClientBuilder.create()
                 .disableRedirectHandling()
+                .setSSLContext(CertificateManager.getInstance().sslContext)
                 .setDefaultRequestConfig(config).build()
                 .execute(method)
             if (response.statusLine.statusCode == 200) {
@@ -52,6 +55,10 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
                     logger.debug("connection status: SUCCESS")
                     method.releaseConnection()
                     onSuccess(method)
+                } else {
+                    logger.debug("connection status: VERSION ERROR")
+                    method.releaseConnection()
+                    onVersionError(method)
                 }
             } else {
                 logger.debug("connection status: APPLICATION ERROR")
@@ -75,5 +82,9 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
 
     fun onTransportError(closure: (request: HttpRequest, e: Exception) -> Unit) {
         this.onTransportError = closure
+    }
+
+    fun onVersionError(closure: (method: HttpRequest) -> Unit) {
+        this.onVersionError = closure
     }
 }

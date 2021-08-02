@@ -49,6 +49,8 @@ class SetupRepositoryConnector {
             NotifierState.TIMEOUT -> note.text = "Connection timeout: check login and token"
             NotifierState.UNAUTHORIZED -> note.text = "Unauthorized: check login and token"
             NotifierState.INVALID_VERSION -> note.text = "<html>Incompatible YouTrack version,<br/>please update to 2017.1 or later</html>"
+            NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION -> note.text = "<html>YouTrack version is not compatible with" +
+                    " token authentication,<br/>please use [username]:[application password] format to login</html>"
         }
     }
 
@@ -98,6 +100,16 @@ class SetupRepositoryConnector {
             } else {
                 logger.debug("invalid YouTrack version detected")
                 NotifierState.INVALID_VERSION
+            }
+        }
+        checker.onVersionError { _ ->
+            val version = getYouTrackVersion(repository.url)
+            noteState = if (version != null && version >= 2017.1 && version <= 2020.4) {
+                logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
+                NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
+            } else {
+                logger.debug("guest login is not allowed")
+                NotifierState.INVALID_TOKEN
             }
         }
         checker.onApplicationError { request, response ->
@@ -199,5 +211,6 @@ enum class NotifierState {
     UNAUTHORIZED,
     EMPTY_FIELD,
     GUEST_LOGIN,
-    PASSWORD_NOT_STORED
+    PASSWORD_NOT_STORED,
+    INSUFFICIENT_FOR_TOKEN_VERSION
 }
