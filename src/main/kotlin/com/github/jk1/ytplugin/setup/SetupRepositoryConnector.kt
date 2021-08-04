@@ -99,7 +99,11 @@ class SetupRepositoryConnector {
                 NotifierState.SUCCESS
             } else {
                 logger.debug("invalid YouTrack version detected")
-                NotifierState.INVALID_VERSION
+                if ( noteState != NotifierState.LOGIN_ERROR){
+                    NotifierState.INVALID_VERSION
+                } else {
+                    NotifierState.LOGIN_ERROR
+                }
             }
         }
         checker.onVersionError { _ ->
@@ -109,7 +113,11 @@ class SetupRepositoryConnector {
                 NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
                 logger.debug("guest login is not allowed")
-                NotifierState.INVALID_TOKEN
+                    if ( noteState != NotifierState.LOGIN_ERROR){
+                        NotifierState.INVALID_TOKEN
+                    } else {
+                        NotifierState.LOGIN_ERROR
+                    }
             }
         }
         checker.onApplicationError { request, response ->
