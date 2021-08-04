@@ -53,7 +53,7 @@ class ScriptsRulesHandler(val project: Project) {
                     mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
 
                     if (!localUrls.contains(local)){
-                        mappings.add(RemoteUrlMappingBean(local, "/dir1627909453965/${workflow.name}/${rule.name}.js"))
+                        mappings.add(RemoteUrlMappingBean(local, "scripts/${workflow.name}/${rule.name}.js"))
                     }
 
                     trackerNote.notify(
