@@ -39,7 +39,7 @@ class IssueSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         }
         actionGroup.add(SearchIssueAnAction())
         add(searchField, BorderLayout.CENTER)
-        add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
+        add(actionGroup.createHorizontalToolbarComponent(this), BorderLayout.EAST)
         // completion support
         val file = PsiDocumentManager.getInstance(project).getPsiFile(searchField.document)
         file?.putUserData(INTELLISENSE_KEY, server.getSearchCompletionProvider())

@@ -25,11 +25,12 @@ class IssueActionGroup(private val parent: JComponent) : DefaultActionGroup() {
         super.add(action)
     }
 
-    fun createVerticalToolbarComponent() = createToolbarComponent(false)
+    fun createVerticalToolbarComponent(target: JComponent) = createToolbarComponent(target, false)
 
-    fun createHorizontalToolbarComponent() = createToolbarComponent(true)
+    fun createHorizontalToolbarComponent(target: JComponent) = createToolbarComponent(target, true)
 
-    private fun createToolbarComponent(horizontal: Boolean): JComponent = ActionManager.getInstance()
-            .createActionToolbar(ActionPlaces.TOOLWINDOW_TITLE, this, horizontal)
-            .component
+    private fun createToolbarComponent(target: JComponent, horizontal: Boolean): JComponent = ActionManager.getInstance()
+        .createActionToolbar(ActionPlaces.TOOLWINDOW_TITLE, this, horizontal)
+        .also { it.setTargetComponent(target) }
+        .component
 }
