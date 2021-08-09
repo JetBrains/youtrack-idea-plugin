@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -19,6 +20,7 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
@@ -110,13 +112,24 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     override fun writeExternal(element: Element) {
         super<LocatableConfigurationBase>.writeExternal(element)
         XmlSerializer.serializeInto(this, element, SERIALIZATION_FILTER)
-        element.setAttribute("uri", folder)
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
+
+        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        val repo = if (repositories.isNotEmpty()) {
+            repositories.first()
+        } else null
+
+        if (URL(repo?.url).host != host){
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Please check if configuration matches the YouTrack instance", NotificationType.WARNING)
+        }
+
         if (port < 0) {
             port = 443
         }
+
         return InetSocketAddress(host, port)
     }
 
