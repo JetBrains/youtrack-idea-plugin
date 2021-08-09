@@ -16,7 +16,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="5ba6" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="folderField">
+          <component id="5ba6" class="javax.swing.JTextField" binding="folderField">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -30,7 +30,7 @@
             </constraints>
             <properties>
               <labelFor value="5ba6"/>
-              <text value="Create folder:"/>
+              <text value="Create folder to load scripts:"/>
             </properties>
           </component>
         </children>
