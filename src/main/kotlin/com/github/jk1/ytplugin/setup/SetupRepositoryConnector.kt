@@ -93,32 +93,27 @@ class SetupRepositoryConnector {
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            noteState = if (isValidYouTrackVersion(repository)) {
+            if (isValidYouTrackVersion(repository)) {
                 repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
-                NotifierState.SUCCESS
+                noteState = NotifierState.SUCCESS
             } else {
                 logger.debug("invalid YouTrack version detected")
-                if ( noteState != NotifierState.LOGIN_ERROR){
-                    NotifierState.INVALID_VERSION
-                } else {
-                    NotifierState.LOGIN_ERROR
+                if (noteState != NotifierState.LOGIN_ERROR){
+                    noteState = NotifierState.INVALID_VERSION
                 }
             }
         }
         checker.onVersionError { _ ->
             val version = getYouTrackVersion(repository.url)
-            noteState =
-                if (version != null && version >= 2017.1 && version <= 2020.4) {
+            if (version != null && version >= 2017.1 && version <= 2020.4) {
                 logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
-                NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
+                noteState = NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
                 logger.debug("guest login is not allowed")
-                    if ( noteState != NotifierState.LOGIN_ERROR){
-                        NotifierState.INVALID_TOKEN
-                    } else {
-                        NotifierState.LOGIN_ERROR
-                    }
+                if (noteState != NotifierState.LOGIN_ERROR){
+                    noteState = NotifierState.INVALID_TOKEN
+                }
             }
         }
         checker.onApplicationError { request, response ->

@@ -21,7 +21,7 @@ class ScriptsRulesHandler(val project: Project) {
 
     private var srcDir = project.baseDir
 
-    fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>) {
+    fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>, folderName: String) {
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) {
             repositories.first()
@@ -30,23 +30,22 @@ class ScriptsRulesHandler(val project: Project) {
         val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
         val trackerNote = TrackerNotification()
 
-        createScriptDirectory("src")
-        srcDir = project.guessProjectDir()?.findFileByRelativePath("src")
-        createScriptDirectory("@jetbrains")
-        srcDir = project.guessProjectDir()?.findFileByRelativePath("src/@jetbrains")
-
+        createOrFindScriptDirectory(folderName)
+        srcDir = project.guessProjectDir()?.findFileByRelativePath(folderName)
+        createOrFindScriptDirectory("@jetbrains")
+        srcDir = project.guessProjectDir()?.findFileByRelativePath("$folderName/@jetbrains")
 
         scriptsList.map { workflow ->
-            val scriptDirectory = createScriptDirectory(workflow.name.split('/').last())
+            val scriptDirectory = createOrFindScriptDirectory(workflow.name.split('/').last())
             workflow.rules.map { rule ->
                 val existingScript = project.guessProjectDir()?.findFileByRelativePath(
-                    "src/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
+                    "$folderName/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
                 )
                 if (existingScript == null) {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                     val local = project.guessProjectDir()?.path +
-                        "/src/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
+                        "/$folderName/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
 
 
                     val localUrls = mutableListOf<String>()
@@ -97,7 +96,7 @@ class ScriptsRulesHandler(val project: Project) {
 //        }
     }
 
-    private fun createScriptDirectory(name: String): PsiDirectory {
+    private fun createOrFindScriptDirectory(name: String): PsiDirectory {
         var targetDirectory: PsiDirectory? = null
 
         ApplicationManager.getApplication().invokeAndWait {

@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>1.2.7</version>
+    <version>1.2.8</version>
     <vendor>JetBrains</vendor>
 
     <description><![CDATA[
@@ -31,7 +31,7 @@
     <!-- Compatible with Idea platform 2021.1 - 2021.3 -->
     <idea-version since-build="210" until-build="213.*"/>
     <!-- Enable plugin in all products except  MPS -->
-<!--    <depends>com.intellij.modules.platform</depends>-->
+    <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <!-- We depend on bundled task management plugin -->
     <depends>com.intellij.tasks</depends>
