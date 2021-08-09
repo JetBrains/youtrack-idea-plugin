@@ -16,31 +16,17 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
-import com.intellij.ide.browsers.WebBrowserXmlService
-import com.intellij.ide.browsers.impl.WebBrowserServiceImpl
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.ui.TextBrowseFolderListener
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
-import com.intellij.ui.IdeBorderFactory
 import com.intellij.util.SmartList
-import com.intellij.util.Url
 import com.intellij.util.proxy.ProtocolDefaultPorts
-import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
 import com.intellij.util.xmlb.XmlSerializer
 import com.intellij.util.xmlb.annotations.Attribute
@@ -52,13 +38,8 @@ import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import org.jetbrains.io.LocalFileFinder
-import java.awt.GridLayout
 import java.net.InetSocketAddress
 import java.net.URL
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextField
 
 class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<Element>(project, factory, name),
@@ -113,6 +94,17 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         if (port <= 0) {
             port = ProtocolDefaultPorts.SSL
         }
+    }
+
+    override fun onNewConfigurationCreated() {
+        super.onNewConfigurationCreated()
+
+        // suggest folder name based on the instance address
+        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        val repo = if (repositories.isNotEmpty()) {
+            repositories.first()
+        } else null
+        folder = "youtrack-scripts" + if (repo != null) "-${URL(repo.url).host}" else ""
     }
 
     override fun writeExternal(element: Element) {
