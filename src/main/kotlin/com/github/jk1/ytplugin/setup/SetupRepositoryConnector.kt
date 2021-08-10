@@ -7,6 +7,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.tasks.TaskManager
 import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
@@ -195,6 +196,12 @@ class SetupRepositoryConnector {
         taskManager.setRepositories(listOf(repository))
         taskManager.updateIssues(null)
         RecentTaskRepositories.getInstance().addRepositories(listOf(repository))
+    }
+
+    fun updateToolWindowName(project: Project, url: String) {
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("YouTrack")!!
+        val content = toolWindow.contentManager.getContent(0)
+        content?.displayName = ("${url.split("//").last()}   |   Issues")
     }
 }
 

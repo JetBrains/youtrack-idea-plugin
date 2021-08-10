@@ -469,6 +469,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             myRepository.setUseProxy(connectedRepository.isUseProxy());
 
             if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
+                repoConnector.updateToolWindowName(project, myRepository.getUrl());
                 repoConnector.showIssuesForConnectedRepo(myRepository, project);
             }
         }
