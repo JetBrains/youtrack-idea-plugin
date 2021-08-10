@@ -47,7 +47,7 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         group.add(ToggleGroupByAction(repo))
         group.addConfigureTaskServerAction(repo, true)
         group.add(HelpAction())
-        return group.createVerticalToolbarComponent()
+        return group.createVerticalToolbarComponent(this)
     }
 
     private fun setupIssueListActionListeners() {
