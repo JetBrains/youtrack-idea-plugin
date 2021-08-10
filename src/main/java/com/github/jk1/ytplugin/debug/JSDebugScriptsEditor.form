@@ -30,7 +30,7 @@
             </constraints>
             <properties>
               <labelFor value="5ba6"/>
-              <text value="Create folder to load scripts:"/>
+              <text value="Root folder for scripts:"/>
             </properties>
           </component>
         </children>

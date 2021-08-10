@@ -18,7 +18,8 @@ import com.github.jk1.ytplugin.logger
 class RemoteDebuggingFileFinder(
     private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
     private val parent: DebuggableFileFinder? = null,
-    private val folderName: String
+    private val rootFolderName: String,
+    private val instanceFolderName: String
 ) : DebuggableFileFinder {
 
     private lateinit var myProject: Project
@@ -104,12 +105,12 @@ class RemoteDebuggingFileFinder(
         logger.info("File mapping is found: $filename \n \n")
 
         val systemIndependentPath: String =
-            FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("$folderName/@jetbrains/$filename").toString())
+            FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename").toString())
 
         val projectBaseDir: VirtualFile? = project.guessProjectDir()
         val child = if (systemIndependentPath.isEmpty()) {
             projectBaseDir
-        } else projectBaseDir?.findFileByRelativePath("$folderName/@jetbrains/$filename")
+        } else projectBaseDir?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename")
 
         if (child != null) {
             return child

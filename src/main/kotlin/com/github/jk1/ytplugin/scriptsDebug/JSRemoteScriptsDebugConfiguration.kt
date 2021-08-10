@@ -56,7 +56,8 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
 
     private val DEFAULT_PORT = 443
     private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
-    private val DEFAULT_FOLDER = "youtrack-scripts" + if (repo != null) "-${URL(repo.url).host}" else ""
+    private val ROOT_FOLDER = "youtrack-scripts"
+    private val INSTANCE_FOLDER = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
 
     @Attribute
     var host: String? = null
@@ -65,7 +66,10 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     var port: Int = DEFAULT_PORT
 
     @Attribute
-    var folder: String = DEFAULT_FOLDER
+    var rootFolder: String = ROOT_FOLDER
+
+    @Attribute
+    var instanceFolder: String = INSTANCE_FOLDER
 
     @Property(surroundWithTag = false)
     @XCollection
@@ -84,7 +88,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val configuration = super.clone() as JSRemoteScriptsDebugConfiguration
         configuration.host = host
         configuration.port = port
-        configuration.folder = folder
+        configuration.rootFolder = rootFolder
         configuration.mappings = SmartList(mappings)
         return configuration
     }
@@ -96,17 +100,6 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         if (port <= 0) {
             port = ProtocolDefaultPorts.SSL
         }
-    }
-
-    override fun onNewConfigurationCreated() {
-        super.onNewConfigurationCreated()
-
-        // suggest folder name based on the instance address
-        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
-        val repo = if (repositories.isNotEmpty()) {
-            repositories.first()
-        } else null
-        folder = "youtrack-scripts" + if (repo != null) "-${URL(repo.url).host}" else ""
     }
 
     override fun writeExternal(element: Element) {
@@ -121,10 +114,8 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
             repositories.first()
         } else null
 
-        if (URL(repo?.url).host != host){
-            val trackerNote = TrackerNotification()
-            trackerNote.notify("Please check if configuration matches the YouTrack instance", NotificationType.WARNING)
-        }
+        host = URL(repo?.url).host
+        port = URL(repo?.url).port
 
         if (port < 0) {
             port = 443
@@ -136,7 +127,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     private fun loadScripts() {
         val application = ApplicationManager.getApplication()
         application.invokeAndWait({
-                ScriptsRulesHandler(project).loadWorkflowRules(mappings, folder)
+                ScriptsRulesHandler(project).loadWorkflowRules(mappings, rootFolder, instanceFolder)
         }, application.noneModalityState)
     }
 
@@ -165,11 +156,12 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                 null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
                 in 2021.3..Double.MAX_VALUE -> {
 
+                    instanceFolder = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
                     loadScripts()
 
                     val connection = WipConnection()
 
-                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings), LocalFileSystemFileFinder(), folder)
+                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings), LocalFileSystemFileFinder(), rootFolder, instanceFolder)
 
                     process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
                     connection.open(socketAddress)
