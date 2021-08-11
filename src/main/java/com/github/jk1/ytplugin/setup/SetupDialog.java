@@ -412,8 +412,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             if (fixedUrl.getPort() != -1) {
                 color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
-                drawUrlComponent(color, fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length(),
-                        fixedUrl.toString().length(),
+                drawUrlComponent(color, fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length() - fixedUrl.getFile().length(),
+                        fixedUrl.toString().length() - fixedUrl.getFile().length(),
                         inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
             }
 
