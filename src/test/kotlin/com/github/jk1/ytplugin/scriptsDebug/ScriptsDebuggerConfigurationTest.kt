@@ -20,6 +20,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.Callable
@@ -52,6 +53,7 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Se
 //        val info = WipConnection().getJsonInfo(request.decoderResult())
 //    }
 
+    // should be passed after deployment
     @Test
     fun `test getting debug ws url without netty`() {
         val wsUrl = getWsUrl()
@@ -72,6 +74,7 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Se
         assertEquals(wsUrl, null)
     }
 
+    //should be passed with required permissions set
     @Test
     fun `test scripts loading`() {
         val scriptsList = ScriptsRestClient(repository).getScriptsWithRules()
@@ -91,7 +94,7 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Se
 
         ApplicationManager.getApplication().executeOnPooledThread(
             Callable {
-                ScriptsRulesHandler(project).loadWorkflowRules(mutableListOf(), "src")
+                ScriptsRulesHandler(project).loadWorkflowRules(mutableListOf(), "src", URL(serverUrl).host)
                 assert(srcDir?.exists() == true && srcDir!!.children != null)
                 val scriptsList = ScriptsRestClient(repository).getScriptsWithRules()
 
