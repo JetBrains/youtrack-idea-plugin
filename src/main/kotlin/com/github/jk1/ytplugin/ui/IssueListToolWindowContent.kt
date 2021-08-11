@@ -51,7 +51,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         group.add(ToggleIssueViewAction(project, issuesList))
         group.addConfigureTaskServerAction(repo, false)
         group.add(HelpAction())
-        return group.createVerticalToolbarComponent()
+        return group.createVerticalToolbarComponent(this)
     }
 
     private fun setupIssueListActionListeners() {

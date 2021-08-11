@@ -41,7 +41,7 @@ class WorkItemsSearchBar(val server: YouTrackServer) : JPanel(BorderLayout()) {
         }
         actionGroup.add(SearchWorkItemsAnAction())
         add(searchField, BorderLayout.CENTER)
-        add(actionGroup.createHorizontalToolbarComponent(), BorderLayout.EAST)
+        add(actionGroup.createHorizontalToolbarComponent(this), BorderLayout.EAST)
 
         searchField.text = timer.searchQuery
         searchField.text = searchField.text.trim()
