@@ -22,6 +22,7 @@ class ScriptsRulesHandler(val project: Project) {
     private var srcDir = project.baseDir
 
     fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>, rootFolderName: String, instanceFolderName: String) {
+
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) {
             repositories.first()
@@ -49,13 +50,15 @@ class ScriptsRulesHandler(val project: Project) {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                     val local = project.guessProjectDir()?.path +
-                        "/$rootFolderName/$instanceFolderName/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
+                            "/$rootFolderName/$instanceFolderName/@jetbrains/${
+                                workflow.name.split('/').last()
+                            }/${rule.name}.js"
 
 
                     val localUrls = mutableListOf<String>()
                     mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
 
-                    if (!localUrls.contains(local)){
+                    if (!localUrls.contains(local)) {
                         mappings.add(RemoteUrlMappingBean(local, "scripts/${workflow.name}/${rule.name}.js"))
                     }
 
@@ -64,6 +67,18 @@ class ScriptsRulesHandler(val project: Project) {
                         NotificationType.INFORMATION
                     )
                 }
+                ScriptsRestClient(repo).getScriptsContent(workflow, rule)
+                if (!existingScript?.contentsToByteArray().contentEquals(rule.content.toByteArray())) {
+                        ApplicationManager.getApplication().runWriteAction {
+                            existingScript?.delete(this)
+                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                        }
+                    trackerNote.notify(
+                        "Script updated \"${workflow.name}\"",
+                        NotificationType.INFORMATION
+                    )
+                }
+
             }
         }
     }

@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
-import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -20,7 +19,6 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
