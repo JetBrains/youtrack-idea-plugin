@@ -55,4 +55,30 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
             }
         }
     }
+
+    fun getYouTrackVersion(): Double? {
+        val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
+        builder.addParameter("fields", "version")
+        val method = HttpGet(builder.build())
+        var result: Double? = null
+            try {
+            result = method.execute {
+                val json: JsonObject = it.asJsonObject
+                if (json.get("version") == null || json.get("version").isJsonNull) {
+                    null
+                } else {
+                    val version = json.get("version").asString.toDouble()
+                    logger.debug("YouTrack version: $version")
+                    version
+                }
+
+            }
+        } catch (e: RuntimeException) {
+            logger.warn("invalid token or login, failed on version validation with status code != 200: ${e.message}")
+        } catch (e: Exception) {
+            logger.warn("invalid token or login, failed on version validation: ${e.message}")
+        }
+
+        return result
+    }
 }

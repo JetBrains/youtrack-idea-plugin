@@ -2,7 +2,7 @@ package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
+import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -42,7 +42,6 @@ import org.jetbrains.debugger.DebuggableRunConfiguration
 import org.jetbrains.io.LocalFileFinder
 import java.net.InetSocketAddress
 import java.net.URL
-import java.util.concurrent.Callable
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -128,7 +127,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         var process: BrowserChromeDebugProcess? = null
 
         val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
-        val version = SetupRepositoryConnector().getYouTrackVersion(repo.url)
+        val version = AdminRestClient(repo).getYouTrackVersion()
 
         // TODO: clear mappings on the run
         DumbService.getInstance(project).runReadActionInSmartMode() {

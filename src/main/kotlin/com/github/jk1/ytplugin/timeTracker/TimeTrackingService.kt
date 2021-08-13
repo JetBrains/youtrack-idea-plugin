@@ -50,7 +50,7 @@ class TimeTrackingService {
         timeTrackingDialog.type?.toString()?.let {
             timer.setupTimerProperties(timeTrackingDialog.comment, timeTrackingDialog.postWhenCommitCheckbox.isSelected,
                 timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected,
-                it, timeTrackingDialog.manualModeCheckbox.isSelected,  //todo
+                it, timeTrackingDialog.manualModeCheckbox.isSelected,
                 timeTrackingDialog.scheduledCheckbox.isSelected, timeToSchedule,
                 inactivityTime, timeTrackingDialog.postOnClose.isSelected)
         }
