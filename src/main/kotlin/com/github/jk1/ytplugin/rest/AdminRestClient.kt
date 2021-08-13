@@ -71,12 +71,9 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                     logger.debug("YouTrack version: $version")
                     version
                 }
-
             }
-        } catch (e: RuntimeException) {
-            logger.warn("invalid token or login, failed on version validation with status code != 200: ${e.message}")
         } catch (e: Exception) {
-            logger.warn("invalid token or login, failed on version validation: ${e.message}")
+            logger.warn("invalid token or login, failed on version validation: ${e.message}, ${e.stackTrace}")
         }
 
         return result
