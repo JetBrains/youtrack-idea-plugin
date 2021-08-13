@@ -47,11 +47,13 @@ class TimeTrackingService {
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingDialog.inactivityHours.toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingDialog.inactivityMinutes.toLong())
 
-        timer.setupTimerProperties(timeTrackingDialog.comment, timeTrackingDialog.postWhenCommitCheckbox.isSelected,
+        timeTrackingDialog.type?.toString()?.let {
+            timer.setupTimerProperties(timeTrackingDialog.comment, timeTrackingDialog.postWhenCommitCheckbox.isSelected,
                 timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected,
-                timeTrackingDialog.type.toString(), timeTrackingDialog.manualModeCheckbox.isSelected,
+                it, timeTrackingDialog.manualModeCheckbox.isSelected,  //todo
                 timeTrackingDialog.scheduledCheckbox.isSelected, timeToSchedule,
                 inactivityTime, timeTrackingDialog.postOnClose.isSelected)
+        }
         timer.timeInMills = 0
         timer.pausedTime = 0
         timer.isAutoTrackingTemporaryDisabled = false
