@@ -1,8 +1,8 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.AdminRestClient
-import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -13,8 +13,13 @@ import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.utils.URIBuilder
+import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
+import java.io.InputStreamReader
 import java.net.URL
+import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
@@ -50,11 +55,38 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun isValidYouTrackVersion(repository: YouTrackRepository, project: Project): Boolean {
-        val version = AdminRestClient(YouTrackServer(repository, project)).getYouTrackVersion()
-        if (version == null){
-            noteState = NotifierState.LOGIN_ERROR
+    fun getYouTrackVersion(url: String): Double? {
+        val client = HttpClientBuilder.create().build()
+        val builder = URIBuilder(url.trimEnd('/') + "/api/config")
+        builder.addParameter("fields", "version")
+        val method = HttpGet(builder.build())
+
+        try {
+            val response = client.execute(method)
+            return if (response.statusLine.statusCode == 200) {
+                val reader = InputStreamReader(response.entity.content, StandardCharsets.UTF_8)
+                val json: JsonObject = JsonParser.parseReader(reader).asJsonObject
+                if (json.get("version") == null || json.get("version").isJsonNull) {
+                    noteState = NotifierState.LOGIN_ERROR
+                    null
+                } else {
+                    val version = json.get("version").asString.toDouble()
+                    logger.debug("YouTrack version: $version")
+                    version
+                }
+            } else {
+                noteState = NotifierState.LOGIN_ERROR
+                logger.warn("invalid token or login, failed on version validation: ${response.statusLine.statusCode}")
+                null
+            }
+        } catch (e: Exception) {
+            logger.warn("invalid token or login, failed on version validation: ${e.message}")
         }
+        return null
+    }
+
+    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
+        val version = getYouTrackVersion(repository.url)
         return version != null && version >= 2017.1
     }
 
@@ -62,7 +94,7 @@ class SetupRepositoryConnector {
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            if (isValidYouTrackVersion(repository, project)) {
+            if (isValidYouTrackVersion(repository)) {
                 repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 noteState = NotifierState.SUCCESS
@@ -74,7 +106,7 @@ class SetupRepositoryConnector {
             }
         }
         checker.onVersionError { _ ->
-            val version = AdminRestClient(YouTrackServer(repository, project)).getYouTrackVersion()
+            val version = getYouTrackVersion(repository.url)
             if (version != null && version >= 2017.1 && version <= 2020.4) {
                 logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
                 noteState = NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
