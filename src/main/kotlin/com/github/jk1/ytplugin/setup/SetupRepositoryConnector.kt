@@ -80,9 +80,9 @@ class SetupRepositoryConnector {
                 noteState = NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
                 logger.debug("guest login is not allowed")
-                    if (noteState != NotifierState.LOGIN_ERROR){
-                        noteState = NotifierState.INVALID_TOKEN
-                    }
+                if (noteState != NotifierState.LOGIN_ERROR){
+                    noteState = NotifierState.INVALID_TOKEN
+                }
             }
         }
         checker.onApplicationError { request, response ->

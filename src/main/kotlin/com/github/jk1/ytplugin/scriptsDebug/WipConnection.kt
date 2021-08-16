@@ -110,6 +110,8 @@ class WipConnection : WipRemoteVmConnection() {
                             getJsonInfo(connectionsData!!)
                             connectToWebSocket()
                         } catch (e: Throwable) {
+                            val trackerNote = TrackerNotification()
+                            trackerNote.notify("Could not start autonomous tracking at the moment", NotificationType.WARNING)
                             logger.info("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
                                 connectionsData!!.writerIndex(),
                                 CharsetUtil.UTF_8).toString()}")
@@ -144,7 +146,7 @@ class WipConnection : WipRemoteVmConnection() {
                 logger.error("Unable to get the window: ${e.message}")
             }
 
-            if (window != null && window!!.isActive) {
+            if (window != null && window!!.isEnabled) {
                 activeProject = project
             }
 
@@ -164,9 +166,12 @@ class WipConnection : WipRemoteVmConnection() {
             val password = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
             val username = if (repositories != null && repositories.isNotEmpty()) repositories[0].username else ""
             val scheme = if (repositories != null && repositories.isNotEmpty()) URI(repositories[0].url).scheme else null
+            val path = if (repositories != null && repositories.isNotEmpty()) URI(repositories[0].url).path else ""
+
 
             val version = HttpVersion(scheme?.toUpperCase() ?: "HTTP", 1, 1, true)
-            val request = DefaultFullHttpRequest(version,  HttpMethod.GET, DEBUG_INFO_ENDPOINT)
+            val endpoint = if (path != null && address.port != 443) path + DEBUG_INFO_ENDPOINT else DEBUG_INFO_ENDPOINT
+            val request = DefaultFullHttpRequest(version,  HttpMethod.GET, endpoint)
 
             val authCredentials = "${username}:${password}".b64Encoded
 

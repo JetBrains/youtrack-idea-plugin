@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableBiMap
 import com.intellij.javascript.debugger.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -15,15 +14,12 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
-import com.google.common.collect.HashBiMap
-import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
-import org.jetbrains.io.LocalFileFinder
-
-private val PREDEFINED_MAPPINGS_KEY: Key<BiMap<String, VirtualFile>> = Key.create("js.debugger.predefined.mappings")
 
 class RemoteDebuggingFileFinder(
     private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
-    private val parent: DebuggableFileFinder? = null
+    private val parent: DebuggableFileFinder? = null,
+    private val rootFolderName: String,
+    private val instanceFolderName: String
 ) : DebuggableFileFinder {
 
     private lateinit var myProject: Project
@@ -57,10 +53,6 @@ class RemoteDebuggingFileFinder(
             return it
         }
         var predefinedMappings = mappings
-        if (predefinedMappings == null) {
-            predefinedMappings = createPredefinedMappings(project)
-            project.putUserData(PREDEFINED_MAPPINGS_KEY, predefinedMappings)
-        }
 
         return findByMappings(url, predefinedMappings) ?: parent?.guessFile(url, project)
     }
@@ -99,69 +91,70 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun toString(): String = Joiner.on("\n ").withKeyValueSeparator("->").join(mappings)
-}
 
+    fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
 
-fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
+        logger.info("Find file mapping for: ${parsedUrl.path}")
 
-    logger.info("Find file mapping for: ${parsedUrl.path}")
+        val url = parsedUrl.trimParameters().toDecodedForm()
+        val filename = if (url.split("/").size > 1) {
+            url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
+        } else {
+            url
+        }
+        logger.info("File mapping is found: $filename \n \n")
 
-    val url = parsedUrl.trimParameters().toDecodedForm()
-    val filename = if (url.split("/").size > 1) {
-        url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
-    } else {
-        url
-    }
-    logger.info("File mapping is found: $filename \n \n")
+        val systemIndependentPath: String =
+            FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename").toString())
 
-    // todo: not that explicit folder name
-    val systemIndependentPath: String =
-        FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("src/@jetbrains/$filename").toString())
+        val projectBaseDir: VirtualFile? = project.guessProjectDir()
+        val child = if (systemIndependentPath.isEmpty()) {
+            projectBaseDir
+        } else projectBaseDir?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename")
 
-    val projectBaseDir: VirtualFile? = project.guessProjectDir()
-    val child = if (systemIndependentPath.isEmpty()) {
-        projectBaseDir
-    } else projectBaseDir?.findFileByRelativePath("src/@jetbrains/$filename")
-
-    if (child != null) {
-        return child
-    }
-    return null
-}
-
-
-private fun findByMappings(parsedUrl: Url, mappings: BiMap<String, VirtualFile>): VirtualFile? {
-    if (mappings.isEmpty()) {
+        if (child != null) {
+            return child
+        }
         return null
     }
 
-    val url = parsedUrl.trimParameters().toDecodedForm()
-    var i = url.length
-    while (i != -1) {
-        val prefix = url.substring(0, i)
-        val file = mappings[prefix]
-        if (file != null) {
-            if (i == url.length) {
-                return file
-            }
-            if (i + 1 == url.length) {
-                // empty string, try to find index file
-                val indexFile = org.jetbrains.builtInWebServer.findIndexFile(file)
-                if (indexFile == null) {
-                    break
-                } else {
-                    return indexFile
-                }
-            }
 
-            val filename = url.substring(i + 1)
-            val child = file.findFileByRelativePath(filename)
-            if (child != null) {
-                return child
-            }
-            break
+    private fun findByMappings(parsedUrl: Url, mappings: BiMap<String, VirtualFile>): VirtualFile? {
+        if (mappings.isEmpty()) {
+            return null
         }
-        i = url.lastIndexOf('/', i - 1)
+
+        val url = parsedUrl.trimParameters().toDecodedForm()
+        var i = url.length
+        while (i != -1) {
+            val prefix = url.substring(0, i)
+            val file = mappings[prefix]
+            if (file != null) {
+                if (i == url.length) {
+                    return file
+                }
+                if (i + 1 == url.length) {
+                    // empty string, try to find index file
+                    val indexFile = org.jetbrains.builtInWebServer.findIndexFile(file)
+                    if (indexFile == null) {
+                        break
+                    } else {
+                        return indexFile
+                    }
+                }
+
+                val filename = url.substring(i + 1)
+                val child = file.findFileByRelativePath(filename)
+                if (child != null) {
+                    return child
+                }
+                break
+            }
+            i = url.lastIndexOf('/', i - 1)
+        }
+        return null
     }
-    return null
+
 }
+
+

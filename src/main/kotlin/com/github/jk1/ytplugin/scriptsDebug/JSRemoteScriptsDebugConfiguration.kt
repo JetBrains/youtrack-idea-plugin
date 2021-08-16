@@ -1,8 +1,9 @@
 package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.AdminRestClient
+import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -16,19 +17,16 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
-import com.intellij.javascript.debugger.*
+import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.IdeBorderFactory
 import com.intellij.util.SmartList
 import com.intellij.util.proxy.ProtocolDefaultPorts
-import com.intellij.util.ui.FormBuilder
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
 import com.intellij.util.xmlb.XmlSerializer
 import com.intellij.util.xmlb.annotations.Attribute
@@ -42,23 +40,34 @@ import org.jetbrains.debugger.DebuggableRunConfiguration
 import org.jetbrains.io.LocalFileFinder
 import java.net.InetSocketAddress
 import java.net.URL
-import javax.swing.JComponent
-import javax.swing.JPanel
-
-
-private const val DEFAULT_PORT = 443
-private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
 
 class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<Element>(project, factory, name),
     RunConfigurationWithSuppressedDefaultRunAction,
     JSRunProfileWithCompileBeforeLaunchOption,
     DebuggableRunConfiguration {
+
+    private val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+    private val repo = if (repositories.isNotEmpty()) {
+        repositories.first()
+    } else null
+
+    private val DEFAULT_PORT = 443
+    private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
+    private val ROOT_FOLDER = "youtrack-scripts"
+    private val INSTANCE_FOLDER = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
+
     @Attribute
     var host: String? = null
 
     @Attribute
     var port: Int = DEFAULT_PORT
+
+    @Attribute
+    var rootFolder: String = ROOT_FOLDER
+
+    @Attribute
+    var instanceFolder: String = INSTANCE_FOLDER
 
     @Property(surroundWithTag = false)
     @XCollection
@@ -66,7 +75,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         private set
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return WipRemoteDebugConfigurationSettingsEditor()
+        return JSDebugScriptsEditor(project)
     }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
@@ -77,6 +86,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val configuration = super.clone() as JSRemoteScriptsDebugConfiguration
         configuration.host = host
         configuration.port = port
+        configuration.rootFolder = rootFolder
         configuration.mappings = SmartList(mappings)
         return configuration
     }
@@ -96,17 +106,26 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     }
 
     override fun computeDebugAddress(state: RunProfileState): InetSocketAddress {
+
+        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        val repo = if (repositories.isNotEmpty()) {
+            repositories.first()
+        } else null
+
+        host = URL(repo?.url).host
+        port = URL(repo?.url).port
+
         if (port < 0) {
             port = 443
         }
+
         return InetSocketAddress(host, port)
     }
-
 
     private fun loadScripts() {
         val application = ApplicationManager.getApplication()
         application.invokeAndWait({
-                ScriptsRulesHandler(project).loadWorkflowRules(mappings)
+                ScriptsRulesHandler(project).loadWorkflowRules(mappings, rootFolder, instanceFolder)
         }, application.noneModalityState)
     }
 
@@ -126,21 +145,21 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     ): BrowserChromeDebugProcess {
         var process: BrowserChromeDebugProcess? = null
 
-        val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
-        val version = AdminRestClient(repo).getYouTrackVersion()
+        val version = repo?.let { SetupRepositoryConnector().getYouTrackVersion(it.url) }
 
         // TODO: clear mappings on the run
-        DumbService.getInstance(project).runReadActionInSmartMode() {
+        DumbService.getInstance(project).runReadActionInSmartMode {
 
             when (version) {
                 null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
                 in 2021.3..Double.MAX_VALUE -> {
 
+                    instanceFolder = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
                     loadScripts()
 
                     val connection = WipConnection()
 
-                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings), LocalFileSystemFileFinder())
+                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings), LocalFileSystemFileFinder(), rootFolder, instanceFolder)
 
                     process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
                     connection.open(socketAddress)
@@ -169,29 +188,6 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
             }
         }
         return map
-    }
-
-
-    private inner class WipRemoteDebugConfigurationSettingsEditor :
-        SettingsEditor<JSRemoteScriptsDebugConfiguration>() {
-
-        override fun resetEditorFrom(configuration: JSRemoteScriptsDebugConfiguration) {}
-
-        override fun applyEditorTo(configuration: JSRemoteScriptsDebugConfiguration) {
-            val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
-            if (repositories.isNotEmpty()) {
-                logger.info("Apply Editor: $host, $port")
-                configuration.host = URL(repositories[0].url).host
-                configuration.port = URL(repositories[0].url).port
-            }
-        }
-
-        override fun createEditor(): JComponent {
-            val protocolPanel = JPanel(VerticalFlowLayout())
-            return FormBuilder.createFormBuilder()
-                .addComponent(protocolPanel, IdeBorderFactory.TITLED_BORDER_TOP_INSET)
-                .panel
-        }
     }
 
 }
