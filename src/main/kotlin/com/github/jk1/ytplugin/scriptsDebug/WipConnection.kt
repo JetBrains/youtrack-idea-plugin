@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
-import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
@@ -33,7 +32,8 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
 import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
-import io.netty.util.CharsetUtil
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.utils.URIBuilder
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.isPending
@@ -48,8 +48,6 @@ import java.awt.Desktop
 import java.awt.Window
 import java.net.InetSocketAddress
 import java.net.URI
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 class WipConnection : WipRemoteVmConnection() {
@@ -64,8 +62,6 @@ class WipConnection : WipRemoteVmConnection() {
 
     private val DEBUG_INFO_ENDPOINT = "/api/debug/scripts/json"
 
-    private val String.b64Encoded: String
-        get() = Base64.getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
     override fun doOpen(result: AsyncPromise<WipVm>, address: InetSocketAddress, stopCondition: Condition<Void>?) {
         val maxAttemptCount = if (stopCondition == null) NettyUtil.DEFAULT_CONNECT_ATTEMPT_COUNT else -1
@@ -97,7 +93,7 @@ class WipConnection : WipRemoteVmConnection() {
                 object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
                     override fun channelActive(context: ChannelHandlerContext) {
                         super.channelActive(context)
-                        formJsonRequest(address, context, result)
+                        formJsonRequest(context, result)
                     }
 
                     override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
@@ -158,27 +154,14 @@ class WipConnection : WipRemoteVmConnection() {
         return activeProject
     }
 
-    fun formJsonRequest(address: InetSocketAddress, context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>) {
 
-        // get active project to detect YouTrack repo
-        val activeProject = getActiveProject()
-
-        try {
-            val repositories =
-                activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
-            val path = if (repositories != null && repositories.isNotEmpty()) URI(repositories[0].url).path else ""
-
-            val endpoint = if (path != null && address.port != 443) path + DEBUG_INFO_ENDPOINT else DEBUG_INFO_ENDPOINT
-            val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1,  HttpMethod.GET, endpoint)
-            context.channel().writeAndFlush(request).addChannelListener {
-                if (!it.isSuccess) {
-                    vmResult.setError(it.cause())
-                }
+    fun formJsonRequest(context: ChannelHandlerContext, vmResult: AsyncPromise<WipVm>) {
+        val request = DefaultHttpRequest(HttpVersion.HTTP_1_1,  HttpMethod.GET, "${getYouTrackRepo()?.url}/api/debug/scripts/json")
+        context.channel().writeAndFlush(request).addChannelListener {
+            if (!it.isSuccess) {
+                vmResult.setError(it.cause())
             }
-        } catch (e: NoYouTrackRepositoryException) {
-            vmResult.setError("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
         }
-
     }
 
     override fun createChannelHandler(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): ChannelHandler {
