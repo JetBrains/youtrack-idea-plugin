@@ -3,15 +3,14 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.*
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
+import com.google.gson.JsonArray
+import com.google.gson.JsonParser
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.util.EventDispatcher
-import io.netty.buffer.ByteBuf
-import io.netty.buffer.Unpooled.directBuffer
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec
 import org.jetbrains.debugger.DebugEventListener
@@ -114,19 +113,16 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Se
 
 
     @Test
-    fun `test getting address with the repository being not configured`() {
+    fun `test getting debug address`() {
 
         val file = "src/test/resources/com/github/jk1/ytplugin/issues/debugger_endpoint_response.json"
-        val json = Files.readAllBytes(Paths.get(file))
 
-        val directBuffer: ByteBuf = directBuffer(256)
-
-        val bytes = directBuffer.writeBytes(json)
         val wipConnection = WipConnection()
-        wipConnection.getJsonInfo(bytes)
+        val info: JsonArray = JsonParser.parseString(Files.readString(Paths.get(file))).asJsonArray
+        wipConnection.getJsonInfo(info[0].asJsonObject)
 
-        //todo
-//        assertEquals(wipConnection.getErrorNote(), "YouTrack server integration is not configured yet")
+        assertEquals(wipConnection.getWebSocketDebuggerUrl(), "ws://localhost:8080/debug/1b7d052adb194d95a330f43adc605fca")
+
     }
 
 

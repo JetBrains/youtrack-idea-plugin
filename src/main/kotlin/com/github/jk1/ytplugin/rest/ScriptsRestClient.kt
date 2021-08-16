@@ -11,8 +11,6 @@ import com.intellij.notification.NotificationType
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.conn.HttpHostConnectException
-import java.net.SocketException
-import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 class ScriptsRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {

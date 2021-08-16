@@ -2,12 +2,12 @@ package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.whenActive
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
+import com.google.gson.JsonObject
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -25,8 +25,6 @@ import com.intellij.util.io.socketConnection.ConnectionStatus
 import com.intellij.util.proxy.ProtocolDefaultPorts
 import com.jetbrains.debugger.wip.PageConnection
 import com.jetbrains.debugger.wip.WipRemoteVmConnection
-import io.netty.buffer.ByteBuf
-import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
@@ -57,7 +55,7 @@ import java.util.*
 class WipConnection : WipRemoteVmConnection() {
 
     @Volatile
-    private var connectionsData: ByteBuf? = null
+    private var connectionsData: JsonObject? = null
 
     private var webSocketDebuggerUrl: String? = null
     private var title: String? = null
@@ -106,15 +104,19 @@ class WipConnection : WipRemoteVmConnection() {
                         try {
                             context.pipeline().remove(this)
                             context.close()
-                            connectionsData = message.content().copy()
+                            val activeProject = getActiveProject()
+                            val repositories = activeProject?.let { p -> ComponentAware.of(p).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
+
+                            connectionsData = if (!repositories.isNullOrEmpty())
+                                ScriptsRestClient(repositories[0]).getDebugAddress() else null
+
                             getJsonInfo(connectionsData!!)
+
                             connectToWebSocket()
                         } catch (e: Throwable) {
                             val trackerNote = TrackerNotification()
-                            trackerNote.notify("Could not start autonomous tracking at the moment", NotificationType.WARNING)
-                            logger.info("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
-                                connectionsData!!.writerIndex(),
-                                CharsetUtil.UTF_8).toString()}")
+                            trackerNote.notify("Remote debug address could not be obtained", NotificationType.WARNING)
+                            logger.info("Malformed json response: ${e.message} with content: ${connectionsData.toString()}")
                         }
                     }
 
@@ -130,6 +132,8 @@ class WipConnection : WipRemoteVmConnection() {
             result.setError("Unable to connect to $address")
         }
     }
+
+    fun getWebSocketDebuggerUrl() = webSocketDebuggerUrl
 
     private fun getActiveProject(): Project? {
         val projects = ProjectManager.getInstance().openProjects
@@ -162,24 +166,10 @@ class WipConnection : WipRemoteVmConnection() {
         try {
             val repositories =
                 activeProject?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
-
-            val password = if (repositories != null && repositories.isNotEmpty()) repositories[0].password else ""
-            val username = if (repositories != null && repositories.isNotEmpty()) repositories[0].username else ""
-            val scheme = if (repositories != null && repositories.isNotEmpty()) URI(repositories[0].url).scheme else null
             val path = if (repositories != null && repositories.isNotEmpty()) URI(repositories[0].url).path else ""
 
-
-            val version = HttpVersion(scheme?.toUpperCase() ?: "HTTP", 1, 1, true)
             val endpoint = if (path != null && address.port != 443) path + DEBUG_INFO_ENDPOINT else DEBUG_INFO_ENDPOINT
-            val request = DefaultFullHttpRequest(version,  HttpMethod.GET, endpoint)
-
-            val authCredentials = "${username}:${password}".b64Encoded
-
-            request.headers().set(HttpHeaderNames.AUTHORIZATION, "Basic $authCredentials")
-            request.headers().set(HttpHeaderNames.ACCEPT, "application/json")
-            request.headers().set(HttpHeaderNames.CONNECTION, "Upgrade")
-            request.headers().set(HttpHeaderNames.HOST, "${address.hostString}:${address.port}")
-
+            val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1,  HttpMethod.GET, endpoint)
             context.channel().writeAndFlush(request).addChannelListener {
                 if (!it.isSuccess) {
                     vmResult.setError(it.cause())
@@ -213,30 +203,13 @@ class WipConnection : WipRemoteVmConnection() {
         }
     }
 
-    fun getJsonInfo(connectionsJson: ByteBuf) {
 
-        if (!connectionsJson.isReadable) {
-            logger.info("Malformed response: $connectionsJson")
-            return
-        }
+    fun getJsonInfo(connectionsJson: JsonObject) {
 
-        val reader = JsonReader(ByteBufInputStream(connectionsJson).reader())
-        if (reader.peek() == JsonToken.BEGIN_ARRAY) {
-            reader.beginArray()
-        }
-        while (reader.hasNext() && reader.peek() != JsonToken.END_DOCUMENT) {
-            reader.beginObject()
-            while (reader.hasNext()) {
-                when (reader.nextName()) {
-                    "title" -> title = reader.nextString()
-                    "type" -> type = reader.nextString()
-                    "webSocketDebuggerUrl" -> webSocketDebuggerUrl = reader.nextString()
-                    "id" -> id = reader.nextString()
-                    else -> reader.skipValue()
-                }
-            }
-            reader.endObject()
-        }
+        title = connectionsJson.get("title").asString
+        type = connectionsJson.get("type").asString
+        webSocketDebuggerUrl = connectionsJson.get("webSocketDebuggerUrl").asString
+        id = connectionsJson.get("id").asString
         notifyUrlsShouldMatch()
     }
 
@@ -345,12 +318,5 @@ class WipConnection : WipRemoteVmConnection() {
                 context.fireExceptionCaught(it.cause())
             }
         }
-    }
-
-    override fun detachAndClose(): Promise<*> {
-        if (connectionsData != null && connectionsData!!.refCnt() > 0) {
-            connectionsData!!.release()
-        }
-        return super.detachAndClose()
     }
 }
