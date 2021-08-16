@@ -3,7 +3,6 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.*
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
