@@ -3,7 +3,7 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.setup.SetupRepositoryConnector
+import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -145,7 +145,8 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     ): BrowserChromeDebugProcess {
         var process: BrowserChromeDebugProcess? = null
 
-        val version = repo?.let { SetupRepositoryConnector().getYouTrackVersion(it.url) }
+        val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
+        val version = AdminRestClient(repo).getYouTrackVersion()
 
         // TODO: clear mappings on the run
         DumbService.getInstance(project).runReadActionInSmartMode {

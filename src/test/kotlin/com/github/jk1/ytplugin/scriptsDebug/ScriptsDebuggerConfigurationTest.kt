@@ -53,13 +53,13 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Se
 //        val info = WipConnection().getJsonInfo(request.decoderResult())
 //    }
 
-    // should be passed after deployment
-    @Test
-    fun `test getting debug ws url without netty`() {
-        val wsUrl = getWsUrl()
-        logger.info("ws url: $wsUrl")
-        assertNotEquals(wsUrl, null)
-    }
+    /** should be passed after deployment **/
+//    @Test
+//    fun `test getting debug ws url without netty`() {
+//        val wsUrl = getWsUrl()
+//        logger.info("ws url: $wsUrl")
+//        assertNotEquals(wsUrl, null)
+//    }
 
     @Test
     fun `test getting debug ws url with feature being turned off`() {
@@ -74,12 +74,12 @@ class ScriptsDebuggerConfigurationTest : DebuggerRestTrait, IdeaProjectTrait, Se
         assertEquals(wsUrl, null)
     }
 
-    //should be passed with required permissions set
-    @Test
-    fun `test scripts loading`() {
-        val scriptsList = ScriptsRestClient(repository).getScriptsWithRules()
-        assertEquals(scriptsList.size, 51)
-    }
+    /** should be passed with required permissions set **/
+//    @Test
+//    fun `test scripts loading`() {
+//        val scriptsList = ScriptsRestClient(repository).getScriptsWithRules()
+//        assertEquals(scriptsList.size, 51)
+//    }
 
 
     @Test

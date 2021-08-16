@@ -45,6 +45,16 @@ class ScriptsRestClient(override val repository: YouTrackServer) : RestClientTra
         }
     }
 
+    fun getDebugAddress() : JsonObject {
+
+        val builder = URIBuilder("${repository.url}/api/debug/scripts/json")
+        val method = HttpGet(builder.build())
+
+        return method.execute { element ->
+            element.asJsonArray[0].asJsonObject
+        }
+
+    }
 
     fun getScriptsContent(workflow: Workflow, rule: WorkflowRule) {
 
