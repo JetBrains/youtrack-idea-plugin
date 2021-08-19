@@ -2,7 +2,7 @@ package com.github.jk1.ytplugin.notifications
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import org.apache.commons.lang.StringEscapeUtils
+import org.springframework.web.util.HtmlUtils
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -26,7 +26,7 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
         val metadataElement = JsonParser.parseString(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
         issueId = issueElement.get("id").asString
-        summary = StringEscapeUtils.escapeHtml(issueElement.get("summary").asString)
+        summary = HtmlUtils.htmlEscape(issueElement.get("summary").asString)
         url = "$repoUrl/issue/$issueId"
         content = prettifyContent(decode(root.get("content").asString))
     }
