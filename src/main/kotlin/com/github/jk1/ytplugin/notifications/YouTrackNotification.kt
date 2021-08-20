@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.notifications
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import org.springframework.web.util.HtmlUtils
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -26,7 +25,7 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
         val metadataElement = JsonParser.parseString(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
         issueId = issueElement.get("id").asString
-        summary = HtmlUtils.htmlEscape(issueElement.get("summary").asString)
+        summary = htmlEscape(issueElement.get("summary").asString, "UTF-8")
         url = "$repoUrl/issue/$issueId"
         content = prettifyContent(decode(root.get("content").asString))
     }
@@ -38,6 +37,34 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
             it.copyTo(out)
         }
         return out.toString("UTF-8")
+    }
+
+
+    private fun htmlEscape(input: String, encoding: String): String {
+        val escaped = StringBuilder(input.length * 2)
+        for (element in input) {
+            val reference = convertToReference(element, encoding)
+            if (reference != null) {
+                escaped.append(reference)
+            } else {
+                escaped.append(element)
+            }
+        }
+        return escaped.toString()
+    }
+
+
+    private fun convertToReference(character: Char, encoding: String): String? {
+        if (encoding.startsWith("UTF-")) {
+            when (character) {
+                '<' -> return "&lt;"
+                '>' -> return "&gt;"
+                '"' -> return "&quot;"
+                '&' -> return "&amp;"
+                '\'' -> return "&#39;"
+            }
+        }
+        return null
     }
 
     private fun prettifyContent(content: String): String {

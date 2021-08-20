@@ -59,9 +59,6 @@ dependencies {
     compile 'org.nanohttpd:nanohttpd:2.3.0'
     compile 'org.apache.httpcomponents:httpclient:4.5.13'
 
-    implementation group: 'org.springframework', name: 'spring-web', version: '5.3.9'
-
-
     testCompile 'junit:junit:4.12'
 }
 
