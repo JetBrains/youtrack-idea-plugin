@@ -58,6 +58,7 @@ import java.util.Base64.getEncoder
 open class WipConnection : RemoteVmConnection<WipVm>() {
 
     private var currentPageTitle: String? = null
+    private val DEBUG_ADDRESS_ENDPOINT = "/api/debug/scripts/json"
     val url: Url? = null
 
     var pageUrl: String? = null
@@ -88,6 +89,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         return object : SimpleChannelInboundHandlerAdapter<FullHttpResponse>() {
             override fun channelActive(context: ChannelHandlerContext) {
                 super.channelActive(context)
+                logger.debug("Channel is active")
                 sendGetJson(address, context, vmResult)
             }
 
@@ -188,15 +190,19 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     ) {
 
         val repository = getYouTrackRepo()
+        val path = if (repository != null) URI(repository.url).path else ""
 
-        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/youtrack/api/debug/scripts/json")
+        val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "$path$DEBUG_ADDRESS_ENDPOINT")
         request.headers().set(HttpHeaderNames.HOST, address.toHttpHeaderHostField())
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
         request.headers()
             .set(HttpHeaderNames.AUTHORIZATION, "Basic ${"${repository?.username}:${repository?.password}".b64Encoded}")
 
+        logger.debug("Request for the acquiring debug address is formed: ${request.uri()}")
+
         context.channel().writeAndFlush(request).addChannelListener {
             if (!it.isSuccess) {
+                logger.debug("Request unsuccessful: ${it.cause()}")
                 vmResult.setError(it.cause())
             }
         }
@@ -206,7 +212,10 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         val repositories =
             getActiveProject()?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
         if (repositories != null && repositories.isNotEmpty()) {
+            logger.debug("Obtained youtrack repo: ${repositories.first().url}")
             return repositories.first()
+        } else {
+            logger.debug("Failed to obtain youtrack repo")
         }
         return null
     }
@@ -254,7 +263,9 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             }
             reader.endObject()
         }
+        logger.debug("YouTrack debug address obtained: $webSocketDebuggerUrl")
 
+        notifyUrlsShouldMatch()
         return !processConnection(context, result)
     }
 
@@ -262,10 +273,11 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         context: ChannelHandlerContext,
         result: AsyncPromise<WipVm>
     ): Boolean {
-        if (url != null || webSocketDebuggerUrl != null){
+        if ((url != null || webSocketDebuggerUrl != null) && isBaseurlMatchingActual()){
+            logger.debug("Connect debugger for $url")
             connectDebugger(context, result)
             return true
-        } else {
+        } else if (isBaseurlMatchingActual()){
             result.setError("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
             logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
         }
