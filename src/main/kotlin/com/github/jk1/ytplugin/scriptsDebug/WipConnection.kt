@@ -76,10 +76,12 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
 
     override fun createBootstrap(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): Bootstrap {
         return createBootstrap().handler {
-            val h = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE).build()
-
-            it.pipeline().addLast(h.newHandler(NioSocketChannel().alloc(), address.hostName, address.port))
+            val repository = getYouTrackRepo()
+            if (repository != null && URI(repository.url).scheme == HttpScheme.HTTPS.toString()){
+                val h = SslContextBuilder.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE).build()
+                it.pipeline().addLast(h.newHandler(NioSocketChannel().alloc(), address.hostName, address.port))
+            }
             it.pipeline()
                 .addLast(HttpClientCodec(), HttpObjectAggregator(1048576 * 10), createChannelHandler(address, vmResult))
         }
