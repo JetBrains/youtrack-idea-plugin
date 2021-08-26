@@ -16,7 +16,7 @@ private const val FACTORY_ID = "YouTrack Remote Debug"
 
 class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
     ID,
-    "Remote Debug Of YouTrack Scripts",
+    "YouTrack Scripts",
     null,
     YOUTRACK
 ), DumbAware {
