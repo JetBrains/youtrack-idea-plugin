@@ -111,7 +111,7 @@ class WipConnection : WipRemoteVmConnection() {
                             connectToWebSocket()
                         } catch (e: Throwable) {
                             val trackerNote = TrackerNotification()
-                            trackerNote.notify("Could not start autonomous tracking at the moment", NotificationType.WARNING)
+                            trackerNote.notify("Could not obtain remote debugger address", NotificationType.WARNING)
                             logger.info("Malformed json response: ${e.message} with content: ${connectionsData?.readCharSequence(
                                 connectionsData!!.writerIndex(),
                                 CharsetUtil.UTF_8).toString()}")
