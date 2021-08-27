@@ -109,6 +109,7 @@ class ScriptsRulesHandler(val project: Project) {
                             "The source script appears to contain unsupported line separators. Please enter the content manually." as CharSequence
                         )
                         try {
+                            logger.info("The $name file contains unsupported line separators and was not imported from YouTrack")
                             directory.add(file)
                         } catch (e: IncorrectOperationException) {
                             logger.info("File $name was already loaded")
