@@ -46,7 +46,21 @@ class ScriptsRulesHandler(val project: Project) {
                 val existingScript = project.guessProjectDir()?.findFileByRelativePath(
                     "$rootFolderName/$instanceFolderName/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
                 )
-                if (existingScript == null) {
+                if (existingScript != null) {
+                    ScriptsRestClient(repo).getScriptsContent(workflow, rule)
+                    if (!existingScript.contentsToByteArray().contentEquals(rule.content.toByteArray())) {
+                        ApplicationManager.getApplication().runWriteAction {
+                            existingScript.delete(this)
+                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                        }
+                        trackerNote.notify(
+                            "Script updated \"${workflow.name}\"",
+                            NotificationType.INFORMATION
+                        )
+                    } else {
+                        logger.debug("No changes were made for ${workflow.name}")
+                    }
+                } else {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                     val local = project.guessProjectDir()?.path +
@@ -67,18 +81,6 @@ class ScriptsRulesHandler(val project: Project) {
                         NotificationType.INFORMATION
                     )
                 }
-                ScriptsRestClient(repo).getScriptsContent(workflow, rule)
-                if (!existingScript?.contentsToByteArray().contentEquals(rule.content.toByteArray())) {
-                        ApplicationManager.getApplication().runWriteAction {
-                            existingScript?.delete(this)
-                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
-                        }
-                    trackerNote.notify(
-                        "Script updated \"${workflow.name}\"",
-                        NotificationType.INFORMATION
-                    )
-                }
-
             }
         }
     }
