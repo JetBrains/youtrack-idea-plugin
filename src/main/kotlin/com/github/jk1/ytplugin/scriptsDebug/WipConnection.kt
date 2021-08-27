@@ -92,7 +92,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             override fun channelActive(context: ChannelHandlerContext) {
                 super.channelActive(context)
                 logger.debug("Channel is active")
-                sendGetJson(address, context, vmResult)
+                obtainDebugAddress(address, context, vmResult)
             }
 
             override fun messageReceived(context: ChannelHandlerContext, message: FullHttpResponse) {
@@ -185,7 +185,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         return activeProject
     }
 
-    protected fun sendGetJson(
+    protected fun obtainDebugAddress(
         address: InetSocketAddress,
         context: ChannelHandlerContext,
         vmResult: AsyncPromise<WipVm>
