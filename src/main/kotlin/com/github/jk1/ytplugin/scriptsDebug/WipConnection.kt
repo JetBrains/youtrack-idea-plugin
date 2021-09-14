@@ -128,7 +128,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     private fun notifyUrlsShouldMatch() {
         val repo = getYouTrackRepo()
         when {
-            !isBaseurlMatchingActual() && repo != null && webSocketDebuggerUrl != null -> {
+            !isBaseurlMatchingActual() && repo != null -> {
                 val note =
                     "Please verify that the server URL stored in settings for the YouTrack Integration plugin matches the base URL of your YouTrack site"
                 val trackerNote = TrackerNotification()
