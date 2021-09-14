@@ -8,6 +8,7 @@ import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.lang.javascript.JavaScriptFileType.INSTANCE
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiDirectory
@@ -68,6 +69,7 @@ class ScriptsRulesHandler(val project: Project) {
                                 workflow.name.split('/').last()
                             }/${rule.name}.js"
 
+                    srcDir?.findFileByRelativePath("${rule.name}.js")?.let { FileDocumentManager.getInstance().getDocument(it) }?.setReadOnly(true)
 
                     val localUrls = mutableListOf<String>()
                     mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
@@ -94,7 +96,10 @@ class ScriptsRulesHandler(val project: Project) {
                     try {
                         val file: PsiFile = psiFileFactory.createFileFromText(name, INSTANCE, text as CharSequence)
                         logger.info("Attempt to load file $name")
+
                         directory.add(file)
+                        makeLoadedFileReadOnly(directory, name)
+
                         logger.info("File $name is loaded")
                     } catch (e: IncorrectOperationException) {
                         logger.info("File $name is already loaded")
@@ -119,6 +124,11 @@ class ScriptsRulesHandler(val project: Project) {
                     }
                 }
             }
+    }
+
+    private fun makeLoadedFileReadOnly(directory: PsiDirectory, name: String) {
+        directory.findFile(name)?.let { FileDocumentManager.getInstance().getDocument(it.virtualFile) }?.setReadOnly(true)
+        directory.findFile(name)?.virtualFile?.isWritable = false
     }
 
     private fun createOrFindScriptDirectory(name: String): PsiDirectory {
