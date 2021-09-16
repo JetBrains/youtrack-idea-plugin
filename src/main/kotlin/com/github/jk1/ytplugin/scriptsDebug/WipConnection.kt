@@ -62,6 +62,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     val url: Url? = null
 
     var pageUrl: String? = null
+    var webSocketUrlFromEndpoint: String? = null
     var webSocketDebuggerUrl: String? = null
     var title: String? = null
     var type: String? = null
@@ -258,17 +259,22 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
                     "url" -> pageUrl = reader.nextString()
                     "title" -> title = reader.nextString()
                     "type" -> type = reader.nextString()
-                    "webSocketDebuggerUrl" -> webSocketDebuggerUrl = reader.nextString()
+                    "webSocketDebuggerUrl" -> webSocketUrlFromEndpoint = reader.nextString()
                     "id" -> id = reader.nextString()
                     else -> reader.skipValue()
                 }
             }
             reader.endObject()
         }
+        webSocketDebuggerUrl = webSocketUrlFromEndpoint?.let { constructWebsocketDebuggerUrl(it) }
         logger.debug("YouTrack debug address obtained: $webSocketDebuggerUrl")
 
         notifyUrlsShouldMatch()
         return !processConnection(context, result)
+    }
+
+    private fun constructWebsocketDebuggerUrl(url: String): String{
+        return "${url.split("://").first()}://${URI(getYouTrackRepo()?.url).authority}/${url.split("://").last()}"
     }
 
     protected open fun processConnection(
