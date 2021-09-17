@@ -62,11 +62,13 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     val url: Url? = null
 
     var pageUrl: String? = null
-    var webSocketUrlFromEndpoint: String? = null
     var webSocketDebuggerUrl: String? = null
     var title: String? = null
     var type: String? = null
     var id: String? = null
+
+    private var webSocketDebuggerEndpoint: String? = null
+    private var webSocketPrefix: String? = null
 
     val logger: Logger get() = Logger.getInstance("com.github.jk1.ytplugin")
 
@@ -78,7 +80,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     override fun createBootstrap(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): Bootstrap {
         return createBootstrap().handler {
             val repository = getYouTrackRepo()
-            if (repository != null && URI(repository.url).scheme == HttpScheme.HTTPS.toString()){
+            if (repository != null && URI(repository.url).scheme == HttpScheme.HTTPS.toString()) {
                 val h = SslContextBuilder.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE).build()
                 it.pipeline().addLast(h.newHandler(NioSocketChannel().alloc(), address.hostName, address.port))
@@ -126,14 +128,22 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         }
     }
 
-    private fun notifyUrlsShouldMatch() {
+    private fun notifyIfDebuggerConnectionError() {
         val repo = getYouTrackRepo()
-        when {
-            !isBaseurlMatchingActual() && repo != null -> {
+        if (repo == null) {
+            val note = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
+            val trackerNote = TrackerNotification()
+            trackerNote.notify(note, NotificationType.ERROR)
+        } else {
+            if (webSocketDebuggerUrl == null) {
                 val note =
-                    "Please verify that the server URL stored in settings for the YouTrack Integration plugin matches the base URL of your YouTrack site"
+                    "The debug operation requires that you have permission to update at least one project in YouTrack"
                 val trackerNote = TrackerNotification()
-                trackerNote.notifyWithHelper(note, NotificationType.WARNING, object : AnAction("Settings"), DumbAware {
+                trackerNote.notify(note, NotificationType.ERROR)
+            } else {
+                val note = "Please enable scripts debugger in YouTrack"
+                val trackerNote = TrackerNotification()
+                trackerNote.notifyWithHelper(note, NotificationType.ERROR, object : AnAction("Settings"), DumbAware {
                     override fun actionPerformed(event: AnActionEvent) {
                         event.whenActive {
                             val desktop: Desktop? = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
@@ -149,18 +159,8 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
                     }
                 })
             }
-            repo == null -> {
-                val note = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
-                val trackerNote = TrackerNotification()
-                trackerNote.notify(note, NotificationType.WARNING)
-            }
-            webSocketDebuggerUrl == null -> {
-                val note =
-                    "The debug operation requires that you have permission to update at least one project in YouTrack"
-                val trackerNote = TrackerNotification()
-                trackerNote.notify(note, NotificationType.WARNING)
-            }
         }
+
     }
 
     private fun getActiveProject(): Project? {
@@ -198,8 +198,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "$path$DEBUG_ADDRESS_ENDPOINT")
         request.headers().set(HttpHeaderNames.HOST, address.toHttpHeaderHostField())
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
-        request.headers()
-            .set(HttpHeaderNames.AUTHORIZATION, "Basic ${"${repository?.username}:${repository?.password}".b64Encoded}")
+        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Basic ${"${repository?.username}:${repository?.password}".b64Encoded}")
 
         logger.debug("Request for the acquiring debug address is formed: ${request.uri()}")
 
@@ -223,18 +222,14 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         return null
     }
 
-
-    private fun isBaseurlMatchingActual(): Boolean {
-        return webSocketDebuggerUrl != null && getYouTrackRepo() != null &&
-                URI(webSocketDebuggerUrl).authority == URI(getYouTrackRepo()?.url).authority
-    }
-
     override fun connectedAddressToPresentation(address: InetSocketAddress, vm: Vm): String {
         return "${super.connectedAddressToPresentation(address, vm)}${currentPageTitle?.let { " \u2013 $it" } ?: ""}"
     }
 
-    protected open fun connectToPage(context: ChannelHandlerContext, address: InetSocketAddress,
-                                     connectionsJson: ByteBuf, result: AsyncPromise<WipVm>): Boolean {
+    protected open fun connectToPage(
+        context: ChannelHandlerContext, address: InetSocketAddress,
+        connectionsJson: ByteBuf, result: AsyncPromise<WipVm>
+    ): Boolean {
 
         result.onError {
             logger.debug("\"$it\"", "Error")
@@ -242,11 +237,25 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
 
         if (!connectionsJson.isReadable) {
             result.setError("Malformed response")
-            logger.debug("Attempt to receive debug address: ${connectionsJson.readCharSequence(connectionsJson.readableBytes(), 
-                Charset.forName("utf-8"))}")
+            logger.debug(
+                "Attempt to receive debug address: ${
+                    connectionsJson.readCharSequence(
+                        connectionsJson.readableBytes(),
+                        Charset.forName("utf-8")
+                    )
+                }"
+            )
             return true
         }
 
+        processDebuggerConnectionJson(connectionsJson)
+        logger.debug("YouTrack debug address obtained: $webSocketDebuggerUrl")
+
+        notifyIfDebuggerConnectionError()
+        return !processConnection(context, result)
+    }
+
+    private fun processDebuggerConnectionJson(connectionsJson: ByteBuf) {
         val reader = JsonReader(ByteBufInputStream(connectionsJson).reader())
         if (reader.peek() == JsonToken.BEGIN_ARRAY) {
             reader.beginArray()
@@ -259,33 +268,30 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
                     "url" -> pageUrl = reader.nextString()
                     "title" -> title = reader.nextString()
                     "type" -> type = reader.nextString()
-                    "webSocketDebuggerUrl" -> webSocketUrlFromEndpoint = reader.nextString()
+                    "webSocketDebuggerEndpoint" -> webSocketDebuggerEndpoint = reader.nextString()
+                    "websocketPrefix" -> webSocketPrefix = reader.nextString()
                     "id" -> id = reader.nextString()
                     else -> reader.skipValue()
                 }
             }
             reader.endObject()
         }
-        webSocketDebuggerUrl = webSocketUrlFromEndpoint?.let { constructWebsocketDebuggerUrl(it) }
-        logger.debug("YouTrack debug address obtained: $webSocketDebuggerUrl")
-
-        notifyUrlsShouldMatch()
-        return !processConnection(context, result)
+        webSocketDebuggerUrl = constructWebsocketDebuggerUrl()
     }
 
-    private fun constructWebsocketDebuggerUrl(url: String): String{
-        return "${url.split("://").first()}://${URI(getYouTrackRepo()?.url).authority}/${url.split("://").last()}"
+    private fun constructWebsocketDebuggerUrl(): String {
+        return "$webSocketPrefix${URI(getYouTrackRepo()?.url).authority}$webSocketDebuggerEndpoint"
     }
 
     protected open fun processConnection(
         context: ChannelHandlerContext,
         result: AsyncPromise<WipVm>
     ): Boolean {
-        if ((url != null || webSocketDebuggerUrl != null) && isBaseurlMatchingActual()){
-            logger.debug("Connect debugger for $url")
+        if (webSocketDebuggerUrl != null) {
+            logger.debug("Connect debugger for ${URI(getYouTrackRepo()?.url).authority}")
             connectDebugger(context, result)
             return true
-        } else if (isBaseurlMatchingActual()){
+        } else {
             result.setError("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
             logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
         }
@@ -305,13 +311,21 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             100 * 1024 * 1024
         )
         val channel = context.channel()
-        val vm = BrowserWipVm(debugEventListener, webSocketDebuggerUrl, channel, createDebugLogger("js.debugger.wip.log", ""))
+        val vm = BrowserWipVm(
+            debugEventListener,
+            webSocketDebuggerUrl,
+            channel,
+            createDebugLogger("js.debugger.wip.log", "")
+        )
         vm.title = title
         vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
             if (it.reason() == "targetCrashed") {
                 close("${ConnectionStatus.DISCONNECTED.statusText} (Inspector crashed)", ConnectionStatus.DISCONNECTED)
             } else {
-                close("${ConnectionStatus.DISCONNECTED.statusText} (Inspector already opened)", ConnectionStatus.DETACHED)
+                close(
+                    "${ConnectionStatus.DISCONNECTED.statusText} (Inspector already opened)",
+                    ConnectionStatus.DETACHED
+                )
             }
         }
         channel.pipeline().addLast(
