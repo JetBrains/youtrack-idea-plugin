@@ -134,33 +134,12 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             val note = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.ERROR)
-        } else {
-            if (webSocketDebuggerUrl == null) {
-                val note =
-                    "The debug operation requires that you have permission to update at least one project in YouTrack"
-                val trackerNote = TrackerNotification()
-                trackerNote.notify(note, NotificationType.ERROR)
-            } else {
-                val note = "Please enable scripts debugger in YouTrack"
-                val trackerNote = TrackerNotification()
-                trackerNote.notifyWithHelper(note, NotificationType.ERROR, object : AnAction("Settings"), DumbAware {
-                    override fun actionPerformed(event: AnActionEvent) {
-                        event.whenActive {
-                            val desktop: Desktop? = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
-                            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-                                try {
-                                    val repository = getYouTrackRepo()
-                                    desktop.browse(URI("${repository?.url}/admin/settings"))
-                                } catch (e: java.lang.Exception) {
-                                    e.printStackTrace()
-                                }
-                            }
-                        }
-                    }
-                })
-            }
+        } else if (webSocketDebuggerUrl == null) {
+            val note =
+                "The debug operation requires that you have permission to update at least one project in YouTrack"
+            val trackerNote = TrackerNotification()
+            trackerNote.notify(note, NotificationType.ERROR)
         }
-
     }
 
     private fun getActiveProject(): Project? {
