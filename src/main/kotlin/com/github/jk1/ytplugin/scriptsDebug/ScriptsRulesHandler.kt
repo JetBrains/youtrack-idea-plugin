@@ -8,7 +8,6 @@ import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.lang.javascript.JavaScriptFileType.INSTANCE
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiDirectory
@@ -20,7 +19,7 @@ import com.intellij.util.IncorrectOperationException
 
 class ScriptsRulesHandler(val project: Project) {
 
-    private var srcDir = project.baseDir
+    private var srcDir = project.guessProjectDir()
 
     fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>, rootFolderName: String, instanceFolderName: String) {
 
@@ -64,12 +63,8 @@ class ScriptsRulesHandler(val project: Project) {
                 } else {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
-                    val local = project.guessProjectDir()?.path +
-                            "/$rootFolderName/$instanceFolderName/@jetbrains/${
-                                workflow.name.split('/').last()
-                            }/${rule.name}.js"
-
-                    srcDir?.findFileByRelativePath("${rule.name}.js")?.let { FileDocumentManager.getInstance().getDocument(it) }?.setReadOnly(true)
+                    val local = project.guessProjectDir()?.path + "/$rootFolderName/$instanceFolderName/@jetbrains/" +
+                            "${workflow.name.split('/').last()}/${rule.name}.js"
 
                     val localUrls = mutableListOf<String>()
                     mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
@@ -95,17 +90,17 @@ class ScriptsRulesHandler(val project: Project) {
                     //find or create file
                     try {
                         val file: PsiFile = psiFileFactory.createFileFromText(name, INSTANCE, text as CharSequence)
-                        logger.info("Attempt to load file $name")
+                        logger.debug("Attempt to load file $name")
 
                         directory.add(file)
                         makeLoadedFileReadOnly(directory, name)
 
-                        logger.info("File $name is loaded")
+                        logger.debug("File $name is loaded")
                     } catch (e: IncorrectOperationException) {
-                        logger.info("File $name is already loaded")
+                        logger.debug("File $name is already loaded")
                     } catch (e: AssertionError) {
 
-                        logger.info("The $name file contains unsupported line separators and was not imported from YouTrack")
+                        logger.debug("The $name file contains unsupported line separators and was not imported from YouTrack")
 
                         val note = "The $name file contains unsupported line separators and was not imported from YouTrack"
                         val trackerNote = TrackerNotification()
@@ -116,10 +111,10 @@ class ScriptsRulesHandler(val project: Project) {
                             "The source script appears to contain unsupported line separators. Please enter the content manually." as CharSequence
                         )
                         try {
-                            logger.info("The $name file contains unsupported line separators and was not imported from YouTrack")
+                            logger.debug("The $name file contains unsupported line separators and was not imported from YouTrack")
                             directory.add(file)
                         } catch (e: IncorrectOperationException) {
-                            logger.info("File $name was already loaded")
+                            logger.debug("File $name was already loaded")
                         }
                     }
                 }
@@ -127,7 +122,6 @@ class ScriptsRulesHandler(val project: Project) {
     }
 
     private fun makeLoadedFileReadOnly(directory: PsiDirectory, name: String) {
-        directory.findFile(name)?.let { FileDocumentManager.getInstance().getDocument(it.virtualFile) }?.setReadOnly(true)
         directory.findFile(name)?.virtualFile?.isWritable = false
     }
 
@@ -138,10 +132,10 @@ class ScriptsRulesHandler(val project: Project) {
             ApplicationManager.getApplication().runWriteAction {
                 // find or create directory
                 val targetVirtualDir = if (srcDir?.findFileByRelativePath(name) == null) {
-                    logger.info("Directory $name is created")
+                    logger.debug("Directory $name is created")
                     srcDir?.createChildDirectory(this, name)
                 } else {
-                    srcDir.findFileByRelativePath(name)
+                    srcDir?.findFileByRelativePath(name)
                 }
                 targetDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(targetVirtualDir!!)
             }

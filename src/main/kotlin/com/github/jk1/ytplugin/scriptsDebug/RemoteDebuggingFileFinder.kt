@@ -25,11 +25,11 @@ class RemoteDebuggingFileFinder(
     private lateinit var myProject: Project
 
     init {
-        logger.info("Remote File Finder is initialized")
+        logger.debug("Remote File Finder is initialized")
     }
 
     override fun findNavigatable(url: Url, project: Project): Navigatable? {
-        logger.info("find navigatable file ${url.path}")
+        logger.debug("find navigatable file ${url.path}")
 
         myProject = project
         findMapping(url, project)?.let {
@@ -39,7 +39,7 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun findFile(url: Url, project: Project): VirtualFile? {
-        logger.info("find file ${url.path}")
+        logger.debug("find file ${url.path}")
 
         myProject = project
 
@@ -47,32 +47,20 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun guessFile(url: Url, project: Project): VirtualFile? {
-        logger.info("guess file ${url.path}")
+        logger.debug("guess file ${url.path}")
 
         parent?.findFile(url, project)?.let {
             return it
         }
-        var predefinedMappings = mappings
+        val predefinedMappings = mappings
 
         return findByMappings(url, predefinedMappings) ?: parent?.guessFile(url, project)
     }
 
-
     override fun searchesByName(): Boolean = true
 
-    private fun createPredefinedMappings(project: Project): BiMap<String, VirtualFile> {
-        logger.info("create predefined mappings")
-
-        val projectDir = project.guessProjectDir()
-        return if (projectDir != null) ImmutableBiMap.of("webpack:///.", projectDir) else ImmutableBiMap.of()
-    }
-
-
-    // TODO: trace files loading with debug
-
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
-
-        logger.info("Get remote urls for: ${file.name}")
+        logger.debug("Get remote urls for: ${file.name}")
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
             val map = mappings.inverse()
@@ -92,9 +80,9 @@ class RemoteDebuggingFileFinder(
 
     override fun toString(): String = Joiner.on("\n ").withKeyValueSeparator("->").join(mappings)
 
-    fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
+    private fun findMapping(parsedUrl: Url, project: Project): VirtualFile? {
 
-        logger.info("Find file mapping for: ${parsedUrl.path}")
+        logger.debug("Find file mapping for: ${parsedUrl.path}")
 
         val url = parsedUrl.trimParameters().toDecodedForm()
         val filename = if (url.split("/").size > 1) {
@@ -102,22 +90,23 @@ class RemoteDebuggingFileFinder(
         } else {
             url
         }
-        logger.info("File mapping is found: $filename \n \n")
+        logger.debug("File mapping is found: $filename \n \n")
 
-        val systemIndependentPath: String =
-            FileUtil.toSystemIndependentName(project.guessProjectDir()?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename").toString())
+        val systemIndependentPath: String = FileUtil.toSystemIndependentName(project.guessProjectDir()
+            ?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename").toString())
 
         val projectBaseDir: VirtualFile? = project.guessProjectDir()
         val child = if (systemIndependentPath.isEmpty()) {
             projectBaseDir
-        } else projectBaseDir?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename")
+        } else {
+            projectBaseDir?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename")
+        }
 
         if (child != null) {
             return child
         }
         return null
     }
-
 
     private fun findByMappings(parsedUrl: Url, mappings: BiMap<String, VirtualFile>): VirtualFile? {
         if (mappings.isEmpty()) {

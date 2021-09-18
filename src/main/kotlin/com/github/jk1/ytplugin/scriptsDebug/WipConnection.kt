@@ -3,16 +3,12 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
-import com.github.jk1.ytplugin.whenActive
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.MalformedJsonException
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.wm.WindowManager
@@ -47,7 +43,6 @@ import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
 import org.jetbrains.wip.BrowserWipVm
 import org.jetbrains.wip.WipVm
 import org.jetbrains.wip.protocol.inspector.DetachedEventData
-import java.awt.Desktop
 import java.awt.Window
 import java.net.InetSocketAddress
 import java.net.URI
@@ -190,8 +185,9 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     }
 
     private fun getYouTrackRepo(): YouTrackServer? {
-        val repositories =
-            getActiveProject()?.let { ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
+        val repositories = getActiveProject()?.let {
+            ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        }
         if (repositories != null && repositories.isNotEmpty()) {
             logger.debug("Obtained youtrack repo: ${repositories.first().url}")
             return repositories.first()
@@ -209,20 +205,14 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         context: ChannelHandlerContext, address: InetSocketAddress,
         connectionsJson: ByteBuf, result: AsyncPromise<WipVm>
     ): Boolean {
-
         result.onError {
             logger.debug("\"$it\"", "Error")
         }
 
         if (!connectionsJson.isReadable) {
             result.setError("Malformed response")
-            logger.debug(
-                "Attempt to receive debug address: ${
-                    connectionsJson.readCharSequence(
-                        connectionsJson.readableBytes(),
-                        Charset.forName("utf-8")
-                    )
-                }"
+            logger.debug("Attempt to receive debug address: " +
+                    "${connectionsJson.readCharSequence(connectionsJson.readableBytes(), Charset.forName("utf-8"))}"
             )
             return true
         }
@@ -299,10 +289,10 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         vm.title = title
         vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
             if (it.reason() == "targetCrashed") {
-                close("${ConnectionStatus.DISCONNECTED.statusText} (Inspector crashed)", ConnectionStatus.DISCONNECTED)
+                close("${ConnectionStatus.DISCONNECTED.statusText} (Debugger crashed)", ConnectionStatus.DISCONNECTED)
             } else {
                 close(
-                    "${ConnectionStatus.DISCONNECTED.statusText} (Inspector already opened)",
+                    "${ConnectionStatus.DISCONNECTED.statusText} (Debugger already opened)",
                     ConnectionStatus.DETACHED
                 )
             }
