@@ -20,7 +20,7 @@ class ScriptsRestClient(override val repository: YouTrackServer) : RestClientTra
         val builder = URIBuilder("${repository.url}/api/admin/workflows")
         builder.setParameter("\$top", "-1")
             .setParameter("fields", "name,id,rules(id,name)")
-            .setParameter("query", "language:JS,system:null,debug:true")
+            .setParameter("query", "language:JS,debug:true")
         val method = HttpGet(builder.build())
 
         val scriptsList = mutableListOf<Workflow>()

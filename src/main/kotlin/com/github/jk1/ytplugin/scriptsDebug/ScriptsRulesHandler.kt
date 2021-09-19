@@ -21,6 +21,9 @@ class ScriptsRulesHandler(val project: Project) {
 
     private var srcDir = project.guessProjectDir()
 
+    private val updatedScriptsNames = mutableListOf<String>()
+    private val loadedScriptsNames = mutableListOf<String>()
+
     fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>, rootFolderName: String, instanceFolderName: String) {
 
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
@@ -53,10 +56,7 @@ class ScriptsRulesHandler(val project: Project) {
                             existingScript.delete(this)
                             createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                         }
-                        trackerNote.notify(
-                            "Script updated \"${workflow.name}\"",
-                            NotificationType.INFORMATION
-                        )
+                        updatedScriptsNames.add(workflow.name)
                     } else {
                         logger.debug("No changes were made for ${workflow.name}")
                     }
@@ -73,12 +73,23 @@ class ScriptsRulesHandler(val project: Project) {
                         mappings.add(RemoteUrlMappingBean(local, "scripts/${workflow.name}/${rule.name}.js"))
                     }
 
-                    trackerNote.notify(
-                        "Script loaded \"${workflow.name}\"",
-                        NotificationType.INFORMATION
-                    )
+                    loadedScriptsNames.add(workflow.name)
                 }
             }
+        }
+
+        if (updatedScriptsNames.isNotEmpty()){
+            trackerNote.notify(
+                "Scripts updated: \n ${updatedScriptsNames.joinToString("\n")}",
+                NotificationType.INFORMATION
+            )
+        }
+
+        if (loadedScriptsNames.isNotEmpty()) {
+            trackerNote.notify(
+                "Scripts loaded: \n ${loadedScriptsNames.joinToString("\n")}",
+                NotificationType.INFORMATION
+            )
         }
     }
 
