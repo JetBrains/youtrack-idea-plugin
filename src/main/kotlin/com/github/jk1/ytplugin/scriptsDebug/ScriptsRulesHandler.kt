@@ -108,10 +108,9 @@ class ScriptsRulesHandler(val project: Project) {
 
                         logger.debug("File $name is loaded")
                     } catch (e: IncorrectOperationException) {
-                        logger.debug("File $name is already loaded")
+                        logger.debug("Most likely file $name is already loaded: ", e)
                     } catch (e: AssertionError) {
-
-                        logger.debug("The $name file contains unsupported line separators and was not imported from YouTrack")
+                        logger.debug("Most likely The $name file contains unsupported line separators and was not imported from YouTrack", e)
 
                         val note = "The $name file contains unsupported line separators and was not imported from YouTrack"
                         val trackerNote = TrackerNotification()
@@ -125,7 +124,7 @@ class ScriptsRulesHandler(val project: Project) {
                             logger.debug("The $name file contains unsupported line separators and was not imported from YouTrack")
                             directory.add(file)
                         } catch (e: IncorrectOperationException) {
-                            logger.debug("File $name was already loaded")
+                            logger.debug("Most likely file $name was already loaded", e)
                         }
                     }
                 }
