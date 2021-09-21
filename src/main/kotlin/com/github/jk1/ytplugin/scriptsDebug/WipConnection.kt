@@ -245,7 +245,9 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             }
             reader.endObject()
         }
-        webSocketDebuggerUrl = constructWebsocketDebuggerUrl()
+        if (webSocketDebuggerEndpoint != null){
+            webSocketDebuggerUrl = constructWebsocketDebuggerUrl()
+        }
     }
 
     private fun constructWebsocketDebuggerUrl(): String {
