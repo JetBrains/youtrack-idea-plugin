@@ -20,7 +20,9 @@ class ScriptsRestClient(override val repository: YouTrackServer) : RestClientTra
         val builder = URIBuilder("${repository.url}/api/admin/workflows")
         builder.setParameter("\$top", "-1")
             .setParameter("fields", "name,id,rules(id,name)")
-            .setParameter("query", "language:JS,system:null")
+            .setParameter("query", "language:JS")
+            .setParameter("debug", "true")
+
         val method = HttpGet(builder.build())
 
         val scriptsList = mutableListOf<Workflow>()
@@ -41,17 +43,6 @@ class ScriptsRestClient(override val repository: YouTrackServer) : RestClientTra
                 emptyList()
             }
         }
-    }
-
-    fun getDebugAddress() : JsonObject {
-
-        val builder = URIBuilder("${repository.url}/api/debug/scripts/json")
-        val method = HttpGet(builder.build())
-
-        return method.execute { element ->
-            element.asJsonArray[0].asJsonObject
-        }
-
     }
 
     fun getScriptsContent(workflow: Workflow, rule: WorkflowRule) {

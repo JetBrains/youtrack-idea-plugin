@@ -25,7 +25,7 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
         val metadataElement = JsonParser.parseString(metadata).asJsonObject
         val issueElement = metadataElement.get("issue").asJsonObject
         issueId = issueElement.get("id").asString
-        summary = htmlEscape(issueElement.get("summary").asString, "UTF-8")
+        summary = htmlEscape(issueElement.get("summary").asString)
         url = "$repoUrl/issue/$issueId"
         content = prettifyContent(decode(root.get("content").asString))
     }
@@ -40,32 +40,15 @@ class YouTrackNotification(item: JsonElement, val repoUrl: String) {
     }
 
 
-    private fun htmlEscape(input: String, encoding: String): String {
-        val escaped = StringBuilder(input.length * 2)
-        for (element in input) {
-            val reference = convertToReference(element, encoding)
-            if (reference != null) {
-                escaped.append(reference)
-            } else {
-                escaped.append(element)
-            }
-        }
-        return escaped.toString()
+    private fun htmlEscape(input: String): String {
+        return input
+            .replace( "<", "&lt;")
+            .replace( ">", "&gt;")
+            .replace( "\"", "&quot;")
+            .replace( "&", "&amp;")
+            .replace( "\\'", "&amp;")
     }
 
-
-    private fun convertToReference(character: Char, encoding: String): String? {
-        if (encoding.startsWith("UTF-")) {
-            when (character) {
-                '<' -> return "&lt;"
-                '>' -> return "&gt;"
-                '"' -> return "&quot;"
-                '&' -> return "&amp;"
-                '\'' -> return "&#39;"
-            }
-        }
-        return null
-    }
 
     private fun prettifyContent(content: String): String {
         return content.replace("<p>$url</p>\n" ,"")

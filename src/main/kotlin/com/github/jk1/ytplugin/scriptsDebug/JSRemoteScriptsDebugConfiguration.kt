@@ -21,7 +21,6 @@ import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.vfs.VirtualFile
@@ -145,12 +144,11 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     ): BrowserChromeDebugProcess {
         var process: BrowserChromeDebugProcess? = null
 
-        val repo = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()[0]
-        val version = AdminRestClient(repo).getYouTrackVersion()
+        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+        val repo = if (repositories.isNotEmpty()) repositories[0] else null
+        val version = repo?.let { AdminRestClient(it).getYouTrackVersion() }
 
         // TODO: clear mappings on the run
-        DumbService.getInstance(project).runReadActionInSmartMode {
-
             when (version) {
                 null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
                 in 2021.3..Double.MAX_VALUE -> {
@@ -166,13 +164,10 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                     connection.open(socketAddress)
 
                     logger.info("connection is opened")
-
-                    return@runReadActionInSmartMode
                 }
                 else -> throw InvalidDataException("YouTrack version is not sufficient")
             }
-        }
-        return process!!
+        return process
     }
 
 

@@ -51,7 +51,7 @@ abstract class StandaloneDebuggerWipVm(
 
     open fun textFrameReceived(message: TextWebSocketFrame) {
         debugMessageQueue?.add(message.content(), "IN")
-        logger.info("Debugger Text Frame Received: ${message.content()
+        logger.debug("Debugger text frame received: ${message.content()
             .readCharSequence(message.content().readableBytes(), Charset.forName("utf-8"))}")
         try {
             commandProcessor.processIncomingJson(JsonReaderEx(message.content().readUtf8()))
