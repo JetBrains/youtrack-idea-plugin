@@ -1,6 +1,6 @@
 plugins {
     id 'org.jetbrains.intellij' version '1.1.6'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
     id 'idea'
 }
 
@@ -21,7 +21,8 @@ def supportedVersions = ['IU-2021.1', 'IU-2021.2' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
 
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.2'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.1'
+
     try {
         plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
     } catch (ignored){
@@ -49,10 +50,10 @@ compileKotlin {
     }
 }
 
-//publishPlugin {
-//    token = project.findProperty("marketplaceToken") ?: ""
-//    channels 'stable'
-//}
+publishPlugin {
+    token = project.findProperty("marketplaceToken") ?: ""
+    channels = ['stable']
+}
 
 dependencies {
     implementation project(':api')
