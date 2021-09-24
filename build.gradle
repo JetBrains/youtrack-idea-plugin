@@ -1,6 +1,6 @@
 plugins {
     id 'org.jetbrains.intellij' version '1.1.6'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
     id 'idea'
 }
 
@@ -49,10 +49,10 @@ compileKotlin {
     }
 }
 
-//publishPlugin {
-//    token = project.findProperty("marketplaceToken") ?: ""
-//    channels 'stable'
-//}
+publishPlugin {
+    token = project.findProperty("marketplaceToken") ?: ""
+    channels = ['stable']
+}
 
 dependencies {
     implementation project(':api')
