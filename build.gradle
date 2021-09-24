@@ -1,6 +1,6 @@
 plugins {
-    id 'org.jetbrains.intellij' version '0.7.2'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
+    id 'org.jetbrains.intellij' version '1.1.6'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
     id 'idea'
 }
 
@@ -17,20 +17,20 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 // LATEST-TRUNK-SNAPSHOT is getting resolved into an internal JB host for some reason
-def supportedVersions = ['IU-2021.1' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
+def supportedVersions = ['IU-2021.1', 'IU-2021.2' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
 
-    version project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.1'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.2'
     try {
         plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
     } catch (ignored){
         plugins = ['tasks']
     }
 
-    updateSinceUntilBuild false
-    instrumentCode false
-    pluginName 'ytplugin'
+    updateSinceUntilBuild = false
+    instrumentCode = false
+    pluginName = 'ytplugin'
     println "This build uses IDEA Ultimate $version"
 
 }
@@ -49,18 +49,18 @@ compileKotlin {
     }
 }
 
-publishPlugin {
-    token project.findProperty("marketplaceToken") ?: ""
-    channels 'stable'
-}
+//publishPlugin {
+//    token = project.findProperty("marketplaceToken") ?: ""
+//    channels 'stable'
+//}
 
 dependencies {
-    compile project(':api')
-    compile 'org.nanohttpd:nanohttpd:2.3.0'
-    compile 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation project(':api')
+    implementation "org.nanohttpd:nanohttpd:2.3.0"
+    implementation "org.apache.httpcomponents:httpclient:4.5.13"
 
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 test {
