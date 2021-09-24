@@ -21,7 +21,8 @@ def supportedVersions = ['IU-2021.1', 'IU-2021.2' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
 
 intellij {
 
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.2'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.1'
+
     try {
         plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
     } catch (ignored){
