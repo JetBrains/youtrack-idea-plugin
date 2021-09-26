@@ -1,7 +1,6 @@
 <idea-plugin>
     <id>com.github.jk1.ytplugin</id>
     <name>YouTrack Integration</name>
-    <version>1.2.10</version>
     <vendor>JetBrains</vendor>
 
     <description><![CDATA[
