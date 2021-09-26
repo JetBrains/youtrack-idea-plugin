@@ -16,8 +16,7 @@ allprojects {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-// LATEST-TRUNK-SNAPSHOT is getting resolved into an internal JB host for some reason
-def supportedVersions = ['IU-2021.1', 'IU-2021.2' /*, 'LATEST-TRUNK-SNAPSHOT'*/]
+def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'LATEST-EAP-SNAPSHOT']
 
 intellij {
 
