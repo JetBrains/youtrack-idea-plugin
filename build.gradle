@@ -5,8 +5,14 @@ plugins {
 }
 
 allprojects {
+
     group 'com.github.jk1'
-    version '1.2.10'
+
+    if (project.hasProperty('teamcity')) {
+        project.version = project.teamcity['build.number']
+    } else {
+        version '9999.9.9' // dev version
+    }
 
     repositories {
         mavenCentral()
