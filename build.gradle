@@ -22,7 +22,7 @@ allprojects {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'LATEST-EAP-SNAPSHOT']
+def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-LATEST-EAP-SNAPSHOT']
 
 intellij {
 
