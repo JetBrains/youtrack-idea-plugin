@@ -118,6 +118,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
             port = 443
         }
 
+        logger.info("Connection is to be opened on $host:$port")
         return InetSocketAddress(host, port)
     }
 
@@ -180,6 +181,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         for (mapping in mappings) {
             val file = LocalFileFinder.findFile(mapping.localFilePath)
             if (file != null) {
+                logger.info("Url to local mapping: ${mapping.remoteUrl}, ${file.url}")
                 map.forcePut(mapping.remoteUrl, file)
             }
         }

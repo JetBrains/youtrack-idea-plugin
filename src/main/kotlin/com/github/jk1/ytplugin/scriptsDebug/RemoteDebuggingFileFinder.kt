@@ -25,11 +25,11 @@ class RemoteDebuggingFileFinder(
     private lateinit var myProject: Project
 
     init {
-        logger.debug("Remote File Finder is initialized")
+        logger.info("Remote File Finder is initialized")
     }
 
     override fun findNavigatable(url: Url, project: Project): Navigatable? {
-        logger.debug("find navigatable file ${url.path}")
+        logger.info("find navigatable file ${url.path}")
 
         myProject = project
         findMapping(url, project)?.let {
@@ -39,7 +39,7 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun findFile(url: Url, project: Project): VirtualFile? {
-        logger.debug("find file ${url.path}")
+        logger.info("find file ${url.path}")
 
         myProject = project
 
@@ -47,7 +47,7 @@ class RemoteDebuggingFileFinder(
     }
 
     override fun guessFile(url: Url, project: Project): VirtualFile? {
-        logger.debug("guess file ${url.path}")
+        logger.info("guess file ${url.path}")
 
         parent?.findFile(url, project)?.let {
             return it
@@ -60,7 +60,7 @@ class RemoteDebuggingFileFinder(
     override fun searchesByName(): Boolean = true
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
-        logger.debug("Get remote urls for: ${file.name}")
+        logger.info("Get remote urls for: ${file.name}")
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
             val map = mappings.inverse()
@@ -90,7 +90,7 @@ class RemoteDebuggingFileFinder(
         } else {
             url
         }
-        logger.debug("File mapping is found: $filename \n \n")
+        logger.info("File mapping is found: $filename \n \n")
 
         val systemIndependentPath: String = FileUtil.toSystemIndependentName(project.guessProjectDir()
             ?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains/$filename").toString())

@@ -248,6 +248,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         if (webSocketDebuggerEndpoint != null){
             webSocketDebuggerUrl = constructWebsocketDebuggerUrl()
         }
+        logger.info("Finish processing debuggerConnectionJson")
     }
 
     private fun constructWebsocketDebuggerUrl(): String {
@@ -259,7 +260,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         result: AsyncPromise<WipVm>
     ): Boolean {
         if (webSocketDebuggerUrl != null) {
-            logger.debug("Connect debugger for ${URI(getYouTrackRepo()?.url).authority}")
+            logger.info("Connect debugger for ${URI(getYouTrackRepo()?.url).authority}")
             connectDebugger(context, result)
             return true
         } else {

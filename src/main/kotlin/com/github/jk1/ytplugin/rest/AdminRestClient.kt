@@ -68,7 +68,7 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                     null
                 } else {
                     val version = json.get("version").asString.toDouble()
-                    logger.debug("YouTrack version: $version")
+                    logger.info("YouTrack version: $version")
                     version
                 }
             }

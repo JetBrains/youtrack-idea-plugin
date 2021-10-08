@@ -36,7 +36,7 @@ class DebuggerWipVm(
         }
         // case required to catch exception on repeating id when breakpoint is removed on timer expire
         catch (e: IllegalArgumentException) {
-            logger.debug("Execution was continued automatically on timer expire", e)
+            logger.info("Execution was continued automatically on timer expire", e)
             val note = "Remote program execution cannot be suspended for longer than three minutes. The current breakpoint was released."
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.INFORMATION)
