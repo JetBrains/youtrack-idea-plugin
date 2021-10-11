@@ -246,12 +246,17 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             reader.endObject()
         }
         if (webSocketDebuggerEndpoint != null){
+            logger.debug("webSocketDebuggerEndpoint != null: $webSocketDebuggerEndpoint")
             webSocketDebuggerUrl = constructWebsocketDebuggerUrl()
+        } else {
+            logger.debug("webSocketDebuggerEndpoint is null")
         }
-        logger.info("Finish processing debuggerConnectionJson")
+        logger.info("Finish processing debuggerConnectionJson: \n  url = $url, webSocketDebuggerEndpoint =" +
+                " $webSocketDebuggerEndpoint, websocketPrefix = $webSocketPrefix ")
     }
 
     private fun constructWebsocketDebuggerUrl(): String {
+        logger.info("constructWebsocketDebuggerUrl: prefix=$webSocketPrefix and endpoint=$webSocketDebuggerEndpoint")
         return "$webSocketPrefix${URI(getYouTrackRepo()?.url).authority}$webSocketDebuggerEndpoint"
     }
 
