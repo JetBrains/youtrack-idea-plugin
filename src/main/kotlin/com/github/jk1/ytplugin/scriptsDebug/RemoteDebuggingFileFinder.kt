@@ -14,6 +14,7 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
+import com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName
 
 class RemoteDebuggingFileFinder(
     private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
@@ -84,7 +85,7 @@ class RemoteDebuggingFileFinder(
 
         logger.debug("Find file mapping for: ${parsedUrl.path}")
 
-        val url = parsedUrl.trimParameters().toDecodedForm()
+        val url = toSystemIndependentName(parsedUrl.trimParameters().toDecodedForm())
         val filename = if (url.split("/").size > 1) {
             url.split("/")[url.split("/").lastIndex - 1] + "/" + url.split("/").last()
         } else {
