@@ -12,9 +12,12 @@ import com.intellij.tasks.TaskManager
 import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.util.net.ssl.CertificateManager
 import org.apache.http.HttpRequest
+import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
+import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
 import java.io.InputStreamReader
@@ -24,6 +27,16 @@ import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
 class SetupRepositoryConnector {
+
+    companion object {
+        fun setupHttpClient(): CloseableHttpClient {
+            val config = RequestConfig.custom().setConnectTimeout(60000).build()
+            return HttpClientBuilder.create()
+                .disableRedirectHandling()
+                .setSSLContext(CertificateManager.getInstance().sslContext)
+                .setDefaultRequestConfig(config).build()
+        }
+    }
 
     @Volatile
     var noteState = NotifierState.INVALID_TOKEN
@@ -55,11 +68,11 @@ class SetupRepositoryConnector {
         }
     }
 
-    fun getYouTrackVersion(url: String): Double? {
-        val client = HttpClientBuilder.create().build()
+    private fun getYouTrackVersion(url: String): Double? {
         val builder = URIBuilder(url.trimEnd('/') + "/api/config")
         builder.addParameter("fields", "version")
         val method = HttpGet(builder.build())
+        val client = setupHttpClient()
 
         try {
             val response = client.execute(method)

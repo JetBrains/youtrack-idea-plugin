@@ -42,12 +42,8 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         method.setHeader("Authorization", "Basic $authCredentials")
 
         try {
-            val config = RequestConfig.custom().setConnectTimeout(60000).build()
-            val response = HttpClientBuilder.create()
-                .disableRedirectHandling()
-                .setSSLContext(CertificateManager.getInstance().sslContext)
-                .setDefaultRequestConfig(config).build()
-                .execute(method)
+            val client = SetupRepositoryConnector.setupHttpClient()
+            val response = client.execute(method)
             if (response.statusLine.statusCode == 200) {
                 val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
                     .asJsonObject.get("name").toString()
