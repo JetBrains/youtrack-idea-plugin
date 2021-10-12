@@ -8,6 +8,7 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.MalformedJsonException
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
@@ -16,6 +17,8 @@ import com.intellij.util.Url
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.handler
 import com.intellij.util.io.socketConnection.ConnectionStatus
+import com.intellij.xdebugger.XDebuggerManager
+import com.intellij.xdebugger.breakpoints.XBreakpoint
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
@@ -48,7 +51,9 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import java.util.*
 import java.util.Base64.getEncoder
+
 
 open class WipConnection : RemoteVmConnection<WipVm>() {
 
@@ -295,6 +300,9 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             createDebugLogger("js.debugger.wip.log", "")
         )
         vm.title = title
+
+        removeOldBreakpoints()
+
         vm.commandProcessor.eventMap.add(DetachedEventData.TYPE) {
             if (it.reason() == "targetCrashed") {
                 close("${ConnectionStatus.DISCONNECTED.statusText} (Debugger crashed)", ConnectionStatus.DISCONNECTED)
@@ -330,6 +338,26 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             if (!it.isSuccess) {
                 context.fireExceptionCaught(it.cause())
             }
+        }
+    }
+
+    private fun removeOldBreakpoints() {
+        val project = getActiveProject()
+        if (project != null) {
+            val breakpointManager = XDebuggerManager.getInstance(project).breakpointManager
+            logger.debug("Total number of breakpoints before caching cleanup:" +
+                    " ${breakpointManager.allBreakpoints.asList().size}")
+            ApplicationManager.getApplication().invokeAndWait {
+                ApplicationManager.getApplication().runWriteAction {
+                    Arrays.stream(breakpointManager.allBreakpoints).forEach { breakpoint: XBreakpoint<*>? ->
+                        breakpointManager.removeBreakpoint(
+                            breakpoint!!
+                        )
+                    }
+                }
+            }
+            logger.debug("Total number of breakpoints after caching cleanup:" +
+                    " ${breakpointManager.allBreakpoints.asList().size}")
         }
     }
 
