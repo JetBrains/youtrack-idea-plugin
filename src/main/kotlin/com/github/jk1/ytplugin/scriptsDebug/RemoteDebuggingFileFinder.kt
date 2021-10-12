@@ -15,6 +15,7 @@ import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName
+import java.net.URISyntaxException
 
 class RemoteDebuggingFileFinder(
     private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
@@ -61,13 +62,14 @@ class RemoteDebuggingFileFinder(
     override fun searchesByName(): Boolean = true
 
     override fun getRemoteUrls(file: VirtualFile): List<Url> {
-        logger.info("Get remote urls for: ${file.name}")
+        logger.info("Get remote urls for: ${file.name} when setting/getting breakpoint")
         if (file !is HttpVirtualFile && !mappings.isEmpty()) {
             var current: VirtualFile? = file
             val map = mappings.inverse()
             while (current != null) {
                 val url = map[current]
                 if (url != null) {
+                    logger.debug("Found remote url $url when setting/getting breakpoint")
                     if (current == file) {
                         return listOf(Urls.newFromIdea(url))
                     }
@@ -76,7 +78,13 @@ class RemoteDebuggingFileFinder(
                 current = current.parent
             }
         }
-        return parent?.getRemoteUrls(file) ?: listOf(Urls.newFromVirtualFile(file))
+        return try {
+            logger.debug("Trying to find remote url for ${file.url} with Local file system")
+            parent?.getRemoteUrls(file) ?: listOf(Urls.newFromVirtualFile(file))
+        } catch (e: URISyntaxException){
+            logger.debug("Corrupted local to remote mapping in ${file.url}, might be not possible to set breakpoint")
+            listOf(Urls.newFromVirtualFile(file))
+        }
     }
 
     override fun toString(): String = Joiner.on("\n ").withKeyValueSeparator("->").join(mappings)
