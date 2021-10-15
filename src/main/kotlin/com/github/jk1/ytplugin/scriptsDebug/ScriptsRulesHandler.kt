@@ -56,7 +56,7 @@ class ScriptsRulesHandler(val project: Project) {
                             existingScript.delete(this)
                             createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                         }
-                        updatedScriptsNames.add(workflow.name)
+                        updatedScriptsNames.add("${workflow.name}/${rule.name}.js")
                     } else {
                         logger.debug("No changes were made for ${workflow.name}")
                     }
@@ -73,7 +73,7 @@ class ScriptsRulesHandler(val project: Project) {
                         mappings.add(RemoteUrlMappingBean(local, "scripts/${workflow.name}/${rule.name}.js"))
                     }
 
-                    loadedScriptsNames.add(workflow.name)
+                    loadedScriptsNames.add("${workflow.name}/${rule.name}.js")
                 }
             }
         }
