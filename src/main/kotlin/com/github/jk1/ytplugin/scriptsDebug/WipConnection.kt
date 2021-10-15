@@ -345,7 +345,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         val project = getActiveProject()
         if (project != null) {
             val breakpointManager = XDebuggerManager.getInstance(project).breakpointManager
-            ApplicationManager.getApplication().invokeAndWait {
+            ApplicationManager.getApplication().invokeLater {
                 ApplicationManager.getApplication().runWriteAction {
                     logger.debug("Total number of breakpoints before caching cleanup:" +
                             " ${breakpointManager.allBreakpoints.asList().size}")
@@ -354,7 +354,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
                         breakpointManager.removeBreakpoint(breakpoint!!)
                     }
                     // it's ok if there are 2 breakpoints left after the cleanup - those are JS and Java exception
-                    // breakpoints and they are turned off by default. If not, they do not have any impact here
+                    // breakpoints and they are disabled by default.
                     logger.debug("Total number of breakpoints after caching cleanup:" +
                             " ${breakpointManager.allBreakpoints.asList().size}")
                 }
