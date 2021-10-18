@@ -8,6 +8,7 @@ import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.lang.javascript.JavaScriptFileType.INSTANCE
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiDirectory
@@ -45,13 +46,18 @@ class ScriptsRulesHandler(val project: Project) {
 
         scriptsList.map { workflow ->
             val scriptDirectory = createOrFindScriptDirectory(workflow.name.split('/').last())
+            logger.debug("Script directory: ${scriptDirectory.name}")
             workflow.rules.map { rule ->
                 val existingScript = project.guessProjectDir()?.findFileByRelativePath(
                     "$rootFolderName/$instanceFolderName/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
                 )
                 if (existingScript != null) {
+                    logger.debug("Existing script found: ${existingScript.path}")
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
-                    if (!existingScript.contentsToByteArray().contentEquals(rule.content.toByteArray())) {
+                    logger.debug("existing script content: ${existingScript.contentsToByteArray()}")
+                    logger.debug("rule content: ${rule.content.toByteArray()}")
+
+                    if (!LoadTextUtil.loadText(existingScript).toString().equals(rule.content)) {
                         ApplicationManager.getApplication().runWriteAction {
                             existingScript.delete(this)
                             createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
@@ -70,7 +76,7 @@ class ScriptsRulesHandler(val project: Project) {
                     mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
 
                     if (!localUrls.contains(local)) {
-                        mappings.add(RemoteUrlMappingBean(local, "scripts/${workflow.name}/${rule.name}.js"))
+                        mappings.add(RemoteUrlMappingBean(local, "youtrack/${workflow.name}/${rule.name}.js"))
                     }
 
                     loadedScriptsNames.add("${workflow.name}/${rule.name}.js")
