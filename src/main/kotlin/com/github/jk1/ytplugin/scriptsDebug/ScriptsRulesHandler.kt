@@ -69,18 +69,10 @@ class ScriptsRulesHandler(val project: Project) {
                 } else {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
-                    val local = project.guessProjectDir()?.path + "/$rootFolderName/$instanceFolderName/@jetbrains/" +
-                            "${workflow.name.split('/').last()}/${rule.name}.js"
-
-                    val localUrls = mutableListOf<String>()
-                    mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
-
-                    if (!localUrls.contains(local)) {
-                        mappings.add(RemoteUrlMappingBean(local, "youtrack/${workflow.name}/${rule.name}.js"))
-                    }
-
                     loadedScriptsNames.add("${workflow.name}/${rule.name}.js")
                 }
+                val folderName = "/$rootFolderName/$instanceFolderName/@jetbrains/"
+                addScriptMapping(workflow.name, rule.name, mappings, folderName)
             }
         }
 
@@ -96,6 +88,20 @@ class ScriptsRulesHandler(val project: Project) {
                 "Scripts loaded: \n ${loadedScriptsNames.joinToString("\n")}",
                 NotificationType.INFORMATION
             )
+        }
+    }
+
+    private fun addScriptMapping(workflowName: String, ruleName: String, mappings: MutableList<RemoteUrlMappingBean>,
+                                    folderName: String){
+        val local = project.guessProjectDir()?.path + folderName +
+                "${workflowName.split('/').last()}/$ruleName.js"
+
+        val localUrls = mutableListOf<String>()
+        mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
+
+        if (!localUrls.contains(local)) {
+            logger.debug("Mapping added for pair: $local and youtrack/$workflowName/$ruleName.js")
+            mappings.add(RemoteUrlMappingBean(local, "youtrack/$workflowName/$ruleName.js"))
         }
     }
 
