@@ -39,7 +39,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
         val id = command.issue.entityId
         method.entity = res.readText()
                 .replace("{query}", command.command, true)
-                .replace("0", caret.toString(), true)
+                .replace("\"{caret}\"", caret.toString(), true)
                 .replace("{id}", id, true)
                 .jsonEntity
         return method.execute {
