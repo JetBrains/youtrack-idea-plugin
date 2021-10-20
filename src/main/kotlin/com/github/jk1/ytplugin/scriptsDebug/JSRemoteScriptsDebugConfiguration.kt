@@ -154,6 +154,9 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                 null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
                 in 2021.3..Double.MAX_VALUE -> {
 
+                    // clear mappings on each run of the configuration
+                    mappings.clear()
+
                     instanceFolder = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
                     loadScripts()
 
