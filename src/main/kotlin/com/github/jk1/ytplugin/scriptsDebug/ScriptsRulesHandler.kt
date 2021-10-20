@@ -101,6 +101,8 @@ class ScriptsRulesHandler(val project: Project) {
 
         if (!localUrls.contains(local)) {
             logger.debug("Mapping added for pair: $local and youtrack/$workflowName/$ruleName.js")
+            // youtrack/ could be used as prefix here as we would rely on the instance folder in project tree when looking
+            // for a source when using debugger features (in findMapping)
             mappings.add(RemoteUrlMappingBean(local, "youtrack/$workflowName/$ruleName.js"))
         }
     }
