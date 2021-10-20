@@ -71,8 +71,7 @@ class ScriptsRulesHandler(val project: Project) {
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
                     loadedScriptsNames.add("${workflow.name}/${rule.name}.js")
                 }
-                val folderName = "/$rootFolderName/$instanceFolderName/@jetbrains/"
-                addScriptMapping(workflow.name, rule.name, mappings, folderName)
+                addScriptMapping(workflow.name, rule.name, mappings, rootFolderName, instanceFolderName)
             }
         }
 
@@ -92,18 +91,16 @@ class ScriptsRulesHandler(val project: Project) {
     }
 
     private fun addScriptMapping(workflowName: String, ruleName: String, mappings: MutableList<RemoteUrlMappingBean>,
-                                    folderName: String){
-        val local = project.guessProjectDir()?.path + folderName +
+                                    rootFolderName: String, instanceFolderName: String){
+        val local = project.guessProjectDir()?.path + "/$rootFolderName/$instanceFolderName/@jetbrains/" +
                 "${workflowName.split('/').last()}/$ruleName.js"
 
         val localUrls = mutableListOf<String>()
         mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
 
         if (!localUrls.contains(local)) {
-            logger.debug("Mapping added for pair: $local and youtrack/$workflowName/$ruleName.js")
-            // youtrack/ could be used as prefix here as we would rely on the instance folder in project tree when looking
-            // for a source when using debugger features (in findMapping)
-            mappings.add(RemoteUrlMappingBean(local, "youtrack/$workflowName/$ruleName.js"))
+            logger.debug("Mapping added for pair: $local and $instanceFolderName/$workflowName/$ruleName.js")
+            mappings.add(RemoteUrlMappingBean(local, "$instanceFolderName/$workflowName/$ruleName.js"))
         }
     }
 
