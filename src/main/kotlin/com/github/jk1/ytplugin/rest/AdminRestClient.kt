@@ -56,6 +56,24 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         }
     }
 
+
+    fun isYouTrackHosted(): Boolean {
+        val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
+        builder.addParameter("fields", "hosted(hosted)")
+        val method = HttpGet(builder.build())
+        var result: Boolean = false
+        try {
+            result = method.execute {
+                val json: JsonObject = it.asJsonObject
+                json.get("hosted").asJsonObject.get("hosted").asBoolean
+            }
+        } catch (e: Exception) {
+            logger.warn("invalid token or login, failed on hosting check: ${e.message}, ${e.stackTrace}")
+        }
+
+        return result
+    }
+
     fun getYouTrackVersion(): Double? {
         val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
         builder.addParameter("fields", "version")
