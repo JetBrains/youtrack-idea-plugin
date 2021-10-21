@@ -137,7 +137,12 @@ class SetupRepositoryConnector {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = response.getFirstHeader("Location").value
                     if (!location.contains("/waitInstanceStartup/")) {
-                        repository.url = location.replace("/api/users/me?fields=name", "")
+                        val endpoint = "/api/users/me?fields=name"
+                        repository.url =  if (location.contains(endpoint)){
+                           location.replace("/api/users/me?fields=name", "")
+                        } else {
+                           "${repository.url}$location"
+                        }
                     } else {
                         if (!request.requestLine.uri.contains("/youtrack")) {
                             logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
