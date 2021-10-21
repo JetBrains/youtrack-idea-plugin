@@ -41,7 +41,7 @@ public class JSDebugScriptsEditor extends SettingsEditor<JSRemoteScriptsDebugCon
         configuration.setHost(new URL(repositories.get(0).getUrl()).getHost());
         configuration.setPort(new URL(repositories.get(0).getUrl()).getPort());
       } catch (MalformedURLException e) {
-        e.printStackTrace();
+        logger.debug(e);
       }
       configuration.setRootFolder(folderField.getText());
     }

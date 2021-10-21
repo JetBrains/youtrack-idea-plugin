@@ -396,7 +396,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 fixedUrl = new URL(connectedRepository.getUrl());
             } catch (MalformedURLException e) {
                 logger.debug("Malformed URL: " + e.getMessage());
-                e.printStackTrace();
+                logger.debug(e);
             }
 
             inputUrlTextPane.setText("");

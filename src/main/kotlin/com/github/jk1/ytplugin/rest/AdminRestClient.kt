@@ -68,7 +68,8 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                 json.get("hosted").asJsonObject.get("hosted").asBoolean
             }
         } catch (e: Exception) {
-            logger.warn("invalid token or login, failed on hosting check: ${e.message}, ${e.stackTrace}")
+            logger.warn("invalid token or login, failed on hosting check: ${e.message}")
+            e.printStackTrace()
         }
 
         return result
@@ -91,7 +92,8 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
                 }
             }
         } catch (e: Exception) {
-            logger.warn("invalid token or login, failed on version validation: ${e.message}, ${e.stackTrace}")
+            logger.warn("invalid token or login, failed on version validation: ${e.message}")
+            logger.debug(e)
         }
 
         return result

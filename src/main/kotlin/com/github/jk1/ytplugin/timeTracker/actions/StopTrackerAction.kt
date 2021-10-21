@@ -78,12 +78,14 @@ class StopTrackerAction : AnAction(
                     val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                     store.saveFields(timer)
                 } catch (e: Exception) {
-                    logger.warn("Time tracking might not be enabled: ${e.message} ${e.stackTrace}")
+                    logger.warn("Time tracking might not be enabled: ${e.message}")
+                    logger.debug(e)
                     trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
                 }
             }
         } catch (e: IllegalStateException) {
-            logger.warn("Time tracking exception: ${e.message} ${e.stackTrace}")
+            logger.warn("Time tracking exception: ${e.message}")
+            logger.debug(e)
             trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
         }
 
