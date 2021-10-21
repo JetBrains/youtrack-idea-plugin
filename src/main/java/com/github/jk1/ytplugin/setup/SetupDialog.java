@@ -224,6 +224,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         scheduledHour.getDocument().addDocumentListener(stopOnScheduleUpdate);
 
         commentTextField.setText(timer.getComment());
+
         commentLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
         commentTextField.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
@@ -444,6 +445,9 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             testConnectionAction();
         }
 
+        setWorkItemsType();
+        setComment();
+
         // post time if any relevant changes in settings were made
         if (shouldStopTimer){
             if (timer.isRunning()) {
@@ -482,6 +486,19 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         super.doOKAction();
     }
 
+    private void setWorkItemsType(){
+        String type = getType();
+        if (type != null && !type.equals(timer.getType())){
+            timer.setType(type);
+        }
+    }
+
+    private void setComment(){
+        String comment = getComment();
+        if (comment != null && !comment.equals(timer.getComment())){
+            timer.setComment(comment);
+        }
+    }
 
     @Override
     protected JComponent createCenterPanel() {
