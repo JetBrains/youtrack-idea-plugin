@@ -8,11 +8,8 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.MalformedJsonException
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.wm.WindowManager
 import com.intellij.util.Url
 import com.intellij.util.io.addChannelListener
 import com.intellij.util.io.handler
@@ -46,7 +43,6 @@ import org.jetbrains.io.webSocket.WebSocketProtocolHandshakeHandler
 import org.jetbrains.wip.BrowserWipVm
 import org.jetbrains.wip.WipVm
 import org.jetbrains.wip.protocol.inspector.DetachedEventData
-import java.awt.Window
 import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.charset.Charset
@@ -140,34 +136,6 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.ERROR)
         }
-    }
-
-    private fun getActiveProject(): Project? {
-        val projects = ProjectManager.getInstance().openProjects
-        var activeProject: Project? = null
-        logger.debug("Number of opened projects: ${projects.size}")
-        for (project in projects) {
-
-            var window: Window? = null
-            // required to avoid threads exception
-            try {
-                ApplicationManager.getApplication().invokeAndWait {
-                    window = WindowManager.getInstance().suggestParentWindow(project)
-                }
-                logger.debug("Obtained project window")
-            } catch (e: Exception) {
-                logger.error("Unable to get the window", e)
-            }
-
-            if (window != null && window!!.isEnabled) {
-                logger.debug("Obtained active project")
-                activeProject = project
-            } else {
-                logger.debug("Window is enabled: ${window!!.isEnabled}")
-            }
-
-        }
-        return activeProject
     }
 
     protected fun obtainDebugAddress(
