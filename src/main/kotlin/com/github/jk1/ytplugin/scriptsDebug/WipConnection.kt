@@ -59,6 +59,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
 
     private var currentPageTitle: String? = null
     private val DEBUG_ADDRESS_ENDPOINT = "/api/debug/scripts/json"
+    private val INVALID_DEBUGGER_ENDPOINT = "/debug/invalid"
     val url: Url? = null
 
     var pageUrl: String? = null
@@ -145,6 +146,7 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     private fun getActiveProject(): Project? {
         val projects = ProjectManager.getInstance().openProjects
         var activeProject: Project? = null
+        logger.debug("Number of opened projects: ${projects.size}")
         for (project in projects) {
 
             var window: Window? = null
@@ -153,12 +155,16 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
                 ApplicationManager.getApplication().invokeAndWait {
                     window = WindowManager.getInstance().suggestParentWindow(project)
                 }
+                logger.debug("Obtained project window")
             } catch (e: Exception) {
                 logger.error("Unable to get the window", e)
             }
 
             if (window != null && window!!.isEnabled) {
+                logger.debug("Obtained active project")
                 activeProject = project
+            } else {
+                logger.debug("Window is enabled: ${window!!.isEnabled}")
             }
 
         }
@@ -270,12 +276,19 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         result: AsyncPromise<WipVm>
     ): Boolean {
         if (webSocketDebuggerUrl != null) {
+            if (webSocketDebuggerEndpoint == INVALID_DEBUGGER_ENDPOINT){
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Another debugger is attached, please ensure that configuration is stopped" +
+                        " or restart application to force detach", NotificationType.ERROR)
+                logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart " +
+                        "application to force detach")
+            }
             logger.info("Connect debugger for ${URI(getYouTrackRepo()?.url).authority}")
             connectDebugger(context, result)
             return true
         } else {
-            result.setError("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
-            logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
+            result.setError("Debugger address could not be obtained, please check that it is enabled in YouTrack server settings")
+            logger.debug("Debugger address could not be obtained, please check that it is enabled in YouTrack server settings")
         }
         return true
     }
