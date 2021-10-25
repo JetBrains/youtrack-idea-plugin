@@ -160,7 +160,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                     instanceFolder = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
                     loadScripts()
 
-                    val connection = WipConnection()
+                    val connection = WipConnection(project)
 
                     val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings), LocalFileSystemFileFinder(), rootFolder, instanceFolder)
 

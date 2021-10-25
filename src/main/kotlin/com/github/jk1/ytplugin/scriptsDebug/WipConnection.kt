@@ -55,7 +55,7 @@ import java.util.*
 import java.util.Base64.getEncoder
 
 
-open class WipConnection : RemoteVmConnection<WipVm>() {
+open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
 
     private var currentPageTitle: String? = null
     private val DEBUG_ADDRESS_ENDPOINT = "/api/debug/scripts/json"
@@ -183,7 +183,8 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
         val request = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "$path$DEBUG_ADDRESS_ENDPOINT")
         request.headers().set(HttpHeaderNames.HOST, address.toHttpHeaderHostField())
         request.headers().set(HttpHeaderNames.ACCEPT, "*/*")
-        request.headers().set(HttpHeaderNames.AUTHORIZATION, "Basic ${"${repository?.username}:${repository?.password}".b64Encoded}")
+        request.headers()
+            .set(HttpHeaderNames.AUTHORIZATION, "Basic ${"${repository?.username}:${repository?.password}".b64Encoded}")
 
         logger.debug("Request for the acquiring debug address is formed: ${request.uri()}")
 
@@ -196,10 +197,9 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     }
 
     private fun getYouTrackRepo(): YouTrackServer? {
-        val repositories = getActiveProject()?.let {
-            ComponentAware.of(it).taskManagerComponent.getAllConfiguredYouTrackRepositories()
-        }
-        if (repositories != null && repositories.isNotEmpty()) {
+        val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
+
+        if (repositories.isNotEmpty()) {
             logger.debug("Obtained youtrack repo: ${repositories.first().url}")
             return repositories.first()
         } else {
@@ -256,14 +256,16 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
             }
             reader.endObject()
         }
-        if (webSocketDebuggerEndpoint != null){
+        if (webSocketDebuggerEndpoint != null) {
             logger.debug("webSocketDebuggerEndpoint != null: $webSocketDebuggerEndpoint")
             webSocketDebuggerUrl = constructWebsocketDebuggerUrl()
         } else {
             logger.debug("webSocketDebuggerEndpoint is null")
         }
-        logger.info("Finish processing debuggerConnectionJson: \n  url = $url, webSocketDebuggerEndpoint =" +
-                " $webSocketDebuggerEndpoint, websocketPrefix = $webSocketPrefix ")
+        logger.info(
+            "Finish processing debuggerConnectionJson: \n  url = $url, webSocketDebuggerEndpoint =" +
+                    " $webSocketDebuggerEndpoint, websocketPrefix = $webSocketPrefix "
+        )
     }
 
     private fun constructWebsocketDebuggerUrl(): String {
@@ -355,24 +357,27 @@ open class WipConnection : RemoteVmConnection<WipVm>() {
     }
 
     private fun removeOldBreakpoints() {
-        val project = getActiveProject()
-        if (project != null) {
-            val breakpointManager = XDebuggerManager.getInstance(project).breakpointManager
-            ApplicationManager.getApplication().invokeLater {
-                ApplicationManager.getApplication().runWriteAction {
-                    logger.debug("Total number of breakpoints before caching cleanup:" +
-                            " ${breakpointManager.allBreakpoints.asList().size}")
 
-                    Arrays.stream(breakpointManager.allBreakpoints).forEach { breakpoint: XBreakpoint<*>? ->
-                        breakpointManager.removeBreakpoint(breakpoint!!)
-                    }
-                    // it's ok if there are 2 breakpoints left after the cleanup - those are JS and Java exception
-                    // breakpoints and they are disabled by default.
-                    logger.debug("Total number of breakpoints after caching cleanup:" +
-                            " ${breakpointManager.allBreakpoints.asList().size}")
+        val breakpointManager = XDebuggerManager.getInstance(project).breakpointManager
+        ApplicationManager.getApplication().invokeLater {
+            ApplicationManager.getApplication().runWriteAction {
+                logger.debug(
+                    "Total number of breakpoints before caching cleanup:" +
+                            " ${breakpointManager.allBreakpoints.asList().size}"
+                )
+
+                Arrays.stream(breakpointManager.allBreakpoints).forEach { breakpoint: XBreakpoint<*>? ->
+                    breakpointManager.removeBreakpoint(breakpoint!!)
                 }
+                // it's ok if there are 2 breakpoints left after the cleanup - those are JS and Java exception
+                // breakpoints and they are disabled by default.
+                logger.debug(
+                    "Total number of breakpoints after caching cleanup:" +
+                            " ${breakpointManager.allBreakpoints.asList().size}"
+                )
             }
         }
+
     }
 
 }

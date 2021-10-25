@@ -36,12 +36,14 @@ public class JSDebugScriptsEditor extends SettingsEditor<JSRemoteScriptsDebugCon
   protected void applyEditorTo(JSRemoteScriptsDebugConfiguration configuration) {
     List<YouTrackServer> repositories = ComponentAware.Companion.of(project).getTaskManagerComponent().getAllConfiguredYouTrackRepositories();
     if (!repositories.isEmpty()) {
-      logger.info("Apply Editor: $host, $port");
+      logger.info("Apply Editor to non-empty YouTrack repository");
       try {
         configuration.setHost(new URL(repositories.get(0).getUrl()).getHost());
         configuration.setPort(new URL(repositories.get(0).getUrl()).getPort());
+        logger.info("Apply Editor: " + configuration.getHost() + " " + configuration.getPort());
       } catch (MalformedURLException e) {
-        logger.debug(e);
+          logger.debug("Unable to apply editor");
+          logger.debug(e);
       }
       configuration.setRootFolder(folderField.getText());
     }
