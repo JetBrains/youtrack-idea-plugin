@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.SmartList
-import com.intellij.util.proxy.ProtocolDefaultPorts
 import com.intellij.util.xmlb.SkipEmptySerializationFilter
 import com.intellij.util.xmlb.XmlSerializer
 import com.intellij.util.xmlb.annotations.Attribute
@@ -34,10 +33,12 @@ import com.intellij.util.xmlb.annotations.XCollection
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
 import com.jetbrains.debugger.wip.BrowserChromeDebugProcess
+import io.netty.handler.codec.http.HttpScheme
 import org.jdom.Element
 import org.jetbrains.debugger.DebuggableRunConfiguration
 import org.jetbrains.io.LocalFileFinder
 import java.net.InetSocketAddress
+import java.net.URI
 import java.net.URL
 
 class JSRemoteScriptsDebugConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
@@ -51,7 +52,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         repositories.first()
     } else null
 
-    private val DEFAULT_PORT = 443
+    private val DEFAULT_PORT = HttpScheme.HTTPS.port()
     private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
     private val ROOT_FOLDER = "youtrack-scripts"
     private val INSTANCE_FOLDER = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
@@ -94,8 +95,9 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     override fun readExternal(element: Element) {
         super<LocatableConfigurationBase>.readExternal(element)
         XmlSerializer.deserializeInto(this, element)
-        if (port <= 0) {
-            port = ProtocolDefaultPorts.SSL
+
+        if (port < 0) {
+            port = assignRelevantPort()
         }
     }
 
@@ -115,11 +117,22 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         port = URL(repo?.url).port
 
         if (port < 0) {
-            port = 443
+            port = assignRelevantPort()
         }
 
         logger.info("Connection is to be opened on $host:$port")
         return InetSocketAddress(host, port)
+    }
+
+
+    private fun assignRelevantPort() : Int {
+            return if (URI(repo?.url ?: "").scheme == HttpScheme.HTTPS.toString()){
+                logger.debug("InetSocket https port assigned: $port")
+                HttpScheme.HTTPS.port()
+            } else {
+                logger.debug("InetSocket http port assigned: $port")
+                HttpScheme.HTTP.port()
+            }
     }
 
     private fun loadScripts() {
