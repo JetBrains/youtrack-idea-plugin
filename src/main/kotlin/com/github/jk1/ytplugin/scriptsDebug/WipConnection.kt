@@ -59,7 +59,6 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
 
     private var currentPageTitle: String? = null
     private val DEBUG_ADDRESS_ENDPOINT = "/api/debug/scripts/json"
-    private val INVALID_DEBUGGER_ENDPOINT = "/debug/invalid"
     val url: Url? = null
 
     var pageUrl: String? = null
@@ -278,19 +277,12 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         result: AsyncPromise<WipVm>
     ): Boolean {
         if (webSocketDebuggerUrl != null) {
-            if (webSocketDebuggerEndpoint == INVALID_DEBUGGER_ENDPOINT){
-                val trackerNote = TrackerNotification()
-                trackerNote.notify("Another debugger is attached, please ensure that configuration is stopped" +
-                        " or restart application to force detach", NotificationType.ERROR)
-                logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart " +
-                        "application to force detach")
-            }
             logger.info("Connect debugger for ${URI(getYouTrackRepo()?.url).authority}")
             connectDebugger(context, result)
             return true
         } else {
-            result.setError("Debugger address could not be obtained, please check that it is enabled in YouTrack server settings")
-            logger.debug("Debugger address could not be obtained, please check that it is enabled in YouTrack server settings")
+            result.setError("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
+            logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
         }
         return true
     }
