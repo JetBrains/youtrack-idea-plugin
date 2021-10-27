@@ -44,15 +44,24 @@ class ScriptsRulesHandler(val project: Project) {
         createOrFindScriptDirectory(instanceFolderName)
         srcDir = project.guessProjectDir()?.findFileByRelativePath("$rootFolderName/$instanceFolderName")
 
-        createOrFindScriptDirectory("@jetbrains")
-        srcDir = project.guessProjectDir()?.findFileByRelativePath("$rootFolderName/$instanceFolderName/@jetbrains")
 
         scriptsList.map { workflow ->
-            val scriptDirectory = createOrFindScriptDirectory(workflow.name.split('/').last())
-            logger.debug("Script directory: ${scriptDirectory.name}")
+
+            // no need to use specific separator
+            srcDir = project.guessProjectDir()?.findFileByRelativePath("$rootFolderName/$instanceFolderName")
+
+            // proper directory creating for custom and default scripts
+            var scriptDirectory: PsiDirectory? = null
+            val scriptDirectories = workflow.name.split('/')
+            scriptDirectories.forEach {
+                scriptDirectory = createOrFindScriptDirectory(it)
+                srcDir = project.guessProjectDir()?.findFileByRelativePath("${srcDir?.path?.drop(project.guessProjectDir()!!.path.length + 1)}/$it")
+            }
+
+            logger.debug("Script directory: ${workflow.name}")
             workflow.rules.map { rule ->
                 val existingScript = project.guessProjectDir()?.findFileByRelativePath(
-                    "$rootFolderName/$instanceFolderName/@jetbrains/${workflow.name.split('/').last()}/${rule.name}.js"
+                    "$rootFolderName/$instanceFolderName/${workflow.name}/${rule.name}.js"
                 )
                 if (existingScript != null) {
                     logger.debug("Existing script found: ${existingScript.path}")
@@ -63,7 +72,7 @@ class ScriptsRulesHandler(val project: Project) {
                     if (!LoadTextUtil.loadText(existingScript).toString().equals(rule.content)) {
                         ApplicationManager.getApplication().runWriteAction {
                             existingScript.delete(this)
-                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                            createRuleFile("${rule.name}.js", rule.content, scriptDirectory!!)
                         }
                         updatedScriptsNames.add("${workflow.name}/${rule.name}.js")
                     } else {
@@ -71,7 +80,7 @@ class ScriptsRulesHandler(val project: Project) {
                     }
                 } else {
                     ScriptsRestClient(repo).getScriptsContent(workflow, rule)
-                    createRuleFile("${rule.name}.js", rule.content, scriptDirectory)
+                    createRuleFile("${rule.name}.js", rule.content, scriptDirectory!!)
                     loadedScriptsNames.add("${workflow.name}/${rule.name}.js")
                 }
                 addScriptMapping(workflow.name, rule.name, mappings, rootFolderName, instanceFolderName, isHosted)
@@ -101,8 +110,7 @@ class ScriptsRulesHandler(val project: Project) {
 
     private fun addScriptMapping(workflowName: String, ruleName: String, mappings: MutableList<RemoteUrlMappingBean>,
                                     rootFolderName: String, instanceFolderName: String, isHosted: Boolean){
-        val local = project.guessProjectDir()?.path + "/$rootFolderName/$instanceFolderName/@jetbrains/" +
-                "${workflowName.split('/').last()}/$ruleName.js"
+        val local = project.guessProjectDir()?.path + "/$rootFolderName/$instanceFolderName/$workflowName/$ruleName.js"
 
         val localUrls = mutableListOf<String>()
         mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
@@ -171,6 +179,7 @@ class ScriptsRulesHandler(val project: Project) {
                 targetDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(targetVirtualDir!!)
             }
         }
+        logger.debug("Directory created: $name")
         return targetDirectory!!
     }
 }
