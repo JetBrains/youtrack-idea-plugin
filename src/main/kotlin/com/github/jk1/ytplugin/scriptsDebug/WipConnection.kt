@@ -68,6 +68,11 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
 
     val logger: Logger get() = Logger.getInstance("com.github.jk1.ytplugin")
 
+    companion object {
+        private const val NULL_ADDRESS_ERROR = "Unable to get debugger address, please ensure that feature flag is enabled"
+        private const val REPOSITORY_ERROR = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
+    }
+
     private val String.b64Encoded: String
         get() = getEncoder().encodeToString(this.toByteArray(StandardCharsets.UTF_8))
 
@@ -124,20 +129,6 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         }
     }
 
-    private fun notifyIfDebuggerConnectionError() {
-        val repo = getYouTrackRepo()
-        if (repo == null) {
-            val note = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
-            val trackerNote = TrackerNotification()
-            trackerNote.notify(note, NotificationType.ERROR)
-        } else if (webSocketDebuggerUrl == null) {
-            val note =
-                "The debug operation requires that you have permission to update at least one project in YouTrack"
-            val trackerNote = TrackerNotification()
-            trackerNote.notify(note, NotificationType.ERROR)
-        }
-    }
-
     protected fun obtainDebugAddress(
         address: InetSocketAddress,
         context: ChannelHandlerContext,
@@ -183,9 +174,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         context: ChannelHandlerContext, address: InetSocketAddress,
         connectionsJson: ByteBuf, result: AsyncPromise<WipVm>
     ): Boolean {
-        result.onError {
-            logger.debug("\"$it\"", "Error")
-        }
+        result.onError { logger.debug("\"$it\"", "Error") }
 
         if (!connectionsJson.isReadable) {
             result.setError("Malformed response")
@@ -201,6 +190,20 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         notifyIfDebuggerConnectionError()
         return !processConnection(context, result)
     }
+
+    private fun notifyIfDebuggerConnectionError() {
+        val repo = getYouTrackRepo()
+        if (repo == null) {
+            val note = REPOSITORY_ERROR
+            val trackerNote = TrackerNotification()
+            trackerNote.notify(note, NotificationType.ERROR)
+        } else if (webSocketDebuggerUrl == null) {
+            val note = NULL_ADDRESS_ERROR
+            val trackerNote = TrackerNotification()
+            trackerNote.notify(note, NotificationType.ERROR)
+        }
+    }
+
 
     private fun processDebuggerConnectionJson(connectionsJson: ByteBuf) {
         val reader = JsonReader(ByteBufInputStream(connectionsJson).reader())
@@ -229,10 +232,8 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         } else {
             logger.debug("webSocketDebuggerEndpoint is null")
         }
-        logger.info(
-            "Finish processing debuggerConnectionJson: \n  url = $url, webSocketDebuggerEndpoint =" +
-                    " $webSocketDebuggerEndpoint, websocketPrefix = $webSocketPrefix "
-        )
+        logger.info("Finish processing debuggerConnectionJson: \n  url = $url, webSocketDebuggerEndpoint =" +
+                    " $webSocketDebuggerEndpoint, websocketPrefix = $webSocketPrefix ")
     }
 
     private fun constructWebsocketDebuggerUrl(): String {
@@ -249,8 +250,8 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             connectDebugger(context, result)
             return true
         } else {
-            result.setError("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
-            logger.debug("Another debugger is attached, please ensure that configuration is stopped or restart application to force detach")
+            result.setError(NULL_ADDRESS_ERROR)
+            logger.debug("Unable to get debugger address, websocket url for ${URI(getYouTrackRepo()?.url).authority} is null")
         }
         return true
     }
@@ -321,10 +322,8 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         val breakpointManager = XDebuggerManager.getInstance(project).breakpointManager
         ApplicationManager.getApplication().invokeLater {
             ApplicationManager.getApplication().runWriteAction {
-                logger.debug(
-                    "Total number of breakpoints before caching cleanup:" +
-                            " ${breakpointManager.allBreakpoints.asList().size}"
-                )
+                logger.debug("Total number of breakpoints before caching cleanup:" +
+                            " ${breakpointManager.allBreakpoints.asList().size}")
 
                 Arrays.stream(breakpointManager.allBreakpoints).forEach { breakpoint: XBreakpoint<*>? ->
                     breakpointManager.removeBreakpoint(breakpoint!!)

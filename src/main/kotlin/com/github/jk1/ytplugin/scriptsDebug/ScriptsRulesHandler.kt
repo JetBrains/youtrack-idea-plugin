@@ -91,6 +91,12 @@ class ScriptsRulesHandler(val project: Project) {
                 NotificationType.INFORMATION
             )
         }
+
+        if (scriptsList.isNullOrEmpty()){
+            val note = "The debug operation requires that you have permission to update at least one project in YouTrack"
+            val trackerNote = TrackerNotification()
+            trackerNote.notify(note, NotificationType.ERROR)
+        }
     }
 
     private fun addScriptMapping(workflowName: String, ruleName: String, mappings: MutableList<RemoteUrlMappingBean>,
