@@ -69,7 +69,8 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
     val logger: Logger get() = Logger.getInstance("com.github.jk1.ytplugin")
 
     companion object {
-        private const val NULL_ADDRESS_ERROR = "Unable to get debugger address, please ensure that feature flag is enabled"
+        private const val PERMISSIONS_ERROR = "Unable to get debugger address, please ensure that feature flag is enabled"
+        private const val VERSION_ERROR = "Unable to get debugger address, the debug operation requires YouTrack version 2021.4 or higher."
         private const val REPOSITORY_ERROR = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
     }
 
@@ -198,7 +199,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.ERROR)
         } else if (webSocketDebuggerUrl == null) {
-            val note = NULL_ADDRESS_ERROR
+            val note = VERSION_ERROR
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.ERROR)
         }
@@ -250,7 +251,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             connectDebugger(context, result)
             return true
         } else {
-            result.setError(NULL_ADDRESS_ERROR)
+            result.setError(VERSION_ERROR)
             logger.debug("Unable to get debugger address, websocket url for ${URI(getYouTrackRepo()?.url).authority} is null")
         }
         return true
