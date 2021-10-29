@@ -76,7 +76,7 @@ class TaskManagerProxyService(val project: Project) : Disposable {
                 throw NoYouTrackRepositoryException()
             }
         } catch (e: NoActiveYouTrackTaskException){
-            logger.debug("No active YouTrack task detected: ${e.message}")
+            logger.trace("No active YouTrack task detected: ${e.message}")
             throw NoYouTrackRepositoryException()
         }
     }

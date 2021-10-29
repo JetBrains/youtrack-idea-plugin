@@ -54,7 +54,6 @@ import java.util.Base64.getEncoder
 open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
 
     private var currentPageTitle: String? = null
-    private val DEBUG_ADDRESS_ENDPOINT = "/api/debug/scripts/json"
     val url: Url? = null
 
     var pageUrl: String? = null
@@ -69,9 +68,14 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
     val logger: Logger get() = Logger.getInstance("com.github.jk1.ytplugin")
 
     companion object {
-        private const val PERMISSIONS_ERROR = "Unable to get debugger address, please ensure that feature flag is enabled"
+        private const val DEBUG_ADDRESS_ENDPOINT = "/api/debug/scripts/json"
+
+        private const val PERMISSIONS_ERROR = "The debug operation requires that you have permission to update at least one project in YouTrack"
         private const val VERSION_ERROR = "Unable to get debugger address, the debug operation requires YouTrack version 2021.4 or higher."
         private const val REPOSITORY_ERROR = "The YouTrack Integration plugin has not been configured to connect with a YouTrack site"
+        private const val NOT_FOUND_ERROR = "Not Found"
+        private const val FORBIDDEN_ERROR = "Forbidden"
+        private const val NOT_AUTHORIZED_ERROR = "Unauthorized"
     }
 
     private val String.b64Encoded: String
@@ -183,23 +187,58 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
                     "${connectionsJson.readCharSequence(connectionsJson.readableBytes(), Charset.forName("utf-8"))}"
             )
             return true
+        } else {
+            val errorConnectionMessage = getConnectionErrorMessage(connectionsJson)
+            return if (!errorConnectionMessage.isNullOrBlank()){
+                logger.debug("Debugger connected with error: $errorConnectionMessage")
+                result.setError(errorConnectionMessage)
+                true
+            } else {
+                processDebuggerConnectionJson(connectionsJson)
+                logger.debug("YouTrack debug address obtained: $webSocketDebuggerUrl")
+                notifyIfYouTrackRepoConnectionError()
+                !processConnection(context, result)
+            }
+
         }
 
-        processDebuggerConnectionJson(connectionsJson)
-        logger.debug("YouTrack debug address obtained: $webSocketDebuggerUrl")
-
-        notifyIfDebuggerConnectionError()
-        return !processConnection(context, result)
     }
 
-    private fun notifyIfDebuggerConnectionError() {
+    private fun getConnectionErrorMessage(connectionsJson: ByteBuf): String? {
+        val connectionInfo = connectionsJson.copy()
+        val error = getError(connectionInfo)
+        if (error == NOT_AUTHORIZED_ERROR || error == FORBIDDEN_ERROR){
+            return PERMISSIONS_ERROR
+        } else if (error == NOT_FOUND_ERROR) {
+            return VERSION_ERROR
+        }
+        return null
+    }
+
+    private fun getError(connectionInfo: ByteBuf): String {
+        val reader = JsonReader(ByteBufInputStream(connectionInfo).reader())
+        if (reader.peek() == JsonToken.BEGIN_ARRAY) {
+            reader.beginArray()
+        }
+        var error = ""
+        while (reader.hasNext() && reader.peek() != JsonToken.END_DOCUMENT) {
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    "error" -> error = reader.nextString()
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+        }
+        return error
+    }
+
+
+    private fun notifyIfYouTrackRepoConnectionError() {
         val repo = getYouTrackRepo()
         if (repo == null) {
             val note = REPOSITORY_ERROR
-            val trackerNote = TrackerNotification()
-            trackerNote.notify(note, NotificationType.ERROR)
-        } else if (webSocketDebuggerUrl == null) {
-            val note = VERSION_ERROR
             val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.ERROR)
         }
@@ -251,7 +290,6 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             connectDebugger(context, result)
             return true
         } else {
-            result.setError(VERSION_ERROR)
             logger.debug("Unable to get debugger address, websocket url for ${URI(getYouTrackRepo()?.url).authority} is null")
         }
         return true
