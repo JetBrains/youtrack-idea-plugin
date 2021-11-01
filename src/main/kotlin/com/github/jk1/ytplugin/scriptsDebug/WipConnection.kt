@@ -54,7 +54,6 @@ import java.util.Base64.getEncoder
 open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
 
     private var currentPageTitle: String? = null
-    val url: Url? = null
 
     var pageUrl: String? = null
     var webSocketDebuggerUrl: String? = null
@@ -272,7 +271,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         } else {
             logger.debug("webSocketDebuggerEndpoint is null")
         }
-        logger.info("Finish processing debuggerConnectionJson: \n  url = $url, webSocketDebuggerEndpoint =" +
+        logger.info("Finish processing debuggerConnectionJson: webSocketDebuggerEndpoint =" +
                     " $webSocketDebuggerEndpoint, websocketPrefix = $webSocketPrefix ")
     }
 
@@ -312,7 +311,8 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             debugEventListener,
             webSocketDebuggerUrl,
             channel,
-            createDebugLogger("js.debugger.wip.log", "")
+            createDebugLogger(
+                "js.debugger.wip.log", "")
         )
         vm.title = title
 
