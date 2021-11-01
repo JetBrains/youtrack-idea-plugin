@@ -3,7 +3,7 @@ package com.github.jk1.ytplugin
 interface YouTrackConnectionTrait {
 
     val serverUrl: String
-        get() = "https://ytplugintest.myjetbrains.com/youtrack"
+        get() = "https://ytplugintest.youtrack.cloud"
 
     val projectId: String
         get() = "AT"

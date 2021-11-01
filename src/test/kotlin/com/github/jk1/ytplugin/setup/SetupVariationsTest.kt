@@ -23,7 +23,6 @@ class SetupVariationsTest : IssueRestTrait, IdeaProjectTrait, SetupConnectionTra
 
     @Test
     fun `test if connected repository has an issue that can be displayed`() {
-        val serverUrl = "https://ytplugintest.myjetbrains.com/youtrack"
         repository = createYouTrackRepository(serverUrl, token)
         repository.defaultSearch = "project: AT"
         val repo = repository.getRepo()
