@@ -55,7 +55,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     private val DEFAULT_PORT = HttpScheme.HTTPS.port()
     private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
     private val ROOT_FOLDER = "youtrack-scripts"
-    private val INSTANCE_FOLDER = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
+    private val DEFAULT_INSTANCE_FOLDER = "youtrack"
 
     @Attribute
     var host: String? = null
@@ -67,7 +67,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     var rootFolder: String = ROOT_FOLDER
 
     @Attribute
-    var instanceFolder: String = INSTANCE_FOLDER
+    var instanceFolder: String = DEFAULT_INSTANCE_FOLDER
 
     @Property(surroundWithTag = false)
     @XCollection
@@ -170,12 +170,15 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                     // clear mappings on each run of the configuration
                     mappings.clear()
 
-                    instanceFolder = if (repo != null) URL(repo.url).host.split(".").first() else "Unnamed"
+                    val isHosted = AdminRestClient(repo).isYouTrackHosted()
+                    instanceFolder = if (isHosted) URL(repo.url).host.split(".").first() else "youtrack"
+
                     loadScripts()
 
                     val connection = WipConnection(project)
 
-                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings), LocalFileSystemFileFinder(), rootFolder, instanceFolder)
+                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings),
+                        LocalFileSystemFileFinder(), rootFolder, instanceFolder)
 
                     process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
                     connection.open(socketAddress)
