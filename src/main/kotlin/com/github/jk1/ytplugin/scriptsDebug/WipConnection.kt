@@ -64,6 +64,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
     private var webSocketDebuggerEndpoint: String? = null
     private var webSocketPrefix: String? = null
 
+    private val REMOTE_SOURCE_MSG = "{\"result\":{\"scriptSource\""
     val logger: Logger get() = Logger.getInstance("com.github.jk1.ytplugin")
 
     companion object {
@@ -344,7 +345,12 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             WebSocketFrameAggregator(NettyUtil.MAX_CONTENT_LENGTH),
             object : WebSocketProtocolHandler() {
                 override fun textFrameReceived(channel: Channel, message: TextWebSocketFrame) {
-                    vm.textFrameReceived(message)
+                    if (message.text().contains(REMOTE_SOURCE_MSG)){
+                        vm.textFrameReceived(TextWebSocketFrame(ScriptsRulesHandler(project)
+                            .handleScriptsSourcesMessages(message.text())))
+                    } else {
+                        vm.textFrameReceived(message)
+                    }
                 }
             }
         )
