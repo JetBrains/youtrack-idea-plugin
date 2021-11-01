@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
+import com.github.jk1.ytplugin.timeTracker.IssueWorkItemStore
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonParser
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
@@ -189,10 +190,17 @@ class ScriptsRulesHandler(val project: Project) {
 
 
     fun handleScriptsSourcesMessages(message: String): String{
-        val msgResult = JsonParser.parseString(message).asJsonObject.get("result").asJsonObject
-        val content = msgResult.get("scriptSource").asString
-        val newContent = removeRedundantStringsFormScriptContent(content)
-        return message.replace(content, newContent)
+        return try {
+            val msgResult = JsonParser.parseString(message).asJsonObject.get("result").asJsonObject
+            val content = msgResult.get("scriptSource").asString
+            val newContent = removeRedundantStringsFormScriptContent(content)
+            logger.debug("Handled scripts sources message: ${message.substring(50)}...")
+            message.replace(content, newContent)
+        } catch (e: Exception) {
+            logger.debug("Failed to handle scripts sources message $message")
+            logger.debug(e)
+            message
+        }
     }
 
     private fun removeRedundantStringsFormScriptContent(content: String): String {
