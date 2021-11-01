@@ -344,7 +344,12 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             WebSocketFrameAggregator(NettyUtil.MAX_CONTENT_LENGTH),
             object : WebSocketProtocolHandler() {
                 override fun textFrameReceived(channel: Channel, message: TextWebSocketFrame) {
-                    vm.textFrameReceived(message)
+                    if (message.text().contains("{\"result\":{\"scriptSource\"")){
+                        vm.textFrameReceived(TextWebSocketFrame(ScriptsRulesHandler(project)
+                            .handleScriptsSourcesMessages(message.text())))
+                    } else {
+                        vm.textFrameReceived(message)
+                    }
                 }
             }
         )

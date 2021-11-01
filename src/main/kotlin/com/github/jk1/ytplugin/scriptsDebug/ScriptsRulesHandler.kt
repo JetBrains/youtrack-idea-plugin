@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.google.gson.JsonParser
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
 import com.intellij.lang.javascript.JavaScriptFileType.INSTANCE
 import com.intellij.notification.NotificationType
@@ -25,6 +26,9 @@ class ScriptsRulesHandler(val project: Project) {
 
     private val updatedScriptsNames = mutableListOf<String>()
     private val loadedScriptsNames = mutableListOf<String>()
+
+    private val MODULE_END = "\n});"
+    private val MODULE_PREAMBLE = "(function (exports, require, module, __filename, __dirname) {"
 
     fun loadWorkflowRules(mappings: MutableList<RemoteUrlMappingBean>, rootFolderName: String, instanceFolderName: String) {
 
@@ -181,5 +185,17 @@ class ScriptsRulesHandler(val project: Project) {
         }
         logger.debug("Directory created: $name")
         return targetDirectory!!
+    }
+
+
+    fun handleScriptsSourcesMessages(message: String): String{
+        val msgResult = JsonParser.parseString(message).asJsonObject.get("result").asJsonObject
+        val content = msgResult.get("scriptSource").asString
+        val newContent = removeRedundantStringsFormScriptContent(content)
+        return message.replace(content, newContent)
+    }
+
+    private fun removeRedundantStringsFormScriptContent(content: String): String {
+        return content.removePrefix(MODULE_PREAMBLE).removeSuffix(MODULE_END)
     }
 }
