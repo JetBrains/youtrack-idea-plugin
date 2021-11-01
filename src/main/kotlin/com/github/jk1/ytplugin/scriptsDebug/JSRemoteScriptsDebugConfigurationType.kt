@@ -9,7 +9,6 @@ import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.extensions.ExtensionNotApplicableException
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.registry.Registry
 
 private const val ID = "YouTrackRemoteDebugType"
 private const val FACTORY_ID = "YouTrack Remote Debug"
@@ -25,7 +24,7 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
         val edition = ApplicationNamesInfo.getInstance().editionName
         logger.debug("IDE edition: $edition")
 
-        if (Registry.`is`("youtrack.script.debug", false) && edition != "Community Edition") {
+        if (edition != "Community Edition") {
             addFactory(object : ConfigurationFactory(this) {
                 override fun getSingletonPolicy() = RunConfigurationSingletonPolicy.SINGLE_INSTANCE_ONLY
 
