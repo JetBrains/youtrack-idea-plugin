@@ -337,21 +337,4 @@ class TimeTrackerSettingsTab(var repo: YouTrackServer, myHeight: Int, private va
         }
     }
 
-    fun getAutoTrackingEnabledCheckBox() = isAutoTrackingEnabledRadioButton
-    fun getType() = typeComboBox.getItemAt(typeComboBox.selectedIndex)
-    fun getInactivityHours(): String = inactivityHourInputField.text
-    fun getInactivityMinutes(): String = inactivityMinutesInputField.text
-    fun getManualModeCheckbox() = isManualModeRadioButton
-    fun getScheduledCheckbox() = isScheduledCheckbox
-    fun getPostWhenCommitCheckbox() = postWhenCommitCheckbox
-
-    fun getScheduledTime(): String {
-        val formatter = SimpleDateFormat("mm")
-        val hours = formatter.format(SimpleDateFormat("mm").parse(scheduledHour.text))
-        return "$hours:${formatter.format(SimpleDateFormat("mm").parse(scheduledMinutes.text))}:0"
-    }
-
-    fun getComment(): String = commentTextField.text
-    fun getPostOnClose() = postWhenProjectClosedCheckbox
-
 }
