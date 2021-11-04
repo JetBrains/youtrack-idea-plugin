@@ -62,7 +62,6 @@ class OpenCommandWindowAction : AnAction(
                     val repo = taskManagerComponent.getActiveYouTrackRepository()
                     issueStoreComponent[repo].firstOrNull { it.id == task.id }
                             ?: IssuesRestClient(repo).getIssue(task.id)
-                            ?: throw NoActiveYouTrackTaskException()
                 } catch (e: NoYouTrackRepositoryException) {
                     logger.debug("Unable to get issue from current activeTask: ${e.message} ")
                     throw NoActiveYouTrackTaskException()

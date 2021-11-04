@@ -81,7 +81,8 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
                 jsonBody += "\n}"
             }
         }
-        val comment = command.comment ?: ""
+
+        val comment = command.comment?.replace("\n", "\\n") ?: ""
 
         jsonBody = jsonBody.replace("{idReadable}", command.issue.id, true)
                 .replace("true", command.silent.toString(), true)
