@@ -181,7 +181,7 @@ class WorkItemsListCellRenderer(
 
 
     private fun prepareCommentsForDisplaying(issueWorkItem: IssueWorkItem) {
-        val viewportWidth = viewportWidthProvider.invoke() / 8
+        val viewportWidth = viewportWidthProvider.invoke() / 4
 
         trackingComments.clear()
         trackingComments.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
