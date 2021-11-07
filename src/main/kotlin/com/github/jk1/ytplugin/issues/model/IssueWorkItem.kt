@@ -9,7 +9,7 @@ class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
     val json: String = item.toString()
     val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
     val date: Date = Date(item.asJsonObject.get("date").asLong)
-    val value: String = formatTimePresentation(item.asJsonObject.get("duration").asJsonObject.get("presentation").asString)
+    val value: String = item.asJsonObject.get("duration").asJsonObject.get("presentation").asString
 
     val type: String =  if (item.asJsonObject.get("type").isJsonNull)
         "None"
@@ -29,6 +29,9 @@ class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
         return date.compareTo(other.date)
     }
 
+    /**
+     * Could be used for instances in english only. Muted till localization is completed
+     */
     private fun formatTimePresentation(inputTime: String) : String{
         val weeks: Long
         val days: Long
