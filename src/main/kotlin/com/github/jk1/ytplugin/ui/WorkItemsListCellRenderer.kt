@@ -38,6 +38,15 @@ class WorkItemsListCellRenderer(
     private fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
 
 
+    private val PREFFERED_COMMENT_WIDTH = 0.474
+    private val PREFFERED_DATE_TYPE_WIDTH = 0.156
+    private val PREFFERED_ISSUE_ID_WIDTH = 0.078
+    private val PREFFERED_VALUE_WIDTH = 0.113
+
+    private val OFFSET = 10
+    private val LARGE_SCREEN_SIZE = 1000
+    private val SMALL_SCREEN_SIZE = 500
+
     private var maxIssueIdWidth = 0
 
     fun getIssuePosition(): List<Int> {
@@ -72,7 +81,8 @@ class WorkItemsListCellRenderer(
         val date = SimpleColoredComponent()
         date.isOpaque = false
         date.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-        date.append(issueWorkItem.date.format().substring(0, issueWorkItem.date.format().length - 5), SimpleTextAttributes(idStyle, complimentaryColor))
+        date.append(issueWorkItem.date.format().substring(0, issueWorkItem.date.format().length - 5),
+            SimpleTextAttributes(idStyle, complimentaryColor))
 
         val value = SimpleColoredComponent()
         value.isOpaque = false
@@ -83,7 +93,8 @@ class WorkItemsListCellRenderer(
         val type = SimpleColoredComponent()
         type.isOpaque = false
         type.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-        type.append(if (issueWorkItem.type == "None") "No type" else issueWorkItem.type, SimpleTextAttributes(idStyle, complimentaryColor))
+        type.append(if (issueWorkItem.type == "None") "No type" else issueWorkItem.type,
+            SimpleTextAttributes(idStyle, complimentaryColor))
 
         issueLink = HyperlinkLabel(issueWorkItem.issueId,
                 "${myRepository.url}/issue/${issueWorkItem.issueId}", AllIcons.Actions.MoveTo2)
@@ -107,14 +118,14 @@ class WorkItemsListCellRenderer(
         panel.preferredSize = Dimension(panelWidth, panelHeight)
 
         datePanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
+        datePanel.preferredSize = Dimension((PREFFERED_DATE_TYPE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
         datePanel.add(date)
         datePanel.isOpaque = false
 
         value.alignmentX = Component.RIGHT_ALIGNMENT
         valuePanel = JPanel(FlowLayout(FlowLayout.LEFT))
 
-        valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
+        valuePanel.preferredSize = Dimension((PREFFERED_VALUE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
         valuePanel.alignmentX = Component.RIGHT_ALIGNMENT
         valuePanel.isOpaque = false
 
@@ -122,13 +133,14 @@ class WorkItemsListCellRenderer(
         issueLinkPanel.add(issueLink)
         issueLinkPanel.isOpaque = false
 
-        val minIssueIdWidth = (0.078 * panelWidth).toInt()
-        val unitWidth = 0.078 * panelWidth / 6
+        val minIssueIdWidth = (PREFFERED_ISSUE_ID_WIDTH * panelWidth).toInt()
+        val unitWidth = PREFFERED_ISSUE_ID_WIDTH * panelWidth / 6
 
-        if (panelWidth > 1000) {
-            datePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
-            valuePanel.preferredSize = Dimension((0.313 * panelWidth).toInt(), panelHeight + 10)
-            issueLinkPanel.preferredSize = Dimension(max((unitWidth * maxIssueIdWidth).toInt(), minIssueIdWidth), panelHeight + 10)
+        if (panelWidth > LARGE_SCREEN_SIZE) {
+            datePanel.preferredSize = Dimension((PREFFERED_DATE_TYPE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
+            valuePanel.preferredSize = Dimension((PREFFERED_VALUE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
+            issueLinkPanel.preferredSize = Dimension(max((unitWidth * maxIssueIdWidth).toInt(), minIssueIdWidth),
+                panelHeight + OFFSET)
 
         } else {
             datePanel.preferredSize = Dimension((0.3 * panelWidth).toInt(), panelHeight)
@@ -141,22 +153,23 @@ class WorkItemsListCellRenderer(
         panel.add(datePanel)
         panel.add(valuePanel)
 
-        if (panelWidth > 500) {
+        if (panelWidth > SMALL_SCREEN_SIZE) {
 
             panel.add(issueLinkPanel)
 
-            if (panelWidth > 1000) {
+            if (panelWidth > LARGE_SCREEN_SIZE) {
                 val typePanel = JPanel(FlowLayout(FlowLayout.LEFT))
                 typePanel.add(type)
-                typePanel.preferredSize = Dimension((0.156 * panelWidth).toInt(), panelHeight + 10)
+                typePanel.preferredSize = Dimension((PREFFERED_DATE_TYPE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
                 typePanel.isOpaque = false
                 panel.add(typePanel)
 
                 val trackingCommentsPanel = JPanel(FlowLayout(FlowLayout.LEFT))
                 trackingCommentsPanel.add(trackingComments)
-                val commentsWidth = (0.274 * panelWidth).toInt() +
+                val commentsWidth = (PREFFERED_COMMENT_WIDTH * panelWidth).toInt() +
                         minIssueIdWidth - (unitWidth * maxIssueIdWidth).toInt()
-                trackingCommentsPanel.preferredSize = Dimension(min(commentsWidth, (0.274 * panelWidth).toInt()), panelHeight + 10)
+                trackingCommentsPanel.preferredSize = Dimension(min(commentsWidth,
+                    (PREFFERED_COMMENT_WIDTH * panelWidth).toInt()), panelHeight + OFFSET)
 
                 trackingCommentsPanel.isOpaque = false
                 panel.add(trackingCommentsPanel)
