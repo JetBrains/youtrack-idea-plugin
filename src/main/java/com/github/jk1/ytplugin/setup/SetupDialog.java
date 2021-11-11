@@ -204,9 +204,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
                 TimeUnit.HOURS.toMillis(inactivityHours));
 
-        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours);
-        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes);
-
         scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
         scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
 
@@ -224,6 +221,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         scheduledMinutes.getDocument().addDocumentListener(stopOnScheduleUpdate);
         scheduledHour.getDocument().addDocumentListener(stopOnScheduleUpdate);
+
+        inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours);
+        inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes);
+
+        inactivityHourInputField.getDocument().addDocumentListener(stopOnScheduleUpdate);
+        inactivityMinutesInputField.getDocument().addDocumentListener(stopOnScheduleUpdate);
 
         commentTextField.setText(timer.getComment());
 
