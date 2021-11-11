@@ -94,7 +94,7 @@ class ActivityTracker(
             } else {
                 timer.isPostedScheduled = false
             }
-            logger.debug("scheduleListener: stop the propagation of an event to other listeners")
+            logger.trace("scheduleListener: stop the propagation of an event to other listeners")
             false
         }, parentDisposable)
     }
@@ -157,7 +157,7 @@ class ActivityTracker(
                     logger.debug("Active task is not valid")
                 }
             }
-            logger.debug("startIDEListener: stop the propagation of an event to other listeners")
+            logger.trace("startIDEListener: stop the propagation of an event to other listeners")
             false
         }, parentDisposable)
     }
