@@ -170,14 +170,10 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
 
-    fun setupTimerProperties(myComment: String, isPostWhenCommitEnabled: Boolean, isAutoTracking: Boolean, myType: String, isManualMode: Boolean,
-                             isScheduled: Boolean, timeToSchedule: String, inactivityTime: Long, isPostOnClosed: Boolean) {
-        comment = myComment
-        isPostAfterCommitEnabled = isPostWhenCommitEnabled
+    fun setupTimerProperties(isAutoTracking: Boolean, isManualMode: Boolean, isScheduled: Boolean,
+                             timeToSchedule: String, inactivityTime: Long) {
         isAutoTrackingEnable = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
-        isWhenProjectClosedEnabled = isPostOnClosed
-        type = myType
         isManualTrackingEnable = isManualMode
         if (isScheduled) {
             scheduledPeriod = timeToSchedule
@@ -193,5 +189,26 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
     fun getRecordedTimeInMills() = timeInMills
+
+
+    fun setWorkItemsType(type: String?) {
+        if (type != null && type != this.type) {
+            this.type = type
+        }
+    }
+
+    fun setDefaultComment(comment: String?) {
+        if (comment != null && comment != this.comment) {
+            this.comment = comment
+        }
+    }
+
+    fun setPostWhenCommitEnabled(isEnabled: Boolean) {
+        isPostAfterCommitEnabled = isEnabled
+    }
+
+    fun setOnProjectCloseEnabled(isEnabled: Boolean) {
+        isWhenProjectClosedEnabled = isEnabled
+    }
 
 }

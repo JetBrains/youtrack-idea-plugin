@@ -145,9 +145,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         inputUrlTextPane.setText(repo.getUrl());
         inputTokenField.setText(repo.getPassword());
 
-        isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
-        scheduledFieldsEnabling(timer.isAutoTrackingEnable());
-
         inactivityFieldsEnabling(timer.isAutoTrackingEnable());
 
         controlPanel = new JBPanel<>();
@@ -195,6 +192,9 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         postWhenProjectClosedCheckbox.setEnabled(timer.isAutoTrackingEnable());
         postWhenCommitCheckbox.setEnabled(timer.isAutoTrackingEnable());
+
+        isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
+        scheduledFieldsEnabling(timer.isAutoTrackingEnable());
 
         typeComboBox.setEditable(true);
         typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
@@ -447,8 +447,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             testConnectionAction();
         }
 
-        setWorkItemsType();
-        setComment();
+        timer.setWorkItemsType(getType());
+        timer.setDefaultComment(getComment());
+        timer.setPostWhenCommitEnabled(postWhenCommitCheckbox.isEnabled());
+        timer.setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isEnabled());
+
 
         // post time if any relevant changes in settings were made
         if (shouldStopTimer){
@@ -486,20 +489,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             this.close(0);
         }
         super.doOKAction();
-    }
-
-    private void setWorkItemsType(){
-        String type = getType();
-        if (type != null && !type.equals(timer.getType())){
-            timer.setType(type);
-        }
-    }
-
-    private void setComment(){
-        String comment = getComment();
-        if (comment != null && !comment.equals(timer.getComment())){
-            timer.setComment(comment);
-        }
     }
 
     @Override
