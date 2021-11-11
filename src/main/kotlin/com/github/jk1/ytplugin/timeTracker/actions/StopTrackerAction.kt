@@ -80,7 +80,8 @@ class StopTrackerAction : AnAction(
                 } catch (e: Exception) {
                     logger.warn("Time tracking might not be enabled: ${e.message}")
                     logger.debug(e)
-                    trackerNote.notify("Could not record time: time tracking is disabled", NotificationType.WARNING)
+                    trackerNote.notify("Could not send time to YouTrack, please check you connection. " +
+                            "Recorded time: ${timer.recordedTime} min", NotificationType.WARNING)
                 }
             }
         } catch (e: IllegalStateException) {

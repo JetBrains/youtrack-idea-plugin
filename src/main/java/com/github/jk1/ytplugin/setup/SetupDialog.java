@@ -148,6 +148,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
         scheduledFieldsEnabling(timer.isAutoTrackingEnable());
 
+        inactivityFieldsEnabling(timer.isAutoTrackingEnable());
+
         controlPanel = new JBPanel<>();
         controlPanel.setLayout(null);
 
