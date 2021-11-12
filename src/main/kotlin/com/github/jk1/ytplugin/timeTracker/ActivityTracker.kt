@@ -118,14 +118,14 @@ class ActivityTracker(
             var isMouseOrKeyboardActive = false
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state MOUSE_CLICKED $isMouseOrKeyboardActive")
+                logger.trace("state MOUSE_CLICKED $isMouseOrKeyboardActive")
             }
             if (awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
-                    logger.debug("state MOUSE_MOVED$isMouseOrKeyboardActive")
+                    logger.trace("state MOUSE_MOVED$isMouseOrKeyboardActive")
                 }
             }
             if (awtEvent is MouseWheelEvent && awtEvent.id == MouseEvent.MOUSE_WHEEL) {
@@ -133,12 +133,12 @@ class ActivityTracker(
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
                     isMouseOrKeyboardActive = captureIdeState()
                     lastMouseMoveTimestamp = now
-                    logger.debug("state MOUSE_WHEEL $isMouseOrKeyboardActive")
+                    logger.trace("state MOUSE_WHEEL $isMouseOrKeyboardActive")
                 }
             }
             if (awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
                 isMouseOrKeyboardActive = captureIdeState()
-                logger.debug("state KEYBOARD $isMouseOrKeyboardActive")
+                logger.trace("state KEYBOARD $isMouseOrKeyboardActive")
             }
 
             if (!isMouseOrKeyboardActive) {
