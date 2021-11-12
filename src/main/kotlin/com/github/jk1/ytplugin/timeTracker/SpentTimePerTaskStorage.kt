@@ -14,6 +14,7 @@ class SpentTimePerTaskStorage {
     }
     fun setSavedTimeForLocalTask(task: LocalTask, time: Long) {
         store[task] = store[task]?.plus(time) ?: time
+        println ("Time for ${task.id} is ${store[task]}")
     }
 
 }

@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.tasks
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.github.jk1.ytplugin.timeTracker.actions.SaveTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.notification.NotificationType
@@ -35,7 +36,7 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
 
     override fun taskAdded(task: LocalTask) {
         if (timeTrackerComponent.isRunning) {
-            StopTrackerAction().stopTimer(project)
+            SaveTrackerAction().saveTimer(project, task)
         }
     }
 
