@@ -9,6 +9,7 @@ import com.github.jk1.ytplugin.setup.CredentialsChecker
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService
 import com.github.jk1.ytplugin.timeTracker.IssueWorkItemsStoreUpdaterService
 import com.github.jk1.ytplugin.timeTracker.PersistentIssueWorkItemsStore
+import com.github.jk1.ytplugin.timeTracker.SpentTimePerTaskStorage
 import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
@@ -59,6 +60,9 @@ interface ComponentAware {
 
     val credentialsCheckerComponent: CredentialsChecker
         get() = project.getService(CredentialsChecker::class.java)!!
+
+    val spentTimePerTaskStorage: SpentTimePerTaskStorage
+        get() = project.getService(SpentTimePerTaskStorage::class.java)!!
 
 
 }
