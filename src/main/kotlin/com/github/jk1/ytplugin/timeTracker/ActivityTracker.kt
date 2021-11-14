@@ -110,7 +110,7 @@ class ActivityTracker(
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
             } else {
                 timer.timeInMills = currentTimeMillis() - timer.startTime - timer.pausedTime
-                timer.recordedTime = timer.formatTimePeriod(timer.timeInMills)
+                timer.recordedTime = TimeTracker.formatTimePeriod(timer.timeInMills)
             }
             // instant caching
             store.saveFields(timer)

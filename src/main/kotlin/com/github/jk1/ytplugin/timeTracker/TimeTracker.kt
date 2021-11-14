@@ -78,6 +78,16 @@ class TimeTracker(override val project: Project) : ComponentAware {
     @PropertyName("timeTracker.query")
     var searchQuery: String = ""
 
+    companion object {
+        fun formatTimePeriod(timeInMilSec: Long): String {
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
+            return if (minutes > 0)
+                minutes.toString()
+            else
+                "0"
+        }
+    }
+
     init {
         try {
             try {
@@ -114,7 +124,9 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     fun stop() {
         if (isRunning) {
-            timeInMills = System.currentTimeMillis() - startTime - pausedTime
+            val task = taskManagerComponent.getActiveTask()
+            val storedTime = spentTimePerTaskStorage.getSavedTimeForLocalTask(task)
+            timeInMills = System.currentTimeMillis() - startTime - pausedTime + storedTime
             // to be used for the post request later
             recordedTime = formatTimePeriod(timeInMills)
             startTime = System.currentTimeMillis()
@@ -159,14 +171,6 @@ class TimeTracker(override val project: Project) : ComponentAware {
             timeInMills = 0
             pausedTime = 0
             startTime = System.currentTimeMillis()
-    }
-
-    fun formatTimePeriod(timeInMilSec: Long): String {
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
-        return if (minutes > 0)
-            minutes.toString()
-        else
-            "0"
     }
 
 

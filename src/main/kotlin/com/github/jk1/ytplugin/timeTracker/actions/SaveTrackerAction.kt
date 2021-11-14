@@ -22,16 +22,16 @@ class SaveTrackerAction {
 
     fun saveTimer(project: Project, task: LocalTask) {
 
-
         val trackerNote = TrackerNotification()
         val timer = ComponentAware.of(project).timeTrackerComponent
 
         try {
             ComponentAware.of(project).spentTimePerTaskStorage.setSavedTimeForLocalTask(task, timer.timeInMills)
+
             trackerNote.notify("Switched from issue ${timer.issueId}, time ${timer.recordedTime} min is recorded",
                 NotificationType.INFORMATION)
 
-            timer.stop()
+            timer.reset()
 
             val store: PropertiesComponent = PropertiesComponent.getInstance(project)
             store.saveFields(timer)
