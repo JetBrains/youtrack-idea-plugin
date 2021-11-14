@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.ui.YouTrackPluginIcons.YOUTRACK
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.RunConfigurationSingletonPolicy
+import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.extensions.ExtensionNotApplicableException
 import com.intellij.openapi.project.DumbAware
@@ -24,7 +25,11 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
         val edition = ApplicationNamesInfo.getInstance().editionName
         logger.debug("IDE edition: $edition")
 
-        if (edition != "Community Edition") {
+        val actionManager = ActionManager.getInstance()
+        val areJsAndJSDebuggerPluginsEnabled = actionManager.getActionIdList("JavaScript").isNotEmpty() &&
+                actionManager.getActionIdList("JavaScriptDebugger").isNotEmpty()
+
+        if (edition != "Community Edition" && areJsAndJSDebuggerPluginsEnabled) {
             addFactory(object : ConfigurationFactory(this) {
                 override fun getSingletonPolicy() = RunConfigurationSingletonPolicy.SINGLE_INSTANCE_ONLY
 
