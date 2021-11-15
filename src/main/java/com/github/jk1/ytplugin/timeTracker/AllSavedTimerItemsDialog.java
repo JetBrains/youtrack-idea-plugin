@@ -57,7 +57,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         contentPane.setBorder(BorderFactory.createTitledBorder(null, "", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
+        panel2.putClientProperty("html.disable", Boolean.TRUE);
+        contentPane.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, new Dimension(300, 200), null, null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel2.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         panel1 = new JPanel();
@@ -105,7 +106,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
             data[i][0] = true;
             data[i][1] = id;
-            data[i][2] = time;
+            data[i][2] = time + " min";
 
             i++;
         }
@@ -123,7 +124,6 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
     }
 
-
     protected class PostAction extends DialogWrapperAction {
         protected PostAction() {
             super("Post to YouTrack");
@@ -131,7 +131,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            // TODO: post selected items to YouTrack
+            new TimeTrackerConnector().postSavedTimeToServer(repo, project);
+            close(0);
         }
     }
 }

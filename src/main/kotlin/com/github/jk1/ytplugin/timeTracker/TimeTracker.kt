@@ -128,7 +128,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
             val storedTime = spentTimePerTaskStorage.getSavedTimeForLocalTask(task)
 
             // clear saved time for issue as we post it to server now
-            spentTimePerTaskStorage.resetSavedTimeForLocalTask(task)
+            spentTimePerTaskStorage.resetSavedTimeForLocalTask(task.id)
 
             timeInMills = System.currentTimeMillis() - startTime - pausedTime + storedTime
             // to be used for the post request later

@@ -2,6 +2,8 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ide.util.PropertyName
@@ -43,11 +45,12 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
         }
     }
 
-    fun resetSavedTimeForLocalTask(task: LocalTask) {
-        store[task.id] = 0
-        logger.debug("Time for ${task.id} is reset")
-    }
+    fun resetSavedTimeForLocalTask(task: String) {
+        store.remove(task)
+        storeJson = ""
 
+        logger.debug("Time for $task is reset")
+    }
 
     fun getAllStoredItems() : ConcurrentHashMap<String, Long> {
         logger.debug("Stored time for all issues obtained")
@@ -55,15 +58,17 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
     }
 
     private fun createStoreJson(): String {
-        var jsonString = "["
 
-        store.forEach {entry -> jsonString +=  "{\n" +
-                "   \"id\":\"${entry.key}\",\n" +
-                "   \"time\":${entry.value}\n" +
-                "}" }
+        val storeJsonArray = JsonArray()
+        store.forEach { entry ->
+            val element = JsonObject()
+            element.addProperty("id", entry.key)
+            element.addProperty("time", entry.value)
 
-        jsonString += "]"
-        return jsonString
+            storeJsonArray.add(element)
+        }
+
+        return storeJsonArray.toString()
 
     }
 
