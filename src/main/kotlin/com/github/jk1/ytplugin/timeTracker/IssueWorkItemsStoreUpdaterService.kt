@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.intellij.concurrency.JobScheduler
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -39,6 +40,9 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
         try {
             val repo = taskManagerComponent.getActiveYouTrackRepository()
             val timer = timeTrackerComponent
+
+            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+            store.saveFields(spentTimePerTaskStorage)
 
             if (timer.isWhenProjectClosedEnabled) {
                 logger.debug("state PROJECT_CLOSE with posting enabled")

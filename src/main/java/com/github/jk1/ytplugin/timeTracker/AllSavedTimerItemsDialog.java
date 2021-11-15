@@ -1,8 +1,12 @@
 package com.github.jk1.ytplugin.timeTracker;
 
+import com.github.jk1.ytplugin.ComponentAware;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.tasks.LocalTask;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.table.JBTable;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -11,13 +15,18 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AllSavedTimerItemsDialog extends DialogWrapper {
     private JPanel contentPane;
     private JTable table1;
     private JCheckBox selectAllCheckBox;
+    private JPanel panel1;
+    private JScrollPane scrollPane1;
 
     PostAction postAction = new PostAction();
 
@@ -43,19 +52,19 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
+        createUIComponents();
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
         contentPane.setBorder(BorderFactory.createTitledBorder(null, "", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
-        final Spacer spacer1 = new Spacer();
-        panel1.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        table1 = new JTable();
-        panel2.add(table1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        contentPane.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel2.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel1 = new JPanel();
+        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel1.add(scrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         selectAllCheckBox = new JCheckBox();
         selectAllCheckBox.setSelected(true);
         selectAllCheckBox.setText("Select all");
@@ -79,6 +88,75 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         return new Action[]{postAction, getCancelAction()};
     }
 
+    private void createUIComponents() {
+        SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
+        scrollPane1 = createTable(storage);
+    }
+
+    private JScrollPane createTable(SpentTimePerTaskStorage storage) {
+
+        ConcurrentHashMap<LocalTask, Long> timerItems = storage.getAllStoredItems();
+
+        // form data structure
+        Object[][] data = new Object[timerItems.size()][3];
+        int i = 0;
+        for (Map.Entry<LocalTask, Long> entry : timerItems.entrySet()) {
+            String id = entry.getKey().getId();
+            String time = TimeTracker.Companion.formatTimePeriod(entry.getValue());
+
+            data[i][0] = true;
+            data[i][1] = id;
+            data[i][2] = time;
+
+            i++;
+        }
+
+        Object[] columnsHeaders = new String[]{"Selected", "Issue", "Saved time"};
+
+
+
+        DefaultTableModel model = new DefaultTableModel(data, columnsHeaders) {
+            @Override
+            public Class getColumnClass(int column) {
+                return getValueAt(0, column).getClass();
+            }
+        };
+        JTable table = new JTable(model);
+
+        Box contents = new Box(BoxLayout.Y_AXIS);
+        contents.add(new JScrollPane(table));
+
+        return new JBScrollPane(table);
+
+//
+//        Object[][] array = new String[][]{{"Сахар", "кг", "1.5"},
+//                {"Мука", "кг", "4.0"},
+//                {"Молоко", "л", "2.2"}};
+
+
+//        JTable itemsTable = new JTable(array, columnsHeaders);
+
+//        table2.setRowHeight(30);
+//        table2.setRowHeight(1, 20);
+//        table2.setIntercellSpacing(new Dimension(10, 10));
+//        table2.setGridColor(Color.blue);
+//        table2.setShowVerticalLines(false);
+
+//        // Настройка таблицы table3 - цвет фона, цвет выделения
+//        table3.setForeground(Color.red);
+//        table3.setSelectionForeground(Color.yellow);
+//        table3.setSelectionBackground(Color.blue);
+//        // Скрытие сетки таблицы
+//        table3.setShowGrid(false);
+//        // contents.add(new JScrollPane(table3));
+//        contents.add(table3);
+//        // Вывод окна на экран
+//        setContentPane(contents);
+//        setSize(500, 400);
+//        setVisible(true);
+//        return new JBScrollPane(itemsTable);
+    }
+
 
     protected class PostAction extends DialogWrapperAction {
         protected PostAction() {
@@ -91,3 +169,4 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         }
     }
 }
+
