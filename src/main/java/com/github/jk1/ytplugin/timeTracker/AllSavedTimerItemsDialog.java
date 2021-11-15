@@ -4,7 +4,6 @@ import com.github.jk1.ytplugin.ComponentAware;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.tasks.LocalTask;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -95,13 +94,13 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
     private JScrollPane createTable(SpentTimePerTaskStorage storage) {
 
-        ConcurrentHashMap<LocalTask, Long> timerItems = storage.getAllStoredItems();
+        ConcurrentHashMap<String, Long> timerItems = storage.getAllStoredItems();
 
         // form data structure
         Object[][] data = new Object[timerItems.size()][3];
         int i = 0;
-        for (Map.Entry<LocalTask, Long> entry : timerItems.entrySet()) {
-            String id = entry.getKey().getId();
+        for (Map.Entry<String, Long> entry : timerItems.entrySet()) {
+            String id = entry.getKey();
             String time = TimeTracker.Companion.formatTimePeriod(entry.getValue());
 
             data[i][0] = true;
@@ -113,48 +112,15 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
         Object[] columnsHeaders = new String[]{"Selected", "Issue", "Saved time"};
 
-
-
         DefaultTableModel model = new DefaultTableModel(data, columnsHeaders) {
             @Override
             public Class getColumnClass(int column) {
                 return getValueAt(0, column).getClass();
             }
         };
-        JTable table = new JTable(model);
-
-        Box contents = new Box(BoxLayout.Y_AXIS);
-        contents.add(new JScrollPane(table));
-
+        JTable table = new JBTable(model);
         return new JBScrollPane(table);
 
-//
-//        Object[][] array = new String[][]{{"Сахар", "кг", "1.5"},
-//                {"Мука", "кг", "4.0"},
-//                {"Молоко", "л", "2.2"}};
-
-
-//        JTable itemsTable = new JTable(array, columnsHeaders);
-
-//        table2.setRowHeight(30);
-//        table2.setRowHeight(1, 20);
-//        table2.setIntercellSpacing(new Dimension(10, 10));
-//        table2.setGridColor(Color.blue);
-//        table2.setShowVerticalLines(false);
-
-//        // Настройка таблицы table3 - цвет фона, цвет выделения
-//        table3.setForeground(Color.red);
-//        table3.setSelectionForeground(Color.yellow);
-//        table3.setSelectionBackground(Color.blue);
-//        // Скрытие сетки таблицы
-//        table3.setShowGrid(false);
-//        // contents.add(new JScrollPane(table3));
-//        contents.add(table3);
-//        // Вывод окна на экран
-//        setContentPane(contents);
-//        setSize(500, 400);
-//        setVisible(true);
-//        return new JBScrollPane(itemsTable);
     }
 
 

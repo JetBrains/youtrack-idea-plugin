@@ -41,9 +41,6 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
             val repo = taskManagerComponent.getActiveYouTrackRepository()
             val timer = timeTrackerComponent
 
-            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-            store.saveFields(spentTimePerTaskStorage)
-
             if (timer.isWhenProjectClosedEnabled) {
                 logger.debug("state PROJECT_CLOSE with posting enabled")
                 try {
