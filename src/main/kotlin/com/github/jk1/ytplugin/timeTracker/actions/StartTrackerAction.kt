@@ -16,9 +16,10 @@ import com.intellij.openapi.wm.WindowManager
 
 
 class StartTrackerAction : AnAction(
-        "Start Work Timer",
-        "Start tracking time for the issue referenced in the active changelist",
-        AllIcons.Actions.Profile) {
+    "Start Work Timer",
+    "Start tracking time for the issue referenced in the active changelist",
+    AllIcons.Actions.Profile
+) {
 
     fun startAutomatedTracking(project: Project, timer: TimeTracker) {
         if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault && timer.isAutoTrackingEnable) {
@@ -74,44 +75,48 @@ class StartTrackerAction : AnAction(
         if (!myTimer.isAutoTrackingTemporaryDisabled) {
             val bar = WindowManager.getInstance().getStatusBar(project)
             if (bar?.getWidget("Time Tracking Clock") == null) {
-                bar?.addWidget(TimerWidget(myTimer, parentDisposable), parentDisposable)
+                bar?.addWidget(TimerWidget(myTimer, parentDisposable, project), parentDisposable)
             }
 
             if (myTimer.isAutoTrackingEnable) {
                 myTimer.activityTracker = ActivityTracker(
-                        parentDisposable = parentDisposable,
-                        timer = myTimer,
-                        inactivityPeriod = myTimer.inactivityPeriodInMills,
-                        project = project
+                    parentDisposable = parentDisposable,
+                    timer = myTimer,
+                    inactivityPeriod = myTimer.inactivityPeriodInMills,
+                    project = project
                 )
                 myTimer.activityTracker!!.startTracking()
             }
 
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
-
-                    try {
-                        val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
-                        myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
-                        myTimer.issueId = activeTask.id
-                        myTimer.issueIdReadable = activeTask.id
-                        myTimer.start(activeTask.id)
-                    } catch (e: NoActiveYouTrackTaskException) {
-                        val trackerNote = TrackerNotification()
-                        trackerNote.notify("Could not record time: not a valid YouTrack issue", NotificationType.WARNING)
-                        trackerNote.notifyWithHelper("To use time tracking please select valid active task on the toolbar" +
-                                " or by pressing Shift + Alt + T", NotificationType.INFORMATION, OpenActiveTaskSelection())
-                    }
-
-
+                    val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+                    myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
+                    myTimer.issueId = activeTask.id
+                    myTimer.issueIdReadable = activeTask.id
+                    myTimer.start(activeTask.id)
+                } catch (e: NoActiveYouTrackTaskException) {
+                    val trackerNote = TrackerNotification()
+                    trackerNote.notify("Could not record time: not a valid YouTrack issue", NotificationType.WARNING)
+                    trackerNote.notifyWithHelper(
+                        "To use time tracking please select valid active task on the toolbar" +
+                                " or by pressing Shift + Alt + T",
+                        NotificationType.INFORMATION,
+                        OpenActiveTaskSelection()
+                    )
                 } catch (e: NoYouTrackRepositoryException) {
                     val trackerNote = TrackerNotification()
-                    trackerNote.notify("Unable to start automatic time tracking, please select" +
-                            " valid active task first", NotificationType.WARNING)
+                    trackerNote.notify(
+                        "Unable to start automatic time tracking, please select" +
+                                " valid active task first", NotificationType.WARNING
+                    )
                 }
             } else {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Work timer is running for ${myTimer.issueIdReadable} ", NotificationType.INFORMATION)
+                trackerNote.notify(
+                    "Work timer is running for ${myTimer.issueIdReadable} ",
+                    NotificationType.INFORMATION
+                )
             }
             myTimer.isAutoTrackingTemporaryDisabled = false
         }

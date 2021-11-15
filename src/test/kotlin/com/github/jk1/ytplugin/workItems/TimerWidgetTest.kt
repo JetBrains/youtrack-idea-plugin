@@ -26,7 +26,7 @@ class InputCredentialsTest :  IdeaProjectTrait, ComponentAware {
         timer.isRunning = true
         timer.isPaused = false
         if (statusBar.getWidget("Time Tracking Clock") == null) {
-            statusBar.addWidget(TimerWidget(timer, project), project)
+            statusBar.addWidget(TimerWidget(timer, project, project), project)
         }
     }
 

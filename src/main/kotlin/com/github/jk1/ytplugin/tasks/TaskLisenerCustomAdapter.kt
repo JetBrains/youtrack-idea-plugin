@@ -37,12 +37,10 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
     override fun taskAdded(task: LocalTask) {
         if (timeTrackerComponent.isRunning) {
             SaveTrackerAction().saveTimer(project, taskManagerComponent.getActiveTask())
+            timeTrackerComponent.isAutoTrackingTemporaryDisabled = true
         }
     }
 
     override fun taskRemoved(task: LocalTask) {
-        if (timeTrackerComponent.isRunning) {
-            SaveTrackerAction().saveTimer(project, task)
-        }
     }
 }

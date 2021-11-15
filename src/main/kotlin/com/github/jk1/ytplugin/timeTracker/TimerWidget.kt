@@ -1,6 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.CustomStatusBarWidget
 import com.intellij.openapi.wm.StatusBar
@@ -10,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import javax.swing.JLabel
 import javax.swing.Timer
 
-class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable) : CustomStatusBarWidget {
+class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable, override val project: Project) : CustomStatusBarWidget, ComponentAware {
 
     private val label = JLabel(time())
     private val timer = Timer(1000, ActionListener { label.text = time() })
@@ -21,7 +23,8 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         val recordedTime = if (timeTracker.isPaused) {
             timeTracker.getRecordedTimeInMills()
         } else {
-            System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime
+            val savedTime = spentTimePerTaskStorage.getSavedTimeForLocalTask(taskManagerComponent.getActiveTask())
+            System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime + savedTime
         }
         val time = String.format("%02dh %02dm",
                 TimeUnit.MILLISECONDS.toHours(recordedTime),
