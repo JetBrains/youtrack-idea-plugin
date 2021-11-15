@@ -23,7 +23,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         val recordedTime = if (timeTracker.isPaused) {
             timeTracker.getRecordedTimeInMills()
         } else {
-            val savedTime = spentTimePerTaskStorage.getSavedTimeForLocalTask(taskManagerComponent.getActiveTask())
+            val savedTime = spentTimePerTaskStorage.getSavedTimeForLocalTask(taskManagerComponent.getActiveTask().id)
             System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime + savedTime
         }
         val time = String.format("%02dh %02dm",

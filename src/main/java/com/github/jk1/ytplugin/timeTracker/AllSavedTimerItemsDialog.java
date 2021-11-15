@@ -27,6 +27,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
     private JPanel panel1;
     private JScrollPane scrollPane1;
 
+    private JBTable timeTrackerItemsTable;
+
     PostAction postAction = new PostAction();
 
 
@@ -119,9 +121,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
                 return getValueAt(0, column).getClass();
             }
         };
-        JTable table = new JBTable(model);
-        return new JBScrollPane(table);
-
+        timeTrackerItemsTable = new JBTable(model);
+        return new JBScrollPane(timeTrackerItemsTable);
     }
 
 
@@ -132,8 +133,25 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            new TimeTrackerConnector().postSavedTimeToServer(repo, project);
+            ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
+            new TimeTrackerConnector().postSavedTimeToServer(repo, project, selectedItems);
             close(0);
+        }
+
+        protected ConcurrentHashMap<String, Long> pickSelectedTimeTrackerItemsOnly(JBTable table) {
+            ConcurrentHashMap<String, Long> selectedItems = new ConcurrentHashMap<>();
+            SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
+
+            for (int i = 0; i < table.getRowCount(); i++) {
+                // If time tracking item is selected, put issue id and time to map
+                if ((Boolean) table.getValueAt(i, 0)){
+                    String id = (String) table.getValueAt(i, 1);
+                    // not to do time representation parsing from table we use SpentTimePerTaskStorage
+                    selectedItems.put(id, storage.getSavedTimeForLocalTask(id));
+                }
+            }
+
+            return selectedItems;
         }
     }
 }

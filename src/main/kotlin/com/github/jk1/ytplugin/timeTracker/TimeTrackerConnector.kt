@@ -9,11 +9,12 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class TimeTrackerConnector {
 
 
-    fun postSavedTimeToServer(repository: YouTrackServer, myProject: Project) {
+    fun postSavedTimeToServer(repository: YouTrackServer, myProject: Project, savedItems: ConcurrentHashMap<String, Long>) {
         logger.debug("Try posting work item to ${repository.url}")
 
         val task = object : Task.Modal(myProject, "Post time to YouTrack", true) {
@@ -23,7 +24,6 @@ class TimeTrackerConnector {
                 indicator.isIndeterminate = true
 
                 val store = ComponentAware.of(project).spentTimePerTaskStorage
-                val savedItems = store.getAllStoredItems()
                 val timeTracker = ComponentAware.of(project).timeTrackerComponent
 
                 savedItems.forEach { entry ->

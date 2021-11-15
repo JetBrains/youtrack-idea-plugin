@@ -26,22 +26,22 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
         populateStoreFromJson(storeJson)
     }
 
-    fun getSavedTimeForLocalTask(task: LocalTask) : Long {
-        logger.debug("Stored time for ${task.id} is obtained: ${store[task.id]?.let { TimeTracker.formatTimePeriod(it) }}")
-        return store[task.id] ?: 0
+    fun getSavedTimeForLocalTask(task: String) : Long {
+        logger.debug("Stored time for $task is obtained: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
+        return store[task] ?: 0
     }
 
-    fun setSavedTimeForLocalTask(task: LocalTask, time: Long) {
+    fun setSavedTimeForLocalTask(task: String, time: Long) {
         if (time > 60000){ // more than 1 min
-            store[task.id] = store[task.id]?.plus(time) ?: time
+            store[task] = store[task]?.plus(time) ?: time
             storeJson = createStoreJson()
 
             val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
             propertiesStore.saveFields(this)
 
-            logger.debug("Time for ${task.id} is saved: ${store[task.id]?.let { TimeTracker.formatTimePeriod(it) }}")
+            logger.debug("Time for $task is saved: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
         } else {
-            logger.debug("Recorded time for ${task.id} = 0. No need to save.")
+            logger.debug("Recorded time for $task = 0. No need to save.")
         }
     }
 

@@ -19,10 +19,10 @@ class SaveTrackerAction {
 
         try {
             val savedTimeStorage =  ComponentAware.of(project).spentTimePerTaskStorage
-            savedTimeStorage.setSavedTimeForLocalTask(task, timer.timeInMills)
+            savedTimeStorage.setSavedTimeForLocalTask(task.id, timer.timeInMills)
 
             trackerNote.notify("Switched from issue ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}, " +
-                    "time ${TimeTracker.formatTimePeriod(savedTimeStorage.getSavedTimeForLocalTask(task))} min is saved.",
+                    "time ${TimeTracker.formatTimePeriod(savedTimeStorage.getSavedTimeForLocalTask(task.id))} min is saved.",
                 NotificationType.INFORMATION)
 
             timer.reset()
