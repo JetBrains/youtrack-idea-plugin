@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.timeTracker.OpenActiveTaskSelection
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.timeTracker.actions.SaveTrackerAction
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
-import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.LocalTask
