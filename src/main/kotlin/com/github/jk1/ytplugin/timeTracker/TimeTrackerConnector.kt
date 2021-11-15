@@ -34,8 +34,9 @@ class TimeTrackerConnector {
                             timeTracker.type, timeTracker.comment, (Date().time).toString()
                         )
                         store.resetSavedTimeForLocalTask(entry.key)
-
                     }
+
+                    ComponentAware.of(project).issueWorkItemsStoreComponent[repository].update(repository)
                 } catch (e: Exception) {
                     e.multicatchException(
                         SocketException::class.java,
