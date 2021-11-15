@@ -1,4 +1,4 @@
-package com.github.jk1.ytplugin;
+package com.github.jk1.ytplugin.timeTracker;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
