@@ -53,7 +53,7 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
                     logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                 }
             }
-            logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.timeInMills}")
+            logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.recordedTime}")
 
         } catch (e: NoYouTrackRepositoryException) {
             logger.warn("NoYouTrackRepository:  ${e.message}")
