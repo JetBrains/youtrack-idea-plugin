@@ -30,7 +30,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 ?.replace("{comment}", comment, true)
         method.entity = jsonBody?.jsonEntity
         method.execute {
-            logger.debug("Successfully posted work item ${types[type]} for issue $issueId")
+            logger.debug("Successfully posted work item ${types[type]} with time $time for issue $issueId")
         }
     }
 
