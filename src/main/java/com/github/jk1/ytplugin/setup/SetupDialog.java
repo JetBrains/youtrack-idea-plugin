@@ -454,8 +454,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         timer.setWorkItemsType(getType());
         timer.setDefaultComment(getComment());
-        timer.setPostWhenCommitEnabled(postWhenCommitCheckbox.isEnabled());
-        timer.setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isEnabled());
+        timer.setPostWhenCommitEnabled(postWhenCommitCheckbox.isSelected() && postWhenCommitCheckbox.isEnabled());
+        timer.setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isSelected() && postWhenProjectClosedCheckbox.isEnabled());
 
 
         // post time if any relevant changes in settings were made

@@ -47,6 +47,9 @@ class TimeTrackingService {
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingDialog.inactivityHours.toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingDialog.inactivityMinutes.toLong())
 
+        logger.debug("Manual mode is selected: ${timeTrackingDialog.manualModeCheckbox.isSelected}")
+        logger.debug("Auto mode is selected: ${timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected}")
+
         timer.setupTimerProperties(timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected,
                 timeTrackingDialog.manualModeCheckbox.isSelected, timeTrackingDialog.scheduledCheckbox.isSelected,
                 timeToSchedule, inactivityTime)
