@@ -73,7 +73,12 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
     }
 
     private fun populateStoreFromJson(jsonString: String) {
-        val json = JsonParser.parseString(jsonString).asJsonArray
-        json.forEach { entry -> store[entry.asJsonObject.get("id").asString] = entry.asJsonObject.get("time").asLong}
+        try {
+            val json = JsonParser.parseString(jsonString).asJsonArray
+            json.forEach { entry -> store[entry.asJsonObject.get("id").asString] = entry.asJsonObject.get("time").asLong}
+        } catch (e: Exception){
+            logger.debug("Exception on spent time per task storage initialization")
+            logger.debug(e)
+        }
     }
 }
