@@ -8,7 +8,10 @@ import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.rest.UserRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTrackerConnector
 import com.intellij.openapi.project.Project
+import com.intellij.tasks.LocalTask
+import com.intellij.tasks.impl.LocalTaskImpl
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
@@ -16,6 +19,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, ComponentAware {
@@ -96,6 +100,25 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         TimeTrackerRestClient(repository).postNewWorkItem(id, "20","Testing", "test item", Date().time.toString())
 
         assertEquals(wiSize + 1, UserRestClient(repository).getWorkItemsForUser().size)
+    }
+
+    @Test
+    fun `test post previously saved work item`() {
+        val wiSize = UserRestClient(repository).getWorkItemsForUser().size
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
+
+
+        // saved 2 min for active task
+        spentTimePerTaskStorage.setSavedTimeForLocalTask(storedIssues[0].id, 120000)
+        timeTrackerComponent.type = "Testing"
+
+        val item: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
+        item[storedIssues[0].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[0].id)
+
+        TimeTrackerConnector().postSavedTimeToServer(repository, project, item)
+        assertEquals(wiSize + 1, UserRestClient(repository).getWorkItemsForUser().size)
+        assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)
+
     }
 
     @After
