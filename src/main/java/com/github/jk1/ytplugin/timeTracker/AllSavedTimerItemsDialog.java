@@ -49,30 +49,35 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         addSelectAllFeatureToTheTable();
         init();
     }
+
     private void addSelectAllFeatureToCheckBox() {
         selectAllCheckBox.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 if (selectAllCheckBox.isSelected()) {
-                    for(int i = 0; i < timeTrackerItemsTable.getRowCount(); i++)
+                    for (int i = 0; i < timeTrackerItemsTable.getRowCount(); i++)
                         timeTrackerItemsTable.getModel().setValueAt(true, i, 0);
                 } else {
-                    for(int i = 0; i < timeTrackerItemsTable.getRowCount(); i++)
+                    for (int i = 0; i < timeTrackerItemsTable.getRowCount(); i++)
                         timeTrackerItemsTable.getModel().setValueAt(false, i, 0);
                 }
             }
 
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {}
+            public void mousePressed(MouseEvent mouseEvent) {
+            }
 
             @Override
-            public void mouseReleased(MouseEvent mouseEvent) {}
+            public void mouseReleased(MouseEvent mouseEvent) {
+            }
 
             @Override
-            public void mouseEntered(MouseEvent mouseEvent) {}
+            public void mouseEntered(MouseEvent mouseEvent) {
+            }
 
             @Override
-            public void mouseExited(MouseEvent mouseEvent) {}
+            public void mouseExited(MouseEvent mouseEvent) {
+            }
         });
     }
 
@@ -83,7 +88,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
             timeTrackerItemsTable.getCellEditor(i, 0).addCellEditorListener(new CellEditorListener() {
                 @Override
                 public void editingStopped(ChangeEvent e) {
-                    if (!(Boolean) timeTrackerItemsTable.getCellEditor(rowNum, 0).getCellEditorValue()){
+                    if (!(Boolean) timeTrackerItemsTable.getCellEditor(rowNum, 0).getCellEditorValue()) {
                         selectAllCheckBox.setSelected(false);
                     }
                 }
@@ -196,7 +201,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
             for (int i = 0; i < table.getRowCount(); i++) {
                 // If time tracking item is selected, put issue id and time to map
-                if ((Boolean) table.getValueAt(i, 0)){
+                if ((Boolean) table.getValueAt(i, 0)) {
                     String id = (String) table.getValueAt(i, 1);
                     // not to do time representation parsing from table we use SpentTimePerTaskStorage
                     selectedItems.put(id, storage.getSavedTimeForLocalTask(id));
