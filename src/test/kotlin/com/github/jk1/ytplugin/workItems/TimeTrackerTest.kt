@@ -107,18 +107,37 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         val wiSize = UserRestClient(repository).getWorkItemsForUser().size
         val storedIssues = issueStoreComponent[repository].getAllIssues()
 
-
-        // saved 2 min for active task
+        // saved 2 min for issue
         spentTimePerTaskStorage.setSavedTimeForLocalTask(storedIssues[0].id, 120000)
         timeTrackerComponent.type = "Testing"
 
         val item: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
         item[storedIssues[0].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[0].id)
-
         TimeTrackerConnector().postSavedTimeToServer(repository, project, item)
+
         assertEquals(wiSize + 1, UserRestClient(repository).getWorkItemsForUser().size)
         assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)
+    }
 
+    @Test
+    fun `test post previously saved multiple work items`() {
+        val wiSize = UserRestClient(repository).getWorkItemsForUser().size
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
+
+        // saved 2 min for issue
+        spentTimePerTaskStorage.setSavedTimeForLocalTask(storedIssues[0].id, 120000)
+        spentTimePerTaskStorage.setSavedTimeForLocalTask(storedIssues[1].id, 180000)
+
+        timeTrackerComponent.type = "Testing"
+
+        val items: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
+        items[storedIssues[0].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[0].id)
+        items[storedIssues[1].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[1].id)
+
+        TimeTrackerConnector().postSavedTimeToServer(repository, project, items)
+
+        assertEquals(wiSize + 2, UserRestClient(repository).getWorkItemsForUser().size)
+        assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)
     }
 
     @After
