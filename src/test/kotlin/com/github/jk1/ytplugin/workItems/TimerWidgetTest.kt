@@ -31,7 +31,22 @@ class InputCredentialsTest :  IdeaProjectTrait, ComponentAware {
     }
 
     @Test
-    fun testTimeChanges() {
+    fun  `test time changes with previously saved time`() {
+        val statusBar = TestWindowManager().getStatusBar(project)
+        val widget = statusBar.getWidget("Time Tracking Clock") as TimerWidget
+
+        // saved 2 min for active task
+        spentTimePerTaskStorage.setSavedTimeForLocalTask(taskManagerComponent.getActiveTask().id, 120000)
+
+        TimeUnit.MINUTES.sleep(1L)
+        val currentTime = widget.time()
+
+        Assert.assertEquals(currentTime, "Time spent: 00h 03m")
+    }
+
+
+    @Test
+    fun `test time changes without previously saved time`() {
         val statusBar = TestWindowManager().getStatusBar(project)
         val widget = statusBar.getWidget("Time Tracking Clock") as TimerWidget
         val oldTime = widget.time()
