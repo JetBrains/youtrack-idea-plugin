@@ -8,21 +8,20 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.tasks.LocalTask
 
 class SaveTrackerAction {
 
-    fun saveTimer(project: Project, task: LocalTask) {
+    fun saveTimer(project: Project, taskId: String) {
 
         val trackerNote = TrackerNotification()
         val timer = ComponentAware.of(project).timeTrackerComponent
 
         try {
             val savedTimeStorage =  ComponentAware.of(project).spentTimePerTaskStorage
-            savedTimeStorage.setSavedTimeForLocalTask(task.id, timer.timeInMills)
+            savedTimeStorage.setSavedTimeForLocalTask(taskId, timer.timeInMills)
 
             trackerNote.notify("Switched from issue ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}, " +
-                    "time ${TimeTracker.formatTimePeriod(savedTimeStorage.getSavedTimeForLocalTask(task.id))} min is saved.",
+                    "time ${TimeTracker.formatTimePeriod(savedTimeStorage.getSavedTimeForLocalTask(taskId))} min is saved.",
                 NotificationType.INFORMATION)
 
             timer.reset()

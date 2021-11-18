@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class StopTrackerAction : AnAction(
@@ -75,14 +76,19 @@ class StopTrackerAction : AnAction(
                     trackerNote.notify("Work timer stopped, spent time added to" +
                             " ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
-                    val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-                    store.saveFields(timer)
                 } catch (e: Exception) {
                     logger.warn("Time tracking might not be enabled: ${e.message}")
                     logger.debug(e)
-                    trackerNote.notify("Could not send time to YouTrack, please check you connection and " +
-                            "the validity of active task. Recorded time: ${timer.recordedTime} min", NotificationType.WARNING)
+
+                    val time = TimeUnit.MINUTES.toMillis(timer.recordedTime.toLong())
+                    ComponentAware.of(project).spentTimePerTaskStorage.setSavedTimeForLocalTask(timer.issueId, time)
+
+                    trackerNote.notify("Please check you connection and the validity of active task. " +
+                            "\n Total time ${timer.recordedTime} min for issue " +
+                            "${timer.issueId} is saved locally", NotificationType.WARNING)
                 }
+                val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+                store.saveFields(timer)
             }
         } catch (e: IllegalStateException) {
             logger.warn("Time tracking exception: ${e.message}")

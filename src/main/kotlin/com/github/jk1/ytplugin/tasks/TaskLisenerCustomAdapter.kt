@@ -29,14 +29,12 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
     }
 
     override fun taskActivated(task: LocalTask) {
-        if (timeTrackerComponent.isAutoTrackingTemporaryDisabled) {
-            timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-            StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
+        timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
+        StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
 
-            logger.debug("Switch from: ${spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId)}")
-            if (spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId) > 0){
-                OnTaskSwitchingTimerDialog(project, taskManagerComponent.getActiveYouTrackRepository()).show()
-            }
+        logger.debug("Switch from: ${spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId)}")
+        if (spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId) > 0){
+            OnTaskSwitchingTimerDialog(project, taskManagerComponent.getActiveYouTrackRepository()).show()
         }
     }
 
@@ -47,7 +45,7 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
         // However, we still want to post time on task switching in manual mode so (isAutoTrackingEnabled == true)
         // is not an option here
         if (timeTrackerComponent.isRunning && combineTaskIdAndSummary(taskManagerComponent.getActiveTask()) != task.summary) {
-            SaveTrackerAction().saveTimer(project, taskManagerComponent.getActiveTask())
+            SaveTrackerAction().saveTimer(project, taskManagerComponent.getActiveTask().id)
             StopTrackerAction().stopTimer(project)
         }
     }
