@@ -493,7 +493,32 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             logger.debug("Setup dialog can be closed");
             this.close(0);
         }
+
+
+        logger.debug("Time tracking settings: \n" +
+                "issueId:" + timer.getIssueId() + "\n" +
+                "issueIdReadable" + timer.getIssueIdReadable() + "\n" +
+                "inactivityPeriodInMills " + timer.getInactivityPeriodInMills() + "\n" +
+                "pausedTime " + timer.getPausedTime() + "\n" +
+                "scheduledPeriod " + timer.getScheduledPeriod() + "\n" +
+                "recordedTime " + timer.getRecordedTime() + "\n" +
+                "timeInMills" + timer.getTimeInMills() + "\n" +
+                "startTime " + timer.getStartTime() + "\n" +
+                "isManualTrackingEnable " + timer.isManualTrackingEnable() + "\n" +
+                "isAutoTrackingEnable " + timer.isAutoTrackingEnable() + "\n" +
+                "comment" + timer.getComment() + "\n" +
+                "isScheduledEnabled " + timer.isScheduledEnabled() + "\n" +
+                "isWhenProjectClosedEnabled" + timer.isWhenProjectClosedEnabled() + "\n" +
+                "isPostAfterCommitEnabled " + timer.isPostAfterCommitEnabled() + "\n" +
+                "isRunning " + timer.isRunning() + "\n" +
+                "isPaused " + timer.isPaused() + "\n" +
+                "isAutoTrackingTemporaryDisabled " + timer.isAutoTrackingTemporaryDisabled() + "\n" +
+                "isPostedScheduled " + timer.isPostedScheduled() + "\n" +
+                "searchQuery" + timer.getSearchQuery() + "\n"
+        );
+
         super.doOKAction();
+
     }
 
     @Override
