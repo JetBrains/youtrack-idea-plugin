@@ -34,10 +34,16 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
 
 
     override fun taskAdded(task: LocalTask) {
-        if (timeTrackerComponent.isRunning) {
+        // second condition is required for the post on vcs commit functionality - it is disabled in manual tracking
+        // mode, but taskAdded triggers on git action 9with the same task) and thus timer is stopped even in manual mode.
+        // However, we still want to post time on task switching in manual mode so (isAutoTrackingEnabled == true)
+        // is not an option here
+        if (timeTrackerComponent.isRunning && combineTaskIdAndSummary(taskManagerComponent.getActiveTask()) != task.summary) {
             StopTrackerAction().stopTimer(project)
         }
     }
+
+    private fun combineTaskIdAndSummary(task: LocalTask) = "${task.id} ${task.summary}"
 
     override fun taskRemoved(task: LocalTask) {
     }
