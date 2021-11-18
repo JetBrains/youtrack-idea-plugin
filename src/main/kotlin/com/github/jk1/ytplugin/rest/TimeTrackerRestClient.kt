@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.google.gson.JsonParser
 import com.intellij.notification.NotificationType
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
@@ -36,16 +37,21 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         } catch (e: RuntimeException) {
             logger.debug(e)
             val trackerNote = TrackerNotification()
-            trackerNote.notify("Time recorded for $issueId is less than 1 min", NotificationType.WARNING)
+            trackerNote.notify("Unable to post time to YouTrack. See IDE log for details.", NotificationType.WARNING)
         }
 
     }
 
     private fun getMyIdAsAuthor(): String {
-        return HttpGet("${repository.url}/api/admin/users/me")
+        return try {
+            HttpGet("${repository.url}/api/admin/users/me")
                 .execute {
                     it.asJsonObject.get("id").asString
                 }
+        } catch (e: Exception) {
+            logger.debug(e)
+            ""
+        }
     }
 
     fun getAvailableWorkItemTypes(): Map<String, String> {

@@ -124,6 +124,16 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         assertEquals(wiSize, UserRestClient(repository).getWorkItemsForUser().size)
     }
 
+    @Test
+    fun `test post new work item with invalid issue id`() {
+        val wiSize = UserRestClient(repository).getWorkItemsForUser().size
+        val id = ""
+
+        TimeTrackerRestClient(repository).postNewWorkItem(id, "1","Testing", "test item", Date().time.toString())
+
+        assertEquals(wiSize, UserRestClient(repository).getWorkItemsForUser().size)
+    }
+
 
     @Test
     fun `test post previously saved work item`() {
