@@ -5,10 +5,10 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.intellij.concurrency.JobScheduler
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.serviceContainer.AlreadyDisposedException
 import java.util.*
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -57,6 +57,9 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
 
         } catch (e: NoYouTrackRepositoryException) {
             logger.warn("NoYouTrackRepository:  ${e.message}")
+        } catch (e: AlreadyDisposedException) {
+            logger.debug("Container is already disposed")
+            logger.debug(e)
         }
         timedRefreshTask.cancel(true)
     }

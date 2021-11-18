@@ -9,9 +9,8 @@ import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.rest.UserRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerConnector
+import com.github.jk1.ytplugin.timeTracker.actions.SaveTrackerAction
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.LocalTask
-import com.intellij.tasks.impl.LocalTaskImpl
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import org.junit.After
 import org.junit.Assert
@@ -36,7 +35,10 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         fixture.setUp()
         repository = createYouTrackRepository()
         repository.defaultSearch = "project: AT"
+
         createIssue()
+        createIssue()
+
         issueStoreComponent[repository].update(repository).waitFor(5000)
         issue = issueStoreComponent[repository].getAllIssues().first()
     }
@@ -136,6 +138,53 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
 
 
     @Test
+    fun `test save work item functionality`() {
+
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
+        val timer = timeTrackerComponent
+        timeTrackerComponent.type = "Testing"
+
+        val id1 = storedIssues[0].id
+        timer.start(id1)
+        TimeUnit.SECONDS.sleep(65L)
+        timer.pause("pause")
+        SaveTrackerAction().saveTimer(project, id1)
+
+
+        val id2 = storedIssues[1].id
+        timer.start(id2)
+        TimeUnit.SECONDS.sleep(65L)
+        timer.pause("pause")
+        SaveTrackerAction().saveTimer(project, id2)
+
+        assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 2)
+    }
+
+    @Test
+    fun `test saving the same work item several times`() {
+
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
+        val timer = timeTrackerComponent
+        timeTrackerComponent.type = "Testing"
+
+        val id = storedIssues[0].id
+        timer.start(id)
+        TimeUnit.SECONDS.sleep(65L)
+        timer.pause("pause")
+        SaveTrackerAction().saveTimer(project, id)
+
+        timer.start(id)
+        TimeUnit.SECONDS.sleep(65L)
+        timer.pause("pause")
+        SaveTrackerAction().saveTimer(project, id)
+
+        assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 1)
+        //  x / 130000 is needed to take into account milliseconds for operations execution
+        assertEquals(spentTimePerTaskStorage.getSavedTimeForLocalTask(id) / 130000 , 1)
+
+    }
+
+    @Test
     fun `test post previously saved work item`() {
         val wiSize = UserRestClient(repository).getWorkItemsForUser().size
         val storedIssues = issueStoreComponent[repository].getAllIssues()
@@ -178,6 +227,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         issueStoreComponent.remove(repository)
         deleteIssue(issue.id)
         cleanUpTaskManager()
+        spentTimePerTaskStorage.removeAllSavedItems()
         fixture.tearDown()
     }
 }

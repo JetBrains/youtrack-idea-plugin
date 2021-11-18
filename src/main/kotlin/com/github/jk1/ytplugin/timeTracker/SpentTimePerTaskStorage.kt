@@ -57,6 +57,10 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
         return store
     }
 
+    fun removeAllSavedItems() {
+        store.clear()
+    }
+
     private fun createStoreJson(): String {
 
         val storeJsonArray = JsonArray()
