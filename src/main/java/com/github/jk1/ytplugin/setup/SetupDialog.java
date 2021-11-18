@@ -508,7 +508,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 "isScheduledEnabled " + timer.isScheduledEnabled() + "\n" +
                 "isWhenProjectClosedEnabled" + timer.isWhenProjectClosedEnabled() + "\n" +
                 "isPostAfterCommitEnabled " + timer.isPostAfterCommitEnabled() + "\n" +
-                "isRunning" + timer.isRunning() + "\n" +
+                "isRunning " + timer.isRunning() + "\n" +
                 "isPaused " + timer.isPaused() + "\n" +
                 "isAutoTrackingTemporaryDisabled " + timer.isAutoTrackingTemporaryDisabled() + "\n" +
                 "isPostedScheduled " + timer.isPostedScheduled() + "\n" +
