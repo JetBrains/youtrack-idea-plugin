@@ -29,9 +29,16 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 ?.replace("{typeId}", types[type] ?: throw IllegalArgumentException("No work item type by name '$type'"), true)
                 ?.replace("{comment}", comment, true)
         method.entity = jsonBody?.jsonEntity
-        method.execute {
-            logger.debug("Successfully posted work item ${types[type]} with time $time for issue $issueId")
+        try {
+            method.execute {
+                logger.debug("Successfully posted work item ${types[type]} with time $time for issue $issueId")
+            }
+        } catch (e: RuntimeException) {
+            logger.debug(e)
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Time recorded for $issueId is less than 1 min", NotificationType.WARNING)
         }
+
     }
 
     private fun getMyIdAsAuthor(): String {

@@ -103,6 +103,29 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
     }
 
     @Test
+    fun `test can't post new work item with time = 0`() {
+        val wiSize = UserRestClient(repository).getWorkItemsForUser().size
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
+        val id = storedIssues[0].id
+
+        TimeTrackerRestClient(repository).postNewWorkItem(id, "0","Testing", "test item", Date().time.toString())
+
+        assertEquals(wiSize, UserRestClient(repository).getWorkItemsForUser().size)
+    }
+
+    @Test
+    fun `test can't post new work item with time time less than 0`() {
+        val wiSize = UserRestClient(repository).getWorkItemsForUser().size
+        val storedIssues = issueStoreComponent[repository].getAllIssues()
+        val id = storedIssues[0].id
+
+        TimeTrackerRestClient(repository).postNewWorkItem(id, "-1","Testing", "test item", Date().time.toString())
+
+        assertEquals(wiSize, UserRestClient(repository).getWorkItemsForUser().size)
+    }
+
+
+    @Test
     fun `test post previously saved work item`() {
         val wiSize = UserRestClient(repository).getWorkItemsForUser().size
         val storedIssues = issueStoreComponent[repository].getAllIssues()
