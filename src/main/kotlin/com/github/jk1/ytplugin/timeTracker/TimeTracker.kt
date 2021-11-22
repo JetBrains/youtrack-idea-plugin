@@ -34,9 +34,11 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var scheduledPeriod: String = "19:00:0"
 
     @PropertyName("timeTracker.recordedTime")
+    @Volatile
     var recordedTime: String = "0"
 
     @PropertyName("timeTracker.timeInMills")
+    @Volatile
     var timeInMills: Long = 0
 
     @PropertyName("timeTracker.startTime")

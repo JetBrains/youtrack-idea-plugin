@@ -74,7 +74,7 @@ class StopTrackerAction : AnAction(
                     TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, recordedTime, timer.type, timer.comment,
                         (Date().time).toString())
 
-                    trackerNote.notify("Work timer stopped, spent time added to" +
+                    trackerNote.notify("Work timer stopped, spent time  $recordedTime min added to" +
                             " ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                     val store: PropertiesComponent = PropertiesComponent.getInstance(project)
