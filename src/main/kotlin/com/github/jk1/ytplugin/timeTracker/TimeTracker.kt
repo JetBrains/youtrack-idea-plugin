@@ -25,6 +25,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var inactivityPeriodInMills: Long = 600000
 
     @PropertyName("timeTracker.pausedTime")
+    @Volatile
     var pausedTime: Long = 0
 
     @PropertyName("timeTracker.type")
