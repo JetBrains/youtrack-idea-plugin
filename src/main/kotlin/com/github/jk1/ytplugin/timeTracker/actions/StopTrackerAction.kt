@@ -66,12 +66,14 @@ class StopTrackerAction : AnAction(
             val bar = WindowManager.getInstance().getStatusBar(project)
             bar?.removeWidget("Time Tracking Clock")
 
-            if (timer.recordedTime == "0")
+            val recordedTime = timer.recordedTime
+            if (recordedTime == "0")
                 trackerNote.notify("Spent time shorter than 1 minute is excluded from time tracking", NotificationType.WARNING)
             else {
                 try {
-                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId,
-                            timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
+                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, recordedTime, timer.type, timer.comment,
+                        (Date().time).toString())
+
                     trackerNote.notify("Work timer stopped, spent time added to" +
                             " ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
