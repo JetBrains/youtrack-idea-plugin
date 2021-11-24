@@ -23,7 +23,6 @@ class TimeTrackerConnector {
                 indicator.fraction = 0.0
                 indicator.isIndeterminate = true
 
-                val store = ComponentAware.of(project).spentTimePerTaskStorage
                 val timeTracker = ComponentAware.of(project).timeTrackerComponent
 
                 savedItems.forEach { entry ->
@@ -33,7 +32,6 @@ class TimeTrackerConnector {
                         entry.key, TimeTracker.formatTimePeriod(entry.value),
                         timeTracker.type, timeTracker.comment, (Date().time).toString()
                     )
-                    store.resetSavedTimeForLocalTask(entry.key)
                 }
 
                 ComponentAware.of(project).issueWorkItemsStoreComponent[repository].update(repository)

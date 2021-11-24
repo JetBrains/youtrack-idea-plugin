@@ -64,6 +64,7 @@ class StopTrackerAction : AnAction(
 
         try {
             timer.stop()
+
             val bar = WindowManager.getInstance().getStatusBar(project)
             bar?.removeWidget("Time Tracking Clock")
 
@@ -75,14 +76,14 @@ class StopTrackerAction : AnAction(
                     TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, recordedTime, timer.type, timer.comment,
                         (Date().time).toString())
 
-                    trackerNote.notify("Work timer stopped, spent time  $recordedTime min added to" +
-                            " ${timer.issueIdReadable}", NotificationType.INFORMATION)
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 } catch (e: Exception) {
                     logger.warn("Time tracking might not be enabled: ${e.message}")
                     logger.debug(e)
 
+                    // save time in case of exceptions
                     val time = TimeUnit.MINUTES.toMillis(timer.recordedTime.toLong())
+                    ComponentAware.of(project).spentTimePerTaskStorage.resetSavedTimeForLocalTask(timer.issueId) // not to sum up the same item
                     ComponentAware.of(project).spentTimePerTaskStorage.setSavedTimeForLocalTask(timer.issueId, time)
 
                     trackerNote.notify("Please check you connection and the validity of active task. " +

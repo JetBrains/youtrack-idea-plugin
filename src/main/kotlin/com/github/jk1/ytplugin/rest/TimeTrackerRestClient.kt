@@ -1,10 +1,10 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
-import com.google.gson.JsonParser
 import com.intellij.notification.NotificationType
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
@@ -13,6 +13,7 @@ import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
@@ -20,6 +21,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
     fun postNewWorkItem(issueId: String, time: String, type: String, comment: String, date: String) {
         val types = getAvailableWorkItemTypes()
 
+        val storage = ComponentAware.of(repository.project).spentTimePerTaskStorage
         val method = HttpPost("${repository.url}/api/issues/${issueId}/timeTracking/workItems")
         val res: URL? = this::class.java.classLoader.getResource("post_work_item_body.json")
         val jsonBody = res?.readText()
@@ -33,11 +35,24 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         try {
             method.execute {
                 logger.debug("Successfully posted work item ${types[type]} with time $time for issue $issueId")
+
+                // clear saved time for issue as we post it to server now
+                storage.resetSavedTimeForLocalTask(issueId)
             }
+
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Work timer stopped, spent time  $time min added to" +
+                    " $issueId", NotificationType.INFORMATION)
         } catch (e: RuntimeException) {
             logger.debug(e)
+            // save time in case of exceptions
+            val timeInMills = TimeUnit.MINUTES.toMillis(time.toLong())
+            storage.resetSavedTimeForLocalTask(issueId)
+            storage.setSavedTimeForLocalTask(issueId, timeInMills)
+
             val trackerNote = TrackerNotification()
-            trackerNote.notify("Unable to post time to YouTrack. See IDE log for details.", NotificationType.WARNING)
+            trackerNote.notify("Unable to post time to YouTrack. See IDE log for details. Time $time min is saved",
+                NotificationType.WARNING)
         }
 
     }

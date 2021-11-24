@@ -9,7 +9,6 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ide.util.PropertyName
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.tasks.LocalTask
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
@@ -32,7 +31,7 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
     }
 
     fun setSavedTimeForLocalTask(task: String, time: Long) {
-        if (time > 60000){ // more than 1 min
+        if (time >= 60000){ // more than 1 min
             store[task] = store[task]?.plus(time) ?: time
             storeJson = createStoreJson()
 
@@ -47,8 +46,7 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
     fun resetSavedTimeForLocalTask(task: String) {
         store.remove(task)
-        storeJson = ""
-
+        removeFromStoreJson(task)
         logger.debug("Time for $task is reset")
     }
 
@@ -74,6 +72,23 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
         return storeJsonArray.toString()
 
+    }
+
+
+    private fun removeFromStoreJson(task: String){
+
+        val storeJsonArray = if (store.isNullOrEmpty()){
+            JsonArray()
+        } else {
+            JsonParser.parseString(storeJson).asJsonArray
+        }
+
+        if (store.contains(task)) {
+            storeJsonArray.map { it.asJsonObject.get("id").toString() != task}
+        }
+
+        val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
+        propertiesStore.saveFields(this)
     }
 
     private fun populateStoreFromJson(jsonString: String) {
