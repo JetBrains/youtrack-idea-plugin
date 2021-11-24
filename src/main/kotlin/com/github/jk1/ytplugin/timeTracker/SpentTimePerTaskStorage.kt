@@ -17,6 +17,7 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
     private var store = ConcurrentHashMap<String, Long>()
 
     @PropertyName("spentTimePerTaskStorage.store")
+    @Volatile
     private var storeJson = ""
 
     init {
@@ -80,12 +81,10 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
         val storeJsonArray = if (store.isNullOrEmpty()){
             JsonArray()
         } else {
-            JsonParser.parseString(storeJson).asJsonArray
+            JsonParser.parseString(storeJson).asJsonArray.filter { it.asJsonObject.get("id").asString != task}
         }
 
-        if (store.contains(task)) {
-            storeJsonArray.map { it.asJsonObject.get("id").toString() != task}
-        }
+        storeJson = storeJsonArray.toString()
 
         val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
         propertiesStore.saveFields(this)
