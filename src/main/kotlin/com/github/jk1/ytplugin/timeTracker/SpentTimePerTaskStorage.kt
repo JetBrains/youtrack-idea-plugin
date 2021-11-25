@@ -2,28 +2,34 @@ package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.ide.util.PropertyName
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
+
 
 @Service
 class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
-    private var store = ConcurrentHashMap<String, Long>()
-
-    @PropertyName("spentTimePerTaskStorage.store")
     @Volatile
-    private var storeJson = ""
+    private var store = ConcurrentHashMap<String, Long>()
 
     init {
         val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
-        propertiesStore.loadFields(this)
-        populateStoreFromJson(storeJson)
+        store = convertToStringToHashMap(propertiesStore.getValue("spentTimePerTaskStorage.store").toString())
+    }
+
+    private fun convertToStringToHashMap(text: String?): ConcurrentHashMap<String, Long> {
+        val loadedMap = ConcurrentHashMap<String, Long>()
+        val pattern: Pattern = Pattern.compile("[\\{\\}\\=\\, ]++")
+        val split: Array<String> = pattern.split(text)
+        var i = 1
+        while (i + 2 <= split.size) {
+            loadedMap[split[i]] = split[i + 1].toLong()
+            i += 2
+        }
+        return loadedMap
     }
 
     fun getSavedTimeForLocalTask(task: String) : Long {
@@ -31,13 +37,13 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
         return store[task] ?: 0
     }
 
+    @Synchronized
     fun setSavedTimeForLocalTask(task: String, time: Long) {
         if (time >= 60000){ // more than 1 min
             store[task] = store[task]?.plus(time) ?: time
-            storeJson = createStoreJson()
 
             val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
-            propertiesStore.saveFields(this)
+            propertiesStore.setValue("spentTimePerTaskStorage.store", store.toString())
 
             logger.debug("Time for $task is saved: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
         } else {
@@ -45,9 +51,13 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
         }
     }
 
+    @Synchronized
     fun resetSavedTimeForLocalTask(task: String) {
         store.remove(task)
-        removeFromStoreJson(task)
+
+        val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
+        propertiesStore.setValue("spentTimePerTaskStorage.store", store.toString())
+
         logger.debug("Time for $task is reset")
     }
 
@@ -58,45 +68,10 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
     fun removeAllSavedItems() {
         store.clear()
-    }
-
-    private fun createStoreJson(): String {
-
-        val storeJsonArray = JsonArray()
-        store.forEach { entry ->
-            val element = JsonObject()
-            element.addProperty("id", entry.key)
-            element.addProperty("time", entry.value)
-
-            storeJsonArray.add(element)
-        }
-
-        return storeJsonArray.toString()
-
-    }
-
-
-    private fun removeFromStoreJson(task: String){
-
-        val storeJsonArray = if (store.isNullOrEmpty()){
-            JsonArray()
-        } else {
-            JsonParser.parseString(storeJson).asJsonArray.filter { it.asJsonObject.get("id").asString != task}
-        }
-
-        storeJson = storeJsonArray.toString()
+        logger.debug("Stored time for all issues is cleared")
 
         val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
-        propertiesStore.saveFields(this)
+        propertiesStore.setValue("spentTimePerTaskStorage.store", store.toString())
     }
 
-    private fun populateStoreFromJson(jsonString: String) {
-        try {
-            val json = JsonParser.parseString(jsonString).asJsonArray
-            json.forEach { entry -> store[entry.asJsonObject.get("id").asString] = entry.asJsonObject.get("time").asLong}
-        } catch (e: Exception){
-            logger.debug("Exception on spent time per task storage initialization")
-            logger.debug(e)
-        }
-    }
 }

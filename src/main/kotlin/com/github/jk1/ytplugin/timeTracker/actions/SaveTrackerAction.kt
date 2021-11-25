@@ -20,9 +20,14 @@ class SaveTrackerAction {
             val savedTimeStorage =  ComponentAware.of(project).spentTimePerTaskStorage
             savedTimeStorage.setSavedTimeForLocalTask(taskId, timer.timeInMills)
 
-            trackerNote.notify("Switched from issue ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}, " +
-                    "time ${TimeTracker.formatTimePeriod(savedTimeStorage.getSavedTimeForLocalTask(taskId))} min is saved.",
-                NotificationType.INFORMATION)
+            val updatedTime = savedTimeStorage.getSavedTimeForLocalTask(taskId)
+            if (savedTimeStorage.getSavedTimeForLocalTask(taskId) >= 60000) {
+                trackerNote.notify(
+                    "Switched from issue ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}, " +
+                            "time ${TimeTracker.formatTimePeriod(updatedTime)} min is saved.",
+                    NotificationType.INFORMATION
+                )
+            }
 
             timer.reset()
             timer.isPaused = true

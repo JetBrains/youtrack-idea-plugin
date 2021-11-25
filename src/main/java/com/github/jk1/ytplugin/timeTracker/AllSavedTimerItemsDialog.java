@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.timeTracker;
 
 import com.github.jk1.ytplugin.ComponentAware;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBScrollPane;
@@ -33,7 +34,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
     private JBTable timeTrackerItemsTable;
 
     PostAction postAction = new PostAction();
-
+    RemoveAction removeAction = new RemoveAction();
 
     @NotNull
     private final Project project;
@@ -143,7 +144,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
     @Override
     protected Action @NotNull [] createActions() {
-        return new Action[]{postAction, getCancelAction()};
+        return new Action[]{postAction, removeAction, getCancelAction()};
     }
 
     private void createUIComponents() {
@@ -182,6 +183,41 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         return new JBScrollPane(timeTrackerItemsTable);
     }
 
+    protected ConcurrentHashMap<String, Long> pickSelectedTimeTrackerItemsOnly(JBTable table) {
+        ConcurrentHashMap<String, Long> selectedItems = new ConcurrentHashMap<>();
+        SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
+
+        for (int i = 0; i < table.getRowCount(); i++) {
+            // If time tracking item is selected, put issue id and time to map
+            if ((Boolean) table.getValueAt(i, 0)) {
+                String id = (String) table.getValueAt(i, 1);
+                // not to do time representation parsing from table we use SpentTimePerTaskStorage
+                selectedItems.put(id, storage.getSavedTimeForLocalTask(id));
+            }
+        }
+        return selectedItems;
+    }
+
+    protected class RemoveAction extends DialogWrapperAction {
+        protected RemoveAction() {
+            super("Remove");
+        }
+
+        @Override
+        protected void doAction(ActionEvent e) {
+            ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
+            SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
+            selectedItems.forEach((k, v) -> {
+                storage.resetSavedTimeForLocalTask(k);
+                TrackerNotification trackerNote = new TrackerNotification();
+                trackerNote.notify("Saved time " + TimeTracker.Companion.formatTimePeriod(v) +
+                        " min for " + k + " was removed", NotificationType.INFORMATION);
+            });
+
+            close(0);
+        }
+
+    }
 
     protected class PostAction extends DialogWrapperAction {
         protected PostAction() {
@@ -193,21 +229,6 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
             ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
             new TimeTrackerConnector().postSavedTimeToServer(repo, project, selectedItems);
             close(0);
-        }
-
-        protected ConcurrentHashMap<String, Long> pickSelectedTimeTrackerItemsOnly(JBTable table) {
-            ConcurrentHashMap<String, Long> selectedItems = new ConcurrentHashMap<>();
-            SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
-
-            for (int i = 0; i < table.getRowCount(); i++) {
-                // If time tracking item is selected, put issue id and time to map
-                if ((Boolean) table.getValueAt(i, 0)) {
-                    String id = (String) table.getValueAt(i, 1);
-                    // not to do time representation parsing from table we use SpentTimePerTaskStorage
-                    selectedItems.put(id, storage.getSavedTimeForLocalTask(id));
-                }
-            }
-            return selectedItems;
         }
     }
 }
