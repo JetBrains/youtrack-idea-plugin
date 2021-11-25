@@ -202,6 +202,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
         typeLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
 
+        postToYouTrackButton.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+        saveLocallyButton.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+
+        postToYouTrackButton.setSelected(timer.getPostOnIssueSwitching());
+        saveLocallyButton.setSelected(!timer.getPostOnIssueSwitching());
+
         ButtonGroup buttonGroupOnSwitching = new ButtonGroup();
         buttonGroupOnSwitching.add(saveLocallyButton);
         buttonGroupOnSwitching.add(postToYouTrackButton);
@@ -458,11 +464,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             testConnectionAction();
         }
 
-        timer.setWorkItemsType(getType());
-        timer.setDefaultComment(getComment());
-        timer.setPostWhenCommitEnabled(postWhenCommitCheckbox.isSelected() && postWhenCommitCheckbox.isEnabled());
-        timer.setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isSelected() && postWhenProjectClosedCheckbox.isEnabled());
-
+        setupValuesNotRequiringTimerStop();
 
         // post time if any relevant changes in settings were made
         if (shouldStopTimer) {
@@ -525,6 +527,14 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         super.doOKAction();
 
+    }
+
+    private void setupValuesNotRequiringTimerStop() {
+        timer.setWorkItemsType(getType());
+        timer.setDefaultComment(getComment());
+        timer.setPostWhenCommitEnabled(postWhenCommitCheckbox.isSelected() && postWhenCommitCheckbox.isEnabled());
+        timer.setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isSelected() && postWhenProjectClosedCheckbox.isEnabled());
+        timer.setOnIssueSwitchingBehaviour(postToYouTrackButton.isSelected() && postToYouTrackButton.isEnabled());
     }
 
     @Override

@@ -18,7 +18,7 @@ class SaveTrackerAction {
 
         try {
             val savedTimeStorage =  ComponentAware.of(project).spentTimePerTaskStorage
-            savedTimeStorage.setSavedTimeForLocalTask(taskId, timer.timeInMills)
+            savedTimeStorage.setSavedTimeForLocalTask(taskId, timer.getRecordedTimeInMills())
 
             val updatedTime = savedTimeStorage.getSavedTimeForLocalTask(taskId)
             if (savedTimeStorage.getSavedTimeForLocalTask(taskId) >= 60000) {
