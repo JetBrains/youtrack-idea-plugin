@@ -81,9 +81,6 @@ class TimeTracker(override val project: Project) : ComponentAware {
     @PropertyName("timeTracker.query")
     var searchQuery: String = ""
 
-    @PropertyName("timeTracker.postOnSwitching")
-    var postOnIssueSwitching = true
-
     companion object {
         fun formatTimePeriod(timeInMilSec: Long): String {
             val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
@@ -211,11 +208,6 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
     fun getRecordedTimeInMills() = timeInMills
-
-
-    fun setOnIssueSwitchingBehaviour(isPostOnIssueSwitching: Boolean) {
-        postOnIssueSwitching = isPostOnIssueSwitching
-    }
 
     fun setWorkItemsType(type: String?) {
         if (type != null && type != this.type) {
