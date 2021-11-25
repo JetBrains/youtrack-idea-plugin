@@ -181,6 +181,17 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
 
+    fun resetTimeOnly() {
+        recordedTime = "0"
+        timeInMills = 0
+    }
+
+    fun updateIdOnTaskSwitching() {
+        val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+        issueId = activeTask.id
+        issueIdReadable = activeTask.id
+    }
+
     fun setupTimerProperties(isAutoTracking: Boolean, isManualMode: Boolean, isScheduled: Boolean,
                              timeToSchedule: String, inactivityTime: Long) {
         isAutoTrackingEnable = isAutoTracking

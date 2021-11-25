@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.LocalTask
 import com.intellij.tasks.TaskListener
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.timeTracker.TimeTracker
 import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction
 
 class TaskListenerCustomAdapter(override val project: Project) : TaskListener, ComponentAware {
@@ -33,12 +34,17 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
         // split cases of vcs commit and branch switching in manual/none mode
         if (!timeTrackerComponent.isAutoTrackingEnable) {
             timeTrackerComponent.pause("Work timer paused")
+
             val savedTimeStorage = ComponentAware.of(project).spentTimePerTaskStorage
             savedTimeStorage.setSavedTimeForLocalTask(timeTrackerComponent.issueId, timeTrackerComponent.timeInMills)
 
             val trackerNote = TrackerNotification()
-            trackerNote.notify("Total time ${timeTrackerComponent.recordedTime} min for issue " +
-                    "${timeTrackerComponent.issueId} is saved locally", NotificationType.INFORMATION)
+            trackerNote.notify("Total time ${TimeTracker.formatTimePeriod(
+                savedTimeStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId))} " +
+                    "min for issue ${timeTrackerComponent.issueId} is saved locally", NotificationType.INFORMATION)
+
+            timeTrackerComponent.resetTimeOnly()
+            timeTrackerComponent.updateIdOnTaskSwitching()
         }
 
         if (timeTrackerComponent.postOnIssueSwitching){
