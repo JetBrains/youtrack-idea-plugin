@@ -41,7 +41,7 @@ class InputCredentialsTest :  IdeaProjectTrait, ComponentAware {
         TimeUnit.MINUTES.sleep(1L)
         val currentTime = widget.time()
 
-        Assert.assertEquals(currentTime, "Time spent: 00h 03m")
+        Assert.assertEquals(currentTime, "Time spent on issue Default: 00h 03m")
     }
 
 
