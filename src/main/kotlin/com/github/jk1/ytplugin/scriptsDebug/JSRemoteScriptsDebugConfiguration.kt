@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
+import com.github.jk1.ytplugin.setup.getYouTrackConfiguration
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -160,17 +161,17 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
 
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) repositories[0] else null
-        val version = repo?.let { AdminRestClient(it).getYouTrackVersion() }
+        val config = repo?.let { getYouTrackConfiguration(it.url) }
 
         // TODO: clear mappings on the run
-            when (version) {
+            when (config?.version) {
                 null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
                 in 2021.3..Double.MAX_VALUE -> {
 
                     // clear mappings on each run of the configuration
                     mappings.clear()
 
-                    val isHosted = AdminRestClient(repo).isYouTrackHosted()
+                    val isHosted = config.isHosted
                     instanceFolder = if (isHosted) URL(repo.url).host.split(".").first() else "youtrack"
 
                     loadScripts()

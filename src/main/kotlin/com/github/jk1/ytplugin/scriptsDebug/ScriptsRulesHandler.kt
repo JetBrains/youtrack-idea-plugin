@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
+import com.github.jk1.ytplugin.setup.getYouTrackConfiguration
 import com.github.jk1.ytplugin.timeTracker.IssueWorkItemStore
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonParser
@@ -41,7 +42,8 @@ class ScriptsRulesHandler(val project: Project) {
         val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
         val trackerNote = TrackerNotification()
 
-        val isHosted = AdminRestClient(repo).isYouTrackHosted()
+        val config = getYouTrackConfiguration(repo.url)
+        val isHosted = config.isHosted
 
         createOrFindScriptDirectory(rootFolderName)
         srcDir = project.guessProjectDir()?.findFileByRelativePath(rootFolderName)

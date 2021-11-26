@@ -68,39 +68,10 @@ class SetupRepositoryConnector {
         }
     }
 
-    private fun getYouTrackVersion(url: String): Double? {
-        val builder = URIBuilder(url.trimEnd('/') + "/api/config")
-        builder.addParameter("fields", "version")
-        val method = HttpGet(builder.build())
-        val client = setupHttpClient()
-
-        try {
-            val response = client.execute(method)
-            return if (response.statusLine.statusCode == 200) {
-                val reader = InputStreamReader(response.entity.content, StandardCharsets.UTF_8)
-                val json: JsonObject = JsonParser.parseReader(reader).asJsonObject
-                if (json.get("version") == null || json.get("version").isJsonNull) {
-                    noteState = NotifierState.LOGIN_ERROR
-                    null
-                } else {
-                    val version = json.get("version").asString.toDouble()
-                    logger.debug("YouTrack version: $version")
-                    version
-                }
-            } else {
-                noteState = NotifierState.LOGIN_ERROR
-                logger.warn("invalid token or login, failed on version validation: ${response.statusLine.statusCode}")
-                null
-            }
-        } catch (e: Exception) {
-            logger.warn("invalid token or login, failed on version validation: ${e.message}")
-        }
-        return null
-    }
 
     private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
-        val version = getYouTrackVersion(repository.url)
-        return version != null && version >= 2017.1
+        val config = getYouTrackConfiguration(repository.url)
+        return config.version != null && config.version >= 2017.1
     }
 
 
@@ -119,7 +90,9 @@ class SetupRepositoryConnector {
             }
         }
         checker.onVersionError { _ ->
-            val version = getYouTrackVersion(repository.url)
+            val config = getYouTrackConfiguration(repository.url)
+            val version = config.version
+
             if (version != null && version >= 2017.1 && version <= 2020.4) {
                 logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
                 noteState = NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
