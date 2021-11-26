@@ -16,30 +16,46 @@ fun obtainYouTrackConfiguration(url: String) {
     val method = HttpGet(builder.build())
     val client = SetupRepositoryConnector.setupHttpClient()
 
-    var instanceUUID: String? = null
-    var instanceVersion: Double? = null
-
     try {
         client.execute(method) {
 
             val reader = InputStreamReader(it.entity.content, StandardCharsets.UTF_8)
             val json: JsonObject = JsonParser.parseReader(reader).asJsonObject
 
-            instanceVersion = if (json.get("version") == null || json.get("version").isJsonNull) {
-                null
-            } else {
-                val version = json.get("version").asString.toDouble()
-                logger.info("YouTrack version: $version")
-                version
-            }
-            instanceUUID = (json.get("uuid") ?: null).toString()
+            processVersion(json)
+            processUUID(json)
         }
     } catch (e: Exception) {
         logger.warn("invalid token or login, failed on configuration get: ${e.message}")
         logger.debug(e)
     }
 
-    PropertiesComponent.getInstance().setValue("youtrack.version", instanceVersion.toString())
-    PropertiesComponent.getInstance().setValue("youtrack.uuid", instanceUUID)
+}
 
+fun processVersion(json: JsonObject): Double? {
+    val version = if (json.get("version") == null || json.get("version").isJsonNull) {
+        null
+    } else {
+        json.get("version").asString.toDouble()
+    }
+    logger.info("YouTrack version: $version")
+    PropertiesComponent.getInstance().setValue("youtrack.version", version.toString())
+    return version
+
+}
+
+fun processUUID(json: JsonObject): String {
+    val uuid = (json.get("uuid") ?: null).toString()
+    PropertiesComponent.getInstance().setValue("youtrack.uuid", uuid)
+    return uuid
+}
+
+fun getInstanceVersion(): Double? {
+    val stringVersion = PropertiesComponent.getInstance().getValue("youtrack.version")
+    return if (stringVersion != null && stringVersion != "null") stringVersion.toDouble() else null
+}
+
+fun getInstanceUUID(): String? {
+    val stringUUID =  PropertiesComponent.getInstance().getValue("youtrack.uuid")?.removeSurrounding("\"")
+    return if (stringUUID != null && stringUUID != "null") stringUUID else null
 }

@@ -3,6 +3,8 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.setup.getInstanceUUID
+import com.github.jk1.ytplugin.setup.getInstanceVersion
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -161,7 +163,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) repositories[0] else null
 
-        val version = PropertiesComponent.getInstance().getValue("youtrack.version")?.toDouble()
+        val version = getInstanceVersion()
 
         // TODO: clear mappings on the run
         when (version) {
@@ -171,9 +173,9 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                 // clear mappings on each run of the configuration
                 mappings.clear()
 
-                val instanceUuid = PropertiesComponent.getInstance().getValue("youtrack.uuid")?.removeSurrounding("\"")
+                val instanceUuid = getInstanceUUID()
 
-                instanceFolder = if (instanceUuid != null && instanceUuid != "null") {
+                instanceFolder = if (instanceUuid != null) {
                     // old versions support (no uuid in config)
                         instanceUuid
                 } else {

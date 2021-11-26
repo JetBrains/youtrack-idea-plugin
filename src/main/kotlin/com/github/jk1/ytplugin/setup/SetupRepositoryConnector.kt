@@ -67,8 +67,8 @@ class SetupRepositoryConnector {
     private fun isValidYouTrackVersion(url: String): Boolean {
         // on the first invoke setup YouTrack configuration
         obtainYouTrackConfiguration(url)
-        val version = PropertiesComponent.getInstance().getValue("youtrack.version")
-        return version != null && version.toDouble() >= 2017.1
+        val version = getInstanceVersion()
+        return version != null && version >= 2017.1
     }
 
 
@@ -87,9 +87,9 @@ class SetupRepositoryConnector {
             }
         }
         checker.onVersionError { _ ->
-            val version = PropertiesComponent.getInstance().getValue("youtrack.version")
+            val version = getInstanceVersion()
 
-            if (version != null && version.toDouble() >= 2017.1 && version.toDouble() <= 2020.4) {
+            if (version != null && version >= 2017.1 && version <= 2020.4) {
                 logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
                 noteState = NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
