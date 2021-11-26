@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import java.util.concurrent.ConcurrentHashMap
@@ -44,6 +45,12 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
             val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
             propertiesStore.setValue("spentTimePerTaskStorage.store", store.toString())
+
+
+            val trackerNote = TrackerNotification()
+            trackerNote.notify("Total time " +
+                    "${TimeTracker.formatTimePeriod(getSavedTimeForLocalTask(timeTrackerComponent.issueId))} " +
+                    "min for issue ${timeTrackerComponent.issueId} is saved locally", NotificationType.INFORMATION)
 
             logger.debug("Time for $task is saved: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
         } else {

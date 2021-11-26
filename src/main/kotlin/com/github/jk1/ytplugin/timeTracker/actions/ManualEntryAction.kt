@@ -26,8 +26,10 @@ class ManualEntryAction : AnAction(
         val project = event.project
         if (project != null) {
             try {
-                ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-                event.presentation.isVisible = true
+                // to avoid displaying control only when repo is configured and valid Active task is selected.
+                // display it when YouTrack repo is just configured
+                event.presentation.isVisible = ComponentAware.of(project).taskManagerComponent
+                    .getAllConfiguredYouTrackRepositories().isNotEmpty()
             } catch (e: NoYouTrackRepositoryException) {
                 event.presentation.isVisible = false
             }

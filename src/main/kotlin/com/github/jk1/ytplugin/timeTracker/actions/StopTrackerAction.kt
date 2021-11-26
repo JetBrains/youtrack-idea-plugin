@@ -85,10 +85,6 @@ class StopTrackerAction : AnAction(
                     val time = TimeUnit.MINUTES.toMillis(timer.recordedTime.toLong())
                     ComponentAware.of(project).spentTimePerTaskStorage.resetSavedTimeForLocalTask(timer.issueId) // not to sum up the same item
                     ComponentAware.of(project).spentTimePerTaskStorage.setSavedTimeForLocalTask(timer.issueId, time)
-
-                    trackerNote.notify("Please check you connection and the validity of active task. " +
-                            "\n Total time ${timer.recordedTime} min for issue " +
-                            "${timer.issueId} is saved locally", NotificationType.WARNING)
                 }
                 val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                 store.saveFields(timer)

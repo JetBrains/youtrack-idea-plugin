@@ -40,11 +40,6 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
             val savedTimeStorage = ComponentAware.of(project).spentTimePerTaskStorage
             savedTimeStorage.setSavedTimeForLocalTask(timeTrackerComponent.issueId, timeTrackerComponent.timeInMills)
 
-            val trackerNote = TrackerNotification()
-            trackerNote.notify("Total time ${TimeTracker.formatTimePeriod(
-                savedTimeStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId))} " +
-                    "min for issue ${timeTrackerComponent.issueId} is saved locally", NotificationType.INFORMATION)
-
             timeTrackerComponent.resetTimeOnly()
             timeTrackerComponent.updateIdOnTaskSwitching()
         }

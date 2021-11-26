@@ -184,9 +184,15 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
     fun updateIdOnTaskSwitching() {
-        val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
-        issueId = activeTask.id
-        issueIdReadable = activeTask.id
+        try {
+            val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
+            issueId = activeTask.id
+            issueIdReadable = activeTask.id
+        } catch (e: NoActiveYouTrackTaskException){
+            val task = ComponentAware.of(project).taskManagerComponent.getTaskManager().activeTask
+            logger.debug("Selected task $task, ${task.id}" +
+                    " is not active for current YouTrack repository")
+        }
     }
 
     fun setupTimerProperties(isAutoTracking: Boolean, isManualMode: Boolean, isScheduled: Boolean,
