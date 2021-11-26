@@ -2,10 +2,7 @@ package com.github.jk1.ytplugin.scriptsDebug
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.rest.ScriptsRestClient
-import com.github.jk1.ytplugin.setup.getYouTrackConfiguration
-import com.github.jk1.ytplugin.timeTracker.IssueWorkItemStore
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonParser
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
@@ -41,9 +38,6 @@ class ScriptsRulesHandler(val project: Project) {
 
         val scriptsList = ScriptsRestClient(repo!!).getScriptsWithRules()
         val trackerNote = TrackerNotification()
-
-        val config = getYouTrackConfiguration(repo.url)
-        val isHosted = config.isHosted
 
         createOrFindScriptDirectory(rootFolderName)
         srcDir = project.guessProjectDir()?.findFileByRelativePath(rootFolderName)
@@ -90,7 +84,7 @@ class ScriptsRulesHandler(val project: Project) {
                     createRuleFile("${rule.name}.js", rule.content, scriptDirectory!!)
                     loadedScriptsNames.add("${workflow.name}/${rule.name}.js")
                 }
-                addScriptMapping(workflow.name, rule.name, mappings, rootFolderName, instanceFolderName, isHosted)
+                addScriptMapping(workflow.name, rule.name, mappings, rootFolderName, instanceFolderName)
             }
         }
 
@@ -116,16 +110,15 @@ class ScriptsRulesHandler(val project: Project) {
     }
 
     private fun addScriptMapping(workflowName: String, ruleName: String, mappings: MutableList<RemoteUrlMappingBean>,
-                                    rootFolderName: String, instanceFolderName: String, isHosted: Boolean){
+                                    rootFolderName: String, instanceFolderName: String){
         val local = project.guessProjectDir()?.path + "/$rootFolderName/$instanceFolderName/$workflowName/$ruleName.js"
 
         val localUrls = mutableListOf<String>()
         mappings.forEach { entry -> localUrls.add(entry.localFilePath) }
 
-        val instanceMappingFolder = if (isHosted) instanceFolderName else "youtrack"
         if (!localUrls.contains(local)) {
-            logger.debug("Mapping added for pair: $local and $instanceMappingFolder/$workflowName/$ruleName.js")
-            mappings.add(RemoteUrlMappingBean(local, "$instanceMappingFolder/$workflowName/$ruleName.js"))
+            logger.debug("Mapping added for pair: $local and $instanceFolderName/$workflowName/$ruleName.js")
+            mappings.add(RemoteUrlMappingBean(local, "$instanceFolderName/$workflowName/$ruleName.js"))
         }
     }
 

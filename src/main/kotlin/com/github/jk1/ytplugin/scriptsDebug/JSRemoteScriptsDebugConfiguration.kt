@@ -3,8 +3,6 @@ package com.github.jk1.ytplugin.scriptsDebug
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.AdminRestClient
-import com.github.jk1.ytplugin.setup.getYouTrackConfiguration
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -17,6 +15,7 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
@@ -161,33 +160,42 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
 
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) repositories[0] else null
-        val config = repo?.let { getYouTrackConfiguration(it.url) }
+
+        val version = PropertiesComponent.getInstance().getValue("youtrack.version")?.toDouble()
 
         // TODO: clear mappings on the run
-            when (config?.version) {
-                null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
-                in 2021.3..Double.MAX_VALUE -> {
+        when (version) {
+            null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
+            in 2021.3..Double.MAX_VALUE -> {
 
-                    // clear mappings on each run of the configuration
-                    mappings.clear()
+                // clear mappings on each run of the configuration
+                mappings.clear()
 
-                    val isHosted = config.isHosted
-                    instanceFolder = if (isHosted) URL(repo.url).host.split(".").first() else "youtrack"
+                val instanceUuid = PropertiesComponent.getInstance().getValue("youtrack.uuid")?.removeSurrounding("\"")
 
-                    loadScripts()
-
-                    val connection = WipConnection(project)
-
-                    val finder = RemoteDebuggingFileFinder( createUrlToLocalMapping(mappings),
-                        LocalFileSystemFileFinder(), rootFolder, instanceFolder)
-
-                    process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
-                    connection.open(socketAddress)
-
-                    logger.info("connection is opened")
+                instanceFolder = if (instanceUuid != null && instanceUuid != "null") {
+                    // old versions support (no uuid in config)
+                        instanceUuid
+                } else {
+                    URL(repo?.url).host.split(".").first()
                 }
-                else -> throw InvalidDataException("YouTrack version is not sufficient")
+
+                loadScripts()
+
+                val connection = WipConnection(project)
+
+                val finder = RemoteDebuggingFileFinder(
+                    createUrlToLocalMapping(mappings),
+                    LocalFileSystemFileFinder(), rootFolder, instanceFolder
+                )
+
+                process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+                connection.open(socketAddress)
+
+                logger.info("connection is opened")
             }
+            else -> throw InvalidDataException("YouTrack version is not sufficient")
+        }
         return process
     }
 

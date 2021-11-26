@@ -3,26 +3,19 @@ package com.github.jk1.ytplugin.setup
 import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.intellij.ide.util.PropertiesComponent
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 
-data class RepositoryConfiguration(
-    val version: Double?,
-    val uuid: String?,
-    val isHosted: Boolean
-)
-
-fun getYouTrackConfiguration(url: String): RepositoryConfiguration {
+fun obtainYouTrackConfiguration(url: String) {
     val builder = URIBuilder(url.trimEnd('/') + "/api/config")
-    builder.addParameter("fields", "version,uuid,hosted(hosted)")
+    builder.addParameter("fields", "version,uuid")
     val method = HttpGet(builder.build())
     val client = SetupRepositoryConnector.setupHttpClient()
 
-
-    var instanceIsHosted: Boolean = false
     var instanceUUID: String? = null
     var instanceVersion: Double? = null
 
@@ -39,7 +32,6 @@ fun getYouTrackConfiguration(url: String): RepositoryConfiguration {
                 logger.info("YouTrack version: $version")
                 version
             }
-            instanceIsHosted = json.get("hosted").asJsonObject.get("hosted").asBoolean
             instanceUUID = (json.get("uuid") ?: null).toString()
         }
     } catch (e: Exception) {
@@ -47,5 +39,7 @@ fun getYouTrackConfiguration(url: String): RepositoryConfiguration {
         logger.debug(e)
     }
 
-    return RepositoryConfiguration(instanceVersion, instanceUUID, instanceIsHosted)
+    PropertiesComponent.getInstance().setValue("youtrack.version", instanceVersion.toString())
+    PropertiesComponent.getInstance().setValue("youtrack.uuid", instanceUUID)
+
 }

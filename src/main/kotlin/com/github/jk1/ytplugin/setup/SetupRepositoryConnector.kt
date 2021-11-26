@@ -1,8 +1,7 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.logger
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -15,14 +14,10 @@ import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.net.ssl.CertificateManager
 import org.apache.http.HttpRequest
 import org.apache.http.client.config.RequestConfig
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
-import java.io.InputStreamReader
 import java.net.URL
-import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
@@ -69,16 +64,18 @@ class SetupRepositoryConnector {
     }
 
 
-    private fun isValidYouTrackVersion(repository: YouTrackRepository): Boolean {
-        val config = getYouTrackConfiguration(repository.url)
-        return config.version != null && config.version >= 2017.1
+    private fun isValidYouTrackVersion(url: String): Boolean {
+        // on the first invoke setup YouTrack configuration
+        obtainYouTrackConfiguration(url)
+        val version = PropertiesComponent.getInstance().getValue("youtrack.version")
+        return version != null && version.toDouble() >= 2017.1
     }
 
 
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            if (isValidYouTrackVersion(repository)) {
+            if (isValidYouTrackVersion(repository.url)) {
                 repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
                 logger.debug("valid YouTrack version detected")
                 noteState = NotifierState.SUCCESS
@@ -90,10 +87,9 @@ class SetupRepositoryConnector {
             }
         }
         checker.onVersionError { _ ->
-            val config = getYouTrackConfiguration(repository.url)
-            val version = config.version
+            val version = PropertiesComponent.getInstance().getValue("youtrack.version")
 
-            if (version != null && version >= 2017.1 && version <= 2020.4) {
+            if (version != null && version.toDouble() >= 2017.1 && version.toDouble() <= 2020.4) {
                 logger.debug("valid YouTrack version detected but it is not sufficient for bearer token usage")
                 noteState = NotifierState.INSUFFICIENT_FOR_TOKEN_VERSION
             } else {
