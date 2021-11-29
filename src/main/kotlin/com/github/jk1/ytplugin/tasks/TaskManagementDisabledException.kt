@@ -1,10 +1,12 @@
 package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.YouTrackPluginException
+import com.intellij.ide.plugins.DisabledPluginsState
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.extensions.PluginId
 
 /**
  * Thrown if no task management plugin is found. We rely heavily on this plugin to provide us
@@ -25,7 +27,7 @@ class TaskManagementDisabledException :
             // notification hyperlink click handler
             NotificationListener { notification, _ ->
                 notification.hideBalloon()
-                PluginManager.enablePlugin("com.intellij.tasks")
+                DisabledPluginsState.enablePluginsById(listOf(PluginId.getId("com.intellij.tasks")), true)
             }
     )
 }
