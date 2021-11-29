@@ -9,7 +9,7 @@ import com.github.jk1.ytplugin.navigator.SourceNavigatorService;
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.github.jk1.ytplugin.timeTracker.*;
-import com.github.jk1.ytplugin.timeTracker.actions.SaveTrackerAction;
+import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction;
 import com.github.jk1.ytplugin.ui.HyperlinkLabel;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.openapi.application.ApplicationManager;
@@ -457,7 +457,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         // post time if any relevant changes in settings were made
         if (shouldStopTimerOnPropertiesChange) {
             if (timer.isRunning()) {
-                new StopTrackerAction().stopTimer(project);
+                new StopTrackerAction().stopTimer(project, repo);
                 timer.setAutoTrackingTemporaryDisabled(true);
             }
             if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {

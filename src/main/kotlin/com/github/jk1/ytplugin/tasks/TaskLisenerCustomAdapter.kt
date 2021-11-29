@@ -14,6 +14,10 @@ import com.github.jk1.ytplugin.logger
 
 class TaskListenerCustomAdapter(override val project: Project) : TaskListener, ComponentAware {
 
+    private val note = "To start using time tracking please select active task on the toolbar" +
+            " or by pressing Shift + Alt + T"
+    private val trackerNote = TrackerNotification()
+
 
     override fun taskDeactivated(task: LocalTask) {
         try {
@@ -21,9 +25,6 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
         } catch (e: NoActiveYouTrackTaskException) {
             logger.debug(e)
             if (timeTrackerComponent.isAutoTrackingEnabled || timeTrackerComponent.isManualTrackingEnabled) {
-                val note = "To start using time tracking please select active task on the toolbar" +
-                        " or by pressing Shift + Alt + T"
-                val trackerNote = TrackerNotification()
                 trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
             }
         }
@@ -32,27 +33,32 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
 
     override fun taskActivated(task: LocalTask) {
 
-        // split cases of vcs commit and branch switching in manual/none mode
-        if (!timeTrackerComponent.isAutoTrackingEnabled) {
+        try {
+            // split cases of vcs commit and branch switching in manual/none mode
+            if (!timeTrackerComponent.isAutoTrackingEnabled) {
 
-            if (timeTrackerComponent.isRunning){
-                timeTrackerComponent.pause("Work timer paused")
+                if (timeTrackerComponent.isRunning){
+                    timeTrackerComponent.pause("Work timer paused")
+                }
+
+                val savedTimeStorage = ComponentAware.of(project).spentTimePerTaskStorage
+                savedTimeStorage.setSavedTimeForLocalTask(timeTrackerComponent.issueId, timeTrackerComponent.timeInMills)
+
+                timeTrackerComponent.resetTimeOnly()
+                timeTrackerComponent.updateIdOnTaskSwitching()
             }
 
-            val savedTimeStorage = ComponentAware.of(project).spentTimePerTaskStorage
-            savedTimeStorage.setSavedTimeForLocalTask(timeTrackerComponent.issueId, timeTrackerComponent.timeInMills)
+            timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
+            StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
 
-            timeTrackerComponent.resetTimeOnly()
-            timeTrackerComponent.updateIdOnTaskSwitching()
+            logger.debug("Switch from: ${spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId)}")
+            if (spentTimePerTaskStorage.getSavedTimeForLocalTask(task.id) > 0){
+                OnTaskSwitchingTimerDialog(project, taskManagerComponent.getActiveYouTrackRepository()).show()
+            }
+        } catch (e: NoYouTrackRepositoryException){
+            logger.debug(e)
         }
 
-        timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-        StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
-
-        logger.debug("Switch from: ${spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId)}")
-        if (spentTimePerTaskStorage.getSavedTimeForLocalTask(task.id) > 0){
-            OnTaskSwitchingTimerDialog(project, taskManagerComponent.getActiveYouTrackRepository()).show()
-        }
     }
 
 

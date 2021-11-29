@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.intellij.concurrency.JobScheduler
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -49,6 +50,9 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
                         TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
                                 timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
                     }
+                    val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
+                    propertiesStore.setValue("spentTimePerTaskStorage.store", timer.spentTimePerTaskStorage.getAllStoredItems().toString())
+
                 } catch (e: IllegalStateException) {
                     logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
                 }

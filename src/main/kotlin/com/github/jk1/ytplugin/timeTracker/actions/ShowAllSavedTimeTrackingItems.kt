@@ -16,9 +16,12 @@ class ShowAllSavedTimeTrackingItems : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
+        // to be able to view time tracking items even when 'None' tracking mode is selected
         event.whenActive {
-            val repo = ComponentAware.of(project!!).taskManagerComponent.getActiveYouTrackRepository()
-            AllSavedTimerItemsDialog(project, repo).show()
+            val repos =
+                project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
+            val repo = repos?.first()
+            project?.let { pr -> repo?.let { repository -> AllSavedTimerItemsDialog(pr, repository).show() } }
         }
     }
 }
