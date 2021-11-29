@@ -68,10 +68,10 @@ class TimeTrackingService {
 
         try {
             if (ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault &&
-                    (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) {
+                    (timer.isManualTrackingEnabled || timer.isAutoTrackingEnabled)) {
                 notifySelectTask()
             } else {
-                if (timer.isAutoTrackingEnable) {
+                if (timer.isAutoTrackingEnabled) {
                     try {
                         ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
                         StartTrackerAction().startAutomatedTracking(project, timer)

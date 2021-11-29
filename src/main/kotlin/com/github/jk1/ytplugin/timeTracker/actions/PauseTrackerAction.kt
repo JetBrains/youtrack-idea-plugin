@@ -16,7 +16,7 @@ class PauseTrackerAction : AnAction(
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive {project ->
             val timer = ComponentAware.of(project).timeTrackerComponent
-            if (timer.isAutoTrackingEnable) {
+            if (timer.isAutoTrackingEnabled) {
                 timer.isAutoTrackingTemporaryDisabled = true
             }
             timer.pause("Work timer paused")
@@ -30,7 +30,7 @@ class PauseTrackerAction : AnAction(
         if (project != null) {
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isVisible = (!timer.isPaused && timer.isRunning
-                    && (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)) &&
+                    && (timer.isManualTrackingEnabled || timer.isAutoTrackingEnabled)) &&
                     !timer.isAutoTrackingTemporaryDisabled
         }
     }

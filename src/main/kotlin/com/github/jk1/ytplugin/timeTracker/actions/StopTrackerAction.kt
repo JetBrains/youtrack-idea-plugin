@@ -14,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.tasks.youtrack.YouTrackRepository
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -25,7 +26,7 @@ class StopTrackerAction : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            stopTimer(project)
+            stopTimer(project, ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository())
         }
     }
 
@@ -34,8 +35,8 @@ class StopTrackerAction : AnAction(
         if (project != null) {
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isEnabled = timer.isRunning
-            event.presentation.isVisible = (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
-            if (timer.isAutoTrackingEnable){
+            event.presentation.isVisible = (timer.isManualTrackingEnabled || timer.isAutoTrackingEnabled)
+            if (timer.isAutoTrackingEnabled){
                 event.presentation.icon = YouTrackPluginIcons.YOUTRACK_POST_FROM_TIME_TRACKER
                 event.presentation.description = "Post spent time to the current issue and continue tracking"
                 event.presentation.text = "Post Time To Server"
@@ -48,19 +49,10 @@ class StopTrackerAction : AnAction(
     }
 
 
-    fun stopTimer(project: Project) {
+    fun stopTimer(project: Project, repo: YouTrackServer) {
 
         val trackerNote = TrackerNotification()
         val timer = ComponentAware.of(project).timeTrackerComponent
-
-        val repo: YouTrackServer?
-        try {
-            repo = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository()
-            logger.debug("YouTrack server integration is configured")
-        } catch (e: NoYouTrackRepositoryException){
-            logger.debug("YouTrack server integration is not configured yet")
-            return
-        }
 
         try {
             timer.stop()

@@ -89,7 +89,7 @@ class ActivityTracker(
                     val trackerNote = TrackerNotification()
                     trackerNote.notify("Scheduled time posting at ${time}0", NotificationType.INFORMATION)
                     timer.isPostedScheduled = true
-                    StopTrackerAction().stopTimer(project)
+                    StopTrackerAction().stopTimer(project, ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository())
                 }
             } else {
                 timer.isPostedScheduled = false
@@ -139,7 +139,7 @@ class ActivityTracker(
             }
 
             if (!isMouseOrKeyboardActive) {
-                if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning && !timer.isPaused && timer.isAutoTrackingEnable) {
+                if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning && !timer.isPaused && timer.isAutoTrackingEnabled) {
                     timer.pause("Work timer paused due to inactivity")
                 }
             } else if (isMouseOrKeyboardActive) {

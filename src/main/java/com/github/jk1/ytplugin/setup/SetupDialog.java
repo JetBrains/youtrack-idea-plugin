@@ -9,7 +9,7 @@ import com.github.jk1.ytplugin.navigator.SourceNavigatorService;
 import com.github.jk1.ytplugin.tasks.TaskManagerProxyService;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.github.jk1.ytplugin.timeTracker.*;
-import com.github.jk1.ytplugin.timeTracker.actions.StopTrackerAction;
+import com.github.jk1.ytplugin.timeTracker.actions.SaveTrackerAction;
 import com.github.jk1.ytplugin.ui.HyperlinkLabel;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.openapi.application.ApplicationManager;
@@ -92,7 +92,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     private final YouTrackRepository connectedRepository = new YouTrackRepository();
     private final SetupRepositoryConnector repoConnector = new SetupRepositoryConnector();
     private final boolean fromTracker;
-    private boolean shouldStopTimer = false;
+    private boolean shouldStopTimerOnPropertiesChange = false;
 
     TestConnectionAction testConnectionAction = new TestConnectionAction();
     ProxyAction proxyAction = new ProxyAction();
@@ -145,7 +145,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         inputUrlTextPane.setText(repo.getUrl());
         inputTokenField.setText(repo.getPassword());
 
-        inactivityFieldsEnabling(timer.isAutoTrackingEnable());
+        inactivityFieldsEnabling(timer.isAutoTrackingEnabled());
 
         controlPanel = new JBPanel<>();
         controlPanel.setLayout(null);
@@ -176,12 +176,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                         isManualModeRadioButton.isSelected(), noTrackingButton.isSelected())
         );
 
-        isAutoTrackingEnabledRadioButton.setSelected(timer.isAutoTrackingEnable());
+        isAutoTrackingEnabledRadioButton.setSelected(timer.isAutoTrackingEnabled());
         isAutoTrackingEnabledRadioButton.addActionListener(e ->
                 isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
                         isManualModeRadioButton.isSelected(), noTrackingButton.isSelected()));
 
-        isManualModeRadioButton.setSelected(timer.isManualTrackingEnable());
+        isManualModeRadioButton.setSelected(timer.isManualTrackingEnabled());
         isManualModeRadioButton.addActionListener(e ->
                 isTrackingModeChanged(isAutoTrackingEnabledRadioButton.isSelected(),
                         isManualModeRadioButton.isSelected(), noTrackingButton.isSelected())
@@ -190,15 +190,15 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         postWhenCommitCheckbox.setSelected(timer.isPostAfterCommitEnabled());
         postWhenProjectClosedCheckbox.setSelected(timer.isWhenProjectClosedEnabled());
 
-        postWhenProjectClosedCheckbox.setEnabled(timer.isAutoTrackingEnable());
-        postWhenCommitCheckbox.setEnabled(timer.isAutoTrackingEnable());
+        postWhenProjectClosedCheckbox.setEnabled(timer.isAutoTrackingEnabled());
+        postWhenCommitCheckbox.setEnabled(timer.isAutoTrackingEnabled());
 
         isScheduledCheckbox.setSelected(timer.isScheduledEnabled());
-        scheduledFieldsEnabling(timer.isAutoTrackingEnable());
+        scheduledFieldsEnabling(timer.isAutoTrackingEnabled());
 
         typeComboBox.setEditable(true);
-        typeComboBox.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
-        typeLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+        typeComboBox.setEnabled(timer.isAutoTrackingEnabled() || timer.isManualTrackingEnabled());
+        typeLabel.setEnabled(timer.isAutoTrackingEnabled() || timer.isManualTrackingEnabled());
 
         long inactivityHours = TimeUnit.MILLISECONDS.toHours(timer.getInactivityPeriodInMills());
         long inactivityMinutes = TimeUnit.MILLISECONDS.toMinutes(timer.getInactivityPeriodInMills() -
@@ -209,15 +209,15 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         DocumentListener stopOnScheduleUpdate = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
-                shouldStopTimer = true;
+                shouldStopTimerOnPropertiesChange = true;
             }
 
             public void removeUpdate(DocumentEvent e) {
-                shouldStopTimer = true;
+                shouldStopTimerOnPropertiesChange = true;
             }
 
             public void insertUpdate(DocumentEvent e) {
-                shouldStopTimer = true;
+                shouldStopTimerOnPropertiesChange = true;
             }
         };
 
@@ -232,8 +232,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         commentTextField.setText(timer.getComment());
 
-        commentLabel.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
-        commentTextField.setEnabled(timer.isAutoTrackingEnable() || timer.isManualTrackingEnable());
+        commentLabel.setEnabled(timer.isAutoTrackingEnabled() || timer.isManualTrackingEnabled());
+        commentTextField.setEnabled(timer.isAutoTrackingEnabled() || timer.isManualTrackingEnabled());
 
     }
 
@@ -369,7 +369,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         typeLabel.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
         typeComboBox.setEnabled((autoTrackEnabled || manualTrackEnabled) && !noTrackingEnabled);
 
-        shouldStopTimer = true;
+        shouldStopTimerOnPropertiesChange = true;
 
     }
 
@@ -455,7 +455,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         setupValuesNotRequiringTimerStop();
 
         // post time if any relevant changes in settings were made
-        if (shouldStopTimer) {
+        if (shouldStopTimerOnPropertiesChange) {
             if (timer.isRunning()) {
                 new StopTrackerAction().stopTimer(project);
                 timer.setAutoTrackingTemporaryDisabled(true);
@@ -500,8 +500,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 "recordedTime " + timer.getRecordedTime() + "\n" +
                 "timeInMills" + timer.getTimeInMills() + "\n" +
                 "startTime " + timer.getStartTime() + "\n" +
-                "isManualTrackingEnable " + timer.isManualTrackingEnable() + "\n" +
-                "isAutoTrackingEnable " + timer.isAutoTrackingEnable() + "\n" +
+                "isManualTrackingEnable " + timer.isManualTrackingEnabled() + "\n" +
+                "isAutoTrackingEnable " + timer.isAutoTrackingEnabled() + "\n" +
                 "comment" + timer.getComment() + "\n" +
                 "isScheduledEnabled " + timer.isScheduledEnabled() + "\n" +
                 "isWhenProjectClosedEnabled" + timer.isWhenProjectClosedEnabled() + "\n" +

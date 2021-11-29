@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.LocalTask
 import com.intellij.tasks.TaskListener
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.timeTracker.TimeTracker
 
 class TaskListenerCustomAdapter(override val project: Project) : TaskListener, ComponentAware {
 
@@ -20,10 +19,13 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
         try {
             taskManagerComponent.getActiveYouTrackTask()
         } catch (e: NoActiveYouTrackTaskException) {
-            val note = "To start using time tracking please select active task on the toolbar" +
-                    " or by pressing Shift + Alt + T"
-            val trackerNote = TrackerNotification()
-            trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+            logger.debug(e)
+            if (timeTrackerComponent.isAutoTrackingEnabled || timeTrackerComponent.isManualTrackingEnabled) {
+                val note = "To start using time tracking please select active task on the toolbar" +
+                        " or by pressing Shift + Alt + T"
+                val trackerNote = TrackerNotification()
+                trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+            }
         }
 
     }
@@ -31,7 +33,7 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
     override fun taskActivated(task: LocalTask) {
 
         // split cases of vcs commit and branch switching in manual/none mode
-        if (!timeTrackerComponent.isAutoTrackingEnable) {
+        if (!timeTrackerComponent.isAutoTrackingEnabled) {
 
             if (timeTrackerComponent.isRunning){
                 timeTrackerComponent.pause("Work timer paused")
@@ -58,7 +60,7 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
         // the second and third conditions are required for the post on vcs commit functionality - it is disabled in manual tracking
         // mode, but taskAdded triggers on git action 9with the same task) and thus timer is stopped even in manual mode.
         // However, we still want to post/save time on task switching in manual mode so saveTime call is also triggered there
-        if (timeTrackerComponent.isRunning && timeTrackerComponent.isAutoTrackingEnable &&
+        if (timeTrackerComponent.isRunning && timeTrackerComponent.isAutoTrackingEnabled &&
             combineTaskIdAndSummary(taskManagerComponent.getActiveTask()) != task.summary) {
             SaveTrackerAction().saveTimer(project, taskManagerComponent.getActiveTask().id)
         }

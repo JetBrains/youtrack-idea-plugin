@@ -22,7 +22,7 @@ class StartTrackerAction : AnAction(
 ) {
 
     fun startAutomatedTracking(project: Project, timer: TimeTracker) {
-        if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault && timer.isAutoTrackingEnable) {
+        if (!ComponentAware.of(project).taskManagerComponent.getActiveTask().isDefault && timer.isAutoTrackingEnabled) {
             startTracking(project, timer)
         }
     }
@@ -60,7 +60,7 @@ class StartTrackerAction : AnAction(
         if (project != null) {
             val timer = ComponentAware.of(event.project!!).timeTrackerComponent
             event.presentation.isVisible = (timer.isPaused || !timer.isRunning || timer.isAutoTrackingTemporaryDisabled)
-                    && (timer.isManualTrackingEnable || timer.isAutoTrackingEnable)
+                    && (timer.isManualTrackingEnabled || timer.isAutoTrackingEnabled)
         }
     }
 
@@ -78,7 +78,7 @@ class StartTrackerAction : AnAction(
                 bar?.addWidget(TimerWidget(myTimer, parentDisposable, project), parentDisposable)
             }
 
-            if (myTimer.isAutoTrackingEnable) {
+            if (myTimer.isAutoTrackingEnabled) {
                 myTimer.activityTracker = ActivityTracker(
                     parentDisposable = parentDisposable,
                     timer = myTimer,

@@ -49,7 +49,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var comment: String = ""
 
     @PropertyName("timeTracker.isManualTrackingEnable")
-    var isManualTrackingEnable = false
+    var isManualTrackingEnabled = false
 
     @PropertyName("timeTracker.isScheduledEnabled")
     var isScheduledEnabled = true
@@ -61,7 +61,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var isPostAfterCommitEnabled = true
 
     @PropertyName("timeTracker.isAutoTrackingEnable")
-    var isAutoTrackingEnable = false
+    var isAutoTrackingEnabled = false
 
     @PropertyName("timeTracker.isRunning")
     var isRunning = false
@@ -102,14 +102,14 @@ class TimeTracker(override val project: Project) : ComponentAware {
             isPaused = true
             isAutoTrackingTemporaryDisabled = false
 
-            if (isWhenProjectClosedEnabled || isManualTrackingEnable) {
+            if (isWhenProjectClosedEnabled || isManualTrackingEnabled) {
                 reset()
             }
-            if (isManualTrackingEnable) {
+            if (isManualTrackingEnabled) {
                 stop()
             }
 
-            if (isAutoTrackingEnable) {
+            if (isAutoTrackingEnabled) {
                 try {
                     taskManagerComponent.getActiveYouTrackTask().id
                     StartTrackerAction().startAutomatedTracking(project, this)
@@ -197,9 +197,9 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     fun setupTimerProperties(isAutoTracking: Boolean, isManualMode: Boolean, isScheduled: Boolean,
                              timeToSchedule: String, inactivityTime: Long) {
-        isAutoTrackingEnable = isAutoTracking
+        isAutoTrackingEnabled = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
-        isManualTrackingEnable = isManualMode
+        isManualTrackingEnabled = isManualMode
         if (isScheduled) {
             scheduledPeriod = timeToSchedule
         }

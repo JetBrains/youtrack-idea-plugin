@@ -21,15 +21,6 @@ class ShowAllSavedTimeTrackingItems : AnAction(
             AllSavedTimerItemsDialog(project, repo).show()
         }
     }
-
-    override fun update(event: AnActionEvent) {
-        val project = event.project
-        if (project != null) {
-            val timer = ComponentAware.of(project).timeTrackerComponent
-            event.presentation.isEnabled = timer.isManualTrackingEnable || timer.isAutoTrackingEnable
-            event.presentation.isVisible = timer.isManualTrackingEnable || timer.isAutoTrackingEnable
-        }
-    }
 }
 
 
