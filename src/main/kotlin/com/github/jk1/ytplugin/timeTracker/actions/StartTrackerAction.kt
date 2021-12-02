@@ -91,7 +91,6 @@ class StartTrackerAction : AnAction(
             if (!myTimer.isRunning || myTimer.isPaused) {
                 try {
                     val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
-                    myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
                     myTimer.issueId = activeTask.id
                     myTimer.issueIdReadable = activeTask.id
                     myTimer.start(activeTask.id)
