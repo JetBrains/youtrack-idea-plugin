@@ -97,6 +97,9 @@
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.editor.IssueLinkProviderExtension"/>
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.notifications.FetchNotificationsExtension"/>
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.timeTracker.TimeTrackerInitExtension"/>
+        <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.timeTracker.IssueWorkItemsUpdaterInitExtension"/>
+        <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.issues.IssuesUpdaterInitExtension"/>
+
         <!--YouTrack command language support-->
         <fileType name="YouTrack Commands" language="YouTrack Commands"
                   implementationClass="com.github.jk1.ytplugin.commands.lang.CommandFileType"/>
