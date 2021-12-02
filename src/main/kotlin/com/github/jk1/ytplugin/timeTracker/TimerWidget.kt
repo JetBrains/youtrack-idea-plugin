@@ -35,7 +35,6 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
 
 
     override fun install(statusBar: StatusBar) {
-
         val f: Font = label.font
         label.font = f.deriveFont(f.style or Font.BOLD)
         trackingDisposable = ActivityTracker.newDisposable(parentDisposable)

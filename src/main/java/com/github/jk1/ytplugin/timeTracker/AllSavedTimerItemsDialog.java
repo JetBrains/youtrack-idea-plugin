@@ -227,7 +227,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         @Override
         protected void doAction(ActionEvent e) {
             ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
-            new TimeTrackerConnector().postSavedTimeToServer(repo, project, selectedItems);
+            new TimeTrackerConnector(repo, project).postSavedWorkItemsToServer(selectedItems);
             close(0);
         }
     }

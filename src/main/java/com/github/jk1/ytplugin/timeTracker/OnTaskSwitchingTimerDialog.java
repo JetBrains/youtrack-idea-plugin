@@ -104,16 +104,11 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            ConcurrentHashMap<String, Long> item = new ConcurrentHashMap<String, Long>() {
-                {
-                    this.put(timer.getIssueId(), timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId()));
-                }
-            };
-
             logger.debug("Time to post on task switching: " + timer.getIssueId() + " for " +
                     timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId()));
 
-            new TimeTrackerConnector().postSavedTimeToServer(repository, project, item);
+            new TimeTrackerConnector(repository, project).postSavedWorkItemToServer(timer.getIssueId(),
+                    timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId()));
             close(0);
         }
 

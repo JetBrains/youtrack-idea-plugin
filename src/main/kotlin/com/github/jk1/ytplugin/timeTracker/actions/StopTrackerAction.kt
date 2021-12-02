@@ -2,9 +2,8 @@ package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
-import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TimeTrackerConnector
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
@@ -14,7 +13,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.tasks.youtrack.YouTrackRepository
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -65,8 +63,8 @@ class StopTrackerAction : AnAction(
                 trackerNote.notify("Spent time shorter than 1 minute is excluded from time tracking", NotificationType.WARNING)
             else {
                 try {
-                    TimeTrackerRestClient(repo).postNewWorkItem(timer.issueId, recordedTime, timer.type, timer.comment,
-                        (Date().time).toString())
+                    TimeTrackerConnector(repo, project).postWorkItemToServer(timer.issueId, recordedTime,
+                        timer.type, timer.comment, (Date().time).toString())
 
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 } catch (e: Exception) {

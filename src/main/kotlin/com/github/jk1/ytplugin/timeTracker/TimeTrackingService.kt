@@ -28,7 +28,8 @@ class TimeTrackingService {
         val date = sdf.parse(dateNotFormatted)
         val trackerNote = TrackerNotification()
         return try {
-            TimeTrackerRestClient(repo).postNewWorkItem(selectedId, time, selectedType, comment, date.time.toString())
+            TimeTrackerConnector(repo, repo.project).postWorkItemToServer(selectedId, time, selectedType,
+                comment, date.time.toString())
             trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
             ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)
             200

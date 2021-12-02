@@ -195,7 +195,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
 
         val item: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
         item[storedIssues[0].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[0].id)
-        TimeTrackerConnector().postSavedTimeToServer(repository, project, item)
+        TimeTrackerConnector(repository, project).postSavedWorkItemsToServer(item)
 
         assertEquals(wiSize + 1, UserRestClient(repository).getWorkItemsForUser().size)
         assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)
@@ -216,7 +216,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         items[storedIssues[0].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[0].id)
         items[storedIssues[1].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[1].id)
 
-        TimeTrackerConnector().postSavedTimeToServer(repository, project, items)
+        TimeTrackerConnector(repository, project).postSavedWorkItemsToServer(items)
 
         assertEquals(wiSize + 2, UserRestClient(repository).getWorkItemsForUser().size)
         assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)

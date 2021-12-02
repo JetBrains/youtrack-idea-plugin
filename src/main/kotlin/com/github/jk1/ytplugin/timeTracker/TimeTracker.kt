@@ -142,8 +142,8 @@ class TimeTracker(override val project: Project) : ComponentAware {
             isRunning = false
             isPaused = false
             isAutoTrackingTemporaryDisabled = false
-            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-            store.saveFields(this)
+
+            saveUpdatedFields()
         } else {
             logger.debug("Timer is not running to stop")
         }
@@ -209,11 +209,16 @@ class TimeTracker(override val project: Project) : ComponentAware {
         inactivityPeriodInMills = inactivityTime
 
         try {
-            val store: PropertiesComponent = PropertiesComponent.getInstance(project)
-            store.saveFields(this)
+            saveUpdatedFields()
         } catch (e: NoActiveYouTrackTaskException) {
             logger.debug("Unable to update repository when setting up the timer: ${e.message}")
         }
+    }
+
+
+    private fun saveUpdatedFields() {
+        val store: PropertiesComponent = PropertiesComponent.getInstance(project)
+        store.saveFields(this)
     }
 
     fun getRecordedTimeInMills() = timeInMills

@@ -21,17 +21,17 @@ class PersistentIssueWorkItemsStore : PersistentStateComponent<PersistentIssueWo
     private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueWorkItemStore>()
 
-    override fun getState(): Memento? = Memento(stores)
+    override fun getState(): Memento = Memento(stores)
 
     override fun loadState(state: Memento) {
         loadedMemento = state
     }
 
     operator fun get(repo: YouTrackServer): IssueWorkItemStore {
-        return stores.getOrPut(repo.id, {
+        return stores.getOrPut(repo.id) {
             logger.debug("IssueWorkItems store opened for YouTrack server ${repo.url}")
             loadedMemento.getStore(repo)
-        })
+        }
     }
 
     class Memento constructor() {

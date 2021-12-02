@@ -18,13 +18,13 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
     init {
         val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
-        store = convertToStringToHashMap(propertiesStore.getValue("spentTimePerTaskStorage.store").toString())
+        store = convertStringToHashMap(propertiesStore.getValue("spentTimePerTaskStorage.store").toString())
     }
 
-    private fun convertToStringToHashMap(text: String?): ConcurrentHashMap<String, Long> {
+    private fun convertStringToHashMap(string: String?): ConcurrentHashMap<String, Long> {
         val loadedMap = ConcurrentHashMap<String, Long>()
         val pattern: Pattern = Pattern.compile("[\\{\\}\\=\\, ]++")
-        val split: Array<String> = pattern.split(text)
+        val split: Array<String> = pattern.split(string)
         var i = 1
         while (i + 2 <= split.size) {
             loadedMap[split[i]] = split[i + 1].toLong()
@@ -45,7 +45,6 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
             val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
             propertiesStore.setValue("spentTimePerTaskStorage.store", store.toString())
-
 
             val trackerNote = TrackerNotification()
             trackerNote.notify("Total time " +

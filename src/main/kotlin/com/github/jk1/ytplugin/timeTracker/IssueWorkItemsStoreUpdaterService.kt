@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.concurrency.JobScheduler
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.Disposable
@@ -44,22 +45,8 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
 
             if (timer.isWhenProjectClosedEnabled) {
                 logger.debug("state PROJECT_CLOSE with posting enabled")
-                try {
-                    timer.stop()
-                    repo.let { it1 ->
-                        TimeTrackerRestClient(it1).postNewWorkItem(timer.issueId,
-                                timer.recordedTime, timer.type, timer.comment, (Date().time).toString())
-                        // post not only last recorded item, but all saved items as well
-                        TimeTrackerConnector().postSavedTimeToServer(repo, project, spentTimePerTaskStorage.getAllStoredItems())
-                    }
-                    val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
-                    propertiesStore.setValue("spentTimePerTaskStorage.store", timer.spentTimePerTaskStorage.getAllStoredItems().toString())
-
-                } catch (e: IllegalStateException) {
-                    logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
-                }
+                postOnProjectClose(timer, repo)
             }
-            logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.recordedTime}")
 
         } catch (e: NoYouTrackRepositoryException) {
             logger.warn("NoYouTrackRepository:  ${e.message}")
@@ -68,6 +55,25 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
             logger.debug(e)
         }
         timedRefreshTask.cancel(true)
+    }
+
+    private fun postOnProjectClose(timer: TimeTracker, repo: YouTrackServer) {
+        try {
+            timer.stop()
+            repo.let { it1 ->
+                val connector = TimeTrackerConnector(it1, project)
+                connector.postWorkItemToServer(timer.issueId, timer.recordedTime, timer.type,
+                    timer.comment, (Date().time).toString())
+                // post not only last recorded item, but all saved items as well
+                connector.postSavedWorkItemsToServer(spentTimePerTaskStorage.getAllStoredItems())
+            }
+            val propertiesStore: PropertiesComponent = PropertiesComponent.getInstance(project)
+            propertiesStore.setValue("spentTimePerTaskStorage.store", timer.spentTimePerTaskStorage.getAllStoredItems().toString())
+
+            logger.debug("time tracker stopped on PROJECT_CLOSE with time ${timer.recordedTime}")
+        } catch (e: IllegalStateException) {
+            logger.debug("Could not stop time tracking: timer is not started: ${e.message}")
+        }
     }
 
     fun subscribe(listener: () -> Unit) {

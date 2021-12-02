@@ -139,7 +139,8 @@ class ActivityTracker(
             }
 
             if (!isMouseOrKeyboardActive) {
-                if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning && !timer.isPaused && timer.isAutoTrackingEnabled) {
+                if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning &&
+                    !timer.isPaused && timer.isAutoTrackingEnabled) {
                     timer.pause("Work timer paused due to inactivity")
                 }
             } else if (isMouseOrKeyboardActive) {
