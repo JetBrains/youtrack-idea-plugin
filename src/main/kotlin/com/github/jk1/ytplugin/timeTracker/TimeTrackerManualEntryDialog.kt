@@ -110,7 +110,7 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
 
     private fun createTypePanel(): JPanel {
 
-        val timerService = TimeTrackingService()
+        val timerService = TimeTrackingConfigurationService()
         val future = ApplicationManager.getApplication().executeOnPooledThread(
                 Callable {
                     timerService.getAvailableWorkItemsTypes(repo)
@@ -285,11 +285,11 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
                     logger.debug("Time tracking for ${ids[idComboBox.selectedIndex].issueId} is disabled in project")
                 } else {
                     val selectedId = ids[idComboBox.selectedIndex].issueId
-                    val timerService = TimeTrackingService()
+                    val timerService = TimeTrackingConfigurationService()
                     val futureCode = ApplicationManager.getApplication().executeOnPooledThread(
                             Callable {
                                 try {
-                                    timerService.postNewWorkItem(datePicker.date.format(),
+                                    timerService.addManuallyNewWorkItem(datePicker.date.format(),
                                             typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
                                             commentTextField.text, time.toString())
                                 } catch (e: IllegalStateException) {
@@ -305,9 +305,9 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
                         val trackerNote = TrackerNotification()
                         trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
                         this@TimeTrackerManualEntryDialog.close(0)
-                    } else if (futureCode.get() != 1) {
+                    } else {
                         notifier.foreground = Color.red
-                        notifier.text = "Time could not be posted, see logs for details"
+                        notifier.text = "Time could not be posted, see IDE logs for details"
                     }
                 }
             } catch (e: IndexOutOfBoundsException) {

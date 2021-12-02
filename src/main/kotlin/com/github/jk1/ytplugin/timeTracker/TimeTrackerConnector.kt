@@ -1,6 +1,8 @@
 package com.github.jk1.ytplugin.timeTracker
 
+import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.ComponentAware.Companion.of
+import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
@@ -10,6 +12,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import org.apache.http.HttpStatus
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -19,22 +22,26 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
     fun postSavedWorkItemToServer(issueId: String, time: Long) {
         val timeTracker = of(project).timeTrackerComponent
         postWorkItemToServer(issueId, TimeTracker.formatTimePeriod(time),  timeTracker.type,
-            timeTracker.comment, (Date().time).toString())
+            timeTracker.comment, getCurrentDate())
     }
 
     fun postWorkItemToServer(issueId: String, time: String, type: String,
                              comment: String, date: String) {
+
         logger.debug("Try posting work item for $issueId to ${repository.url}")
         val storage = of(project).spentTimePerTaskStorage
+        val trackerNote = TrackerNotification()
 
         val postStatus = TimeTrackerRestClient(repository).postNewWorkItem(issueId, time, type, comment, date)
         if (postStatus == HttpStatus.SC_OK){
+            trackerNote.notify("Spent time was successfully added for $issueId",
+                NotificationType.INFORMATION)
+
+            of(project).issueWorkItemsStoreComponent[repository].update(repository)
             storage.resetSavedTimeForLocalTask(issueId)
         } else {
-            val trackerNote = TrackerNotification()
             trackerNote.notify("Unable to post time to YouTrack. See IDE log for details. " +
-                    "Time $time min is saved",
-                NotificationType.WARNING)
+                    "Time $time min is saved", NotificationType.WARNING)
 
             storage.resetSavedTimeForLocalTask(issueId)
             storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
@@ -54,12 +61,18 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
 
                 savedItems.forEach { entry ->
                     postWorkItemToServer(entry.key, TimeTracker.formatTimePeriod(entry.value), timeTracker.type,
-                        timeTracker.comment, (Date().time).toString())
+                        timeTracker.comment, getCurrentDate())
                 }
                 of(project).issueWorkItemsStoreComponent[repository].update(repository)
             }
         }
         ProgressManager.getInstance().run(task)
+    }
+
+    private fun getCurrentDate(): String {
+        val sdf = SimpleDateFormat("dd MMM yyyy")
+        val date = sdf.parse(Date().format())
+        return date.time.toString()
     }
 
 }

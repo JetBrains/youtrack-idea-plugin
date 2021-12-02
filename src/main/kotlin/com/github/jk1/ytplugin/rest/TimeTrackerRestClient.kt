@@ -38,6 +38,9 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
         } catch (e: RuntimeException) {
             logger.debug(e)
             HttpStatus.SC_BAD_REQUEST
+        } catch (e: Exception) {
+            logger.debug(e)
+            HttpStatus.SC_BAD_REQUEST
         }
     }
 

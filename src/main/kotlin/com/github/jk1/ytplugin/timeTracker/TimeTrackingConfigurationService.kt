@@ -10,19 +10,20 @@ import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import org.apache.http.HttpStatus
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
 
-class TimeTrackingService {
+class TimeTrackingConfigurationService {
 
     fun getAvailableWorkItemsTypes(repo: YouTrackServer): Collection<String> {
         return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys
     }
 
     // todo: make it return something meaningful
-    fun postNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
-                        repo: YouTrackServer, comment: String, time: String): Int {
+    fun addManuallyNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
+                               repo: YouTrackServer, comment: String, time: String): Int {
 
         val sdf = SimpleDateFormat("dd MMM yyyy")
         val date = sdf.parse(dateNotFormatted)
@@ -36,7 +37,7 @@ class TimeTrackingService {
         } catch (e: Exception) {
             logger.warn("Time was not posted. See IDE logs for details.")
             trackerNote.notify("Time was not posted, please check your connection", NotificationType.WARNING)
-            -1
+            HttpStatus.SC_BAD_REQUEST
         }
     }
 

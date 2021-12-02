@@ -332,7 +332,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         this.isManualModeRadioButton.setEnabled(true);
 
         try {
-            final Collection<String> types = (new TimeTrackingService()).getAvailableWorkItemsTypes(repository);
+            final Collection<String> types = (new TimeTrackingConfigurationService()).getAvailableWorkItemsTypes(repository);
             ApplicationManager.getApplication().invokeLater(() -> {
                 int idx = 0;
                 if (!types.isEmpty()) {
@@ -461,7 +461,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 timer.setAutoTrackingTemporaryDisabled(true);
             }
             if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
-                new TimeTrackingService().setupTimeTracking(this, project);
+                new TimeTrackingConfigurationService().setupTimeTracking(this, project);
             }
         }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
