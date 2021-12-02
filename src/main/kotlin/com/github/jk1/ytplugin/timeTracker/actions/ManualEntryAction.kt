@@ -16,9 +16,11 @@ class ManualEntryAction : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            val repo = project.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getActiveYouTrackRepository() }
-            val dialog = repo.let { it1 -> TimeTrackerManualEntryDialog(project, it1) }
-            dialog.show()
+            val repos = ComponentAware.of(project).taskManagerComponent
+                .getAllConfiguredYouTrackRepositories()
+            val repo = if (repos.isNotEmpty()) repos.first() else null
+            val dialog = repo?.let { TimeTrackerManualEntryDialog(project, it) }
+            dialog?.show()
         }
     }
 

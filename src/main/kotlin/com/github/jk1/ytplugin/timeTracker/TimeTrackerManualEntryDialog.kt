@@ -7,6 +7,7 @@ import com.github.jk1.ytplugin.rest.AdminRestClient
 import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -15,6 +16,7 @@ import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.michaelbaranov.microba.calendar.DatePicker
+import org.apache.http.HttpStatus
 import org.jdesktop.swingx.JXDatePicker
 import java.awt.Color
 import java.awt.Dimension
@@ -29,7 +31,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import javax.swing.*
 
-open class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
+class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouTrackServer) : DialogWrapper(project, false), ComponentAware {
 
     private var dateLabel = JBLabel("Date:")
     private val datePicker = DatePicker(Date())
@@ -266,7 +268,10 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                 val future = ApplicationManager.getApplication().executeOnPooledThread(
                         Callable {
                             try {
-                                AdminRestClient(repo).checkIfTrackingIsEnabled(ids[idComboBox.selectedIndex].projectName)
+                                val selectedIssueIndex = idComboBox.selectedIndex
+                                if (selectedIssueIndex != -1)
+                                    AdminRestClient(repo).checkIfTrackingIsEnabled(ids[selectedIssueIndex].projectName)
+                                else false
                             } catch (e: Exception) {
                                 e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
                                     logger.warn("Exception in manual time tracker: ${e.message}")
@@ -291,11 +296,14 @@ open class TimeTrackerManualEntryDialog(override val project: Project, val repo:
                                     logger.warn("Error in item type: ${e.message}")
                                     notifier.foreground = Color.red
                                     notifier.text = "Time could not be posted, please check your connection"
-                                    1
+                                    HttpStatus.SC_BAD_REQUEST
                                 }
 
                             })
                     if (futureCode.get() == 200) {
+                        ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
+                        val trackerNote = TrackerNotification()
+                        trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
                         this@TimeTrackerManualEntryDialog.close(0)
                     } else if (futureCode.get() != 1) {
                         notifier.foreground = Color.red
