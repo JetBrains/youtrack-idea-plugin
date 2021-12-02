@@ -102,10 +102,13 @@ class TimeTracker(override val project: Project) : ComponentAware {
             isPaused = true
             isAutoTrackingTemporaryDisabled = false
 
-            if (isWhenProjectClosedEnabled || isManualTrackingEnabled) {
+            if (isWhenProjectClosedEnabled) {
                 reset()
+                spentTimePerTaskStorage.removeAllSavedItems()
             }
+
             if (isManualTrackingEnabled) {
+                reset()
                 stop()
             }
 
