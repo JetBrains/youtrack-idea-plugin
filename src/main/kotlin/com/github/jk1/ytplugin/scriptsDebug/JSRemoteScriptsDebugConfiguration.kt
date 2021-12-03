@@ -5,6 +5,7 @@ import com.github.jk1.ytplugin.debug.JSDebugScriptsEditor
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.setup.getInstanceUUID
 import com.github.jk1.ytplugin.setup.getInstanceVersion
+import com.github.jk1.ytplugin.setup.obtainYouTrackConfiguration
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableBiMap
@@ -17,7 +18,6 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.debugger.LocalFileSystemFileFinder
 import com.intellij.javascript.debugger.execution.RemoteUrlMappingBean
@@ -163,9 +163,11 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) repositories[0] else null
 
+        if (getInstanceVersion() == null && repo != null){
+                obtainYouTrackConfiguration(repo.url)
+        }
         val version = getInstanceVersion()
 
-        // TODO: clear mappings on the run
         when (version) {
             null -> throw InvalidDataException("The YouTrack Integration plugin has not been configured to connect with a YouTrack site")
             in 2021.3..Double.MAX_VALUE -> {
@@ -173,14 +175,8 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                 // clear mappings on each run of the configuration
                 mappings.clear()
 
-                val instanceUuid = getInstanceUUID()
-
-                instanceFolder = if (instanceUuid != null) {
-                    // old versions support (no uuid in config)
-                        instanceUuid
-                } else {
-                    URL(repo?.url).host.split(".").first()
-                }
+                instanceFolder = // old versions support (no uuid in config)
+                    getInstanceUUID() ?: URL(repo?.url).host.split(".").first()
 
                 loadScripts()
 

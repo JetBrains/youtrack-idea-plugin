@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
+import org.apache.http.HttpStatus
 import org.apache.http.client.methods.HttpGet
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -38,7 +39,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         try {
             val client = SetupRepositoryConnector.setupHttpClient()
             val response = client.execute(method)
-            if (response.statusLine.statusCode == 200) {
+            if (response.statusLine.statusCode == HttpStatus.SC_OK) {
                 if (!credentialsChecker.isGuestUser(response.entity)){
                     logger.debug("connection status: SUCCESS")
                     method.releaseConnection()
@@ -64,7 +65,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         this.onSuccess = closure
     }
 
-    fun onRedirectiomError(closure: (request: HttpRequest, httpResponse: HttpResponse) -> Unit) {
+    fun onRedirectionError(closure: (request: HttpRequest, httpResponse: HttpResponse) -> Unit) {
         this.onRedirectionError = closure
     }
 

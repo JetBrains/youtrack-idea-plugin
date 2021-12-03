@@ -88,6 +88,10 @@ class SetupRepositoryConnector {
             }
         }
         checker.onVersionError { _ ->
+
+            if (getInstanceVersion() == null){
+                obtainYouTrackConfiguration(repository.url)
+            }
             val version = getInstanceVersion()
 
             if (version != null && version >= 2017.1 && version <= 2020.4) {
@@ -100,25 +104,16 @@ class SetupRepositoryConnector {
                 }
             }
         }
-        checker.onRedirectiomError { request, response ->
+        checker.onRedirectionError { request, response ->
             logger.debug("handling application error for ${repository.url}")
             when (response.statusLine.statusCode) {
                 // handles both /youtrack absence (for old instances) and http instead of https protocol
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = response.getFirstHeader("Location").value
-                    if (!location.contains("/waitInstanceStartup/")) {
-                        repository.url =  if (location.contains(endpoint)){
-                           location.replace(endpoint, "")
-                        } else {
-                           "${repository.url}$location"
-                        }
-                    } else {
-                        if (!request.requestLine.uri.contains("/youtrack")) {
-                            logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
-                            repository.url = "${repository.url}/youtrack"
-                        }
-                    }
+
+                    replaceRepositoryUrlWithLocation(repository, location, request)
+
                     logger.debug("url after correction: ${repository.url}")
                     // unloaded instance redirect can't handle /api/* suffix properly
                     checker.check()
@@ -130,8 +125,10 @@ class SetupRepositoryConnector {
                 else -> {
                     logger.debug("handling response code other than 301..399, 403 ${repository.url}: MANUAL FIX")
                     if (!request.requestLine.uri.contains("/youtrack")) {
+
                         repository.url = "${repository.url}/youtrack"
                         logger.debug("url after manual ending fix: ${repository.url}")
+
                         checker.check()
                     } else {
                         logger.debug("no manual ending fix: LOGIN_ERROR")
@@ -145,8 +142,10 @@ class SetupRepositoryConnector {
             // handles https instead of http protocol
             if (URL(request.requestLine.uri).protocol == HttpScheme.HTTPS.toString()) {
                 logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
+
                 val repoUrl = URL(repository.url)
                 repository.url = URL(HttpScheme.HTTP.toString(), repoUrl.host, repoUrl.port, repoUrl.path).toString()
+
                 logger.debug("url after manual protocol fix: ${repository.url}")
                 checker.check()
             } else {
@@ -157,6 +156,22 @@ class SetupRepositoryConnector {
         }
         checker.check()
     }
+
+    private fun replaceRepositoryUrlWithLocation(repository: YouTrackRepository, location: String, request: HttpRequest) {
+        if (!location.contains("/waitInstanceStartup/")) {
+            repository.url =  if (location.contains(endpoint)){
+                location.replace(endpoint, "")
+            } else {
+                "${repository.url}$location"
+            }
+        } else {
+            if (!request.requestLine.uri.contains("/youtrack")) {
+                logger.debug("url after manual ending fix for waitInstanceStartup : ${repository.url}")
+                repository.url = "${repository.url}/youtrack"
+            }
+        }
+    }
+
 
     fun testConnection(repository: YouTrackRepository, myProject: Project) {
         logger.debug("TRY CONNECTION FOR ${repository.url}")
