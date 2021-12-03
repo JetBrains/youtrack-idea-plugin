@@ -2,19 +2,13 @@ package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.google.gson.JsonParser
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
-import com.intellij.util.net.ssl.CertificateManager
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.http.util.EntityUtils
 import java.nio.charset.StandardCharsets
 import java.util.*
-
-import org.apache.http.client.config.RequestConfig
 
 
 class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
@@ -22,7 +16,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
     private var onSuccess: (method: HttpRequest) -> Unit = {}
     private var onVersionError: (method: HttpRequest) -> Unit = {}
     private var onTransportError: (request: HttpRequest, e: Exception) -> Unit = { _: HttpRequest, _: Exception -> }
-    private var onApplicationError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
+    private var onRedirectionError: (request: HttpRequest, response: HttpResponse) -> Unit = { _: HttpRequest, _: HttpResponse -> }
 
     private val credentialsChecker = ComponentAware.of(project).credentialsCheckerComponent
 
@@ -45,9 +39,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
             val client = SetupRepositoryConnector.setupHttpClient()
             val response = client.execute(method)
             if (response.statusLine.statusCode == 200) {
-                val user = JsonParser.parseString(EntityUtils.toString(response.entity, "UTF-8"))
-                    .asJsonObject.get("name").toString()
-                if (user != "\"guest\""){
+                if (!credentialsChecker.isGuestUser(response.entity)){
                     logger.debug("connection status: SUCCESS")
                     method.releaseConnection()
                     onSuccess(method)
@@ -59,7 +51,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
             } else {
                 logger.debug("connection status: APPLICATION ERROR")
                 method.releaseConnection()
-                onApplicationError(method, response)
+                onRedirectionError(method, response)
             }
         } catch (e: Exception) {
             logger.debug("connection status: TRANSPORT ERROR")
@@ -72,8 +64,8 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         this.onSuccess = closure
     }
 
-    fun onApplicationError(closure: (request: HttpRequest, httpResponse: HttpResponse) -> Unit) {
-        this.onApplicationError = closure
+    fun onRedirectiomError(closure: (request: HttpRequest, httpResponse: HttpResponse) -> Unit) {
+        this.onRedirectionError = closure
     }
 
     fun onTransportError(closure: (request: HttpRequest, e: Exception) -> Unit) {
