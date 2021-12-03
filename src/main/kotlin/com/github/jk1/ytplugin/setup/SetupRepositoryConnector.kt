@@ -64,15 +64,6 @@ class SetupRepositoryConnector {
         }
     }
 
-
-    private fun isValidYouTrackVersion(url: String): Boolean {
-        // on the first invoke setup YouTrack configuration
-        obtainYouTrackConfiguration(url)
-        val version = getInstanceVersion()
-        return version != null && version >= 2017.1
-    }
-
-
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
@@ -185,6 +176,14 @@ class SetupRepositoryConnector {
             }
         }
         ProgressManager.getInstance().run(task)
+    }
+
+
+    private fun isValidYouTrackVersion(url: String): Boolean {
+        // on the first invoke setup YouTrack configuration
+        obtainYouTrackConfiguration(url)
+        val version = getInstanceVersion()
+        return version != null && version >= 2017.1
     }
 
     fun showIssuesForConnectedRepo(repository: YouTrackRepository, project: Project) {

@@ -28,6 +28,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.net.HttpConfigurable;
+import io.netty.handler.codec.http.HttpScheme;
 import kotlin.jvm.internal.Intrinsics;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -134,9 +135,9 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     private void setupGeneralTab() {
 
         if (!repo.getRepo().isConfigured()) {
-            forbidSelection();
+            forbidAdditionalParametersSelection();
         } else {
-            allowSelection(repo);
+            allowAdditionalParametersSelection(repo);
         }
 
         inputUrlTextPane.setBackground(inputTokenField.getBackground());
@@ -254,46 +255,48 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     }
 
     private void testConnectionAction() {
-
         boolean isRememberPassword = PasswordSafe.getInstance().isRememberPasswordByDefault();
         if (!isRememberPassword) {
             repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
         }
         Color fontColor = inputTokenField.getForeground();
 
-        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        // current implementation allows to log in with empty password (as guest) but we do not want to allow it
         if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-
-            YouTrackRepositoryType myRepositoryType = new YouTrackRepositoryType();
-            connectedRepository.setLoginAnonymously(false);
-
-            if (inputUrlTextPane.getText().startsWith("http")) {
-                connectedRepository.setUrl(inputUrlTextPane.getText());
-            } else {
-                connectedRepository.setUrl("http://" + inputUrlTextPane.getText());
-            }
-            connectedRepository.setPassword(new String(inputTokenField.getPassword()));
-            connectedRepository.setUsername("random"); // ignored by YouTrack anyway when token is sent as password
-            connectedRepository.setRepositoryType(myRepositoryType);
-            connectedRepository.storeCredentials();
-
-            connectedRepository.setShared(shareUrlCheckBox.isSelected());
-
-            HttpConfigurable proxy = HttpConfigurable.getInstance();
-            if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected()) {
-                connectedRepository.setUseProxy(useProxyCheckBox.isSelected());
-                if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-                    repoConnector.testConnection(connectedRepository, project);
-                    connectedRepository.storeCredentials();
-                }
-            } else {
-                repoConnector.setNoteState(NotifierState.NULL_PROXY_HOST);
-                connectedRepository.setUseProxy(false);
-            }
+            setupRepositoryParameters();
+            setupProxy();
         }
 
         drawAutoCorrection(fontColor);
+        setNotifierState();
 
+        if (repoConnector.getNoteState() != NotifierState.SUCCESS) {
+            forbidAdditionalParametersSelection();
+        } else {
+            allowAdditionalParametersSelection(new YouTrackServer(connectedRepository, project));
+        }
+
+        logger.debug("connection is tested, result is: " + repoConnector.getNoteState());
+        repoConnector.setNotifier(notifyFieldLabel);
+        isConnectionTested = true;
+    }
+
+    private void setupProxy() {
+        HttpConfigurable proxy = HttpConfigurable.getInstance();
+        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected()) {
+            connectedRepository.setUseProxy(useProxyCheckBox.isSelected());
+
+            if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
+                repoConnector.testConnection(connectedRepository, project);
+                connectedRepository.storeCredentials();
+            }
+        } else {
+            repoConnector.setNoteState(NotifierState.NULL_PROXY_HOST);
+            connectedRepository.setUseProxy(false);
+        }
+    }
+
+    private void setNotifierState() {
         if (inputUrlTextPane.getText().isEmpty() || inputTokenField.getPassword().length == 0) {
             repoConnector.setNoteState(NotifierState.EMPTY_FIELD);
         } else if (!(credentialsChecker.isMatchingAppPassword(connectedRepository.getPassword())
@@ -302,19 +305,26 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         } else if (PasswordSafe.getInstance().isMemoryOnly()) {
             repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
         }
-
-        if (repoConnector.getNoteState() != NotifierState.SUCCESS) {
-            forbidSelection();
-        } else {
-            allowSelection(new YouTrackServer(connectedRepository, project));
-        }
-
-        logger.debug("connection is tested, result is: " + repoConnector.getNoteState());
-        repoConnector.setNotifier(notifyFieldLabel);
-        isConnectionTested = true;
     }
 
-    void forbidSelection() {
+    private void setupRepositoryParameters(){
+        YouTrackRepositoryType myRepositoryType = new YouTrackRepositoryType();
+        connectedRepository.setLoginAnonymously(false);
+
+        if (inputUrlTextPane.getText().startsWith(HttpScheme.HTTP.toString())) {
+            connectedRepository.setUrl(inputUrlTextPane.getText());
+        } else {
+            connectedRepository.setUrl(HttpScheme.HTTP.toString() +  "://" + inputUrlTextPane.getText());
+        }
+        connectedRepository.setPassword(new String(inputTokenField.getPassword()));
+        connectedRepository.setUsername("random"); // ignored by YouTrack anyway when token is sent as password
+        connectedRepository.setRepositoryType(myRepositoryType);
+        connectedRepository.storeCredentials();
+
+        connectedRepository.setShared(shareUrlCheckBox.isSelected());
+    }
+
+    void forbidAdditionalParametersSelection() {
         noTrackingButton.setEnabled(false);
         isAutoTrackingEnabledRadioButton.setEnabled(false);
         isManualModeRadioButton.setEnabled(false);
@@ -323,7 +333,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     }
 
 
-    public final void allowSelection(@NotNull YouTrackServer repository) {
+    public final void allowAdditionalParametersSelection(@NotNull YouTrackServer repository) {
         Intrinsics.checkNotNullParameter(repository, "repository");
         this.noTrackingButton.setEnabled(true);
         this.isAutoTrackingEnabledRadioButton.setEnabled(true);
@@ -396,6 +406,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
             URL oldUrl = null;
             URL fixedUrl = null;
+
             try {
                 oldUrl = (oldAddress.startsWith("http")) ? new URL(oldAddress) : new URL("http://" + oldAddress);
                 fixedUrl = new URL(connectedRepository.getUrl());
@@ -406,31 +417,55 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             inputUrlTextPane.setText("");
 
-            Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
-                    ? fontColor : JBColor.GREEN;
+            drawProtocol(fixedUrl, oldUrl, oldAddress, fontColor);
 
-            drawUrlComponent(color, 0, fixedUrl.getProtocol().length() + 3, fixedUrl.getProtocol() + "://");
+            drawHost(fixedUrl, oldUrl, fontColor);
 
-            color = (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN;
-            drawUrlComponent(color, fixedUrl.getProtocol().length() + 3,
-                    fixedUrl.getProtocol().length() + 3 + fixedUrl.getHost().length(),
-                    inputUrlTextPane.getText() + fixedUrl.getHost());
-
-            if (fixedUrl.getPort() != -1) {
-                color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
-                drawUrlComponent(color, fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length() - fixedUrl.getFile().length(),
-                        fixedUrl.toString().length() - fixedUrl.getFile().length(),
-                        inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
+            if (fixedUrl.getPort() != -1 && oldUrl != null) {
+                drawPort(fixedUrl, oldUrl, fontColor);
             }
 
-            if (!fixedUrl.getPath().isEmpty()) {
-                color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
-                drawUrlComponent(color, fixedUrl.toString().length() - fixedUrl.getPath().length(),
-                        fixedUrl.toString().length(),
-                        inputUrlTextPane.getText() + fixedUrl.getPath());
+            if (!fixedUrl.getPath().isEmpty() && oldUrl != null) {
+                drawPath(fixedUrl, oldUrl, fontColor);
             }
         }
     }
+
+    // todo: why need both oldUrl and oldAddress
+    private void drawProtocol(URL fixedUrl, URL oldUrl, String oldAddress, Color fontColor) {
+        Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
+                ? fontColor : JBColor.GREEN;
+
+        drawUrlComponent(color, 0, fixedUrl.getProtocol().length() + 3, fixedUrl.getProtocol() + "://");
+    }
+
+    private void drawHost(URL fixedUrl, URL oldUrl, Color fontColor) {
+        Color color = (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN;
+
+        int start = fixedUrl.getProtocol().length() + 3;
+        int end = fixedUrl.getProtocol().length() + 3 + fixedUrl.getHost().length();
+
+        drawUrlComponent(color, start, end, inputUrlTextPane.getText() + fixedUrl.getHost());
+    }
+
+    private void drawPort(URL fixedUrl, URL oldUrl, Color fontColor) {
+        Color color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
+
+        int start = fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length() - fixedUrl.getFile().length();
+        int end = fixedUrl.toString().length() - fixedUrl.getFile().length();
+
+        drawUrlComponent(color, start, end, inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
+    }
+
+    private void drawPath(URL fixedUrl, URL oldUrl, Color fontColor) {
+        Color color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
+
+        int start = fixedUrl.toString().length() - fixedUrl.getPath().length();
+        int end =  fixedUrl.toString().length();
+
+        drawUrlComponent(color, start, end, inputUrlTextPane.getText() + fixedUrl.getPath());
+    }
+
 
     private void drawUrlComponent(Color color, int start, int end, String text) {
 
@@ -441,7 +476,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         inputUrlTextPane.setText(text);
         inputUrlTextPane.getEditor().getMarkupModel().addRangeHighlighter(start, end, 0,
                 textAttributes, HighlighterTargetArea.EXACT_RANGE);
-
     }
 
     @Override
@@ -603,6 +637,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         return isScheduledCheckbox;
     }
 
+    // todo: why not used
     public final JCheckBox getPostWhenCommitCheckbox() {
         return postWhenCommitCheckbox;
     }
