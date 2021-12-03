@@ -5,6 +5,9 @@ interface YouTrackConnectionTrait {
     val serverUrl: String
         get() = "https://ytplugintest.youtrack.cloud"
 
+    val serverUrlOld: String
+        get() = "https://ytplugintest.myjetbrains.com/youtrack"
+
     val projectId: String
         get() = "AT"
 

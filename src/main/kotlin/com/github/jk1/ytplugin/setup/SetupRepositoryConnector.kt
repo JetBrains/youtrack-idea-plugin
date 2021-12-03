@@ -1,7 +1,6 @@
 package com.github.jk1.ytplugin.setup
 
 import com.github.jk1.ytplugin.logger
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -12,13 +11,13 @@ import com.intellij.tasks.config.RecentTaskRepositories
 import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.tasks.youtrack.YouTrackRepository
 import com.intellij.util.net.ssl.CertificateManager
+import io.netty.handler.codec.http.HttpScheme
 import org.apache.http.HttpRequest
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import java.awt.Color
 import java.net.URL
-import javax.net.ssl.SSLException
 import javax.swing.JLabel
 
 class SetupRepositoryConnector {
@@ -35,6 +34,8 @@ class SetupRepositoryConnector {
 
     @Volatile
     var noteState = NotifierState.INVALID_TOKEN
+    private val endpoint = "/api/users/me?fields=name"
+
 
     fun setNotifier(note: JLabel) {
         note.foreground = Color.red
@@ -76,7 +77,7 @@ class SetupRepositoryConnector {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
             if (isValidYouTrackVersion(repository.url)) {
-                repository.url = request.requestLine.uri.replace("/api/users/me?fields=name", "")
+                repository.url = request.requestLine.uri.replace(endpoint, "")
                 logger.debug("valid YouTrack version detected")
                 noteState = NotifierState.SUCCESS
             } else {
@@ -99,16 +100,16 @@ class SetupRepositoryConnector {
                 }
             }
         }
-        checker.onApplicationError { request, response ->
+        checker.onRedirectiomError { request, response ->
             logger.debug("handling application error for ${repository.url}")
             when (response.statusLine.statusCode) {
+                // handles both /youtrack absence (for old instances) and http instead of https protocol
                 in 301..399 -> {
                     logger.debug("handling response code 301..399 for the ${repository.url}: REDIRECT")
                     val location = response.getFirstHeader("Location").value
                     if (!location.contains("/waitInstanceStartup/")) {
-                        val endpoint = "/api/users/me?fields=name"
                         repository.url =  if (location.contains(endpoint)){
-                           location.replace("/api/users/me?fields=name", "")
+                           location.replace(endpoint, "")
                         } else {
                            "${repository.url}$location"
                         }
@@ -139,26 +140,20 @@ class SetupRepositoryConnector {
                 }
             }
         }
-        checker.onTransportError { request: HttpRequest, exception: Exception ->
+        checker.onTransportError { request: HttpRequest, _: Exception ->
             logger.debug("handling transport error for ${repository.url}")
-            when (exception) {
-                is SSLException -> {
-                    logger.debug("application error: INCORRECT_CERTIFICATE")
-                    noteState = NotifierState.INCORRECT_CERTIFICATE
-                }
-                else -> {
-                    if (URL(request.requestLine.uri).protocol != "https") {
-                        logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
-                        val repoUrl = URL(repository.url)
-                        repository.url = URL("https", repoUrl.host, repoUrl.port, repoUrl.path).toString()
-                        logger.debug("url after manual protocol fix: ${repository.url}")
-                        checker.check()
-                    } else {
-                        logger.debug("no manual transport fix: LOGIN_ERROR")
-                        noteState = NotifierState.LOGIN_ERROR
-                    }
-                }
+            // handles https instead of http protocol
+            if (URL(request.requestLine.uri).protocol == HttpScheme.HTTPS.toString()) {
+                logger.debug("handling transport error for ${repository.url}: MANUAL PROTOCOL FIX")
+                val repoUrl = URL(repository.url)
+                repository.url = URL(HttpScheme.HTTP.toString(), repoUrl.host, repoUrl.port, repoUrl.path).toString()
+                logger.debug("url after manual protocol fix: ${repository.url}")
+                checker.check()
+            } else {
+                logger.debug("no manual transport fix: LOGIN_ERROR")
+                noteState = NotifierState.LOGIN_ERROR
             }
+
         }
         checker.check()
     }
@@ -202,7 +197,6 @@ enum class NotifierState {
     UNKNOWN_HOST,
     INVALID_TOKEN,
     INVALID_VERSION,
-    INVALID_PROTOCOL,
     NULL_PROXY_HOST,
     TIMEOUT,
     INCORRECT_CERTIFICATE,

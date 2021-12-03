@@ -39,7 +39,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
     @Test
     fun `test connection with no youtrack ending in url`() {
-        val myServerUrl = serverUrl.replace("/youtrack", "")
+        val myServerUrl = serverUrlOld.replace("/youtrack", "")
         repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
@@ -52,7 +52,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
     @Test
     fun `test connection with no youtrack ending and protocol error in url`() {
-        val myServerUrl = serverUrl.replace("/youtrack", "").replace("https", "http")
+        val myServerUrl = serverUrlOld.replace("/youtrack", "").replace("https", "http")
         repository = createYouTrackRepository(myServerUrl, token)
         val repo = repository.getRepo()
         val setupTask = SetupRepositoryConnector()
@@ -127,7 +127,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://lug", repository.getRepo().url)
+        assertEquals("http://lug", repository.getRepo().url)
         assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
@@ -140,7 +140,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
 
         setupTask.testConnection(repo, project)
 
-        assertEquals("https://tains.com", repository.getRepo().url)
+        assertEquals("http://tains.com", repository.getRepo().url)
         assertEquals(NotifierState.LOGIN_ERROR, setupTask.noteState)
     }
 
