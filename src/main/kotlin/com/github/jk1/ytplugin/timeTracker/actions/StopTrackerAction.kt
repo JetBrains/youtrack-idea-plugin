@@ -37,7 +37,7 @@ class StopTrackerAction : AnAction(
             if (timer.isAutoTrackingEnabled){
                 event.presentation.icon = YouTrackPluginIcons.YOUTRACK_POST_FROM_TIME_TRACKER
                 event.presentation.description = "Post spent time to the current issue and continue tracking"
-                event.presentation.text = "Post Time To Server"
+                event.presentation.text = "Post Time to Server"
             } else {
                 event.presentation.icon = YouTrackPluginIcons.YOUTRACK_STOP_TIME_TRACKER
                 event.presentation.description = "Stop tracking and post spent time to the current issue"

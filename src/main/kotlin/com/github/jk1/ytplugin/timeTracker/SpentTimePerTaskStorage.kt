@@ -47,9 +47,9 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
             propertiesStore.setValue("spentTimePerTaskStorage.store", store.toString())
 
             val trackerNote = TrackerNotification()
-            trackerNote.notify("Total time " +
+            trackerNote.notify("Added " +
                     "${TimeTracker.formatTimePeriod(getSavedTimeForLocalTask(timeTrackerComponent.issueId))} " +
-                    "min for issue ${timeTrackerComponent.issueId} is saved locally", NotificationType.INFORMATION)
+                    "min of tracked time for ${timeTrackerComponent.issueId} to local time tracking records", NotificationType.INFORMATION)
 
             logger.debug("Time for $task is saved: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
         } else {

@@ -44,7 +44,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         super(project, true);
         this.project = project;
         this.repo = repo;
-        setTitle("Saved Time Tracking Items");
+        setTitle("Tracked Time");
         $$$setupUI$$$();
         addSelectAllFeatureToCheckBox();
         addSelectAllFeatureToTheTable();
@@ -170,7 +170,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
             i++;
         }
 
-        Object[] columnsHeaders = new String[]{"Selected", "Issue", "Saved time"};
+        Object[] columnsHeaders = new String[]{"Selected", "Issue", "Time"};
 
         DefaultTableModel model = new DefaultTableModel(data, columnsHeaders) {
             @Override
@@ -200,7 +200,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
     protected class RemoveAction extends DialogWrapperAction {
         protected RemoveAction() {
-            super("Remove");
+            super("Discard");
         }
 
         @Override
@@ -210,8 +210,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
             selectedItems.forEach((k, v) -> {
                 storage.resetSavedTimeForLocalTask(k);
                 TrackerNotification trackerNote = new TrackerNotification();
-                trackerNote.notify("Saved time " + TimeTracker.Companion.formatTimePeriod(v) +
-                        " min for " + k + " was removed", NotificationType.INFORMATION);
+                trackerNote.notify("Discarded " + TimeTracker.Companion.formatTimePeriod(v) +
+                        " min of tracked time for " + k, NotificationType.INFORMATION);
             });
 
             close(0);

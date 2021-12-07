@@ -34,14 +34,14 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
 
         val postStatus = TimeTrackerRestClient(repository).postNewWorkItem(issueId, time, type, comment, date)
         if (postStatus == HttpStatus.SC_OK){
-            trackerNote.notify("Spent time was successfully added for $issueId",
+            trackerNote.notify("Spent time added to $issueId",
                 NotificationType.INFORMATION)
 
             of(project).issueWorkItemsStoreComponent[repository].update(repository)
             storage.resetSavedTimeForLocalTask(issueId)
         } else {
             trackerNote.notify("Unable to post time to YouTrack. See IDE log for details. " +
-                    "Time $time min is saved", NotificationType.WARNING)
+                    "A record for $time min of tracked time has been saved locally.", NotificationType.WARNING)
 
             storage.resetSavedTimeForLocalTask(issueId)
             storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))

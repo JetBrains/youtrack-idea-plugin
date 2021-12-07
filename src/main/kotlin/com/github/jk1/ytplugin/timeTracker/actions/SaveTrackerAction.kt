@@ -24,8 +24,8 @@ class SaveTrackerAction {
             val updatedTime = savedTimeStorage.getSavedTimeForLocalTask(taskId)
             if (savedTimeStorage.getSavedTimeForLocalTask(taskId) >= 60000) {
                 trackerNote.notify(
-                    "Time for the issue ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}" +
-                            "is saved: ${TimeTracker.formatTimePeriod(updatedTime)} min.",
+                    "Tracked time for ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}" +
+                            " saved: ${TimeTracker.formatTimePeriod(updatedTime)} min",
                     NotificationType.INFORMATION
                 )
             }
@@ -42,7 +42,7 @@ class SaveTrackerAction {
         } catch (e: IllegalStateException) {
             logger.warn("Time tracking exception: ${e.message}")
             logger.debug(e)
-            trackerNote.notify("Could not stop time tracking: timer is not started", NotificationType.WARNING)
+            trackerNote.notify("Could not stop time tracking: timer is not running", NotificationType.WARNING)
         }
 
     }

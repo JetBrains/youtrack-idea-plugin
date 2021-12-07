@@ -9,8 +9,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 
 class ShowAllSavedTimeTrackingItems : AnAction(
-    "Show Saved Time Tracking Items",
-    "Show time tracking items that have not been posted to YouTrack yet",
+    "Show Tracked Time",
+    "Show local time tracking records that have yet to be posted to YouTrack",
      AllIcons.Vcs.History // TODO custom icon
 ) {
 

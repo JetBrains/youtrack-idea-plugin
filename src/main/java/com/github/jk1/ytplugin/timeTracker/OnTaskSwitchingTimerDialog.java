@@ -38,13 +38,13 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
         timer = ComponentAware.Companion.of(project).getTimeTrackerComponent();
         timePerTaskStorage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
 
-        setTitle("Saved Time Tracking Items");
+        setTitle("Save Tracked Time");
         $$$setupUI$$$();
         // todo: display not only in minutes
         Long savedTime = timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId());
-        String message = "<html>Time " + timer.Companion.formatTimePeriod(savedTime) +
-                " min is recorded for the task " +  timer.getIssueId() + ".<br/>Do you wish to continue tracking or post " +
-                "time to YouTrack and start a new entry?</html>";
+        String message = "<html>You have spent " + timer.Companion.formatTimePeriod(savedTime) +
+                " min working on " +  timer.getIssueId() + ". " +
+                "You can either post this time to the issue now or save it locally and continue working on another task.</html>";
         note.setText(message);
 
         init();
@@ -88,7 +88,7 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
 
     protected class ContinueAction extends DialogWrapperAction {
         protected ContinueAction() {
-            super("Continue");
+            super("Save and Continue");
         }
 
         @Override
