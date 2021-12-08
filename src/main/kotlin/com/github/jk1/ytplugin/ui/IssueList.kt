@@ -75,6 +75,10 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
         else -> issueListModel.getElementAt(issueList.selectedIndex)
     }
 
+    fun setSelectedIssue(issue: Issue) {
+       issueList.selectedIndex = issueListModel.getIndexOfElement(issue)
+    }
+
     fun getIssueCount() = issueListModel.size
 
     fun update() = issueListModel.update()
@@ -102,6 +106,8 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
     inner class IssueListModel : AbstractListModel<Issue>() {
 
         override fun getElementAt(index: Int) = issueStoreComponent[repo].getIssue(index)
+
+        fun getIndexOfElement(issue: Issue) = issueStoreComponent[repo].getIndex(issue)
 
         // we still can get this method invoked from swing focus lost handler on project close
         override fun getSize() = if (project.isDisposed) 0 else issueStoreComponent[repo].getAllIssues().size

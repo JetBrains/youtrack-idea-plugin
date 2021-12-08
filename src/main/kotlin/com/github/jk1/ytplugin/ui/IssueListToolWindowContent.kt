@@ -2,11 +2,10 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
-import com.github.jk1.ytplugin.setup.SetupDialog
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ListActions
-import com.intellij.ui.SimpleTextAttributes
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.VK_ENTER
 import java.awt.event.MouseAdapter
@@ -25,6 +24,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
     private val viewer = IssueViewer()
     private val issuesList = IssueList(repo)
     private val searchBar = IssueSearchBar(repo)
+    private var lastSelectedIssue: Issue? = null
 
     init {
         val leftPanel = JPanel(BorderLayout())
@@ -42,10 +42,11 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
     private fun addSubscriberToUpdateIssueViewOnListUpdate() {
         issueUpdaterComponent.subscribe {
             SwingUtilities.invokeLater {
-                val selectedIssue = issuesList.getSelectedIssue()
+                val selectedIssue = lastSelectedIssue
                 if (selectedIssue == null) {
                     splitter.collapse()
                 } else {
+                    issuesList.setSelectedIssue(selectedIssue)
                     viewer.showIssue(selectedIssue)
                 }
             }
@@ -78,6 +79,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             if (selectedIssue == null) {
                 splitter.collapse()
             } else {
+                lastSelectedIssue = selectedIssue
                 viewer.showIssue(selectedIssue)
             }
         }
