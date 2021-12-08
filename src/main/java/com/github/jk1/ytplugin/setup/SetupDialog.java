@@ -20,7 +20,6 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.tasks.youtrack.YouTrackRepository;
-import com.intellij.tasks.youtrack.YouTrackRepositoryType;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.*;
@@ -28,7 +27,6 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.net.HttpConfigurable;
-import io.netty.handler.codec.http.HttpScheme;
 import kotlin.jvm.internal.Intrinsics;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -261,14 +259,19 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         }
         Color fontColor = inputTokenField.getForeground();
 
+        RepositorySetupTuner repositorySetupTuner = new RepositorySetupTuner(connectedRepository, repoConnector,
+                inputUrlTextPane.getText(), new String(inputTokenField.getPassword()));
+
         // current implementation allows to log in with empty password (as guest) but we do not want to allow it
         if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-            setupRepositoryParameters();
-            setupProxy();
+
+            repositorySetupTuner.setupRepositoryParameters(shareUrlCheckBox.isSelected());
+            repositorySetupTuner.setupProxy(project, useProxyCheckBox.isSelected());
         }
 
         drawAutoCorrection(fontColor);
-        setNotifierState();
+
+        repositorySetupTuner.setNotifierState(credentialsChecker);
 
         if (repoConnector.getNoteState() != NotifierState.SUCCESS) {
             forbidAdditionalParametersSelection();
@@ -277,51 +280,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         }
 
         logger.debug("connection is tested, result is: " + repoConnector.getNoteState());
-        repoConnector.setNotifier(notifyFieldLabel);
+        repositorySetupTuner.setNotifier(notifyFieldLabel, repoConnector.getNoteState());
         isConnectionTested = true;
-    }
-
-    private void setupProxy() {
-        HttpConfigurable proxy = HttpConfigurable.getInstance();
-        if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected()) {
-            connectedRepository.setUseProxy(useProxyCheckBox.isSelected());
-
-            if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-                repoConnector.testConnection(connectedRepository, project);
-                connectedRepository.storeCredentials();
-            }
-        } else {
-            repoConnector.setNoteState(NotifierState.NULL_PROXY_HOST);
-            connectedRepository.setUseProxy(false);
-        }
-    }
-
-    private void setNotifierState() {
-        if (inputUrlTextPane.getText().isEmpty() || inputTokenField.getPassword().length == 0) {
-            repoConnector.setNoteState(NotifierState.EMPTY_FIELD);
-        } else if (!(credentialsChecker.isMatchingAppPassword(connectedRepository.getPassword())
-                || credentialsChecker.isMatchingBearerToken(connectedRepository.getPassword()))) {
-            repoConnector.setNoteState(NotifierState.INVALID_TOKEN);
-        } else if (PasswordSafe.getInstance().isMemoryOnly()) {
-            repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
-        }
-    }
-
-    private void setupRepositoryParameters(){
-        YouTrackRepositoryType myRepositoryType = new YouTrackRepositoryType();
-        connectedRepository.setLoginAnonymously(false);
-
-        if (inputUrlTextPane.getText().startsWith(HttpScheme.HTTP.toString())) {
-            connectedRepository.setUrl(inputUrlTextPane.getText());
-        } else {
-            connectedRepository.setUrl(HttpScheme.HTTP.toString() +  "://" + inputUrlTextPane.getText());
-        }
-        connectedRepository.setPassword(new String(inputTokenField.getPassword()));
-        connectedRepository.setUsername("random"); // ignored by YouTrack anyway when token is sent as password
-        connectedRepository.setRepositoryType(myRepositoryType);
-        connectedRepository.storeCredentials();
-
-        connectedRepository.setShared(shareUrlCheckBox.isSelected());
     }
 
     void forbidAdditionalParametersSelection() {
@@ -502,21 +462,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
         if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
-            YouTrackRepository myRepository = repo.getRepo();
-            myRepository.setLoginAnonymously(false);
-
-            myRepository.setUrl(connectedRepository.getUrl());
-            myRepository.setPassword(connectedRepository.getPassword());
-            myRepository.setUsername(connectedRepository.getUsername());
-            myRepository.setRepositoryType(connectedRepository.getRepositoryType());
-            myRepository.storeCredentials();
-
-            myRepository.setShared(connectedRepository.isShared());
-            myRepository.setUseProxy(connectedRepository.isUseProxy());
+            YouTrackRepository repositoryToStore = repo.getRepo();
+            RepositorySetupTuner.Companion.tuneRepoToStoreBasedOnConnectedRepo(repositoryToStore, connectedRepository);
 
             if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
-                repoConnector.updateToolWindowName(project, myRepository.getUrl());
-                repoConnector.showIssuesForConnectedRepo(myRepository, project);
+                RepositorySetupTuner.Companion.updateToolWindowName(project, repositoryToStore.getUrl());
+                RepositorySetupTuner.Companion.showIssuesForConnectedRepo(repositoryToStore, project);
             }
         }
 
