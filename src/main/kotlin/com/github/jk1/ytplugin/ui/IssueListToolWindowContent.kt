@@ -2,9 +2,11 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
+import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ListActions
+import com.intellij.ui.SimpleTextAttributes
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent.VK_ENTER
 import java.awt.event.MouseAdapter
@@ -12,6 +14,7 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
+import javax.swing.SwingUtilities
 
 
 class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
@@ -32,7 +35,21 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
+        addSubscriberToUpdateIssueViewOnListUpdate()
 
+    }
+
+    private fun addSubscriberToUpdateIssueViewOnListUpdate() {
+        issueUpdaterComponent.subscribe {
+            SwingUtilities.invokeLater {
+                val selectedIssue = issuesList.getSelectedIssue()
+                if (selectedIssue == null) {
+                    splitter.collapse()
+                } else {
+                    viewer.showIssue(selectedIssue)
+                }
+            }
+        }
     }
 
     private fun createActionPanel(): JComponent {

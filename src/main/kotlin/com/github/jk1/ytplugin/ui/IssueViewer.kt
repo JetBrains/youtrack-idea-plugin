@@ -31,7 +31,6 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     fun showIssue(issue: Issue) {
-        if (!this::currentIssue.isInitialized || currentIssue != issue) {
             rootPane.removeAll()
             rootPane.isOpaque = false
             currentIssue = issue
@@ -57,7 +56,6 @@ class IssueViewer : JPanel(BorderLayout()) {
             issuePane.setHtml(issue.description)
             scrollToTop.invoke()
             issuePane.repaint()
-        }
     }
 
     private fun createHeaderPanel(issue: Issue): JPanel {
