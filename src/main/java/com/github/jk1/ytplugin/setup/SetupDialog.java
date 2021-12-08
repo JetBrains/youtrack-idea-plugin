@@ -27,6 +27,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.net.HttpConfigurable;
+import io.netty.handler.codec.http.HttpScheme;
 import kotlin.jvm.internal.Intrinsics;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -264,7 +265,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         // current implementation allows to log in with empty password (as guest) but we do not want to allow it
         if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-
             repositorySetupTuner.setupRepositoryParameters(shareUrlCheckBox.isSelected());
             repositorySetupTuner.setupProxy(project, useProxyCheckBox.isSelected());
         }
@@ -364,11 +364,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             String oldAddress = inputUrlTextPane.getText();
 
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
-            URL oldUrl = null;
+            URL oldDefaultUrl = null;
             URL fixedUrl = null;
 
             try {
-                oldUrl = (oldAddress.startsWith("http")) ? new URL(oldAddress) : new URL("http://" + oldAddress);
+                oldDefaultUrl = (oldAddress.startsWith(HttpScheme.HTTP.toString())) ? new URL(oldAddress) : new URL(HttpScheme.HTTP + oldAddress);
                 fixedUrl = new URL(connectedRepository.getUrl());
             } catch (MalformedURLException e) {
                 logger.debug("Malformed URL: " + e.getMessage());
@@ -377,21 +377,20 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             inputUrlTextPane.setText("");
 
-            drawProtocol(fixedUrl, oldUrl, oldAddress, fontColor);
+            drawProtocol(fixedUrl, oldDefaultUrl, oldAddress, fontColor);
 
-            drawHost(fixedUrl, oldUrl, fontColor);
+            drawHost(fixedUrl, oldDefaultUrl, fontColor);
 
-            if (fixedUrl.getPort() != -1 && oldUrl != null) {
-                drawPort(fixedUrl, oldUrl, fontColor);
+            if (fixedUrl.getPort() != -1 && oldDefaultUrl != null) {
+                drawPort(fixedUrl, oldDefaultUrl, fontColor);
             }
 
-            if (!fixedUrl.getPath().isEmpty() && oldUrl != null) {
-                drawPath(fixedUrl, oldUrl, fontColor);
+            if (!fixedUrl.getPath().isEmpty() && oldDefaultUrl != null) {
+                drawPath(fixedUrl, oldDefaultUrl, fontColor);
             }
         }
     }
 
-    // todo: why need both oldUrl and oldAddress
     private void drawProtocol(URL fixedUrl, URL oldUrl, String oldAddress, Color fontColor) {
         Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
                 ? fontColor : JBColor.GREEN;
@@ -477,28 +476,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             this.close(0);
         }
 
-
-        logger.debug("Time tracking settings: \n" +
-                "issueId:" + timer.getIssueId() + "\n" +
-                "issueIdReadable" + timer.getIssueIdReadable() + "\n" +
-                "inactivityPeriodInMills " + timer.getInactivityPeriodInMills() + "\n" +
-                "pausedTime " + timer.getPausedTime() + "\n" +
-                "scheduledPeriod " + timer.getScheduledPeriod() + "\n" +
-                "recordedTime " + timer.getRecordedTime() + "\n" +
-                "timeInMills" + timer.getTimeInMills() + "\n" +
-                "startTime " + timer.getStartTime() + "\n" +
-                "isManualTrackingEnable " + timer.isManualTrackingEnable() + "\n" +
-                "isAutoTrackingEnable " + timer.isAutoTrackingEnable() + "\n" +
-                "comment" + timer.getComment() + "\n" +
-                "isScheduledEnabled " + timer.isScheduledEnabled() + "\n" +
-                "isWhenProjectClosedEnabled" + timer.isWhenProjectClosedEnabled() + "\n" +
-                "isPostAfterCommitEnabled " + timer.isPostAfterCommitEnabled() + "\n" +
-                "isRunning " + timer.isRunning() + "\n" +
-                "isPaused " + timer.isPaused() + "\n" +
-                "isAutoTrackingTemporaryDisabled " + timer.isAutoTrackingTemporaryDisabled() + "\n" +
-                "isPostedScheduled " + timer.isPostedScheduled() + "\n" +
-                "searchQuery" + timer.getSearchQuery() + "\n"
-        );
+        timer.printTimerSettingsLog();
 
         super.doOKAction();
 

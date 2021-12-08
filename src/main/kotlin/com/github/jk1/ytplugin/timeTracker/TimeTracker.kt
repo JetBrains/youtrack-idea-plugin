@@ -86,6 +86,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
             try {
                 val store: PropertiesComponent = PropertiesComponent.getInstance(project)
                 store.loadFields(this)
+                printTimerSettingsLog()
             } catch (e: IllegalStateException) {
                 logger.debug("No time tracker is stored yet")
             }
@@ -212,6 +213,33 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     fun setOnProjectCloseEnabled(isEnabled: Boolean) {
         isWhenProjectClosedEnabled = isEnabled
+    }
+
+    fun printTimerSettingsLog() {
+        logger.debug(
+            """
+            Time tracking settings: 
+            issueId:$issueId
+            issueIdReadable$issueIdReadable
+            inactivityPeriodInMills $inactivityPeriodInMills
+            pausedTime $pausedTime
+            scheduledPeriod $scheduledPeriod
+            recordedTime $recordedTime
+            timeInMills$timeInMills
+            startTime $startTime
+            isManualTrackingEnable $isManualTrackingEnable
+            isAutoTrackingEnable $isAutoTrackingEnable
+            comment$comment
+            isScheduledEnabled $isScheduledEnabled
+            isWhenProjectClosedEnabled$isWhenProjectClosedEnabled
+            isPostAfterCommitEnabled $isPostAfterCommitEnabled
+            isRunning $isRunning
+            isPaused $isPaused
+            isAutoTrackingTemporaryDisabled $isAutoTrackingTemporaryDisabled
+            isPostedScheduled $isPostedScheduled
+            searchQuery$searchQuery
+            """.trimIndent()
+        )
     }
 
 }
