@@ -29,6 +29,9 @@ class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterabl
 
     fun getIssue(index: Int) = issues[index]
 
+    fun getIndex(issue: Issue) = issues.indexOf(issue)
+
+
     override fun iterator() = issues.iterator()
 
     inner class RefreshIssuesTask(private val future: ActionCallback, private val repo: YouTrackServer) :

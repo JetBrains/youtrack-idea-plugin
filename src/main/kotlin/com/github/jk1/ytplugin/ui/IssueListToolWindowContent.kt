@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.ui
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.issues.actions.*
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ListActions
@@ -12,6 +13,7 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
+import javax.swing.SwingUtilities
 
 
 class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : JPanel(BorderLayout()), ComponentAware {
@@ -22,6 +24,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
     private val viewer = IssueViewer()
     private val issuesList = IssueList(repo)
     private val searchBar = IssueSearchBar(repo)
+    private var lastSelectedIssue: Issue? = null
 
     init {
         val leftPanel = JPanel(BorderLayout())
@@ -32,7 +35,22 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
         add(splitter, BorderLayout.CENTER)
         add(createActionPanel(), BorderLayout.WEST)
         setupIssueListActionListeners()
+        addSubscriberToUpdateIssueViewOnListUpdate()
 
+    }
+
+    private fun addSubscriberToUpdateIssueViewOnListUpdate() {
+        issueUpdaterComponent.subscribe {
+            SwingUtilities.invokeLater {
+                val selectedIssue = lastSelectedIssue
+                if (selectedIssue == null) {
+                    splitter.collapse()
+                } else {
+                    issuesList.setSelectedIssue(selectedIssue)
+                    viewer.showIssue(selectedIssue)
+                }
+            }
+        }
     }
 
     private fun createActionPanel(): JComponent {
@@ -61,6 +79,7 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
             if (selectedIssue == null) {
                 splitter.collapse()
             } else {
+                lastSelectedIssue = selectedIssue
                 viewer.showIssue(selectedIssue)
             }
         }

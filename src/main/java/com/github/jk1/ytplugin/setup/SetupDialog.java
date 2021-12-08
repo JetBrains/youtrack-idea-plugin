@@ -28,6 +28,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.net.HttpConfigurable;
+import io.netty.handler.codec.http.HttpScheme;
 import kotlin.jvm.internal.Intrinsics;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -134,9 +135,9 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     private void setupGeneralTab() {
 
         if (!repo.getRepo().isConfigured()) {
-            forbidSelection();
+            forbidAdditionalParametersSelection();
         } else {
-            allowSelection(repo);
+            allowAdditionalParametersSelection(repo);
         }
 
         inputUrlTextPane.setBackground(inputTokenField.getBackground());
@@ -256,67 +257,37 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     }
 
     private void testConnectionAction() {
-
         boolean isRememberPassword = PasswordSafe.getInstance().isRememberPasswordByDefault();
         if (!isRememberPassword) {
             repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
         }
         Color fontColor = inputTokenField.getForeground();
 
-        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        RepositorySetupTuner repositorySetupTuner = new RepositorySetupTuner(connectedRepository, repoConnector,
+                inputUrlTextPane.getText(), new String(inputTokenField.getPassword()));
+
+        // current implementation allows to log in with empty password (as guest) but we do not want to allow it
         if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-
-            YouTrackRepositoryType myRepositoryType = new YouTrackRepositoryType();
-            connectedRepository.setLoginAnonymously(false);
-
-            if (inputUrlTextPane.getText().startsWith("http")) {
-                connectedRepository.setUrl(inputUrlTextPane.getText());
-            } else {
-                connectedRepository.setUrl("http://" + inputUrlTextPane.getText());
-            }
-            connectedRepository.setPassword(new String(inputTokenField.getPassword()));
-            connectedRepository.setUsername("random"); // ignored by YouTrack anyway when token is sent as password
-            connectedRepository.setRepositoryType(myRepositoryType);
-            connectedRepository.storeCredentials();
-
-            connectedRepository.setShared(shareUrlCheckBox.isSelected());
-
-            HttpConfigurable proxy = HttpConfigurable.getInstance();
-            if (proxy.PROXY_HOST != null || !useProxyCheckBox.isSelected()) {
-                connectedRepository.setUseProxy(useProxyCheckBox.isSelected());
-                if (!inputUrlTextPane.getText().isEmpty() && inputTokenField.getPassword().length != 0) {
-                    repoConnector.testConnection(connectedRepository, project);
-                    connectedRepository.storeCredentials();
-                }
-            } else {
-                repoConnector.setNoteState(NotifierState.NULL_PROXY_HOST);
-                connectedRepository.setUseProxy(false);
-            }
+            repositorySetupTuner.setupRepositoryParameters(shareUrlCheckBox.isSelected());
+            repositorySetupTuner.setupProxy(project, useProxyCheckBox.isSelected());
         }
 
         drawAutoCorrection(fontColor);
 
-        if (inputUrlTextPane.getText().isEmpty() || inputTokenField.getPassword().length == 0) {
-            repoConnector.setNoteState(NotifierState.EMPTY_FIELD);
-        } else if (!(credentialsChecker.isMatchingAppPassword(connectedRepository.getPassword())
-                || credentialsChecker.isMatchingBearerToken(connectedRepository.getPassword()))) {
-            repoConnector.setNoteState(NotifierState.INVALID_TOKEN);
-        } else if (PasswordSafe.getInstance().isMemoryOnly()) {
-            repoConnector.setNoteState(NotifierState.PASSWORD_NOT_STORED);
-        }
+        repositorySetupTuner.setNotifierState(credentialsChecker);
 
         if (repoConnector.getNoteState() != NotifierState.SUCCESS) {
-            forbidSelection();
+            forbidAdditionalParametersSelection();
         } else {
-            allowSelection(new YouTrackServer(connectedRepository, project));
+            allowAdditionalParametersSelection(new YouTrackServer(connectedRepository, project));
         }
 
         logger.debug("connection is tested, result is: " + repoConnector.getNoteState());
-        repoConnector.setNotifier(notifyFieldLabel);
+        repositorySetupTuner.setNotifier(notifyFieldLabel, repoConnector.getNoteState());
         isConnectionTested = true;
     }
 
-    void forbidSelection() {
+    void forbidAdditionalParametersSelection() {
         noTrackingButton.setEnabled(false);
         isAutoTrackingEnabledRadioButton.setEnabled(false);
         isManualModeRadioButton.setEnabled(false);
@@ -325,7 +296,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
     }
 
 
-    public final void allowSelection(@NotNull YouTrackServer repository) {
+    public final void allowAdditionalParametersSelection(@NotNull YouTrackServer repository) {
         Intrinsics.checkNotNullParameter(repository, "repository");
         this.noTrackingButton.setEnabled(true);
         this.isAutoTrackingEnabledRadioButton.setEnabled(true);
@@ -396,10 +367,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             String oldAddress = inputUrlTextPane.getText();
 
             // if we managed to fix this and there's no protocol, well, it must be a default one missing
-            URL oldUrl = null;
+            URL oldDefaultUrl = null;
             URL fixedUrl = null;
+
             try {
-                oldUrl = (oldAddress.startsWith("http")) ? new URL(oldAddress) : new URL("http://" + oldAddress);
+                oldDefaultUrl = (oldAddress.startsWith(HttpScheme.HTTP.toString())) ? new URL(oldAddress) : new URL(HttpScheme.HTTP + oldAddress);
                 fixedUrl = new URL(connectedRepository.getUrl());
             } catch (MalformedURLException e) {
                 logger.debug("Malformed URL: " + e.getMessage());
@@ -408,31 +380,54 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             inputUrlTextPane.setText("");
 
-            Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
-                    ? fontColor : JBColor.GREEN;
+            drawProtocol(fixedUrl, oldDefaultUrl, oldAddress, fontColor);
 
-            drawUrlComponent(color, 0, fixedUrl.getProtocol().length() + 3, fixedUrl.getProtocol() + "://");
+            drawHost(fixedUrl, oldDefaultUrl, fontColor);
 
-            color = (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN;
-            drawUrlComponent(color, fixedUrl.getProtocol().length() + 3,
-                    fixedUrl.getProtocol().length() + 3 + fixedUrl.getHost().length(),
-                    inputUrlTextPane.getText() + fixedUrl.getHost());
-
-            if (fixedUrl.getPort() != -1) {
-                color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
-                drawUrlComponent(color, fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length() - fixedUrl.getFile().length(),
-                        fixedUrl.toString().length() - fixedUrl.getFile().length(),
-                        inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
+            if (fixedUrl.getPort() != -1 && oldDefaultUrl != null) {
+                drawPort(fixedUrl, oldDefaultUrl, fontColor);
             }
 
-            if (!fixedUrl.getPath().isEmpty()) {
-                color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
-                drawUrlComponent(color, fixedUrl.toString().length() - fixedUrl.getPath().length(),
-                        fixedUrl.toString().length(),
-                        inputUrlTextPane.getText() + fixedUrl.getPath());
+            if (!fixedUrl.getPath().isEmpty() && oldDefaultUrl != null) {
+                drawPath(fixedUrl, oldDefaultUrl, fontColor);
             }
         }
     }
+
+    private void drawProtocol(URL fixedUrl, URL oldUrl, String oldAddress, Color fontColor) {
+        Color color = (oldUrl != null && oldUrl.getProtocol().equals(fixedUrl.getProtocol()) && oldAddress.startsWith("http"))
+                ? fontColor : JBColor.GREEN;
+
+        drawUrlComponent(color, 0, fixedUrl.getProtocol().length() + 3, fixedUrl.getProtocol() + "://");
+    }
+
+    private void drawHost(URL fixedUrl, URL oldUrl, Color fontColor) {
+        Color color = (oldUrl != null && oldUrl.getHost().equals(fixedUrl.getHost())) ? fontColor : JBColor.GREEN;
+
+        int start = fixedUrl.getProtocol().length() + 3;
+        int end = fixedUrl.getProtocol().length() + 3 + fixedUrl.getHost().length();
+
+        drawUrlComponent(color, start, end, inputUrlTextPane.getText() + fixedUrl.getHost());
+    }
+
+    private void drawPort(URL fixedUrl, URL oldUrl, Color fontColor) {
+        Color color = (oldUrl.getPort() == fixedUrl.getPort() ? fontColor : JBColor.GREEN);
+
+        int start = fixedUrl.toString().length() - Integer.toString(fixedUrl.getPort()).length() - fixedUrl.getFile().length();
+        int end = fixedUrl.toString().length() - fixedUrl.getFile().length();
+
+        drawUrlComponent(color, start, end, inputUrlTextPane.getText() + ":" + fixedUrl.getPort());
+    }
+
+    private void drawPath(URL fixedUrl, URL oldUrl, Color fontColor) {
+        Color color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
+
+        int start = fixedUrl.toString().length() - fixedUrl.getPath().length();
+        int end =  fixedUrl.toString().length();
+
+        drawUrlComponent(color, start, end, inputUrlTextPane.getText() + fixedUrl.getPath());
+    }
+
 
     private void drawUrlComponent(Color color, int start, int end, String text) {
 
@@ -443,7 +438,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         inputUrlTextPane.setText(text);
         inputUrlTextPane.getEditor().getMarkupModel().addRangeHighlighter(start, end, 0,
                 textAttributes, HighlighterTargetArea.EXACT_RANGE);
-
     }
 
     @Override
@@ -466,21 +460,12 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
         if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
-            YouTrackRepository myRepository = repo.getRepo();
-            myRepository.setLoginAnonymously(false);
-
-            myRepository.setUrl(connectedRepository.getUrl());
-            myRepository.setPassword(connectedRepository.getPassword());
-            myRepository.setUsername(connectedRepository.getUsername());
-            myRepository.setRepositoryType(connectedRepository.getRepositoryType());
-            myRepository.storeCredentials();
-
-            myRepository.setShared(connectedRepository.isShared());
-            myRepository.setUseProxy(connectedRepository.isUseProxy());
+            YouTrackRepository repositoryToStore = repo.getRepo();
+            RepositorySetupTuner.Companion.tuneRepoToStoreBasedOnConnectedRepo(repositoryToStore, connectedRepository);
 
             if (repoConnector.getNoteState() == NotifierState.SUCCESS) {
-                repoConnector.updateToolWindowName(project, myRepository.getUrl());
-                repoConnector.showIssuesForConnectedRepo(myRepository, project);
+                RepositorySetupTuner.Companion.updateToolWindowName(project, repositoryToStore.getUrl());
+                RepositorySetupTuner.Companion.showIssuesForConnectedRepo(repositoryToStore, project);
             }
         }
 
@@ -490,28 +475,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             this.close(0);
         }
 
-
-        logger.debug("Time tracking settings: \n" +
-                "issueId:" + timer.getIssueId() + "\n" +
-                "issueIdReadable" + timer.getIssueIdReadable() + "\n" +
-                "inactivityPeriodInMills " + timer.getInactivityPeriodInMills() + "\n" +
-                "pausedTime " + timer.getPausedTime() + "\n" +
-                "scheduledPeriod " + timer.getScheduledPeriod() + "\n" +
-                "recordedTime " + timer.getRecordedTime() + "\n" +
-                "timeInMills" + timer.getTimeInMills() + "\n" +
-                "startTime " + timer.getStartTime() + "\n" +
-                "isManualTrackingEnable " + timer.isManualTrackingEnabled() + "\n" +
-                "isAutoTrackingEnable " + timer.isAutoTrackingEnabled() + "\n" +
-                "comment" + timer.getComment() + "\n" +
-                "isScheduledEnabled " + timer.isScheduledEnabled() + "\n" +
-                "isWhenProjectClosedEnabled" + timer.isWhenProjectClosedEnabled() + "\n" +
-                "isPostAfterCommitEnabled " + timer.isPostAfterCommitEnabled() + "\n" +
-                "isRunning " + timer.isRunning() + "\n" +
-                "isPaused " + timer.isPaused() + "\n" +
-                "isAutoTrackingTemporaryDisabled " + timer.isAutoTrackingTemporaryDisabled() + "\n" +
-                "isPostedScheduled " + timer.isPostedScheduled() + "\n" +
-                "searchQuery" + timer.getSearchQuery() + "\n"
-        );
+        timer.printTimerSettingsLog();
 
         super.doOKAction();
 
@@ -647,6 +611,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 "https://www.jetbrains.com/help/youtrack/incloud/Manage-Permanent-Token.html", null);
     }
 
+
     protected class TestConnectionAction extends DialogWrapperAction {
         protected TestConnectionAction() {
             super("Test Connection");
@@ -737,7 +702,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         timeTrackingTab.setLayout(new GridLayoutManager(4, 1, new Insets(20, 20, 20, 20), -1, -1));
         mainPane.addTab("Time Tracking", timeTrackingTab);
         autoPanel = new JPanel();
-        autoPanel.setLayout(new GridLayoutManager(3, 23, new Insets(10, 10, 10, 10), 20, 20));
+        autoPanel.setLayout(new GridLayoutManager(4, 23, new Insets(10, 10, 10, 10), 20, 20));
         timeTrackingTab.add(autoPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         autoPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Automatically create work items", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         postWhenProjectClosedCheckbox = new JBCheckBox();
@@ -749,6 +714,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         isScheduledCheckbox = new JBCheckBox();
         isScheduledCheckbox.setText("On a set schedule at:");
         autoPanel.add(isScheduledCheckbox, new GridConstraints(1, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer10 = new Spacer();
+        autoPanel.add(spacer10, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         timePanel = new JPanel();
         timePanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
         autoPanel.add(timePanel, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -758,8 +725,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         scheduledMinutes = new JBTextField();
         scheduledMinutes.setText("00");
         timePanel.add(scheduledMinutes, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        final Spacer spacer10 = new Spacer();
-        timePanel.add(spacer10, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer11 = new Spacer();
+        timePanel.add(spacer11, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         hourLabel2 = new JBLabel();
         hourLabel2.setText("hours");
         timePanel.add(hourLabel2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -778,8 +745,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         inactivityMinutesInputField.setEnabled(false);
         inactivityMinutesInputField.setText("15");
         inactivityPeriodPanel.add(inactivityMinutesInputField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        final Spacer spacer11 = new Spacer();
-        inactivityPeriodPanel.add(spacer11, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer12 = new Spacer();
+        inactivityPeriodPanel.add(spacer12, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         hourLabel1 = new JLabel();
         hourLabel1.setEnabled(false);
         hourLabel1.setText("hours");
@@ -808,10 +775,10 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         commentTextField.setText("  a");
         commentTextField.setToolTipText("");
         preferencesPanel.add(commentTextField, new GridConstraints(2, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final Spacer spacer12 = new Spacer();
-        preferencesPanel.add(spacer12, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
+        final Spacer spacer13 = new Spacer();
+        preferencesPanel.add(spacer13, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
         trackingModePanel = new JPanel();
-        trackingModePanel.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), 20, 20));
+        trackingModePanel.setLayout(new GridLayoutManager(1, 3, new Insets(10, 10, 10, 10), 20, 20));
         timeTrackingTab.add(trackingModePanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         trackingModePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Tracking mode", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         isAutoTrackingEnabledRadioButton = new JBRadioButton();
@@ -819,15 +786,15 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         trackingModePanel.add(isAutoTrackingEnabledRadioButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         isManualModeRadioButton = new JBRadioButton();
         isManualModeRadioButton.setText("Manual");
-        trackingModePanel.add(isManualModeRadioButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        trackingModePanel.add(isManualModeRadioButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         noTrackingButton = new JBRadioButton();
         noTrackingButton.setText("Off");
-        trackingModePanel.add(noTrackingButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        trackingModePanel.add(noTrackingButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 3), -1, -1));
         timeTrackingTab.add(panel1, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final Spacer spacer13 = new Spacer();
-        panel1.add(spacer13, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer14 = new Spacer();
+        panel1.add(spacer14, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
     }
 
     /**
