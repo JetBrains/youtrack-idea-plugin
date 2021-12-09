@@ -10,6 +10,7 @@ import com.intellij.ide.util.PropertyName
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBCheckBox
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -224,23 +225,32 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     fun getRecordedTimeInMills() = timeInMills
 
-    fun setWorkItemsType(type: String?) {
+
+    fun setupValuesNotRequiringTimerStop(type: String, comment: String, postWhenCommitCheckbox: JBCheckBox,
+                                                 postWhenProjectClosedCheckbox: JBCheckBox) {
+        setWorkItemsType(type)
+        setDefaultComment(comment)
+        setPostWhenCommitEnabled(postWhenCommitCheckbox.isSelected && postWhenCommitCheckbox.isEnabled)
+        setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isSelected && postWhenProjectClosedCheckbox.isEnabled)
+    }
+
+    private fun setWorkItemsType(type: String?) {
         if (type != null && type != this.type) {
             this.type = type
         }
     }
 
-    fun setDefaultComment(comment: String?) {
+    private fun setDefaultComment(comment: String?) {
         if (comment != null && comment != this.comment) {
             this.comment = comment
         }
     }
 
-    fun setPostWhenCommitEnabled(isEnabled: Boolean) {
+    private fun setPostWhenCommitEnabled(isEnabled: Boolean) {
         isPostAfterCommitEnabled = isEnabled
     }
 
-    fun setOnProjectCloseEnabled(isEnabled: Boolean) {
+    private fun setOnProjectCloseEnabled(isEnabled: Boolean) {
         isWhenProjectClosedEnabled = isEnabled
     }
 

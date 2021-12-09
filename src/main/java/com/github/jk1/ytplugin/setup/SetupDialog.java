@@ -20,7 +20,6 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.tasks.youtrack.YouTrackRepository;
-import com.intellij.tasks.youtrack.YouTrackRepositoryType;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.*;
@@ -380,16 +379,17 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             inputUrlTextPane.setText("");
 
-            drawProtocol(fixedUrl, oldDefaultUrl, oldAddress, fontColor);
+            if (fixedUrl != null){
+                drawProtocol(fixedUrl, oldDefaultUrl, oldAddress, fontColor);
+                drawHost(fixedUrl, oldDefaultUrl, fontColor);
 
-            drawHost(fixedUrl, oldDefaultUrl, fontColor);
+                if (fixedUrl.getPort() != -1) {
+                    drawPort(fixedUrl, oldDefaultUrl, fontColor);
+                }
 
-            if (fixedUrl.getPort() != -1 && oldDefaultUrl != null) {
-                drawPort(fixedUrl, oldDefaultUrl, fontColor);
-            }
-
-            if (!fixedUrl.getPath().isEmpty() && oldDefaultUrl != null) {
-                drawPath(fixedUrl, oldDefaultUrl, fontColor);
+                if (!fixedUrl.getPath().isEmpty()) {
+                    drawPath(fixedUrl, oldDefaultUrl, fontColor);
+                }
             }
         }
     }
@@ -436,7 +436,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 textAttributes.getErrorStripeColor(), textAttributes.getEffectType(), textAttributes.getFontType());
 
         inputUrlTextPane.setText(text);
-        inputUrlTextPane.getEditor().getMarkupModel().addRangeHighlighter(start, end, 0,
+        Objects.requireNonNull(inputUrlTextPane.getEditor()).getMarkupModel().addRangeHighlighter(start, end, 0,
                 textAttributes, HighlighterTargetArea.EXACT_RANGE);
     }
 
@@ -446,7 +446,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             testConnectionAction();
         }
 
-        setupValuesNotRequiringTimerStop();
+        timer.setupValuesNotRequiringTimerStop(getType(), getComment(),
+                postWhenCommitCheckbox, postWhenProjectClosedCheckbox);
 
         // post time if any relevant changes in settings were made
         if (shouldStopTimerOnPropertiesChange) {
@@ -479,13 +480,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         super.doOKAction();
 
-    }
-
-    private void setupValuesNotRequiringTimerStop() {
-        timer.setWorkItemsType(getType());
-        timer.setDefaultComment(getComment());
-        timer.setPostWhenCommitEnabled(postWhenCommitCheckbox.isSelected() && postWhenCommitCheckbox.isEnabled());
-        timer.setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isSelected() && postWhenProjectClosedCheckbox.isEnabled());
     }
 
     @Override
@@ -577,10 +571,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         return isScheduledCheckbox;
     }
 
-    public final JCheckBox getPostWhenCommitCheckbox() {
-        return postWhenCommitCheckbox;
-    }
-
     public final String getScheduledTime() {
         SimpleDateFormat formatter = new SimpleDateFormat("mm");
         try {
@@ -594,10 +584,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
     public final String getComment() {
         return commentTextField.getText();
-    }
-
-    public final JCheckBox getPostOnClose() {
-        return postWhenProjectClosedCheckbox;
     }
 
 
