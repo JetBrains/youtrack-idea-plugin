@@ -17,12 +17,15 @@ import java.util.concurrent.TimeUnit
 class TimeTracker(override val project: Project) : ComponentAware {
 
     @PropertyName("timeTracker.issueId")
+    @Volatile
     var issueId: String = "Default"
 
     @PropertyName("timeTracker.issueIdReadable")
+    @Volatile
     var issueIdReadable: String = "Default"
 
     @PropertyName("timeTracker.inactivityPeriodInMills")
+    @Volatile
     var inactivityPeriodInMills: Long = 600000
 
     @PropertyName("timeTracker.pausedTime")
@@ -30,9 +33,11 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var pausedTime: Long = 0
 
     @PropertyName("timeTracker.type")
+    @Volatile
     var type: String = "None"
 
     @PropertyName("timeTracker.scheduledPeriod")
+    @Volatile
     var scheduledPeriod: String = "19:00:0"
 
     @PropertyName("timeTracker.recordedTime")
@@ -44,42 +49,55 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var timeInMills: Long = 0
 
     @PropertyName("timeTracker.startTime")
+    @Volatile
     var startTime: Long = 0
 
     @PropertyName("timeTracker.comment")
+    @Volatile
     var comment: String = ""
 
     @PropertyName("timeTracker.isManualTrackingEnable")
+    @Volatile
     var isManualTrackingEnabled = false
 
     @PropertyName("timeTracker.isScheduledEnabled")
+    @Volatile
     var isScheduledEnabled = true
 
     @PropertyName("timeTracker.isWhenProjectClosedEnabled")
+    @Volatile
     var isWhenProjectClosedEnabled = true
 
     @PropertyName("timeTracker.isPostAfterCommitEnabled")
+    @Volatile
     var isPostAfterCommitEnabled = true
 
     @PropertyName("timeTracker.isAutoTrackingEnable")
+    @Volatile
     var isAutoTrackingEnabled = false
 
     @PropertyName("timeTracker.isRunning")
+    @Volatile
     var isRunning = false
 
     @PropertyName("timeTracker.isPaused")
+    @Volatile
     var isPaused = false
 
     @PropertyName("timeTracker.isAutoTrackingTemporaryDisabled")
+    @Volatile
     var isAutoTrackingTemporaryDisabled = false
 
     @PropertyName("timeTracker.activityTracker")
+    @Volatile
     var activityTracker: ActivityTracker? = null
 
     @PropertyName("timeTracker.isPostedScheduled")
+    @Volatile
     var isPostedScheduled = true
 
     @PropertyName("timeTracker.query")
+    @Volatile
     var searchQuery: String = ""
 
     companion object {
