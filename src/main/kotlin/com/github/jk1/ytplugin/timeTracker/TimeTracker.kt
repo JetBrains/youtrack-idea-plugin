@@ -256,8 +256,8 @@ class TimeTracker(override val project: Project) : ComponentAware {
             recordedTime $recordedTime
             timeInMills$timeInMills
             startTime $startTime
-            isManualTrackingEnable $isManualTrackingEnable
-            isAutoTrackingEnable $isAutoTrackingEnable
+            isManualTrackingEnable $isManualTrackingEnabled
+            isAutoTrackingEnable $isAutoTrackingEnabled
             comment$comment
             isScheduledEnabled $isScheduledEnabled
             isWhenProjectClosedEnabled$isWhenProjectClosedEnabled
