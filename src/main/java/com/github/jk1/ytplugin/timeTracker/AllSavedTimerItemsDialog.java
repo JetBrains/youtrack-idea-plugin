@@ -155,24 +155,25 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
     private JScrollPane createTable(SpentTimePerTaskStorage storage) {
 
         ConcurrentHashMap<String, Long> timerItems = storage.getAllStoredItems();
+        int columns = 3;
+        int i = 0;
 
         // form data structure
-        Object[][] data = new Object[timerItems.size()][3];
-        int i = 0;
+        Object[][] timerData = new Object[timerItems.size()][columns];
         for (Map.Entry<String, Long> entry : timerItems.entrySet()) {
             String id = entry.getKey();
             String time = TimeTracker.Companion.formatTimePeriod(entry.getValue());
 
-            data[i][0] = true;
-            data[i][1] = id;
-            data[i][2] = time + " min";
+            timerData[i][0] = true;
+            timerData[i][1] = id;
+            timerData[i][2] = time + " min";
 
             i++;
         }
 
         Object[] columnsHeaders = new String[]{"Selected", "Issue", "Time"};
 
-        DefaultTableModel model = new DefaultTableModel(data, columnsHeaders) {
+        DefaultTableModel model = new DefaultTableModel(timerData, columnsHeaders) {
             @Override
             public Class getColumnClass(int column) {
                 return getValueAt(0, column).getClass();
@@ -207,11 +208,11 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         protected void doAction(ActionEvent e) {
             ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
             SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
-            selectedItems.forEach((k, v) -> {
-                storage.resetSavedTimeForLocalTask(k);
+            selectedItems.forEach((task, time) -> {
+                storage.resetSavedTimeForLocalTask(task);
                 TrackerNotification trackerNote = new TrackerNotification();
-                trackerNote.notify("Discarded " + TimeTracker.Companion.formatTimePeriod(v) +
-                        " min of tracked time for " + k, NotificationType.INFORMATION);
+                trackerNote.notify("Discarded " + TimeTracker.Companion.formatTimePeriod(time) +
+                        " min of tracked time for " + task, NotificationType.INFORMATION);
             });
 
             close(0);

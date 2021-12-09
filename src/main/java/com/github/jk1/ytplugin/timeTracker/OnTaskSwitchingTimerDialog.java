@@ -13,14 +13,13 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class OnTaskSwitchingTimerDialog extends DialogWrapper {
     private JPanel contentPane;
     private JLabel note;
 
-    private Project project;
-    private YouTrackServer repository;
+    private final Project project;
+    private final YouTrackServer repository;
 
     TimeTracker timer;
     SpentTimePerTaskStorage timePerTaskStorage;
@@ -41,8 +40,8 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
         setTitle("Save Tracked Time");
         $$$setupUI$$$();
         // todo: display not only in minutes
-        Long savedTime = timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId());
-        String message = "<html>You have spent " + timer.Companion.formatTimePeriod(savedTime) +
+        long savedTime = timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId());
+        String message = "<html>You have spent " + TimeTracker.Companion.formatTimePeriod(savedTime) +
                 " min working on " +  timer.getIssueId() + ". " +
                 "You can either post this time to the issue now or save it locally and continue working on another task.</html>";
         note.setText(message);
