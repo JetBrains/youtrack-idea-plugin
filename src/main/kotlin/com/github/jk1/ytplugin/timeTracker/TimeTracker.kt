@@ -66,7 +66,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
     @PropertyName("timeTracker.isWhenProjectClosedEnabled")
     @Volatile
-    var isWhenProjectClosedEnabled = true
+    var isWhenProjectClosedEnabled = false
 
     @PropertyName("timeTracker.isPostAfterCommitEnabled")
     @Volatile
