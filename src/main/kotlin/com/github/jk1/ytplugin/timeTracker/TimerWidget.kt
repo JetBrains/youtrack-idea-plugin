@@ -7,7 +7,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.CustomStatusBarWidget
 import com.intellij.openapi.wm.StatusBar
 import java.awt.Font
-import java.awt.event.ActionListener
 import java.util.concurrent.TimeUnit
 import javax.swing.JLabel
 import javax.swing.Timer
@@ -15,7 +14,7 @@ import javax.swing.Timer
 class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Disposable, override val project: Project) : CustomStatusBarWidget, ComponentAware {
 
     private val label = JLabel(time())
-    private val timer = Timer(1000, ActionListener { label.text = time() })
+    private val timer = Timer(1000) { label.text = time() }
     private var trackingDisposable: Disposable? = null
 
 

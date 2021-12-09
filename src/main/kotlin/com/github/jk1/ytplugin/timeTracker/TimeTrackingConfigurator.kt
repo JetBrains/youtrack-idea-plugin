@@ -1,44 +1,31 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.AdminRestClient
+import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.setup.SetupDialog
 import com.github.jk1.ytplugin.tasks.NoActiveYouTrackTaskException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.actions.StartTrackerAction
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import org.apache.http.HttpStatus
-import java.text.SimpleDateFormat
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.Callable
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 
-class TimeTrackingConfigurationService {
+class TimeTrackingConfigurator {
 
     fun getAvailableWorkItemsTypes(repo: YouTrackServer): Collection<String> {
         return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys
-    }
-
-    // todo: make it return something meaningful
-    fun addManuallyNewWorkItem(dateNotFormatted: String, selectedType: String, selectedId: String,
-                               repo: YouTrackServer, comment: String, time: String): Int {
-
-        val sdf = SimpleDateFormat("dd MMM yyyy")
-        val date = sdf.parse(dateNotFormatted)
-        val trackerNote = TrackerNotification()
-        return try {
-            TimeTrackerConnector(repo, repo.project).postWorkItemToServer(selectedId, time, selectedType,
-                comment, date.time.toString())
-            trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
-            ComponentAware.of(repo.project).issueWorkItemsStoreComponent[repo].update(repo)
-            200
-        } catch (e: Exception) {
-            logger.warn("Time was not posted. See IDE logs for details.")
-            trackerNote.notify("Time was not posted, please check your connection", NotificationType.WARNING)
-            HttpStatus.SC_BAD_REQUEST
-        }
     }
 
     private fun configureTimerForTracking(timeTrackingDialog: SetupDialog, project: Project) {
@@ -90,6 +77,22 @@ class TimeTrackingConfigurationService {
         } catch (e: NoActiveYouTrackTaskException) {
             notifySelectTask()
         }
+    }
+
+    fun checkIfTrackingIsEnabledForIssue(repo: YouTrackServer, selectedIssueIndex: Int, ids: List<Issue>): Future<*> {
+        return ApplicationManager.getApplication().executeOnPooledThread(
+            Callable {
+                try {
+                    if (selectedIssueIndex != -1)
+                        AdminRestClient(repo).checkIfTrackingIsEnabled(ids[selectedIssueIndex].projectName)
+                    else false
+                } catch (e: Exception) {
+                    e.multicatchException(SocketException::class.java,
+                        UnknownHostException::class.java, SocketTimeoutException::class.java) {
+                        logger.warn("Exception in manual time tracker: ${e.message}")
+                    }
+                }
+            })
     }
 
     private fun notifySelectTask() {

@@ -205,10 +205,8 @@ class TimeTracker(override val project: Project) : ComponentAware {
         isAutoTrackingEnabled = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
         isManualTrackingEnabled = isManualMode
-        if (isScheduled) {
-            scheduledPeriod = timeToSchedule
-        }
         inactivityPeriodInMills = inactivityTime
+        if (isScheduled) { scheduledPeriod = timeToSchedule }
 
         try {
             saveUpdatedFields()
@@ -217,14 +215,10 @@ class TimeTracker(override val project: Project) : ComponentAware {
         }
     }
 
-
     private fun saveUpdatedFields() {
         val store: PropertiesComponent = PropertiesComponent.getInstance(project)
         store.saveFields(this)
     }
-
-    fun getRecordedTimeInMills() = timeInMills
-
 
     fun setupValuesNotRequiringTimerStop(type: String, comment: String, postWhenCommitCheckbox: JBCheckBox,
                                                  postWhenProjectClosedCheckbox: JBCheckBox) {
@@ -253,6 +247,8 @@ class TimeTracker(override val project: Project) : ComponentAware {
     private fun setOnProjectCloseEnabled(isEnabled: Boolean) {
         isWhenProjectClosedEnabled = isEnabled
     }
+
+    fun getRecordedTimeInMills() = timeInMills
 
     fun printTimerSettingsLog() {
         logger.debug(

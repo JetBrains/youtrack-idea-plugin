@@ -3,8 +3,6 @@ package com.github.jk1.ytplugin.timeTracker
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.AdminRestClient
-import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
 import com.intellij.notification.NotificationType
@@ -22,9 +20,6 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridLayout
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
@@ -110,17 +105,17 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
 
     private fun createTypePanel(): JPanel {
 
-        val timerService = TimeTrackingConfigurationService()
+        val timerService = TimeTrackingConfigurator()
         val future = ApplicationManager.getApplication().executeOnPooledThread(
                 Callable {
                     timerService.getAvailableWorkItemsTypes(repo)
                 })
 
         val types = future.get()
-        val timer = project.let { it1 -> timeTrackerComponent }
-
-        var idx = 0
+        val timer = project.let { timeTrackerComponent }
         typeComboBox = ComboBox(types.toTypedArray())
+        var idx = 0
+
         try {
             typeComboBox.selectedIndex = 0
             if (types.isNotEmpty()) {
@@ -156,13 +151,13 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
             tasksIdRepresentation.add(id.issueId + ": " + id.summary)
             tasksIds.add(id.issueId)
         }
+
         idComboBox = ComboBox(tasksIdRepresentation.toTypedArray())
-
         idComboBox.preferredSize = Dimension(390, typeComboBox.preferredSize.height)
-
         idComboBox.selectedIndex = tasksIds.indexOf(TaskManager.getManager(project).activeTask.id)
 
         idLabel.preferredSize = Dimension(labelsMargin, 30)
+
         idPanel.add(idLabel)
         idPanel.add(idComboBox)
 
@@ -265,19 +260,8 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
             notifier.text = "Date is not specified"
         } else {
             try {
-                val future = ApplicationManager.getApplication().executeOnPooledThread(
-                        Callable {
-                            try {
-                                val selectedIssueIndex = idComboBox.selectedIndex
-                                if (selectedIssueIndex != -1)
-                                    AdminRestClient(repo).checkIfTrackingIsEnabled(ids[selectedIssueIndex].projectName)
-                                else false
-                            } catch (e: Exception) {
-                                e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
-                                    logger.warn("Exception in manual time tracker: ${e.message}")
-                                }
-                            }
-                        })
+                val selectedIssueIndex = idComboBox.selectedIndex
+                val future = TimeTrackingConfigurator().checkIfTrackingIsEnabledForIssue(repo, selectedIssueIndex, ids)
 
                 if (future.get() == false) {
                     notifier.foreground = Color.red
@@ -285,30 +269,12 @@ class TimeTrackerManualEntryDialog(override val project: Project, val repo: YouT
                     logger.debug("Time tracking for ${ids[idComboBox.selectedIndex].issueId} is disabled in project")
                 } else {
                     val selectedId = ids[idComboBox.selectedIndex].issueId
-                    val timerService = TimeTrackingConfigurationService()
-                    val futureCode = ApplicationManager.getApplication().executeOnPooledThread(
-                            Callable {
-                                try {
-                                    timerService.addManuallyNewWorkItem(datePicker.date.format(),
-                                            typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, repo,
-                                            commentTextField.text, time.toString())
-                                } catch (e: IllegalStateException) {
-                                    logger.warn("Error in item type: ${e.message}")
-                                    notifier.foreground = Color.red
-                                    notifier.text = "Time could not be posted, please check your connection"
-                                    HttpStatus.SC_BAD_REQUEST
-                                }
 
-                            })
-                    if (futureCode.get() == 200) {
-                        ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
-                        val trackerNote = TrackerNotification()
-                        trackerNote.notify("Spent time was successfully added for $selectedId", NotificationType.INFORMATION)
-                        this@TimeTrackerManualEntryDialog.close(0)
-                    } else {
-                        notifier.foreground = Color.red
-                        notifier.text = "Time could not be posted, see IDE logs for details"
-                    }
+                    val futureCode = TimeTrackerConnector(repo, project).addWorkItemManually(datePicker.date.format(),
+                        typeComboBox.getItemAt(typeComboBox.selectedIndex), selectedId, commentTextField.text,
+                        time.toString(), notifier)
+
+                    if (futureCode.get() == 200) { this@TimeTrackerManualEntryDialog.close(0) }
                 }
             } catch (e: IndexOutOfBoundsException) {
                 notifier.foreground = Color.red

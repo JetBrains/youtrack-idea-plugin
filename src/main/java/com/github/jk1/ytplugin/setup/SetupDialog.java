@@ -302,7 +302,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         this.isManualModeRadioButton.setEnabled(true);
 
         try {
-            final Collection<String> types = (new TimeTrackingConfigurationService()).getAvailableWorkItemsTypes(repository);
+            final Collection<String> types = (new TimeTrackingConfigurator()).getAvailableWorkItemsTypes(repository);
             ApplicationManager.getApplication().invokeLater(() -> {
                 int idx = 0;
                 if (!types.isEmpty()) {
@@ -379,7 +379,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
             inputUrlTextPane.setText("");
 
-            if (fixedUrl != null){
+            if (fixedUrl != null) {
                 drawProtocol(fixedUrl, oldDefaultUrl, oldAddress, fontColor);
                 drawHost(fixedUrl, oldDefaultUrl, fontColor);
 
@@ -423,7 +423,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         Color color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
 
         int start = fixedUrl.toString().length() - fixedUrl.getPath().length();
-        int end =  fixedUrl.toString().length();
+        int end = fixedUrl.toString().length();
 
         drawUrlComponent(color, start, end, inputUrlTextPane.getText() + fixedUrl.getPath());
     }
@@ -456,7 +456,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 timer.setAutoTrackingTemporaryDisabled(true);
             }
             if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
-                new TimeTrackingConfigurationService().setupTimeTracking(this, project);
+                new TimeTrackingConfigurator().setupTimeTracking(this, project);
             }
         }
         // current implementation allows to login with empty password (as guest) but we do not want to allow it
@@ -688,7 +688,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         timeTrackingTab.setLayout(new GridLayoutManager(4, 1, new Insets(20, 20, 20, 20), -1, -1));
         mainPane.addTab("Time Tracking", timeTrackingTab);
         autoPanel = new JPanel();
-        autoPanel.setLayout(new GridLayoutManager(4, 23, new Insets(10, 10, 10, 10), 20, 20));
+        autoPanel.setLayout(new GridLayoutManager(3, 23, new Insets(10, 10, 10, 10), 20, 20));
         timeTrackingTab.add(autoPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         autoPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Automatically create work items", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         postWhenProjectClosedCheckbox = new JBCheckBox();
@@ -700,8 +700,6 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         isScheduledCheckbox = new JBCheckBox();
         isScheduledCheckbox.setText("On a set schedule at:");
         autoPanel.add(isScheduledCheckbox, new GridConstraints(1, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer10 = new Spacer();
-        autoPanel.add(spacer10, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         timePanel = new JPanel();
         timePanel.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
         autoPanel.add(timePanel, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -711,8 +709,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         scheduledMinutes = new JBTextField();
         scheduledMinutes.setText("00");
         timePanel.add(scheduledMinutes, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        final Spacer spacer11 = new Spacer();
-        timePanel.add(spacer11, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer10 = new Spacer();
+        timePanel.add(spacer10, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         hourLabel2 = new JBLabel();
         hourLabel2.setText("hours");
         timePanel.add(hourLabel2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -731,8 +729,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         inactivityMinutesInputField.setEnabled(false);
         inactivityMinutesInputField.setText("15");
         inactivityPeriodPanel.add(inactivityMinutesInputField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(30, -1), null, 0, false));
-        final Spacer spacer12 = new Spacer();
-        inactivityPeriodPanel.add(spacer12, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer11 = new Spacer();
+        inactivityPeriodPanel.add(spacer11, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         hourLabel1 = new JLabel();
         hourLabel1.setEnabled(false);
         hourLabel1.setText("hours");
@@ -761,10 +759,10 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         commentTextField.setText("  a");
         commentTextField.setToolTipText("");
         preferencesPanel.add(commentTextField, new GridConstraints(2, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final Spacer spacer13 = new Spacer();
-        preferencesPanel.add(spacer13, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
+        final Spacer spacer12 = new Spacer();
+        preferencesPanel.add(spacer12, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(-1, 10), null, 0, false));
         trackingModePanel = new JPanel();
-        trackingModePanel.setLayout(new GridLayoutManager(1, 3, new Insets(10, 10, 10, 10), 20, 20));
+        trackingModePanel.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), 20, 20));
         timeTrackingTab.add(trackingModePanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         trackingModePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Tracking mode", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         isAutoTrackingEnabledRadioButton = new JBRadioButton();
@@ -772,15 +770,15 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         trackingModePanel.add(isAutoTrackingEnabledRadioButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         isManualModeRadioButton = new JBRadioButton();
         isManualModeRadioButton.setText("Manual");
-        trackingModePanel.add(isManualModeRadioButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        trackingModePanel.add(isManualModeRadioButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         noTrackingButton = new JBRadioButton();
         noTrackingButton.setText("Off");
-        trackingModePanel.add(noTrackingButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        trackingModePanel.add(noTrackingButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 3), -1, -1));
         timeTrackingTab.add(panel1, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final Spacer spacer14 = new Spacer();
-        panel1.add(spacer14, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer13 = new Spacer();
+        panel1.add(spacer13, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
     }
 
     /**
