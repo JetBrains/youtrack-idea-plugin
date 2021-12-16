@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.ui
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.logger
 import com.intellij.ide.browsers.BrowserLauncher
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.util.ui.UIUtil
 import java.net.MalformedURLException
@@ -40,7 +41,7 @@ object WikiHtmlPaneFactory {
 
         override fun hyperlinkUpdate(event: HyperlinkEvent) {
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                ServiceManager.getService(BrowserLauncher::class.java).open(event.absoluteUrl)
+                ApplicationManager.getApplication().getService(BrowserLauncher::class.java).open(event.absoluteUrl)
             }
         }
 

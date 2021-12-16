@@ -20,7 +20,7 @@ interface ResponseLoggerTrait {
         if (logger.isDebugEnabled){
             try {
                 val header = getFirstHeader("Content-Type")
-                val contentType = if (header == null) "text/plain" else header.elements[0].name.toLowerCase(Locale.ENGLISH)
+                val contentType = if (header == null) "text/plain" else header.elements[0].name.lowercase(Locale.ENGLISH)
                 when {
                     contentType.contains("xml") -> logXml(response)
                     contentType.contains("json") -> logJson(response)

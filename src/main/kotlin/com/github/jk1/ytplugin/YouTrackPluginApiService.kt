@@ -57,10 +57,7 @@ class YouTrackPluginApiService(override val project: Project): YouTrackPluginApi
     private fun findIssueOnServer(id: String): Issue {
         for (server in taskManagerComponent.getAllConfiguredYouTrackRepositories()){
             try {
-                val issue = IssuesRestClient(server).getIssue(id)
-                if (issue != null) {
-                    return issue
-                }
+                return IssuesRestClient(server).getIssue(id)
             } catch (e: RuntimeException) {
                 // most likely 404 from server
             }

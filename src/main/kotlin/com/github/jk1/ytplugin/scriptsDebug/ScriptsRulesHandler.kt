@@ -105,7 +105,6 @@ class ScriptsRulesHandler(val project: Project) {
         if (scriptsList.isNullOrEmpty()){
             val note = "The debug operation requires that you have permission to update at least one project in " +
                     "YouTrack and have at least one custom workflow or updated predefined workflow "
-            val trackerNote = TrackerNotification()
             trackerNote.notify(note, NotificationType.ERROR)
         }
     }

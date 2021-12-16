@@ -158,7 +158,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         session: XDebugSession,
         executionResult: ExecutionResult?
     ): BrowserChromeDebugProcess {
-        var process: BrowserChromeDebugProcess? = null
+        val process: BrowserChromeDebugProcess?
 
         val repositories = ComponentAware.of(project).taskManagerComponent.getAllConfiguredYouTrackRepositories()
         val repo = if (repositories.isNotEmpty()) repositories[0] else null
