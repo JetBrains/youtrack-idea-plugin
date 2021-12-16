@@ -5,6 +5,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.browsers.BrowserLauncher
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.DumbAware
 
@@ -16,7 +17,8 @@ class ConfigureNotificationsAction(private val notification: YouTrackNotificatio
         event.whenActive {
             // todo: user login or id instead of 'me'
             val url = "${notification.repoUrl}/users/me?tab=notifications"
-            ServiceManager.getService(BrowserLauncher::class.java).open(url)
+            ApplicationManager.getApplication().getService(BrowserLauncher::class.java).open(url)
+
         }
     }
 }

@@ -5,7 +5,6 @@ import com.github.jk1.ytplugin.format
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.ide.plugins.newui.VerticalLayout
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -14,7 +13,6 @@ import com.intellij.tasks.TaskManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.michaelbaranov.microba.calendar.DatePicker
-import org.apache.http.HttpStatus
 import org.jdesktop.swingx.JXDatePicker
 import java.awt.Color
 import java.awt.Dimension

@@ -1,8 +1,7 @@
 package com.github.jk1.ytplugin.tasks
 
 import com.github.jk1.ytplugin.YouTrackPluginException
-import com.intellij.ide.plugins.DisabledPluginsState
-import com.intellij.ide.plugins.PluginManager
+import com.intellij.ide.plugins.PluginManagerCore.enablePlugin
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
@@ -23,11 +22,15 @@ class TaskManagementDisabledException :
             """$message
             <br/>
             <b><a href="#open">Enable Plugin</a></b>""",
-            NotificationType.ERROR,
+            NotificationType.ERROR
+    )
+
+    init {
+        notification.setListener(
             // notification hyperlink click handler
             NotificationListener { notification, _ ->
                 notification.hideBalloon()
-                DisabledPluginsState.enablePluginsById(listOf(PluginId.getId("com.intellij.tasks")), true)
-            }
-    )
+                enablePlugin(PluginId.getId("com.intellij.tasks"))
+            })
+    }
 }

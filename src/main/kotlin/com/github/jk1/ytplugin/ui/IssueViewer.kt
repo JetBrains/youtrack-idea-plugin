@@ -12,6 +12,7 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.UIUtil
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
+import java.util.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -99,7 +100,7 @@ class IssueViewer : JPanel(BorderLayout()) {
     private fun createLinkPanel(role: String, links: List<IssueLink>): JPanel {
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
-        panel.add(JLabel("${role.capitalize()}: "))
+        panel.add(JLabel("${role.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}: "))
         links.forEach { panel.add(HyperlinkLabel(it.value, it.url)) }
         panel.isOpaque = false
         return panel
