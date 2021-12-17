@@ -218,13 +218,11 @@ class TimeTracker(override val project: Project) : ComponentAware {
         }
     }
 
-    fun setupTimerProperties(isAutoTracking: Boolean, isManualMode: Boolean, isScheduled: Boolean,
-                             timeToSchedule: String, inactivityTime: Long) {
+    fun setupTimerProperties(isAutoTracking: Boolean, isManualMode: Boolean, inactivityTime: Long) {
         isAutoTrackingEnabled = isAutoTracking
         isAutoTrackingTemporaryDisabled = false
         isManualTrackingEnabled = isManualMode
         inactivityPeriodInMills = inactivityTime
-        if (isScheduled) { scheduledPeriod = timeToSchedule }
 
         try {
             saveUpdatedFields()
@@ -238,12 +236,20 @@ class TimeTracker(override val project: Project) : ComponentAware {
         store.saveFields(this)
     }
 
-    fun setupValuesNotRequiringTimerStop(type: String, comment: String, postWhenCommitCheckbox: JBCheckBox,
-                                                 postWhenProjectClosedCheckbox: JBCheckBox) {
+
+    fun setupValuesNotRequiringTimerStop(type: String, comment: String, isScheduledModeTurnedOn: Boolean,
+                                         scheduledTime: String, postWhenCommitCheckbox: JBCheckBox,
+                                         postWhenProjectClosedCheckbox: JBCheckBox) {
         setWorkItemsType(type)
         setDefaultComment(comment)
         setPostWhenCommitEnabled(postWhenCommitCheckbox.isSelected && postWhenCommitCheckbox.isEnabled)
         setOnProjectCloseEnabled(postWhenProjectClosedCheckbox.isSelected && postWhenProjectClosedCheckbox.isEnabled)
+        configureScheduledPeriod(isScheduledModeTurnedOn, scheduledTime)
+    }
+
+     private fun configureScheduledPeriod(isScheduledModeTurnedOn: Boolean, scheduledTime: String) {
+        isScheduledEnabled = isScheduledModeTurnedOn
+        scheduledPeriod = scheduledTime
     }
 
     private fun setWorkItemsType(type: String?) {

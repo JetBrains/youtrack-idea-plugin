@@ -31,7 +31,6 @@ class TimeTrackingConfigurator {
     private fun configureTimerForTracking(timeTrackingDialog: SetupDialog, project: Project) {
 
         val timer = ComponentAware.of(project).timeTrackerComponent
-        val timeToSchedule = timeTrackingDialog.scheduledTime
 
         val inactivityTime = TimeUnit.HOURS.toMillis(timeTrackingDialog.inactivityHours.toLong()) +
                 TimeUnit.MINUTES.toMillis(timeTrackingDialog.inactivityMinutes.toLong())
@@ -40,14 +39,14 @@ class TimeTrackingConfigurator {
         logger.debug("Auto mode is selected: ${timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected}")
 
         timer.setupTimerProperties(timeTrackingDialog.autoTrackingEnabledCheckBox.isSelected,
-                timeTrackingDialog.manualModeCheckbox.isSelected, timeTrackingDialog.scheduledCheckbox.isSelected,
-                timeToSchedule, inactivityTime)
+                timeTrackingDialog.manualModeCheckbox.isSelected, inactivityTime)
 
         timer.timeInMills = 0
         timer.pausedTime = 0
         timer.isAutoTrackingTemporaryDisabled = false
 
     }
+
 
     fun setupTimeTracking(timeTrackingDialog: SetupDialog, project: Project) {
 

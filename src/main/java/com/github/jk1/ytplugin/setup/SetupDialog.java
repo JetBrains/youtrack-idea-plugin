@@ -207,28 +207,8 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         scheduledHour.setText(timer.getScheduledPeriod().substring(0, 2));
         scheduledMinutes.setText(timer.getScheduledPeriod().substring(3, 5));
 
-        DocumentListener stopOnScheduleUpdate = new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                shouldStopTimerOnPropertiesChange = true;
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                shouldStopTimerOnPropertiesChange = true;
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                shouldStopTimerOnPropertiesChange = true;
-            }
-        };
-
-        scheduledMinutes.getDocument().addDocumentListener(stopOnScheduleUpdate);
-        scheduledHour.getDocument().addDocumentListener(stopOnScheduleUpdate);
-
         inactivityHourInputField.setText((inactivityHours < 10 ? "0" : "") + inactivityHours);
         inactivityMinutesInputField.setText((inactivityMinutes < 10 ? "0" : "") + inactivityMinutes);
-
-        inactivityHourInputField.getDocument().addDocumentListener(stopOnScheduleUpdate);
-        inactivityMinutesInputField.getDocument().addDocumentListener(stopOnScheduleUpdate);
 
         commentTextField.setText(timer.getComment());
 
@@ -445,8 +425,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         if (!isConnectionTested) {
             testConnectionAction();
         }
-
-        timer.setupValuesNotRequiringTimerStop(getType(), getComment(),
+        timer.setupValuesNotRequiringTimerStop(getType(), getComment(), isScheduledModeTurnedOn(), getScheduledTime(),
                 postWhenCommitCheckbox, postWhenProjectClosedCheckbox);
 
         // post time if any relevant changes in settings were made
@@ -480,6 +459,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
         super.doOKAction();
 
+    }
+
+    private boolean isScheduledModeTurnedOn() {
+        return getScheduledCheckbox().isEnabled() &&
+                getScheduledCheckbox().isSelected();
     }
 
     @Override
