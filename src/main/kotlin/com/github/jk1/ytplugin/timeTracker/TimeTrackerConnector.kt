@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import org.apache.http.HttpStatus
+import org.apache.http.conn.HttpHostConnectException
 import java.awt.Color
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,7 +41,14 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
         val storage = of(project).spentTimePerTaskStorage
         val trackerNote = TrackerNotification()
 
-        val postStatus = TimeTrackerRestClient(repository).postNewWorkItem(issueId, time, type, comment, date)
+        val postStatus = try {
+            TimeTrackerRestClient(repository).postNewWorkItem(issueId, time, type, comment, date)
+        } catch (e: HttpHostConnectException){
+            trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
+            logger.warn("Connection to network lost: ${e.message}")
+        } catch (e: IllegalArgumentException){
+            logger.debug(e)
+        }
         if (postStatus == HttpStatus.SC_OK) {
             trackerNote.notify(
                 "Spent time was successfully added for $issueId",
