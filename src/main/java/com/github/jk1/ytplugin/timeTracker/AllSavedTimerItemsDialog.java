@@ -46,9 +46,19 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         this.repo = repo;
         setTitle("Tracked Time");
         $$$setupUI$$$();
+
         addSelectAllFeatureToCheckBox();
         addSelectAllFeatureToTheTable();
+        setActionsEnabled();
+
         init();
+    }
+
+    private void setActionsEnabled(){
+        postAction.setEnabled(timeTrackerItemsTable != null &&
+                pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
+        removeAction.setEnabled(timeTrackerItemsTable != null &&
+                pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
     }
 
     private void addSelectAllFeatureToCheckBox() {
@@ -62,6 +72,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
                     for (int i = 0; i < timeTrackerItemsTable.getRowCount(); i++)
                         timeTrackerItemsTable.getModel().setValueAt(false, i, 0);
                 }
+                setActionsEnabled();
             }
 
             @Override
@@ -92,6 +103,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
                     if (!(Boolean) timeTrackerItemsTable.getCellEditor(rowNum, 0).getCellEditorValue()) {
                         selectAllCheckBox.setSelected(false);
                     }
+                    postAction.setEnabled(pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
+                    removeAction.setEnabled(pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
                 }
 
                 @Override
@@ -233,6 +246,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         @Override
         protected void doAction(ActionEvent e) {
             ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
+
             new TimeTrackerConnector(repo, project).postSavedWorkItemsToServer(selectedItems);
             close(0);
         }
