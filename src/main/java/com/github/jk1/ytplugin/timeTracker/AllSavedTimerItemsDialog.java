@@ -50,11 +50,10 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         addSelectAllFeatureToCheckBox();
         addSelectAllFeatureToTheTable();
         setActionsEnabled();
-
         init();
     }
 
-    private void setActionsEnabled(){
+    private void setActionsEnabled() {
         postAction.setEnabled(timeTrackerItemsTable != null &&
                 pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
         removeAction.setEnabled(timeTrackerItemsTable != null &&
@@ -126,6 +125,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         createUIComponents();
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
+        contentPane.setMinimumSize(new Dimension(426, 483));
+        contentPane.setPreferredSize(new Dimension(426, 483));
         contentPane.setBorder(BorderFactory.createTitledBorder(null, "", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
