@@ -178,6 +178,11 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
             public Class getColumnClass(int column) {
                 return getValueAt(0, column).getClass();
             }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column != 1 && column != 2;
+            }
         };
         timeTrackerItemsTable = new JBTable(model);
 
