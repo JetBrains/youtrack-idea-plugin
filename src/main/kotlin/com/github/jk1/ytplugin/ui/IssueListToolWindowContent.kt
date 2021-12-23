@@ -42,7 +42,10 @@ class IssueListToolWindowContent(vertical: Boolean, val repo: YouTrackServer) : 
     private fun addSubscriberToUpdateIssueViewOnListUpdate() {
         issueUpdaterComponent.subscribe {
             SwingUtilities.invokeLater {
-                val selectedIssue = lastSelectedIssue
+                // all of this is required to update issue preview without changing selection position for current issue
+                // (as if it was updated, it moves up in the list)
+                val id = lastSelectedIssue?.id
+                val selectedIssue = id?.let { issuesList.getIssueById(it) } ?: lastSelectedIssue
                 if (selectedIssue == null) {
                     splitter.collapse()
                 } else {
