@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.timeTracker;
 
 import com.github.jk1.ytplugin.ComponentAware;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBScrollPane;
@@ -54,9 +53,9 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
     private void setActionsEnabled() {
         postAction.setEnabled(timeTrackerItemsTable != null &&
-                pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
+                pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable, project).size() != 0);
         removeAction.setEnabled(timeTrackerItemsTable != null &&
-                pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
+                pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable, project).size() != 0);
     }
 
     private void addSelectAllFeatureToCheckBox() {
@@ -101,8 +100,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
                     if (!(Boolean) timeTrackerItemsTable.getCellEditor(rowNum, 0).getCellEditorValue()) {
                         selectAllCheckBox.setSelected(false);
                     }
-                    postAction.setEnabled(pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
-                    removeAction.setEnabled(pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable).size() != 0);
+                    postAction.setEnabled(pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable, project).size() != 0);
+                    removeAction.setEnabled(pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable, project).size() != 0);
                 }
 
                 @Override
@@ -197,7 +196,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         return new JBScrollPane(timeTrackerItemsTable);
     }
 
-    protected ConcurrentHashMap<String, Long> pickSelectedTimeTrackerItemsOnly(JBTable table) {
+    protected static ConcurrentHashMap<String, Long> pickSelectedTimeTrackerItemsOnly(JBTable table, Project project) {
         ConcurrentHashMap<String, Long> selectedItems = new ConcurrentHashMap<>();
         SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
 
@@ -219,15 +218,8 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
-            SpentTimePerTaskStorage storage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
-            selectedItems.forEach((task, time) -> {
-                storage.resetSavedTimeForLocalTask(task);
-                TrackerNotification trackerNote = new TrackerNotification();
-                trackerNote.notify("Discarded " + TimeTracker.Companion.formatTimePeriod(time) +
-                        " min of tracked time for " + task, NotificationType.INFORMATION);
-            });
-
+            ConfirmDiscardDialog dialog = new ConfirmDiscardDialog(project, timeTrackerItemsTable);
+            dialog.show();
             close(0);
         }
 
@@ -240,7 +232,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable);
+            ConcurrentHashMap<String, Long> selectedItems = pickSelectedTimeTrackerItemsOnly(timeTrackerItemsTable, project);
 
             new TimeTrackerConnector(repo, project).postSavedWorkItemsToServer(selectedItems);
             close(0);

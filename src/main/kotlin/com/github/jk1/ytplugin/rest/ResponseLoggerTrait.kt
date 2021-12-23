@@ -15,6 +15,7 @@ import java.util.*
 
 interface ResponseLoggerTrait {
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun HttpResponse.responseBodyAsLoggedString(): String {
         val response = EntityUtils.toString(entity, "UTF-8");
         if (logger.isDebugEnabled){
