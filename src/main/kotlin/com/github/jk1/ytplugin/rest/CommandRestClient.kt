@@ -7,9 +7,11 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.google.gson.JsonParser
+import org.apache.commons.lang.StringEscapeUtils
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
+import org.h2.util.StringUtils
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
 
@@ -82,7 +84,7 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
             }
         }
 
-        val comment = command.comment?.replace("\n", "\\n") ?: ""
+        val comment = command.comment?.let { StringEscapeUtils.escapeJavaScript(it) } ?: ""
 
         jsonBody = jsonBody.replace("{idReadable}", command.issue.id, true)
                 .replace("true", command.silent.toString(), true)

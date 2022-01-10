@@ -7,9 +7,11 @@ import com.github.jk1.ytplugin.TaskManagerTrait
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.issues.model.Issue
+import com.github.jk1.ytplugin.rest.IssuesRestClient
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
+import org.apache.commons.lang.StringEscapeUtils
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -66,6 +68,35 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
     }
 
     @Test
+    fun testCommandWithComment() {
+        val text = "Look ma, a comment!"
+        val execution = YouTrackCommandExecution(issue, "comment", false, text, "All Users")
+        val future = commandComponent.executeAsync(execution)
+        future.get() // wait for the command to complete
+
+        val issueWithComment = IssuesRestClient(repository).getIssue(issue.id)
+        Assert.assertEquals(1, issueWithComment.comments.size)
+        Assert.assertEquals(text.wikiFormatted, issueWithComment.comments.first().text)
+    }
+
+    @Test
+    fun testCommandWithMultilineCodeComment() {
+        val text = """
+            res.send({
+                "err_code": 0,
+                "data_list": []
+            })
+        """.trimIndent()
+        val execution = YouTrackCommandExecution(issue, "comment", false, text, "All Users")
+        val future = commandComponent.executeAsync(execution)
+        future.get() // wait for the command to complete
+
+        val issueWithComment = IssuesRestClient(repository).getIssue(issue.id)
+        Assert.assertEquals(1, issueWithComment.comments.size)
+        Assert.assertEquals(text.wikiFormatted, issueWithComment.comments.first().text)
+    }
+
+    @Test
     fun getVisibilityGroups() {
         commandComponent.getActiveTaskVisibilityGroups(issue) { groups ->
             Assert.assertEquals(3, groups.size)
@@ -81,4 +112,13 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
         cleanUpTaskManager()
         fixture.tearDown()
     }
+
+    private val String.wikiFormatted: String
+        get() {
+            val html = StringEscapeUtils
+                .escapeHtml(this)
+                .split("\n")
+                .joinToString("<br/>") { it.trim() }
+            return "<div class=\"wiki text common-markdown\"><p>$html</p>\n</div>"
+        }
 }
