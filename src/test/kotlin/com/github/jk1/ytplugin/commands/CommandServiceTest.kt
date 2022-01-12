@@ -31,9 +31,7 @@ class CommandServiceTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, C
         fixture.setUp()
         repository = createYouTrackRepository()
         repository.defaultSearch = "project: AT"
-        createIssue()
-        issueStoreComponent[repository].update(repository).waitFor(5000)
-        issue = issueStoreComponent[repository].getAllIssues().first()
+        issue = IssuesRestClient(repository).getIssue(createIssue())
     }
 
     @Test

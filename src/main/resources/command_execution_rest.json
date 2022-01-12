@@ -1,9 +1,0 @@
-{
-  "query": "{query}",
-  "issues": [
-    {
-      "idReadable": "{idReadable}"
-    }
-  ],
-  "silent": true,
-  "comment": "{comment}"
