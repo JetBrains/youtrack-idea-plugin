@@ -7,11 +7,14 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.vfs.CharsetToolkit
+import com.intellij.tasks.TaskManager
+import com.intellij.tasks.impl.TaskManagerImpl
 import com.intellij.util.net.IdeHttpClientHelpers
 import com.intellij.util.net.ssl.CertificateManager
 import org.apache.http.HttpRequest
 import org.apache.http.HttpRequestInterceptor
 import org.apache.http.HttpResponse
+import org.apache.http.HttpStatus
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.AuthScope.*
 import org.apache.http.auth.UsernamePasswordCredentials
@@ -80,9 +83,8 @@ interface RestClientTrait : ResponseLoggerTrait {
                 val streamReader = response.responseBodyAsReader
                 return responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
-                logger.debug("Network error: ${response.responseBodyAsLoggedString()}")
-                val trackerNote = TrackerNotification()
-                trackerNote.notify("Can't connect to YouTrack server. Are you offline?", NotificationType.WARNING)
+                RequestErrorsHandler(repository).handleErrorStatusCode(response.statusLine.statusCode)
+                logger.debug("Request execution error: ${response.responseBodyAsLoggedString()}")
                 throw RuntimeException(response.responseBodyAsLoggedString())
             }
         } finally {
@@ -114,6 +116,26 @@ interface RestClientTrait : ResponseLoggerTrait {
                     request.addHeader(BasicScheme.authenticate(proxyCredentials, CharsetToolkit.UTF8, true))
                 }
             }
+        }
+    }
+
+    private class RequestErrorsHandler(val repository: YouTrackServer)  {
+         fun handleErrorStatusCode(code: Int) {
+             // log out from the youtrack instance, if credentials are outdated or not valid any more
+             // SC_UNAUTHORIZED for explicit api requests, SC_FORBIDDEN for implicit, like notifications
+             if (code == HttpStatus.SC_UNAUTHORIZED || code == HttpStatus.SC_FORBIDDEN ){
+                 val manager = TaskManager.getManager(repository.project) as TaskManagerImpl
+                 val filteredRepositories = manager.allRepositories.filter { it.url != repository.url }
+                 manager.setRepositories(filteredRepositories)
+
+                 val trackerNote = TrackerNotification()
+                 trackerNote.notify("Can't connect to YouTrack server. " +
+                         "Please make sure your credentials are valid", NotificationType.WARNING)
+             } else {
+                 val trackerNote = TrackerNotification()
+                 trackerNote.notify("Can't connect to YouTrack server. " +
+                         "Are you offline?", NotificationType.WARNING)
+             }
         }
     }
 }

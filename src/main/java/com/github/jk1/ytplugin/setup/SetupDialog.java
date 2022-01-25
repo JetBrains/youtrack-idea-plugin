@@ -442,7 +442,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
                 new TimeTrackingConfigurator().setupTimeTracking(this, project);
             }
         }
-        // current implementation allows to login with empty password (as guest) but we do not want to allow it
+        // current implementation allows logging in with empty password (as guest) but we do not want to allow it
         if (repoConnector.getNoteState() != NotifierState.EMPTY_FIELD) {
             YouTrackRepository repositoryToStore = repo.getRepo();
             RepositorySetupTuner.Companion.tuneRepoToStoreBasedOnConnectedRepo(repositoryToStore, connectedRepository);
