@@ -258,6 +258,10 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         if (repoConnector.getNoteState() != NotifierState.SUCCESS) {
             forbidAdditionalParametersSelection();
         } else {
+            // post time on instance change in case of valid new instance connection
+            if (!repo.getUrl().equals(connectedRepository.getUrl())){
+                shouldStopTimerOnPropertiesChange = true;
+            }
             allowAdditionalParametersSelection(new YouTrackServer(connectedRepository, project));
         }
 
