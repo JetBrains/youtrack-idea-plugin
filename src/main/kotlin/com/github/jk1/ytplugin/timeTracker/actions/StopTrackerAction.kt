@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerConnector
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
@@ -24,7 +25,27 @@ class StopTrackerAction : AnAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         event.whenActive { project ->
-            stopTimer(project, ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository())
+            try {
+                stopTimer(project, ComponentAware.of(project).taskManagerComponent.getActiveYouTrackRepository())
+            } catch (e: NoYouTrackRepositoryException){
+
+                val timer = ComponentAware.of(project).timeTrackerComponent
+                timer.stop()
+
+                // save time in case of exceptions
+                val time = TimeUnit.MINUTES.toMillis(timer.recordedTime.toLong())
+                ComponentAware.of(project).spentTimePerTaskStorage.resetSavedTimeForLocalTask(timer.issueId) // not to sum up the same item
+                ComponentAware.of(project).spentTimePerTaskStorage.setSavedTimeForLocalTask(timer.issueId, time)
+
+                timer.isAutoTrackingTemporaryDisabled = true
+
+                logger.warn("Time could not be posted as the issue does not belong to current YouTrack instance. " +
+                        "Time is saved locally: ${e.message}")
+                logger.debug(e)
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Could not post time as the issue does not belong to the current YouTrack " +
+                        "instance. Time ${timer.recordedTime} is saved locally", NotificationType.WARNING)
+            }
         }
     }
 

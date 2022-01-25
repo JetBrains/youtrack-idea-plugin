@@ -49,7 +49,16 @@ class TaskListenerCustomAdapter(override val project: Project) : TaskListener, C
             }
 
             timeTrackerComponent.isAutoTrackingTemporaryDisabled = false
-            StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
+
+            // do not start auto tracking in case of invalid task
+            try {
+                taskManagerComponent.getActiveYouTrackTask()
+                StartTrackerAction().startAutomatedTracking(project, timeTrackerComponent)
+
+            } catch (e: NoActiveYouTrackTaskException) {
+                timeTrackerComponent.stop()
+                logger.info("Task ${ComponentAware.of(project).taskManagerComponent.getActiveTask().id} is not valid")
+            }
 
             logger.debug("Switch from: ${spentTimePerTaskStorage.getSavedTimeForLocalTask(timeTrackerComponent.issueId)}")
             if (spentTimePerTaskStorage.getSavedTimeForLocalTask(task.id) > 0){
