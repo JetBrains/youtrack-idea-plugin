@@ -49,22 +49,34 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
         } catch (e: IllegalArgumentException){
             logger.debug(e)
         }
-        if (postStatus == HttpStatus.SC_OK) {
-            trackerNote.notify(
-                "Spent time was successfully added for $issueId",
-                NotificationType.INFORMATION
-            )
+        when (postStatus) {
+            HttpStatus.SC_OK -> {
+                trackerNote.notify(
+                    "Spent time was successfully added for $issueId",
+                    NotificationType.INFORMATION
+                )
 
-            of(project).issueWorkItemsStoreComponent[repository].update(repository)
-            storage.resetSavedTimeForLocalTask(issueId)
-        } else {
-            trackerNote.notify(
-                "Unable to post time to YouTrack. See IDE log for details. " +
-                        "A record for $time min of tracked time has been saved locally.", NotificationType.WARNING
-            )
+                of(project).issueWorkItemsStoreComponent[repository].update(repository)
+                storage.resetSavedTimeForLocalTask(issueId)
+            }
+            HttpStatus.SC_FORBIDDEN -> {
+                trackerNote.notify(
+                    "Unable to post time to YouTrack. Please check if time tracking is enabled for this project. " +
+                            "A record for $time min of tracked time has been saved locally.", NotificationType.WARNING
+                )
 
-            storage.resetSavedTimeForLocalTask(issueId)
-            storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
+                storage.resetSavedTimeForLocalTask(issueId)
+                storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
+            }
+            else -> {
+                trackerNote.notify(
+                    "Unable to post time to YouTrack. See IDE log for details. " +
+                            "A record for $time min of tracked time has been saved locally.", NotificationType.WARNING
+                )
+
+                storage.resetSavedTimeForLocalTask(issueId)
+                storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
+            }
         }
     }
 
