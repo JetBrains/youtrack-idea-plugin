@@ -23,6 +23,7 @@ class InputCredentialsTest :  IdeaProjectTrait, ComponentAware {
         fixture.setUp()
         val statusBar = TestWindowManager().getStatusBar(project)
         val timer = timeTrackerComponent
+        timer.reset()
         timer.isRunning = true
         timer.isPaused = false
         if (statusBar.getWidget("Time Tracking Clock") == null) {

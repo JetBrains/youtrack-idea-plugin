@@ -1,8 +1,11 @@
 package com.github.jk1.ytplugin.rest
 
+import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.vfs.CharsetToolkit
 import com.intellij.util.net.IdeHttpClientHelpers
 import com.intellij.util.net.ssl.CertificateManager
@@ -77,6 +80,9 @@ interface RestClientTrait : ResponseLoggerTrait {
                 val streamReader = response.responseBodyAsReader
                 return responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
+                logger.debug("Network error: ${response.responseBodyAsLoggedString()}")
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Can't connect to YouTrack server. Are you offline?", NotificationType.WARNING)
                 throw RuntimeException(response.responseBodyAsLoggedString())
             }
         } finally {

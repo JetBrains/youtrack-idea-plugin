@@ -165,9 +165,12 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
 
         val storedIssues = issueStoreComponent[repository].getAllIssues()
         val timer = timeTrackerComponent
-        timeTrackerComponent.type = "Testing"
 
+        timeTrackerComponent.type = "Testing"
         val id = storedIssues[0].id
+
+        timer.reset()
+
         timer.start(id)
         TimeUnit.SECONDS.sleep(65L)
         timer.pause("pause")
@@ -179,8 +182,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         SaveTrackerAction().saveTimer(project, id)
 
         assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 1)
-        //  x / 130000 is needed to take into account milliseconds for operations execution
-        assertEquals(spentTimePerTaskStorage.getSavedTimeForLocalTask(id) / 130000 , 1)
+        assertEquals(spentTimePerTaskStorage.getSavedTimeForLocalTask(id) / 60000 , 2)
 
     }
 
