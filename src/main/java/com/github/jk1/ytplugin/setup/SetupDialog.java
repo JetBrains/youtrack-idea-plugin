@@ -211,9 +211,11 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
             public void changedUpdate(DocumentEvent e) {
                 shouldStopTimer = true;
             }
+
             public void removeUpdate(DocumentEvent e) {
                 shouldStopTimer = true;
             }
+
             public void insertUpdate(DocumentEvent e) {
                 shouldStopTimer = true;
             }
@@ -420,7 +422,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         Color color = oldUrl.getPath().equals(fixedUrl.getPath()) ? fontColor : JBColor.GREEN;
 
         int start = fixedUrl.toString().length() - fixedUrl.getPath().length();
-        int end =  fixedUrl.toString().length();
+        int end = fixedUrl.toString().length();
 
         drawUrlComponent(color, start, end, inputUrlTextPane.getText() + fixedUrl.getPath());
     }
@@ -450,7 +452,7 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
 
 
         // post time if any relevant changes in settings were made
-        if (shouldStopTimer){
+        if (shouldStopTimer) {
             if (timer.isRunning()) {
                 new StopTrackerAction().stopTimer(project);
                 timer.setAutoTrackingTemporaryDisabled(true);
