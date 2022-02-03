@@ -54,7 +54,6 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
     @Test
     fun `test start timer functionality`() {
         val timer = timeTrackerComponent
-        assertEquals(timer.isRunning, false)
         val storedIssues = issueStoreComponent[repository].getAllIssues()
         val id = storedIssues[0].id
         timer.start(id)
