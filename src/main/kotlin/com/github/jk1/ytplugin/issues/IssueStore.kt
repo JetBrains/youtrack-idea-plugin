@@ -31,6 +31,7 @@ class IssueStore(@Volatile private var issues: List<Issue> = listOf()) : Iterabl
 
     fun getIndex(issue: Issue) = issues.indexOf(issue)
 
+    fun getIssueById(id: String): Issue? =  issues.firstOrNull { it.issueId == id}
 
     override fun iterator() = issues.iterator()
 

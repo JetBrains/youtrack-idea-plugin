@@ -6,27 +6,12 @@ import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.commands.model.YouTrackCommandExecution
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
-import com.google.gson.JsonParser
+import com.google.gson.*
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
 
 class CommandRestClient(override val repository: YouTrackServer) : CommandRestClientBase, RestClientTrait, ResponseLoggerTrait {
-
-    private var visibilityState = VisibilityState.NO_VISIBILITY_RESTRICTIONS
-
-    companion object {
-        const val COMMANDS_GROUP_VISIBILITY = """,
-              "visibility": {
-                "${"$"}type": "CommandLimitedVisibility",
-                "permittedGroups": [
-                  {
-                    "id": "{groupId}"
-                  }
-                ]
-              }
-            }"""
-    }
 
     override fun assistCommand(command: YouTrackCommand): CommandAssistResponse {
         val builder = URIBuilder("${repository.url}/api/commands/assist")
@@ -48,53 +33,40 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
     }
 
     private fun getGroupId(command: YouTrackCommandExecution): String {
-        val builder = URIBuilder("${repository.url}/api/groups")
+        // todo: load groups with ids to avoid this lookup completely
+        val builder = URIBuilder("${repository.url}/api/groups?\$top=1000")
         builder.setParameter("fields", "name,id,allUsersGroup")
         val getMethod = HttpGet(builder.build())
         return try {
             getMethod.execute { element ->
-                visibilityState = VisibilityState.VISIBILITY_RESTRICTED
                 element.asJsonArray.first {
                     command.commentVisibleGroup == it.asJsonObject.get("name").asString
                 }.asJsonObject.get("id").asString
             }
         } catch (e: Exception) {
-            // todo: detailed exception handling
             logger.warn("Failed to fetch possible groups ids in CommandRestClient", e)
-            ""
+            throw IllegalStateException("User group '${command.commentVisibleGroup}' cannot be found")
         }
-    }
-
-    private fun constructJsonForCommandExecution(command: YouTrackCommandExecution): String {
-        val res = this::class.java.classLoader.getResource("command_execution_rest.json")
-                ?: throw IllegalStateException("Resource 'command_execution_rest.json' file is missing")
-
-        var jsonBody = res.readText()
-        if (command.commentVisibleGroup == "All Users") {
-            jsonBody += "\n}"
-        } else {
-            val groupId: String = getGroupId(command)
-            if (visibilityState == VisibilityState.VISIBILITY_RESTRICTED) {
-                jsonBody += COMMANDS_GROUP_VISIBILITY
-                jsonBody = jsonBody.replace("{groupId}", groupId, true)
-            } else {
-                jsonBody += "\n}"
-            }
-        }
-
-        val comment = command.comment?.replace("\n", "\\n") ?: ""
-
-        jsonBody = jsonBody.replace("{idReadable}", command.issue.id, true)
-                .replace("true", command.silent.toString(), true)
-                .replace("{comment}", comment, true)
-                .replace("{query}", command.command, true)
-
-        return jsonBody
     }
 
     override fun executeCommand(command: YouTrackCommandExecution): CommandExecutionResponse {
         val postMethod = HttpPost("${repository.url}/api/commands")
-        postMethod.entity = constructJsonForCommandExecution(command).jsonEntity
+        val json = JsonObject()
+        val issueJson = JsonObject()
+        issueJson.addProperty("idReadable", command.issue.id)
+        json.add("issues", JsonArray().also { it.add(issueJson) })
+        json.addProperty("query", command.command)
+        json.addProperty("silent", command.silent)
+        json.addProperty("comment", command.comment)
+        if (command.commentVisibleGroup != "All Users") {
+            val groupJson = JsonObject()
+            val visibilityJson = JsonObject()
+            groupJson.addProperty("id", getGroupId(command))
+            visibilityJson.addProperty("\$type", "CommandLimitedVisibility")
+            visibilityJson.add("permittedGroups", JsonArray().also { it.add(groupJson) })
+            json.add("visibility", visibilityJson)
+        }
+        postMethod.entity = json.toString().jsonEntity
         return try {
             postMethod.execute {
                 CommandExecutionResponse()
@@ -110,9 +82,4 @@ class CommandRestClient(override val repository: YouTrackServer) : CommandRestCl
             }
         }
     }
-}
-
-enum class VisibilityState {
-    NO_VISIBILITY_RESTRICTIONS,
-    VISIBILITY_RESTRICTED
 }
