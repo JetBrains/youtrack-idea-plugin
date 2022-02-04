@@ -24,7 +24,7 @@ def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-S
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.3'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-EAP-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
         plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
