@@ -93,6 +93,12 @@
         <!--Main issue tool window-->
         <toolWindow id="YouTrack" anchor="bottom" icon="/icons/youTrack.svg"
                     factoryClass="com.github.jk1.ytplugin.issues.IssuesToolWindowFactory" canCloseContents="true"/>
+
+        <notificationGroup displayType="STICKY_BALLOON" icon="/icons/youtrack_16.png" id="YouTrack Notifications"
+                           isLogByDefault="true"/>
+
+        <notificationGroup displayType="BALLOON"  id="YouTrack time tracking" isLogByDefault="true" />
+
         <!-- Scheduled tasks-->
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.editor.IssueLinkProviderExtension"/>
         <backgroundPostStartupActivity implementation="com.github.jk1.ytplugin.notifications.FetchNotificationsExtension"/>

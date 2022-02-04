@@ -3,11 +3,9 @@ package com.github.jk1.ytplugin.notifications
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.NotificationsRestClient
-import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.intellij.concurrency.JobScheduler
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.notification.NotificationDisplayType.STICKY_BALLOON
-import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
@@ -21,7 +19,6 @@ class FetchNotificationsExtension : StartupActivity.Background {
 
     companion object {
         private const val PERSISTENT_KEY = "com.jetbrains.youtrack.notifications"
-        private val group = NotificationGroup("YouTrack Notifications", STICKY_BALLOON, true, null, YouTrackPluginIcons.YOUTRACK)
     }
 
     override fun runActivity(project: Project) {
@@ -58,7 +55,10 @@ class FetchNotificationsExtension : StartupActivity.Background {
         } else {
             SwingUtilities.invokeLater {
                 with(incoming) {
-                    val notification = group.createNotification(issueId, summary, content, NotificationType.INFORMATION, null)
+                    val group = NotificationGroupManager.getInstance().getNotificationGroup("YouTrack Notifications")
+                    val notification = group.createNotification(issueId, content, NotificationType.INFORMATION)
+                    notification.subtitle = summary
+
                     notification.addAction(BrowseNotificationAction(incoming))
                     notification.addAction(DismissNotificationAction(notification))
                     notification.addAction(ConfigureNotificationsAction(incoming))
