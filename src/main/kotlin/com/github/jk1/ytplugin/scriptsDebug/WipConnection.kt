@@ -312,7 +312,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             debugEventListener,
             webSocketDebuggerUrl,
             channel,
-//            createDebugLogger("js.debugger.wip.log", "")
+//            createDebugLogger("js.debugger.wip.log", "") // always null as no such registry key is found, so
             null
         )
         vm.title = title
