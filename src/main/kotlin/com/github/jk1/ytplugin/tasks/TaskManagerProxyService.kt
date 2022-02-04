@@ -32,7 +32,7 @@ class TaskManagerProxyService(val project: Project) : Disposable {
     init {
         syncTaskManagerConfig()
         val taskListener = TaskListenerCustomAdapter(project)
-        getTaskManager().addTaskListener(taskListener)
+        getTaskManager().addTaskListener(taskListener, this)
 
         timedRefreshTask = JobScheduler.getScheduler().scheduleWithFixedDelay({
             if (listeners.isNotEmpty()) {
