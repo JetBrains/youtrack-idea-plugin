@@ -87,6 +87,11 @@
             <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
         </action>
 
+        <action id="com.github.jk1.ytplugin.timeTracker.actions.ShowAllSavedTimeTrackingItems"
+                class="com.github.jk1.ytplugin.timeTracker.actions.ShowAllSavedTimeTrackingItems">
+            <keyboard-shortcut first-keystroke="control shift O" keymap="$default"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
