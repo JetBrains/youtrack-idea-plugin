@@ -13,16 +13,16 @@ import com.intellij.openapi.extensions.PluginId
  * to enable plugin and resolve the problem.
  */
 class TaskManagementDisabledException :
-        YouTrackPluginException(
-                "Task Management plugin is disabled. This plugin is required for YouTrack to work properly") {
+    YouTrackPluginException(
+        "Task Management plugin is disabled. This plugin is required for YouTrack to work properly") {
 
     override val notification = Notification(
-            "YouTrack Integration Plugin",
-            "YouTrack plugin error",
-            """$message
+        "YouTrack Integration Plugin",
+        "YouTrack plugin error",
+        """$message
             <br/>
             <b><a href="#open">Enable Plugin</a></b>""",
-            NotificationType.ERROR
+        NotificationType.ERROR
     )
 
     init {

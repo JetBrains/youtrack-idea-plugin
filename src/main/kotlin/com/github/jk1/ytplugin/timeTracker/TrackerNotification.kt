@@ -1,10 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.whenActive
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationGroup
-import com.intellij.notification.NotificationType
+import com.intellij.notification.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
@@ -16,7 +13,8 @@ import java.awt.event.KeyEvent
 class TrackerNotification {
 
     companion object {
-        private val NOTIFICATION_GROUP = NotificationGroup("YouTrack time tracking", NotificationDisplayType.BALLOON, true)
+        private val NOTIFICATION_GROUP = NotificationGroupManager.getInstance()
+            .getNotificationGroup("YouTrack time tracking")
     }
 
 

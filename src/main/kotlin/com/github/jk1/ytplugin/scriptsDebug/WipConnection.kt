@@ -31,6 +31,7 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.util.NetUtil
 import org.jetbrains.concurrency.AsyncPromise
+import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.debugger.Vm
 import org.jetbrains.debugger.connection.RemoteVmConnection
 import org.jetbrains.debugger.createDebugLogger
@@ -311,8 +312,8 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             debugEventListener,
             webSocketDebuggerUrl,
             channel,
-            createDebugLogger(
-                "js.debugger.wip.log", "")
+//            createDebugLogger("js.debugger.wip.log", "") // always null as no such registry key is found, so
+            null
         )
         vm.title = title
 
