@@ -34,7 +34,7 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
     }
 
     fun getSavedTimeForLocalTask(task: String) : Long {
-        logger.debug("Stored time for $task is obtained: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
+        logger.debug("Stored time for $task is obtained: ${store[task]?.let { TimeTracker.formatTimePeriodToMinutes(it) }}")
         return store[task] ?: 0
     }
 
@@ -48,10 +48,10 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
 
             val trackerNote = TrackerNotification()
             trackerNote.notify("Added " +
-                    "${TimeTracker.formatTimePeriod(getSavedTimeForLocalTask(task))} " +
+                    "${TimeTracker.formatTimePeriodToMinutes(getSavedTimeForLocalTask(task))} " +
                     "min of tracked time for $task to local time tracking records", NotificationType.INFORMATION)
 
-            logger.debug("Time for $task is saved: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
+            logger.debug("Time for $task is saved: ${store[task]?.let { TimeTracker.formatTimePeriodToMinutes(it) }}")
         } else {
             logger.debug("Recorded time for $task = 0. No need to save.")
         }

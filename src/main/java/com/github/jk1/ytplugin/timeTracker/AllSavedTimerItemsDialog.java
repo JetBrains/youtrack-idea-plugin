@@ -169,7 +169,7 @@ public class AllSavedTimerItemsDialog extends DialogWrapper {
         Object[][] timerData = new Object[timerItems.size()][columns];
         for (Map.Entry<String, Long> entry : timerItems.entrySet()) {
             String id = entry.getKey();
-            String time = TimeTracker.Companion.formatTimePeriod(entry.getValue());
+            String time = TimeTracker.Companion.formatTimePeriodToMinutes(entry.getValue());
 
             timerData[i][0] = true;
             timerData[i][1] = id;

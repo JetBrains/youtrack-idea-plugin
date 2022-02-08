@@ -80,7 +80,7 @@ public class ConfirmDiscardDialog extends DialogWrapper {
             selectedItems.forEach((task, time) -> {
                 storage.resetSavedTimeForLocalTask(task);
                 TrackerNotification trackerNote = new TrackerNotification();
-                trackerNote.notify("Discarded " + TimeTracker.Companion.formatTimePeriod(time) +
+                trackerNote.notify("Discarded " + TimeTracker.Companion.formatTimePeriodToMinutes(time) +
                         " min of tracked time for " + task, NotificationType.INFORMATION);
             });
 

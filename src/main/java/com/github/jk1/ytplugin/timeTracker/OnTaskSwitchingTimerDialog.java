@@ -39,7 +39,6 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
 
         setTitle("Existing Time Record Found");
         $$$setupUI$$$();
-        // todo: display not only in minutes
         long savedTime = timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId());
 
         String message = "<html>You have a local record that includes " + TimeTracker.Companion.formatTimePeriod(savedTime) +

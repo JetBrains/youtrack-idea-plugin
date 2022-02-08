@@ -101,12 +101,20 @@ class TimeTracker(override val project: Project) : ComponentAware {
     var searchQuery: String = ""
 
     companion object {
-        fun formatTimePeriod(timeInMilSec: Long): String {
+        fun formatTimePeriodToMinutes(timeInMilSec: Long): String {
             val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMilSec)
             return if (minutes > 0)
                 minutes.toString()
             else
                 "0"
+        }
+
+        fun formatTimePeriod(timeInMilSec: Long): String {
+            return String.format("%02d h %02d min",
+                TimeUnit.MILLISECONDS.toHours(timeInMilSec),
+                TimeUnit.MILLISECONDS.toMinutes(timeInMilSec) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeInMilSec))
+            )
         }
     }
 
@@ -155,7 +163,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
             timeInMills = System.currentTimeMillis() - startTime - pausedTime + storedTime
             // to be used for the post request later
-            recordedTime = formatTimePeriod(timeInMills)
+            recordedTime = formatTimePeriodToMinutes(timeInMills)
             startTime = System.currentTimeMillis()
             timeInMills = 0
             pausedTime = 0
@@ -176,7 +184,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
         } else {
             if (isRunning) {
                 timeInMills = System.currentTimeMillis() - startTime - pausedTime
-                recordedTime = formatTimePeriod(timeInMills)
+                recordedTime = formatTimePeriodToMinutes(timeInMills)
                 isPaused = true
                 trackerNote.notify("$message for $issueIdReadable", NotificationType.INFORMATION)
             } else {

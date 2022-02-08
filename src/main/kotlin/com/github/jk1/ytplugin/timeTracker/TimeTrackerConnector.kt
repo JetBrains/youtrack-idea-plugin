@@ -27,7 +27,7 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
     fun postSavedWorkItemToServer(issueId: String, time: Long) {
         val timeTracker = of(project).timeTrackerComponent
         postWorkItemToServer(
-            issueId, TimeTracker.formatTimePeriod(time), timeTracker.type,
+            issueId, TimeTracker.formatTimePeriodToMinutes(time), timeTracker.type,
             timeTracker.comment, getCurrentDate()
         )
     }
@@ -93,7 +93,7 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
 
                 savedItems.forEach { entry ->
                     postWorkItemToServer(
-                        entry.key, TimeTracker.formatTimePeriod(entry.value), timeTracker.type,
+                        entry.key, TimeTracker.formatTimePeriodToMinutes(entry.value), timeTracker.type,
                         timeTracker.comment, getCurrentDate()
                     )
                 }
