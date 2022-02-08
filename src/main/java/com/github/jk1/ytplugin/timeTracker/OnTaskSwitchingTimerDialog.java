@@ -37,13 +37,14 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
         timer = ComponentAware.Companion.of(project).getTimeTrackerComponent();
         timePerTaskStorage = ComponentAware.Companion.of(project).getSpentTimePerTaskStorage();
 
-        setTitle("Save Tracked Time");
+        setTitle("Existing Time Record Found");
         $$$setupUI$$$();
         // todo: display not only in minutes
         long savedTime = timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId());
-        String message = "<html>You have spent " + TimeTracker.Companion.formatTimePeriod(savedTime) +
-                " min working on " +  timer.getIssueId() + ". " +
-                "You can either post this time to the issue now or save it locally and continue working on another task.</html>";
+
+        String message = "<html>You have a local record that includes " + TimeTracker.Companion.formatTimePeriod(savedTime) +
+                " min spent time for " +  timer.getIssueId() + ". " + "You can either continue tracking where you left off " +
+                "or post this time to the issue now and start a new timer.";
         note.setText(message);
 
         init();
