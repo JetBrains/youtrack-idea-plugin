@@ -25,7 +25,7 @@ class SaveTrackerAction {
             if (savedTimeStorage.getSavedTimeForLocalTask(taskId) >= 60000) {
                 trackerNote.notify(
                     "Tracked time for ${ComponentAware.of(project).taskManagerComponent.getActiveTask()}" +
-                            " saved: ${TimeTracker.formatTimePeriodToMinutes(updatedTime)} min",
+                            " saved: ${TimeTracker.formatTimePeriod(updatedTime)}",
                     NotificationType.INFORMATION
                 )
             }

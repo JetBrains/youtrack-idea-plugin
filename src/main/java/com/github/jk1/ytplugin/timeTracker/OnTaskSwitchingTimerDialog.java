@@ -42,7 +42,7 @@ public class OnTaskSwitchingTimerDialog extends DialogWrapper {
         long savedTime = timePerTaskStorage.getSavedTimeForLocalTask(timer.getIssueId());
 
         String message = "<html>You have a local record that includes " + TimeTracker.Companion.formatTimePeriod(savedTime) +
-                " min spent time for " +  timer.getIssueId() + ". " + "You can either continue tracking where you left off " +
+                " spent time for " +  timer.getIssueId() + ". " + "You can either continue tracking where you left off " +
                 "or post this time to the issue now and start a new timer.";
         note.setText(message);
 
