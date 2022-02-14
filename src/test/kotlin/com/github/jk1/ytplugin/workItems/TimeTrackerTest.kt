@@ -226,7 +226,8 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
     @After
     fun tearDown() {
         issueStoreComponent.remove(repository)
-        deleteIssue(issue.id)
+        val issues = issueStoreComponent[repository].getAllIssues()
+        issues.forEach { deleteIssue(it.id) }
         cleanUpTaskManager()
         spentTimePerTaskStorage.removeAllSavedItems()
         fixture.tearDown()

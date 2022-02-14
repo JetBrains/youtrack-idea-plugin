@@ -84,8 +84,9 @@ interface RestClientTrait : ResponseLoggerTrait {
                 return responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
                 RequestErrorsHandler(repository).handleErrorStatusCode(response.statusLine.statusCode)
-                logger.debug("Request execution error: ${response.responseBodyAsLoggedString()}")
-                throw RuntimeException(response.responseBodyAsLoggedString())
+                val responseBody = response.responseBodyAsLoggedString()
+                logger.debug("Request execution error: $responseBody")
+                throw RuntimeException(responseBody)
             }
         } finally {
             // closes the connection
