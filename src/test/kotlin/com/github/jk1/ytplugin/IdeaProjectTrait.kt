@@ -15,9 +15,7 @@ interface IdeaProjectTrait {
      */
     fun getLightCodeInsightFixture(): CodeInsightTestFixture {
         val ideaFactory = IdeaTestFixtureFactory.getFixtureFactory()
-        // todo as the new EAP comes out, revert to createLightFixtureBuilder(LightProjectDescriptor()) -
-        //  compatibility issue fixed
-        val fixtureBuilder = ideaFactory.createLightFixtureBuilder(LightProjectDescriptor(), "test_project_name")
+        val fixtureBuilder = ideaFactory.createLightFixtureBuilder(LightProjectDescriptor())
         return ideaFactory.createCodeInsightFixture(fixtureBuilder.fixture, LightTempDirTestFixtureImpl(true))
     }
 
