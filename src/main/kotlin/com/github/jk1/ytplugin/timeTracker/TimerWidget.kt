@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.logger
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -25,6 +26,16 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         } else {
             System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime + savedTime
         }
+
+        logger.trace(
+            "\nSystem.currentTimeMillis: ${System.currentTimeMillis()} \n" +
+                "timeTracker.startTime: ${timeTracker.startTime} \n" +
+                    "timeTracker.pausedTime: ${timeTracker.pausedTime} \n" +
+                    "savedTime: $savedTime \n" +
+                    "recordedTime: $recordedTime \n \n")
+
+
+
         val time = String.format("%02dh %02dm",
                 TimeUnit.MILLISECONDS.toHours(recordedTime),
                 TimeUnit.MILLISECONDS.toMinutes(recordedTime) -
