@@ -25,6 +25,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
 
     private lateinit var fixture: IdeaProjectTestFixture
     private lateinit var issue: Issue
+    private val issues = ArrayList<String>() //cleanup queue
 
     override lateinit var repository: YouTrackServer
     override val project: Project by lazy { fixture.project }
@@ -36,8 +37,8 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         repository = createYouTrackRepository()
         repository.defaultSearch = "project: AT"
 
-        createIssue()
-        createIssue()
+        issues.add(createIssue())
+        issues.add(createIssue())
 
         issueStoreComponent[repository].update(repository).waitFor(5000)
         issue = issueStoreComponent[repository].getAllIssues().first()
@@ -226,8 +227,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
     @After
     fun tearDown() {
         issueStoreComponent.remove(repository)
-        val issues = issueStoreComponent[repository].getAllIssues()
-        issues.forEach { deleteIssue(it.id) }
+        issues.forEach { deleteIssue(it) }
         cleanUpTaskManager()
         spentTimePerTaskStorage.removeAllSavedItems()
         fixture.tearDown()
