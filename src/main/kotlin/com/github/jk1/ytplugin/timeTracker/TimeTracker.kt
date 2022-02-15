@@ -128,6 +128,8 @@ class TimeTracker(override val project: Project) : ComponentAware {
                 logger.debug("No time tracker is stored yet")
             }
             isPaused = true
+
+            logger.debug("On timer init: $pausedTime")
             isAutoTrackingTemporaryDisabled = false
 
             if (isWhenProjectClosedEnabled) {
@@ -167,6 +169,10 @@ class TimeTracker(override val project: Project) : ComponentAware {
             startTime = System.currentTimeMillis()
             timeInMills = 0
             pausedTime = 0
+
+            logger.debug("In timeTracker, stop: ${pausedTime}, " +
+                    " recordedTime: $recordedTime \n")
+
             isRunning = false
             isPaused = false
             isAutoTrackingTemporaryDisabled = false
@@ -205,7 +211,11 @@ class TimeTracker(override val project: Project) : ComponentAware {
             recordedTime = "0"
             timeInMills = 0
             pausedTime = 0
-            startTime = System.currentTimeMillis()
+
+        logger.debug("In timeTracker, reset: $pausedTime")
+
+
+        startTime = System.currentTimeMillis()
     }
 
 

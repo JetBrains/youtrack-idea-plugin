@@ -92,6 +92,13 @@ class StartTrackerAction : AnAction(
                 try {
                     val activeTask = ComponentAware.of(project).taskManagerComponent.getActiveYouTrackTask()
                     myTimer.pausedTime = System.currentTimeMillis() - myTimer.startTime - myTimer.timeInMills
+
+                    logger.debug("In start tracker action, !myTimer.isRunning || myTimer.isPaused: ${myTimer.pausedTime}, " +
+                            "current: ${System.currentTimeMillis()}" +
+                            " myTimer.startTime: ${myTimer.startTime}, " +
+                            " myTimer.timeInMills: ${myTimer.timeInMills}")
+
+
                     myTimer.issueId = activeTask.id
                     myTimer.issueIdReadable = activeTask.id
                     myTimer.start(activeTask.id)

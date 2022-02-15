@@ -17,7 +17,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
     private val label = JLabel(time())
     private val timer = Timer(1000) { label.text = time() }
 
-    private val logsTimer = Timer(60000) {
+    private val logsTimer = Timer(120000) {
         logger.debug(
             "\nSystem.currentTimeMillis: ${System.currentTimeMillis()} \n" +
                     "timeTracker.startTime: ${timeTracker.startTime} \n" +

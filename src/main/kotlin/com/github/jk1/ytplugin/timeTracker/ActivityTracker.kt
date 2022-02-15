@@ -108,6 +108,8 @@ class ActivityTracker(
             isPostedOnClose = false
             if (timer.isPaused) {
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
+                logger.debug("In activity tracker, timer.isPaused: ${timer.pausedTime}, " +
+                        "current: ${currentTimeMillis()} start: ${timer.startTime}, time: ${timer.timeInMills}")
             }
             // instant caching
             store.saveFields(timer)
@@ -142,9 +144,15 @@ class ActivityTracker(
                 if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning &&
                     !timer.isPaused && timer.isAutoTrackingEnabled) {
                     timer.pausedTime += (currentTimeMillis() - startInactivityTime - timer.inactivityPeriodInMills)
+
+                    logger.debug("In activity tracker, !isMouseOrKeyboardActive: ${timer.pausedTime}, " +
+                            "current: ${currentTimeMillis()}" +
+                            " startInactivityTime: ${startInactivityTime}, " +
+                            " timer.inactivityPeriodInMills: ${ timer.inactivityPeriodInMills}")
+
                     timer.pause("Work timer paused due to inactivity")
                 }
-            } else if (isMouseOrKeyboardActive) {
+            } else  {
                 startInactivityTime = currentTimeMillis()
 
                 try {
