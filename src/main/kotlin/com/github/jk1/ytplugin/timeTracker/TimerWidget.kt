@@ -16,6 +16,14 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
 
     private val label = JLabel(time())
     private val timer = Timer(1000) { label.text = time() }
+
+    private val logsTimer = Timer(60000) {
+        logger.debug(
+            "\nSystem.currentTimeMillis: ${System.currentTimeMillis()} \n" +
+                    "timeTracker.startTime: ${timeTracker.startTime} \n" +
+                    "timeTracker.pausedTime: ${timeTracker.pausedTime} \n")
+    }
+
     private var trackingDisposable: Disposable? = null
 
 
@@ -27,14 +35,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
             System.currentTimeMillis() - timeTracker.startTime - timeTracker.pausedTime + savedTime
         }
 
-        logger.trace(
-            "\nSystem.currentTimeMillis: ${System.currentTimeMillis()} \n" +
-                "timeTracker.startTime: ${timeTracker.startTime} \n" +
-                    "timeTracker.pausedTime: ${timeTracker.pausedTime} \n" +
-                    "savedTime: $savedTime \n" +
-                    "recordedTime: $recordedTime \n \n")
-
-
+        logger.debug("\nsavedTime: $savedTime \nrecordedTime: $recordedTime \n \n")
 
         val time = String.format("%02dh %02dm",
                 TimeUnit.MILLISECONDS.toHours(recordedTime),
@@ -49,6 +50,7 @@ class TimerWidget(val timeTracker: TimeTracker, private val parentDisposable: Di
         label.font = f.deriveFont(f.style or Font.BOLD)
         trackingDisposable = ActivityTracker.newDisposable(parentDisposable)
         timer.start()
+        logsTimer.start()
     }
 
     override fun dispose() {
