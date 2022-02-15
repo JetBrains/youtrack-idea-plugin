@@ -429,6 +429,13 @@ public class SetupDialog extends DialogWrapper implements ComponentAware {
         if (!isConnectionTested) {
             testConnectionAction();
         }
+
+        long inactivityTime = TimeUnit.HOURS.toMillis(Long.parseLong(getInactivityHours())) +
+                TimeUnit.MINUTES.toMillis(Long.parseLong(getInactivityMinutes()));
+
+        if (timer.getInactivityPeriodInMills() != inactivityTime)
+            shouldStopTimerOnPropertiesChange = true;
+
         timer.setupValuesNotRequiringTimerStop(getType(), getComment(), isScheduledModeTurnedOn(), getScheduledTime(),
                 postWhenCommitCheckbox, postWhenProjectClosedCheckbox);
 

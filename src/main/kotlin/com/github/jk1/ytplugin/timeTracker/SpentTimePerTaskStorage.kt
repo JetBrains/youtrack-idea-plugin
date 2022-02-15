@@ -34,7 +34,8 @@ class SpentTimePerTaskStorage(override val project: Project) : ComponentAware {
     }
 
     fun getSavedTimeForLocalTask(task: String) : Long {
-        logger.debug("Stored time for $task is obtained: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
+        if (store[task] != null)
+            logger.debug("Stored time for $task is obtained: ${store[task]?.let { TimeTracker.formatTimePeriod(it) }}")
         return store[task] ?: 0
     }
 
