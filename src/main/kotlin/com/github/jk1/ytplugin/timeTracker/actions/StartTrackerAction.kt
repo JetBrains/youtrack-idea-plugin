@@ -79,10 +79,11 @@ class StartTrackerAction : AnAction(
             }
 
             if (myTimer.isAutoTrackingEnabled) {
+                logger.debug("myTimer.activityTracker init")
+                logger.debug("myTimer.inactivityPeriodInMills: ${myTimer.inactivityPeriodInMills}")
                 myTimer.activityTracker = ActivityTracker(
                     parentDisposable = parentDisposable,
                     timer = myTimer,
-                    inactivityPeriod = myTimer.inactivityPeriodInMills,
                     project = project
                 )
                 myTimer.activityTracker!!.startTracking()

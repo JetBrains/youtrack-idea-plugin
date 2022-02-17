@@ -29,7 +29,6 @@ import javax.swing.JFrame
 class ActivityTracker(
         private val parentDisposable: Disposable,
         private val timer: TimeTracker,
-        private val inactivityPeriod: Long,
         override val project: Project
 ) : Disposable, ComponentAware {
 
@@ -108,8 +107,6 @@ class ActivityTracker(
             isPostedOnClose = false
             if (timer.isPaused) {
                 timer.pausedTime = currentTimeMillis() - timer.startTime - timer.timeInMills
-//                logger.debug("In activity tracker, timer.isPaused: ${timer.pausedTime}, " +
-//                        "current: ${currentTimeMillis()} start: ${timer.startTime}, time: ${timer.timeInMills}")
             }
             // instant caching
             store.saveFields(timer)
@@ -141,8 +138,11 @@ class ActivityTracker(
             }
 
             if (!isMouseOrKeyboardActive) {
-                if (currentTimeMillis() - startInactivityTime > inactivityPeriod && timer.isRunning &&
+                if (currentTimeMillis() - startInactivityTime > timer.inactivityPeriodInMills && timer.isRunning &&
                     !timer.isPaused && timer.isAutoTrackingEnabled) {
+
+                    logger.debug("timer.inactivityPeriodInMills: ${timer.inactivityPeriodInMills} pausedTime: ${timer.pausedTime}")
+
                     timer.pausedTime += (currentTimeMillis() - startInactivityTime - timer.inactivityPeriodInMills)
 
                     logger.debug("In activity tracker, !isMouseOrKeyboardActive: ${timer.pausedTime}, " +
