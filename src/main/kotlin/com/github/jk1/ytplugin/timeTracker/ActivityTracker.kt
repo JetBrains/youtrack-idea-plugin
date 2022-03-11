@@ -141,11 +141,11 @@ class ActivityTracker(
                 if (currentTimeMillis() - startInactivityTime > timer.inactivityPeriodInMills && timer.isRunning &&
                     !timer.isPaused && timer.isAutoTrackingEnabled) {
 
-                    logger.debug("timer.inactivityPeriodInMills: ${timer.inactivityPeriodInMills} pausedTime: ${timer.pausedTime}")
+                    logger.trace("timer.inactivityPeriodInMills: ${timer.inactivityPeriodInMills} pausedTime: ${timer.pausedTime}")
 
                     timer.pausedTime += (currentTimeMillis() - startInactivityTime - timer.inactivityPeriodInMills)
 
-                    logger.debug("In activity tracker, !isMouseOrKeyboardActive: ${timer.pausedTime}, " +
+                    logger.trace("In activity tracker, !isMouseOrKeyboardActive: ${timer.pausedTime}, " +
                             "current: ${currentTimeMillis()}" +
                             " startInactivityTime: ${startInactivityTime}, " +
                             " timer.inactivityPeriodInMills: ${ timer.inactivityPeriodInMills}")
