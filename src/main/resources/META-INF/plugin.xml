@@ -20,9 +20,9 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li> Work items are now displayed in the issue view </li>
-            <li> Manual time tracking: submit work items as you see fit </li>
-            <li> Automated time tracking: let the IDE record time for you </li>
+            <li> New setup dialog introduced </li>
+            <li> Local time tracking: accumulate the spent time for each task, keep it locally in your IDE,
+             and report the aggregated time in one work item when you're ready </li>
         </ul>
           ]]>
     </change-notes>
