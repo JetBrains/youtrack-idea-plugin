@@ -2,11 +2,14 @@ package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
+import com.github.jk1.ytplugin.timeTracker.ManualTimeEntryDialog
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerManualEntryDialog
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.util.ui.StartupUiUtil.getCenterPoint
+import java.awt.GraphicsEnvironment
 
 
 class ManualEntryAction : AnAction(
@@ -19,8 +22,13 @@ class ManualEntryAction : AnAction(
             val repos = ComponentAware.of(project).taskManagerComponent
                 .getAllConfiguredYouTrackRepositories()
             val repo = if (repos.isNotEmpty()) repos.first() else null
-            val dialog = repo?.let { TimeTrackerManualEntryDialog(project, it) }
-            dialog?.show()
+            val dialog = repo?.let { ManualTimeEntryDialog(project, it) }
+            dialog?.title = "Add Spent Time"
+            dialog?.pack()
+            dialog?.setLocationRelativeTo(null) // position in the center of the screen
+            dialog?.isVisible = true
+//            val dialog = repo?.let { TimeTrackerManualEntryDialog(project, it) }
+//            dialog?.show()
         }
     }
 
