@@ -4,13 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.github.jk1.ytplugin.issues.model.Issue;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -146,7 +149,7 @@ public class ManualTimeEntryDialog extends JDialog {
                 logger.debug("Issue is not selected or there are no issues in the list: ${e.message}");
             }
         }
-        dispose();
+//        dispose();
     }
 
     private void onCancel() {
@@ -170,8 +173,8 @@ public class ManualTimeEntryDialog extends JDialog {
         createUIComponents();
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(2, 3, new Insets(10, 10, 10, 10), -1, -1));
-        contentPane.setMinimumSize(new Dimension(500, 300));
-        contentPane.setPreferredSize(new Dimension(500, 300));
+        contentPane.setMinimumSize(new Dimension(550, 350));
+        contentPane.setPreferredSize(new Dimension(550, 350));
         contentPane.setRequestFocusEnabled(true);
         contentPane.putClientProperty("html.disable", Boolean.FALSE);
         rootPanel = new JPanel();
@@ -207,7 +210,7 @@ public class ManualTimeEntryDialog extends JDialog {
         typePanel = new JPanel();
         typePanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(typePanel, new GridConstraints(2, 1, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        typeComboBox = new JComboBox();
+//        typeComboBox = new JComboBox();
         typePanel.add(typeComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         issuePanel = new JPanel();
         issuePanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
@@ -255,9 +258,39 @@ public class ManualTimeEntryDialog extends JDialog {
     }
 
     private void createUIComponents() {
+        this.setTitle("Add Spent Time");
+        createTypeComboBox();
         datePanel = new JPanel();
         datePicker = new DatePicker(new Date());
         datePanel.add(datePicker);
-        // TODO: place custom component creation code here
     }
+
+    private void createTypeComboBox() {
+
+        TimeTrackingConfigurator timerService = new TimeTrackingConfigurator();
+
+        List<String> types = timerService.getTypesInCallable(repo);
+        TimeTracker timer = ComponentAware.Companion.of(project).getTimeTrackerComponent();
+        typeComboBox = new JComboBox<>(types.toArray());
+        var idx = 0;
+
+        try {
+            typeComboBox.setSelectedIndex(0);
+            if (!types.isEmpty()) {
+                ListIterator<String> iter = types.listIterator();
+
+                while (iter.hasNext()) {
+                    if (Objects.equals(iter.next(), timer.getType())) {
+                        idx = iter.nextIndex();
+                    }
+                }
+                typeComboBox.setSelectedIndex(idx);
+            }
+        } catch (IllegalArgumentException exp) {
+            typeComboBox.setSelectedIndex(-1);
+            logger.warn("Failed to fetch work items types");
+        }
+        typeComboBox.setEditable(true);
+    }
+
 }

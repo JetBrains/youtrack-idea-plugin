@@ -24,8 +24,17 @@ import java.util.concurrent.TimeUnit
 
 class TimeTrackingConfigurator {
 
-    fun getAvailableWorkItemsTypes(repo: YouTrackServer): Collection<String> {
-        return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys
+    fun getTypesInCallable(repo: YouTrackServer): List<String> {
+        val future = ApplicationManager.getApplication().executeOnPooledThread(
+            Callable {
+                getAvailableWorkItemsTypes(repo)
+            })
+
+        return future.get()
+    }
+
+    fun getAvailableWorkItemsTypes(repo: YouTrackServer): List<String> {
+        return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys.toList()
     }
 
     private fun configureTimerForTracking(timeTrackingDialog: SetupDialog, project: Project) {
