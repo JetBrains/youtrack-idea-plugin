@@ -14,6 +14,7 @@ import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.tasks.TaskManager;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -50,7 +51,7 @@ public class ManualTimeEntryDialog extends JDialog {
     private JLabel typeLabel;
     private JLabel commentLabel;
     private JLabel dateLabel;
-    private JLabel notifier;
+    private JBLabel notifier;
     private DatePicker datePicker;
 
     Logger logger = Logger.getInstance("com.github.jk1.ytplugin");
@@ -74,8 +75,6 @@ public class ManualTimeEntryDialog extends JDialog {
         this.project = project;
         this.repo = repo;
         $$$setupUI$$$();
-        this.ids = ComponentAware.Companion.of(project).getIssueStoreComponent().get(repo).getAllIssues();
-
 
         setContentPane(contentPane);
         setModal(true);
@@ -129,15 +128,18 @@ public class ManualTimeEntryDialog extends JDialog {
                 Future<?> future = new TimeTrackingConfigurator().checkIfTrackingIsEnabledForIssue(repo, selectedIssueIndex, ids);
 
                 if (!((Boolean) future.get())) {
-                    notifier.setForeground(JBColor.RED);
-                    notifier.setText("Time tracking is disabled for this project");
-                    logger.debug("Time tracking for ${ids[idComboBox.selectedIndex].issueId} is disabled in project");
+                    if (issueComboBox.getSelectedIndex() == -1) {
+                        notifier.setForeground(JBColor.RED);
+                        notifier.setText("Please select the issue");
+                        logger.debug("Issue is not selected or there are no issues in the list");
+
+                    }
                 } else {
                     String selectedId = ids.get(issueComboBox.getSelectedIndex()).getIssueId();
 
                     Future<Integer> futureCode = new TimeTrackerConnector(repo, project).addWorkItemManually(format(datePicker.getDate()),
                             typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId, commentField.getText(),
-                            time.toString(), (JBLabel) notifier);
+                            time.toString(), notifier);
 
                     if (futureCode.get() == 200) {
                         dispose();
@@ -146,10 +148,9 @@ public class ManualTimeEntryDialog extends JDialog {
             } catch (IndexOutOfBoundsException e) {
                 notifier.setForeground(JBColor.RED);
                 notifier.setText("Please select the issue");
-                logger.debug("Issue is not selected or there are no issues in the list: ${e.message}");
+                logger.debug("Issue is not selected or there are no issues in the list:" + e.getMessage());
             }
         }
-//        dispose();
     }
 
     private void onCancel() {
@@ -172,14 +173,14 @@ public class ManualTimeEntryDialog extends JDialog {
     private void $$$setupUI$$$() {
         createUIComponents();
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(2, 3, new Insets(10, 10, 10, 10), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
         contentPane.setMinimumSize(new Dimension(550, 350));
         contentPane.setPreferredSize(new Dimension(550, 350));
         contentPane.setRequestFocusEnabled(true);
         contentPane.putClientProperty("html.disable", Boolean.FALSE);
         rootPanel = new JPanel();
         rootPanel.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(rootPanel, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
+        contentPane.add(rootPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1, true, false));
         rootPanel.add(buttonsPanel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -192,41 +193,27 @@ public class ManualTimeEntryDialog extends JDialog {
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         rootPanel.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        notifier = new JLabel();
+        notifier = new JBLabel();
         notifier.setText("");
         panel1.add(notifier, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(mainPanel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        generalPanel = new JPanel();
-        generalPanel.setLayout(new GridLayoutManager(5, 6, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(generalPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        generalPanel.add(datePanel, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        mainPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.add(mainPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        mainPanel.add(generalPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         commentPanel = new JPanel();
         commentPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        generalPanel.add(commentPanel, new GridConstraints(3, 1, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        generalPanel.add(commentPanel, new GridConstraints(3, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         commentField = new JTextField();
         commentPanel.add(commentField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         typePanel = new JPanel();
         typePanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        generalPanel.add(typePanel, new GridConstraints(2, 1, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-//        typeComboBox = new JComboBox();
+        generalPanel.add(typePanel, new GridConstraints(2, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         typePanel.add(typeComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         issuePanel = new JPanel();
         issuePanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        generalPanel.add(issuePanel, new GridConstraints(1, 1, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        issueComboBox = new JComboBox();
+        generalPanel.add(issuePanel, new GridConstraints(1, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         issuePanel.add(issueComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        hourSpinner = new JSpinner();
-        generalPanel.add(hourSpinner, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        minutesSpinner = new JSpinner();
-        generalPanel.add(minutesSpinner, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        hoursLabel = new JLabel();
-        hoursLabel.setText("hours");
-        generalPanel.add(hoursLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        minutesLabel = new JLabel();
-        minutesLabel.setText("minutes");
-        generalPanel.add(minutesLabel, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        generalPanel.add(hourSpinner, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         timeLabel = new JLabel();
         timeLabel.setText("Spent time: ");
         generalPanel.add(timeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -242,12 +229,16 @@ public class ManualTimeEntryDialog extends JDialog {
         dateLabel = new JLabel();
         dateLabel.setText("Date: ");
         generalPanel.add(dateLabel, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        hoursLabel = new JLabel();
+        hoursLabel.setText("hours");
+        generalPanel.add(hoursLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        minutesSpinner = new JSpinner();
+        generalPanel.add(minutesSpinner, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        minutesLabel = new JLabel();
+        minutesLabel.setText("minutes");
+        generalPanel.add(minutesLabel, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
-        mainPanel.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        final Spacer spacer2 = new Spacer();
-        contentPane.add(spacer2, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer3 = new Spacer();
-        contentPane.add(spacer3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        generalPanel.add(spacer1, new GridConstraints(0, 5, 1, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
     }
 
     /**
@@ -259,10 +250,52 @@ public class ManualTimeEntryDialog extends JDialog {
 
     private void createUIComponents() {
         this.setTitle("Add Spent Time");
-        createTypeComboBox();
+
+
         datePanel = new JPanel();
         datePicker = new DatePicker(new Date());
-        datePanel.add(datePicker);
+        createGeneralPanel();
+        createIssueIdPanel();
+        createTypeComboBox();
+        createSpinners();
+    }
+
+    private void createGeneralPanel(){
+        generalPanel = new JPanel();
+        generalPanel.setLayout(new GridLayoutManager(5, 12, new Insets(0, 0, 0, 0), -1, -1));
+        generalPanel.add(datePicker, new GridConstraints(4, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+
+    }
+
+    private void createSpinners() {
+        SpinnerModel hoursModel = new SpinnerNumberModel(2,  //initial value
+                0,  //min
+                100,  //max
+                1);
+        hourSpinner = new JSpinner(hoursModel);
+        hourSpinner.setEditor(new JSpinner.NumberEditor(hourSpinner, "00"));
+
+        SpinnerModel minutesModel = new SpinnerNumberModel(0,  //initial value
+                0,  //min
+                60,  //max
+                1);
+        minutesSpinner = new JSpinner(minutesModel);
+        minutesSpinner.setEditor(new JSpinner.NumberEditor(minutesSpinner, "00"));
+
+
+    }
+
+    private void createIssueIdPanel() {
+
+        this.ids = ComponentAware.Companion.of(project).getIssueStoreComponent().get(repo).getAllIssues();
+
+        for (Issue id : ids) {
+            tasksIdRepresentation.add(id.getIssueId() + ": " + id.getSummary());
+            tasksIds.add(id.getIssueId());
+        }
+
+        issueComboBox = new ComboBox(tasksIdRepresentation.toArray());
+        issueComboBox.setSelectedIndex(tasksIds.indexOf(TaskManager.getManager(project).getActiveTask().getId()));
     }
 
     private void createTypeComboBox() {
@@ -271,7 +304,7 @@ public class ManualTimeEntryDialog extends JDialog {
 
         List<String> types = timerService.getTypesInCallable(repo);
         TimeTracker timer = ComponentAware.Companion.of(project).getTimeTrackerComponent();
-        typeComboBox = new JComboBox<>(types.toArray());
+        typeComboBox = new ComboBox(types.toArray());
         var idx = 0;
 
         try {
