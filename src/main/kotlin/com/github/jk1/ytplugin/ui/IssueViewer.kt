@@ -49,7 +49,7 @@ class IssueViewer : JPanel(BorderLayout()) {
             issuePane.isOpaque = false
             issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
             container.add(issuePane)
-            val tabs = JBTabbedPane()
+            val tabs = JTabbedPane()
             addCommentsTab(issue.comments, tabs)
             addAttachmentsTab(issue.attachments, tabs)
             addWorkLogTab(issue.workItems, tabs)
@@ -106,7 +106,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         return panel
     }
 
-    private fun addAttachmentsTab(files: List<Attachment>, tabs: JBTabbedPane) {
+    private fun addAttachmentsTab(files: List<Attachment>, tabs: JTabbedPane) {
         if (files.isNotEmpty()) {
             val panel = JPanel()
             panel.layout = BoxLayout(panel, BoxLayout.PAGE_AXIS)
@@ -121,7 +121,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addCommentsTab(comments: List<IssueComment>, tabs: JBTabbedPane) {
+    private fun addCommentsTab(comments: List<IssueComment>, tabs: JTabbedPane) {
         if (comments.isNotEmpty()) {
             val commentsPanel = JPanel()
             commentsPanel.layout = BoxLayout(commentsPanel, BoxLayout.Y_AXIS)
@@ -131,7 +131,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         }
     }
 
-    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JBTabbedPane) {
+    private fun addWorkLogTab(workItems: MutableList<IssueWorkItem>, tabs: JTabbedPane) {
         if (workItems.isNotEmpty()) {
             val workItemsPanel = JPanel()
             workItemsPanel.layout = VerticalLayout(5)
