@@ -233,7 +233,6 @@ public class ManualTimeEntryDialog extends JDialog {
         hoursLabel = new JLabel();
         hoursLabel.setText("hours");
         generalPanel.add(hoursLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        minutesSpinner = new JSpinner();
         generalPanel.add(minutesSpinner, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         minutesLabel = new JLabel();
         minutesLabel.setText("minutes");

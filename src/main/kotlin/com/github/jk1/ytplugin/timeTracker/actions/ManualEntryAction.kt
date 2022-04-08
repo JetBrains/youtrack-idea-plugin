@@ -3,13 +3,10 @@ package com.github.jk1.ytplugin.timeTracker.actions
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.ManualTimeEntryDialog
-import com.github.jk1.ytplugin.timeTracker.TimeTrackerManualEntryDialog
 import com.github.jk1.ytplugin.ui.YouTrackPluginIcons
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.util.ui.StartupUiUtil.getCenterPoint
-import java.awt.GraphicsEnvironment
 
 
 class ManualEntryAction : AnAction(
@@ -27,8 +24,6 @@ class ManualEntryAction : AnAction(
             dialog?.pack()
             dialog?.setLocationRelativeTo(null) // position in the center of the screen
             dialog?.isVisible = true
-//            val dialog = repo?.let { TimeTrackerManualEntryDialog(project, it) }
-//            dialog?.show()
         }
     }
 
