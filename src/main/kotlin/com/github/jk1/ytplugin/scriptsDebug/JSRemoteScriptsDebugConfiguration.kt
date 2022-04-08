@@ -182,25 +182,27 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
 
                 val connection = WipConnection(project)
 
-                val finder = RemoteDebuggingFileFinder(
-                    createUrlToLocalMapping(mappings),
-                    LocalFileSystemFileFinder(), rootFolder, instanceFolder
-                )
+                val finder = createUrlToLocalMapping(mappings)?.let {
+                    RemoteDebuggingFileFinder(
+                        it,
+                        LocalFileSystemFileFinder(), rootFolder, instanceFolder
+                    )
+                }
 
-                process = BrowserChromeDebugProcess(session, finder, connection, executionResult)
+                process = finder?.let { BrowserChromeDebugProcess(session, it, connection, executionResult) }
                 connection.open(socketAddress)
 
                 logger.info("connection is opened")
             }
             else -> throw InvalidDataException("YouTrack version is not sufficient")
         }
-        return process
+        return process!!
     }
 
 
-    private fun createUrlToLocalMapping(mappings: List<RemoteUrlMappingBean>): BiMap<String, VirtualFile> {
+    private fun createUrlToLocalMapping(mappings: List<RemoteUrlMappingBean>): HashBiMap<String, VirtualFile>? {
         if (mappings.isEmpty()) {
-            return ImmutableBiMap.of()
+            return HashBiMap.create<String, VirtualFile>()
         }
 
         val map = HashBiMap.create<String, VirtualFile>(mappings.size)

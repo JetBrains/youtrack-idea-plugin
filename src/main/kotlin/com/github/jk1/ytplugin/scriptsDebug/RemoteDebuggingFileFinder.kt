@@ -14,11 +14,12 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.Url
 import com.intellij.util.Urls
 import com.github.jk1.ytplugin.logger
+import com.google.common.collect.HashBiMap
 import com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName
 import java.net.URISyntaxException
 
 class RemoteDebuggingFileFinder(
-    private var mappings: BiMap<String, VirtualFile> = ImmutableBiMap.of(),
+    private var mappings: BiMap<String, VirtualFile> = HashBiMap.create(),
     private val parent: DebuggableFileFinder? = null,
     private val rootFolderName: String,
     private val instanceFolderName: String
