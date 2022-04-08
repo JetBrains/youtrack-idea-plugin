@@ -40,7 +40,6 @@ public class ManualTimeEntryDialog extends JDialog {
     private JPanel buttonsPanel;
     private JPanel mainPanel;
     private JPanel generalPanel;
-    private JPanel datePanel;
     private JPanel commentPanel;
     private JPanel typePanel;
     private JPanel issuePanel;
@@ -128,7 +127,12 @@ public class ManualTimeEntryDialog extends JDialog {
                 int selectedIssueIndex = issueComboBox.getSelectedIndex();
                 Future<?> future = new TimeTrackingConfigurator().checkIfTrackingIsEnabledForIssue(repo, selectedIssueIndex, ids);
 
-                if (!((Boolean) future.get())) {
+                Object result = future.get();
+                if (!(result instanceof Boolean)) {
+                    notifier.setForeground(JBColor.RED);
+                    notifier.setText("Unable to save time, please check your connection");
+                    logger.debug("Error when posting time tracker item");
+                } else if (!((Boolean) future.get())) {
                     if (issueComboBox.getSelectedIndex() == -1) {
                         notifier.setForeground(JBColor.RED);
                         notifier.setText("Please select the issue");
@@ -175,13 +179,13 @@ public class ManualTimeEntryDialog extends JDialog {
         createUIComponents();
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
-        contentPane.setMinimumSize(new Dimension(550, 350));
-        contentPane.setPreferredSize(new Dimension(550, 350));
+        contentPane.setMinimumSize(new Dimension(500, 290));
+        contentPane.setPreferredSize(new Dimension(500, 290));
         contentPane.setRequestFocusEnabled(true);
         contentPane.putClientProperty("html.disable", Boolean.FALSE);
         rootPanel = new JPanel();
         rootPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(rootPanel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        contentPane.add(rootPanel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         rootPanel.add(buttonsPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -233,9 +237,7 @@ public class ManualTimeEntryDialog extends JDialog {
         generalPanel.add(minutesSpinner, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         minutesLabel = new JLabel();
         minutesLabel.setText("minutes");
-        generalPanel.add(minutesLabel, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer2 = new Spacer();
-        generalPanel.add(spacer2, new GridConstraints(0, 5, 1, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        generalPanel.add(minutesLabel, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         notifyPanel = new JPanel();
         notifyPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(notifyPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -253,9 +255,6 @@ public class ManualTimeEntryDialog extends JDialog {
 
     private void createUIComponents() {
         this.setTitle("Add Spent Time");
-
-
-        datePanel = new JPanel();
         datePicker = new DatePicker(new Date());
         createGeneralPanel();
         createIssueIdPanel();
