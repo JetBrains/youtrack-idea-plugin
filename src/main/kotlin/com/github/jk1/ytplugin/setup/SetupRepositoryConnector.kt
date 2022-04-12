@@ -6,23 +6,44 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.tasks.youtrack.YouTrackRepository
+import com.intellij.util.net.IdeHttpClientHelpers
 import com.intellij.util.net.ssl.CertificateManager
 import io.netty.handler.codec.http.HttpScheme
 import org.apache.http.HttpRequest
+import org.apache.http.auth.AuthScope
+import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.CredentialsProvider
+import org.apache.http.client.config.AuthSchemes
 import org.apache.http.client.config.RequestConfig
+import org.apache.http.impl.client.BasicCredentialsProvider
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import java.net.URL
 
 class SetupRepositoryConnector {
 
+    // TODO add proxy lol, why the hell it's not here
     companion object {
-        fun setupHttpClient(): CloseableHttpClient {
-            val config = RequestConfig.custom().setConnectTimeout(60000).build()
+        fun setupHttpClient(repository: YouTrackRepository): CloseableHttpClient {
+            val requestConfigBuilder = RequestConfig.custom()
+                .setConnectTimeout(60000)
+                .setSocketTimeout(30000)
+
+            val createCredentialsProvider: CredentialsProvider = BasicCredentialsProvider()
+
+            if (repository.isUseProxy) {
+                IdeHttpClientHelpers.ApacheHttpClient4
+                    .setProxyForUrlIfEnabled(requestConfigBuilder, repository.url)
+            }
+            // Proxy authentication
+            if (repository.isUseProxy) {
+                IdeHttpClientHelpers.ApacheHttpClient4
+                    .setProxyCredentialsForUrlIfEnabled(createCredentialsProvider, repository.url)
+            }
             return HttpClientBuilder.create()
                 .disableRedirectHandling()
                 .setSSLContext(CertificateManager.getInstance().sslContext)
-                .setDefaultRequestConfig(config).build()
+                .setDefaultRequestConfig(requestConfigBuilder.build()).build()
         }
     }
 
@@ -34,7 +55,7 @@ class SetupRepositoryConnector {
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
         checker.onSuccess { request ->
-            if (isValidYouTrackVersion(repository.url)) {
+            if (isValidYouTrackVersion(repository)) {
                 repository.url = request.requestLine.uri.replace(endpoint, "")
                 logger.debug("valid YouTrack version detected")
                 noteState = NotifierState.SUCCESS
@@ -48,7 +69,7 @@ class SetupRepositoryConnector {
         checker.onVersionError { _ ->
 
             if (getInstanceVersion() == null){
-                obtainYouTrackConfiguration(repository.url)
+                obtainYouTrackConfiguration(repository)
             }
             val version = getInstanceVersion()
 
@@ -146,9 +167,9 @@ class SetupRepositoryConnector {
     }
 
 
-    private fun isValidYouTrackVersion(url: String): Boolean {
+    private fun isValidYouTrackVersion(repo: YouTrackRepository): Boolean {
         // on the first invoke setup YouTrack configuration
-        obtainYouTrackConfiguration(url)
+        obtainYouTrackConfiguration(repo)
         val version = getInstanceVersion()
         return version != null && version >= 2017.1
     }

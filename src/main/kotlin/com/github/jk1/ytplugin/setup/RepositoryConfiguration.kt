@@ -4,17 +4,18 @@ import com.github.jk1.ytplugin.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.tasks.youtrack.YouTrackRepository
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 
-fun obtainYouTrackConfiguration(url: String) {
-    val builder = URIBuilder(url.trimEnd('/') + "/api/config")
+fun obtainYouTrackConfiguration(repository: YouTrackRepository) {
+    val builder = URIBuilder(repository.url.trimEnd('/') + "/api/config")
     builder.addParameter("fields", "version,uuid")
     val method = HttpGet(builder.build())
-    val client = SetupRepositoryConnector.setupHttpClient()
+    val client = SetupRepositoryConnector.setupHttpClient(repository)
 
     try {
         client.execute(method) {

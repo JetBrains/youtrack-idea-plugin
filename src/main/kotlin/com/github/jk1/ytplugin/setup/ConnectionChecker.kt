@@ -37,7 +37,7 @@ class ConnectionChecker(val repository: YouTrackRepository, project: Project) {
         method.setHeader("Authorization", "Basic $authCredentials")
 
         try {
-            val client = SetupRepositoryConnector.setupHttpClient()
+            val client = SetupRepositoryConnector.setupHttpClient(repository)
             val response = client.execute(method)
             if (response.statusLine.statusCode == HttpStatus.SC_OK) {
                 if (!credentialsChecker.isGuestUser(response.entity)){

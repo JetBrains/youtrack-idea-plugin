@@ -164,7 +164,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
         val repo = if (repositories.isNotEmpty()) repositories[0] else null
 
         if (getInstanceVersion() == null && repo != null){
-                obtainYouTrackConfiguration(repo.url)
+                obtainYouTrackConfiguration(repo.getRepo())
         }
         val version = getInstanceVersion()
 
