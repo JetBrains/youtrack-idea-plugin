@@ -20,7 +20,8 @@
 
     <change-notes><![CDATA[
         <ul>
-            <li> New setup dialog introduced </li>
+            <li> New manual time tracking dialog introduced </li>
+            <li> Bugfix updates </li>
             <li> Local time tracking: accumulate the spent time for each task, keep it locally in your IDE,
              and report the aggregated time in one work item when you're ready </li>
         </ul>
