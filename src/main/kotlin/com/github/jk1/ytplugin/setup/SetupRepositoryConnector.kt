@@ -22,35 +22,43 @@ import java.net.URL
 
 class SetupRepositoryConnector {
 
-    // TODO add proxy lol, why the hell it's not here
     companion object {
         fun setupHttpClient(repository: YouTrackRepository): CloseableHttpClient {
             val requestConfigBuilder = RequestConfig.custom()
                 .setConnectTimeout(60000)
                 .setSocketTimeout(30000)
 
-            val createCredentialsProvider: CredentialsProvider = BasicCredentialsProvider()
 
             if (repository.isUseProxy) {
-                IdeHttpClientHelpers.ApacheHttpClient4
-                    .setProxyForUrlIfEnabled(requestConfigBuilder, repository.url)
+                setupProxy(repository, requestConfigBuilder)
             }
-            // Proxy authentication
-            if (repository.isUseProxy) {
-                IdeHttpClientHelpers.ApacheHttpClient4
-                    .setProxyCredentialsForUrlIfEnabled(createCredentialsProvider, repository.url)
-            }
+
             return HttpClientBuilder.create()
                 .disableRedirectHandling()
                 .setSSLContext(CertificateManager.getInstance().sslContext)
                 .setDefaultRequestConfig(requestConfigBuilder.build()).build()
+        }
+
+        private fun setupProxy(repository: YouTrackRepository, requestConfigBuilder: RequestConfig.Builder ) {
+            val createCredentialsProvider: CredentialsProvider = BasicCredentialsProvider()
+
+            createCredentialsProvider.setCredentials(AuthScope(
+                AuthScope.ANY_HOST,
+                AuthScope.ANY_PORT,
+                AuthScope.ANY_REALM, AuthSchemes.BASIC),
+                UsernamePasswordCredentials(repository.username, repository.password))
+
+            IdeHttpClientHelpers.ApacheHttpClient4
+                .setProxyForUrlIfEnabled(requestConfigBuilder, repository.url)
+            // Proxy authentication
+            IdeHttpClientHelpers.ApacheHttpClient4
+                .setProxyCredentialsForUrlIfEnabled(createCredentialsProvider, repository.url)
         }
     }
 
     @Volatile
     var noteState = NotifierState.INVALID_TOKEN
     private val endpoint = "/api/users/me?fields=name"
-
 
     private fun checkAndFixConnection(repository: YouTrackRepository, project: Project) {
         val checker = ConnectionChecker(repository, project)
