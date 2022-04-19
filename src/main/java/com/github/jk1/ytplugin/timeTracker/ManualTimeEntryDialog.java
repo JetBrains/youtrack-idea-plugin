@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.github.jk1.ytplugin.issues.model.Issue;
+import com.github.jk1.ytplugin.rest.CustomAttributesClient;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -52,6 +53,7 @@ public class ManualTimeEntryDialog extends JDialog {
     private JLabel dateLabel;
     private JBLabel notifier;
     private JPanel notifyPanel;
+    private JPanel customWorkItemsPanel;
     private DatePicker datePicker;
 
     Logger logger = Logger.getInstance("com.github.jk1.ytplugin");
@@ -297,6 +299,13 @@ public class ManualTimeEntryDialog extends JDialog {
 
         issueComboBox = new ComboBox(tasksIdRepresentation.toArray());
         issueComboBox.setSelectedIndex(tasksIds.indexOf(TaskManager.getManager(project).getActiveTask().getId()));
+
+        issueComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // assume that project ID ALWAYS does not have '-'
+                String projectId =  ids.get(issueComboBox.getSelectedIndex()).getIssueId().split("-")[0];
+                new CustomAttributesClient(repo).checkIfProjectHasCustomAttributesInCallable(projectId);
+            }});
     }
 
     private void createTypeComboBox() {
