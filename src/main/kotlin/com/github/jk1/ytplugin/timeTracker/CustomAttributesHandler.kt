@@ -18,4 +18,19 @@ class CustomAttributesHandler {
         }
     }
 
+    // Todo: remove later, for testing purposes until the backend is not ready
+    fun parseCustomAttributesMock(json: JsonArray): Map<String, List<String>> {
+        return if (json.isJsonNull || json.size() == 0){
+            mapOf()
+        } else {
+            // TODO add try catch
+            val valuesMap = mutableMapOf<String, List<String>>()
+            json.forEach { it ->
+                val valuesNames = json.first().asJsonObject.get("values").asJsonArray.map { it.asJsonObject.get("name").asString}
+                valuesMap[it.asJsonObject.get("name").asString] = listOf("value1", "value2")
+            }
+            valuesMap
+        }
+    }
+
 }

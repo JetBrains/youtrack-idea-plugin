@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import com.github.jk1.ytplugin.issues.model.Issue;
 import com.github.jk1.ytplugin.rest.CustomAttributesClient;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.tasks.TaskManager;
@@ -265,7 +263,7 @@ public class ManualTimeEntryDialog extends JDialog {
 
     private void createGeneralPanel() {
         generalPanel = new JPanel();
-        generalPanel.setLayout(new GridLayoutManager(5, 12, new Insets(0, 0, 0, 0), -1, -1));
+        generalPanel.setLayout(new GridLayoutManager(10, 12, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(datePicker, new GridConstraints(4, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
 
     }
@@ -304,8 +302,26 @@ public class ManualTimeEntryDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 // assume that project ID ALWAYS does not have '-'
                 String projectId =  ids.get(issueComboBox.getSelectedIndex()).getIssueId().split("-")[0];
-                new CustomAttributesClient(repo).checkIfProjectHasCustomAttributesInCallable(projectId);
+                Map<String, List<String>> attributes =
+                        new CustomAttributesClient(repo).getCustomAttributesForProjectInCallable(projectId);
+                int row = 5;
+                for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
+                    createAttributePanel(row, entry.getKey(),entry.getValue() );
+                    row++;
+                    contentPane.updateUI();
+                }
             }});
+    }
+
+    private void createAttributePanel(int row, String attributeName, List<String> attributeValues) {
+        customWorkItemsPanel = new JPanel();
+        customWorkItemsPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        ComboBox customWorkItemComboBox = new ComboBox(attributeValues.toArray());
+
+        JLabel customWorkItemLabel = new JLabel(attributeName);
+        customWorkItemsPanel.add(customWorkItemComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        generalPanel.add(customWorkItemsPanel, new GridConstraints(row, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        generalPanel.add(customWorkItemLabel, new GridConstraints(row, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
     }
 
     private void createTypeComboBox() {

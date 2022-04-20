@@ -13,7 +13,7 @@ import java.util.concurrent.Callable
 
 class CustomAttributesClient (override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun checkIfProjectHasCustomAttributesInCallable(projectId: String): Map<String, List<String>>{
+    fun getCustomAttributesForProjectInCallable(projectId: String): Map<String, List<String>>{
         val future = ApplicationManager.getApplication().executeOnPooledThread (
             Callable {
                 checkIfProjectHasCustomAttributes(projectId)
@@ -29,7 +29,7 @@ class CustomAttributesClient (override val repository: YouTrackServer) : RestCli
 
         return try {
             method.execute {
-                CustomAttributesHandler().parseCustomAttributes(it.asJsonArray)
+                CustomAttributesHandler().parseCustomAttributesMock(it.asJsonArray)
             }
         } catch (e: HttpHostConnectException){
             logger.debug("Error in checkIfTrackingIsEnabled: ${e.message}")
