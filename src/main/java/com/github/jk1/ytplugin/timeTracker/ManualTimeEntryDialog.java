@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import com.github.jk1.ytplugin.issues.model.Issue;
 import com.github.jk1.ytplugin.rest.CustomAttributesClient;
 import com.github.jk1.ytplugin.tasks.YouTrackServer;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.tasks.TaskManager;
@@ -63,8 +64,8 @@ public class ManualTimeEntryDialog extends JDialog {
     private List<String> tasksIds = new ArrayList<>();
     YouTrackServer repo;
 
-    private int mandatoryComponentsCount = 13; // required to maintain the default state of the dialog, without custom attributes
-    private int mandatoryRowsCount = 5;
+    private final int mandatoryComponentsCount = 13; // required to maintain the default state of the dialog, without custom attributes
+    private final int mandatoryRowsCount = 5;
     private int attributeRow = mandatoryRowsCount;
 
     /**
@@ -304,34 +305,39 @@ public class ManualTimeEntryDialog extends JDialog {
         issueComboBox = new ComboBox(tasksIdRepresentation.toArray());
         issueComboBox.setSelectedIndex(tasksIds.indexOf(TaskManager.getManager(project).getActiveTask().getId()));
 
-        issueComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // assume that project ID ALWAYS does not have '-'
-                String projectId =  ids.get(issueComboBox.getSelectedIndex()).getIssueId().split("-")[0];
-                Map<String, List<String>> attributes =
-                        new CustomAttributesClient(repo).getCustomAttributesForProjectInCallable(projectId);
+        issueComboBox.addActionListener(e -> {
+            // assume that project ID ALWAYS does not have '-'
+            String projectId =  ids.get(issueComboBox.getSelectedIndex()).getIssueId().split("-")[0];
+            Map<String, List<String>> attributes =
+                    new CustomAttributesClient(repo).getCustomAttributesForProjectInCallable(projectId);
+            handleAttributes(attributes);
+            contentPane.updateUI();
+        });
+    }
 
-                // TODO run in AWT
-                int componentsToDelete = (attributeRow - mandatoryRowsCount) * 2; // label + comboBox in a row
-                int componentsCount = generalPanel.getComponentCount();
+    private void handleAttributes(Map<String, List<String>> attributes) {
+        removeOldCustomAttributes();
+        attributeRow = mandatoryRowsCount;
 
-                if (componentsCount > mandatoryComponentsCount){
-                    int i = 1;
-                    while ( i <= componentsToDelete ){
-                        generalPanel.remove(componentsCount - i);
-                        i++;
-                    }
+        for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
+            createAttributePanel(attributeRow, entry.getKey(),entry.getValue() );
+            attributeRow++;
+        }
+    }
+
+    private void removeOldCustomAttributes(){
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            int componentsToDelete = (attributeRow - mandatoryRowsCount) * 2; // label + comboBox in a row
+            int componentsCount =  generalPanel.getComponentCount();
+            if (componentsCount > mandatoryComponentsCount){
+                for(int i = 1; i <= componentsToDelete; i++){
+                    generalPanel.remove(componentsCount - i);
                 }
-                generalPanel.validate();
-                generalPanel.repaint();
+            }
+        });
 
-                attributeRow = mandatoryRowsCount;
-                for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
-                    createAttributePanel(attributeRow, entry.getKey(),entry.getValue() );
-                    attributeRow++;
-                }
-                contentPane.updateUI();
-            }});
+        generalPanel.validate();
+        generalPanel.repaint();
     }
 
     private void createAttributePanel(int row, String attributeName, List<String> attributeValues) {
