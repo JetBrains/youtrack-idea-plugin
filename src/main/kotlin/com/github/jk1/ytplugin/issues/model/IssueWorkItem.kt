@@ -1,5 +1,7 @@
 package com.github.jk1.ytplugin.issues.model
 
+import com.github.jk1.ytplugin.rest.IssueJsonParser
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import java.util.*
 
@@ -7,26 +9,37 @@ import java.util.*
 class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
 
     val json: String = item.toString()
-    val issueId: String = item.asJsonObject.get("issue").asJsonObject.get("idReadable").asString
-    val date: Date = Date(item.asJsonObject.get("date").asLong)
-    val value: String = item.asJsonObject.get("duration").asJsonObject.get("presentation").asString
+    val root =  item.asJsonObject
 
-    val type: String =  if (item.asJsonObject.get("type").isJsonNull)
+    val issueId: String = root.get("issue").asJsonObject.get("idReadable").asString
+    val date: Date = Date(root.get("date").asLong)
+    val value: String = root.get("duration").asJsonObject.get("presentation").asString
+
+    val type: String =  if (root.get("type").isJsonNull)
         "None"
     else
-        item.asJsonObject.get("type").asJsonObject.get("name").asString
+        root.get("type").asJsonObject.get("name").asString
 
-    val author: String = item.asJsonObject.get("author").asJsonObject.get("name").asString
-    val id: String = item.asJsonObject.get("id").asString
-    val created: Date = Date(item.asJsonObject.get("created").asLong)
+    val author: String = root.get("author").asJsonObject.get("name").asString
+    val id: String = root.get("id").asString
+    val created: Date = Date(root.get("created").asLong)
 
-    val comment: String? = if (!item.asJsonObject.get("text").isJsonNull)
-        item.asJsonObject.get("text").asString
+    val comment: String? = if (!root.get("text").isJsonNull)
+        root.get("text").asString
     else
         null
 
+    var attributes: MutableList<WorkItemAttribute> = mutableListOf()
+
     override operator fun compareTo(other: IssueWorkItem): Int {
         return date.compareTo(other.date)
+    }
+
+    init {
+        if (root.getAsJsonArray("attributes") != null && !root.getAsJsonArray("attributes").isJsonNull) {
+            val attributesJson: JsonArray = root.getAsJsonArray("attributes")
+            attributesJson.mapNotNull { attributes.add(IssueJsonParser.parseWorkItemAttribute(it)!!) }
+        }
     }
 
     /**

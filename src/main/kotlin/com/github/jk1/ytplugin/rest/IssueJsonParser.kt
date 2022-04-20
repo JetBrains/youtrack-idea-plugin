@@ -10,6 +10,8 @@ object IssueJsonParser {
 
     fun parseWorkItem(element: JsonElement) = parseSafe(element) { IssueWorkItem(element) }
 
+    fun parseWorkItemAttribute(element: JsonElement) = parseSafe(element) { WorkItemAttribute(element) }
+
     fun parseCustomField(element: JsonElement) = parseSafe(element) { CustomField(element) }
 
     fun parseComment(element: JsonElement) = parseSafe(element) { IssueComment(element) }
