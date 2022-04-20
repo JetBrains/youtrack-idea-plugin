@@ -13,6 +13,7 @@
     "id": "{typeId}",
     "$type": "WorkItemType"
   },
+  "attributes": [ "{attributes}" ],
 
   "$type": "IssueWorkItem"
 }

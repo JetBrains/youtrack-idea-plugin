@@ -143,14 +143,18 @@ public class ManualTimeEntryDialog extends JDialog {
                         notifier.setForeground(JBColor.RED);
                         notifier.setText("Please select the issue");
                         logger.debug("Issue is not selected or there are no issues in the list");
-
                     }
                 } else {
                     String selectedId = ids.get(issueComboBox.getSelectedIndex()).getIssueId();
 
-                    Future<Integer> futureCode = new TimeTrackerConnector(repo, project).addWorkItemManually(format(datePicker.getDate()),
-                            typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId, commentField.getText(),
-                            time.toString(), notifier);
+                    ApplicationManager.getApplication().invokeAndWait(() -> {
+                        Map<String, String> attributes = getAttributes();
+                    });
+
+                    Future<Integer> futureCode = new TimeTrackerConnector(repo, project)
+                            .addWorkItemManually(format(datePicker.getDate()),
+                            typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId,
+                                    commentField.getText(), time.toString(), notifier);
 
                     if (futureCode.get() == 200) {
                         dispose();
@@ -162,6 +166,20 @@ public class ManualTimeEntryDialog extends JDialog {
                 logger.debug("Issue is not selected or there are no issues in the list:" + e.getMessage());
             }
         }
+    }
+
+    private Map<String, String> getAttributes() {
+        int componentsCount = generalPanel.getComponentCount();
+        Map<String, String> attributes = new HashMap<>(Collections.emptyMap());
+        int numOfCustomAttributes = attributeRow - mandatoryRowsCount;
+        for (int i = 1; i <= numOfCustomAttributes * 2; i += 2) {
+            // according to the form layout
+            JPanel attributePanel = (JPanel)generalPanel.getComponent(componentsCount - i - 1);
+            String attributeName = ((JLabel)generalPanel.getComponent(componentsCount - i)).getText();
+            JComboBox valueComboBox = (JComboBox)attributePanel.getComponent(0);
+            attributes.put(attributeName, valueComboBox.getSelectedItem().toString());
+        }
+        return attributes;
     }
 
     private void onCancel() {
@@ -344,7 +362,7 @@ public class ManualTimeEntryDialog extends JDialog {
         customWorkItemsPanel = new JPanel();
         customWorkItemsPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         ComboBox customWorkItemComboBox = new ComboBox(attributeValues.toArray());
-
+        // TODO how to access values
         JLabel customWorkItemLabel = new JLabel(attributeName);
         customWorkItemsPanel.add(customWorkItemComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         generalPanel.add(customWorkItemsPanel, new GridConstraints(row, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));

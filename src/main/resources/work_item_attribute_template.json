@@ -1,0 +1,7 @@
+{
+  "name": "{attributeName}",
+  "value": {
+    "name": "{attributeValueName}",
+    "$type": "WorkItemAttributeValue"
+  }
+}
