@@ -147,14 +147,12 @@ public class ManualTimeEntryDialog extends JDialog {
                 } else {
                     String selectedId = ids.get(issueComboBox.getSelectedIndex()).getIssueId();
 
-                    ApplicationManager.getApplication().invokeAndWait(() -> {
-                        Map<String, String> attributes = getAttributes();
-                    });
+                    Map<String, String> attributes = getAttributes();
 
                     Future<Integer> futureCode = new TimeTrackerConnector(repo, project)
                             .addWorkItemManually(format(datePicker.getDate()),
                             typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId,
-                                    commentField.getText(), time.toString(), notifier);
+                                    commentField.getText(), time.toString(), attributes, notifier);
 
                     if (futureCode.get() == 200) {
                         dispose();
@@ -169,7 +167,7 @@ public class ManualTimeEntryDialog extends JDialog {
     }
 
     private Map<String, String> getAttributes() {
-        int componentsCount = generalPanel.getComponentCount();
+        int componentsCount = generalPanel.getComponentCount();  //TODO: under AWT tree lock.
         Map<String, String> attributes = new HashMap<>(Collections.emptyMap());
         int numOfCustomAttributes = attributeRow - mandatoryRowsCount;
         for (int i = 1; i <= numOfCustomAttributes * 2; i += 2) {

@@ -18,18 +18,27 @@ import java.net.UnknownHostException
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
-    fun postNewWorkItem(issueId: String, time: String, type: String, comment: String, date: String): Int {
+    fun postNewWorkItem(
+        issueId: String, time: String, type: String, comment: String,
+        date: String, attributes: Map<String, String> = mapOf()
+    ): Int {
         val types = getAvailableWorkItemTypes()
 
         val method = HttpPost("${repository.url}/api/issues/${issueId}/timeTracking/workItems")
         val res: URL? = this::class.java.classLoader.getResource("post_work_item_body.json")
+
         val jsonBody = res?.readText()
-                ?.replace("\"{minutes}\"", time, true)
-                ?.replace("\"{date}\"", date, true)
-                ?.replace("{authorId}", getMyIdAsAuthor(), true)
-                ?.replace("{type}", type, true)
-                ?.replace("{typeId}", types[type] ?: throw IllegalArgumentException("No work item type by name '$type'"), true)
-                ?.replace("{comment}", comment, true)
+            ?.replace("\"{minutes}\"", time, true)
+            ?.replace("\"{date}\"", date, true)
+            ?.replace("{authorId}", getMyIdAsAuthor(), true)
+            ?.replace("{type}", type, true)
+            ?.replace(
+                "{typeId}",
+                types[type] ?: throw IllegalArgumentException("No work item type by name '$type'"),
+                true
+            )
+            ?.replace("{comment}", comment, true)
+            ?.replace("\"{attributes}\"", constructAttributesJson(attributes))
         method.entity = jsonBody?.jsonEntity
 
         return try {
@@ -42,6 +51,19 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
             logger.debug(e)
             HttpStatus.SC_BAD_REQUEST
         }
+    }
+
+    private fun constructAttributesJson(attributes: Map<String, String>): String {
+        var attributesString = ""
+        attributes.forEach {
+            val res: URL? = this::class.java.classLoader.getResource("work_item_attribute_template.json")
+            attributesString += "\n${
+                (res?.readText()
+                    ?.replace("{attributeName}", it.key, true)
+                    ?.replace("{attributeValueName}", it.value, true))
+            },"
+        }
+        return attributesString.removeSuffix(",")
     }
 
     private fun getMyIdAsAuthor(): String {
@@ -67,9 +89,16 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 }
             }
         } catch (e: Exception) {
-            e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
+            e.multicatchException(
+                SocketException::class.java,
+                UnknownHostException::class.java,
+                SocketTimeoutException::class.java
+            ) {
                 val trackerNote = TrackerNotification()
-                trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
+                trackerNote.notify(
+                    "Connection to YouTrack server is lost, please check your network connection",
+                    NotificationType.WARNING
+                )
                 logger.warn("Connection to network lost: ${e.message}")
                 mapOf()
             }
