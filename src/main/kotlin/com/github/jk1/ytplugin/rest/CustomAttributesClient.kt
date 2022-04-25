@@ -29,7 +29,7 @@ class CustomAttributesClient (override val repository: YouTrackServer) : RestCli
 
         return try {
             method.execute {
-                CustomAttributesHandler().parseCustomAttributesMock(it.asJsonArray)
+                CustomAttributesHandler().parseCustomAttributes(it.asJsonArray)
             }
         } catch (e: HttpHostConnectException){
             logger.debug("Error in checkIfTrackingIsEnabled: ${e.message}")
