@@ -39,6 +39,7 @@ class IssueWorkItem(item: JsonElement) : Comparable<IssueWorkItem> {
         if (root.getAsJsonArray("attributes") != null && !root.getAsJsonArray("attributes").isJsonNull) {
             val attributesJson: JsonArray = root.getAsJsonArray("attributes")
             attributesJson.mapNotNull { attributes.add(IssueJsonParser.parseWorkItemAttribute(it)!!) }
+            attributes = attributes.filter { it.value != null && it.value.isNotEmpty() }.toMutableList()
         }
     }
 

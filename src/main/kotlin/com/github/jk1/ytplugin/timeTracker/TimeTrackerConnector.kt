@@ -114,7 +114,7 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 try {
                     TimeTrackerConnector(repository, repository.project).postWorkItemToServer(
                         selectedId, time, selectedType, comment,
-                        date.time.toString(), attributes
+                        date.time.toString(), attributes.filter { it.value.isNotEmpty() }
                     )
                     of(repository.project).issueWorkItemsStoreComponent[repository].update(repository)
                     HttpStatus.SC_OK
