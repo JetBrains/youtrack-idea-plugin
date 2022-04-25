@@ -38,7 +38,9 @@ class WorkItemsListCellRenderer(
     private fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
 
 
-    private val PREFFERED_COMMENT_WIDTH = 0.474
+    private var PREFFERED_COMMENT_WIDTH = 0.374
+    private val PREFFERED_ATTRIBUTE_WIDTH = 0.080
+
     private val PREFFERED_DATE_TYPE_WIDTH = 0.156
     private val PREFFERED_ISSUE_ID_WIDTH = 0.078
     private val PREFFERED_VALUE_WIDTH = 0.113
@@ -46,6 +48,8 @@ class WorkItemsListCellRenderer(
     private val OFFSET = 10
     private val LARGE_SCREEN_SIZE = 1000
     private val SMALL_SCREEN_SIZE = 500
+
+    private var maxAttributes = 0
 
     private var maxIssueIdWidth = 0
 
@@ -95,6 +99,21 @@ class WorkItemsListCellRenderer(
         type.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
         type.append(if (issueWorkItem.type == "None") "No type" else issueWorkItem.type,
             SimpleTextAttributes(idStyle, complimentaryColor))
+
+        if (issueWorkItem.attributes.size > maxAttributes) {
+            maxAttributes = issueWorkItem.attributes.size
+            PREFFERED_COMMENT_WIDTH = 0.374 - maxAttributes * PREFFERED_ATTRIBUTE_WIDTH
+
+            updateUI()
+        }
+
+        val attributes = issueWorkItem.attributes.map {
+            val attribute = SimpleColoredComponent()
+            attribute.isOpaque = false
+            attribute.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
+            attribute.append (it.value!!, SimpleTextAttributes(idStyle, complimentaryColor))
+            attribute
+        }
 
         issueLink = HyperlinkLabel(issueWorkItem.issueId,
                 "${myRepository.url}/issue/${issueWorkItem.issueId}", AllIcons.Actions.MoveTo2)
@@ -163,6 +182,24 @@ class WorkItemsListCellRenderer(
                 typePanel.preferredSize = Dimension((PREFFERED_DATE_TYPE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
                 typePanel.isOpaque = false
                 panel.add(typePanel)
+
+                attributes.forEach {
+                   val attributePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+                   attributePanel.add(it)
+                   attributePanel.preferredSize = Dimension((PREFFERED_ATTRIBUTE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
+                   attributePanel.isOpaque = false
+                   panel.add(attributePanel)
+               }
+
+                // added space to be equal with the max number of attributes
+                if (attributes.size < maxAttributes){
+                    val attributePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+                    attributePanel.add(SimpleColoredComponent())
+                    attributePanel.preferredSize = Dimension(((maxAttributes - attributes.size) *
+                            PREFFERED_ATTRIBUTE_WIDTH * panelWidth).toInt(), panelHeight + OFFSET)
+                    attributePanel.isOpaque = false
+                    panel.add(attributePanel)
+                }
 
                 val trackingCommentsPanel = JPanel(FlowLayout(FlowLayout.LEFT))
                 trackingCommentsPanel.add(trackingComments)
