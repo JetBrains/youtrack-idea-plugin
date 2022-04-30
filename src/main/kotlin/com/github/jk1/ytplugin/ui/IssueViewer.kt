@@ -9,6 +9,8 @@ import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
+import com.intellij.ui.jcef.JBCefApp
+import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.util.ui.UIUtil
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.*
@@ -32,31 +34,44 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     fun showIssue(issue: Issue) {
-            rootPane.removeAll()
-            rootPane.isOpaque = false
-            currentIssue = issue
-            val container = JPanel()
-            container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
-            rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
-            rootPane.add(container, BorderLayout.CENTER)
-            if (issue.tags.isNotEmpty()) {
-                container.add(createTagPanel(issue))
-            }
-            issue.links.groupBy { it.role }.forEach {
-                container.add(createLinkPanel(it.key, it.value))
-            }
-            val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue)
-            issuePane.isOpaque = false
-            issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
-            container.add(issuePane)
-            val tabs = JBTabbedPane()
-            addCommentsTab(issue.comments, tabs)
-            addAttachmentsTab(issue.attachments, tabs)
-            addWorkLogTab(issue.workItems, tabs)
-            container.add(tabs)
-            issuePane.setHtml(issue.description)
-            scrollToTop.invoke()
-            issuePane.repaint()
+        rootPane.isOpaque = false
+        currentIssue = issue
+        rootPane.removeAll()
+
+        if (JBCefApp.isSupported()) {
+            val component = JBCefBrowser()
+            val urlToRender = issue.url
+            component.loadURL(urlToRender)
+            rootPane.add(component.component, BorderLayout.CENTER)
+        } else {
+            renderWithoutJCEF(issue)
+        }
+    }
+
+    private fun renderWithoutJCEF(issue: Issue) {
+        val container = JPanel()
+        container.layout = BoxLayout(container, BoxLayout.PAGE_AXIS)
+
+        rootPane.add(createHeaderPanel(issue), BorderLayout.NORTH)
+        rootPane.add(container, BorderLayout.CENTER)
+        if (issue.tags.isNotEmpty()) {
+            container.add(createTagPanel(issue))
+        }
+        issue.links.groupBy { it.role }.forEach {
+            container.add(createLinkPanel(it.key, it.value))
+        }
+        val issuePane = WikiHtmlPaneFactory.createHtmlPane(currentIssue)
+        issuePane.isOpaque = false
+        issuePane.border = BorderFactory.createEmptyBorder(0, 8, 5, 0)
+        container.add(issuePane)
+        val tabs = JBTabbedPane()
+        addCommentsTab(issue.comments, tabs)
+        addAttachmentsTab(issue.attachments, tabs)
+        addWorkLogTab(issue.workItems, tabs)
+        container.add(tabs)
+        issuePane.setHtml(issue.description)
+        scrollToTop.invoke()
+        issuePane.repaint()
     }
 
     private fun createHeaderPanel(issue: Issue): JPanel {
@@ -181,23 +196,25 @@ class IssueViewer : JPanel(BorderLayout()) {
         var value = SimpleColoredComponent()
         value.icon = AllIcons.Vcs.History
 
-        value =  createValueWithEnding(" +", value,
-                workItem.value, viewportWidth)
+        value = createValueWithEnding(
+            " +", value,
+            workItem.value, viewportWidth
+        )
         value.alignmentX = Component.LEFT_ALIGNMENT
 
         val slash = SimpleColoredComponent()
         slash.append("           |")
-        slash.alignmentX =  Component.LEFT_ALIGNMENT
+        slash.alignmentX = Component.LEFT_ALIGNMENT
         val slash1 = SimpleColoredComponent()
         slash1.append("          |")
-        slash1.alignmentX =  Component.LEFT_ALIGNMENT
+        slash1.alignmentX = Component.LEFT_ALIGNMENT
         val slash2 = SimpleColoredComponent()
         slash2.append("          |")
-        slash2.alignmentX =  Component.LEFT_ALIGNMENT
+        slash2.alignmentX = Component.LEFT_ALIGNMENT
 
 
         val panelWidth = rootPane.width
-        if (panelWidth < 500){
+        if (panelWidth < 500) {
             workItemsPanel.add(date)
             workItemsPanel.add(slash1)
             workItemsPanel.add(value)
@@ -210,8 +227,10 @@ class IssueViewer : JPanel(BorderLayout()) {
 
             var comment = SimpleColoredComponent()
             if (workItem.comment != null) {
-                comment = createValueWithEnding(" ...", comment,
-                        workItem.comment, viewportWidth)
+                comment = createValueWithEnding(
+                    " ...", comment,
+                    workItem.comment, viewportWidth
+                )
                 comment.alignmentX = Component.LEFT_ALIGNMENT
                 workItemsPanel.add(slash2)
                 workItemsPanel.add(comment)
@@ -225,9 +244,9 @@ class IssueViewer : JPanel(BorderLayout()) {
     }
 
     private fun createValueWithEnding(ending: String, value: SimpleColoredComponent, item: String, viewportWidth: Int)
-            : SimpleColoredComponent{
+            : SimpleColoredComponent {
 
-        val parts =  item.split(" ").iterator()
+        val parts = item.split(" ").iterator()
         while (parts.hasNext() && viewportWidth > value.computePreferredSize(false).width) {
             value.append(" ${parts.next()}", REGULAR_BOLD_ATTRIBUTES)
         }
