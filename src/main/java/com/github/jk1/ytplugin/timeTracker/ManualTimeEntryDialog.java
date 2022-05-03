@@ -35,7 +35,6 @@ public class ManualTimeEntryDialog extends JDialog {
     private JSpinner minutesSpinner;
     private JComboBox issueComboBox;
     private JComboBox typeComboBox;
-    private JTextField commentField;
     private JPanel rootPanel;
     private JPanel buttonsPanel;
     private JPanel mainPanel;
@@ -53,6 +52,7 @@ public class ManualTimeEntryDialog extends JDialog {
     private JBLabel notifier;
     private JPanel notifyPanel;
     private JPanel customWorkItemsPanel;
+    private JTextArea commentTextArea;
     ;
     private DatePicker datePicker;
 
@@ -151,8 +151,8 @@ public class ManualTimeEntryDialog extends JDialog {
 
                     Future<Integer> futureCode = new TimeTrackerConnector(repo, project)
                             .addWorkItemManually(format(datePicker.getDate()),
-                            typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId,
-                                    commentField.getText(), time.toString(), attributes, notifier);
+                                    typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId,
+                                    commentTextArea.getText(), time.toString(), attributes, notifier);
 
                     if (futureCode.get() == 200) {
                         dispose();
@@ -226,8 +226,9 @@ public class ManualTimeEntryDialog extends JDialog {
         commentPanel = new JPanel();
         commentPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(commentPanel, new GridConstraints(3, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        commentField = new JTextField();
-        commentPanel.add(commentField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        commentTextArea = new JTextArea();
+        commentTextArea.setText("");
+        commentPanel.add(commentTextArea, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 50), null, 0, false));
         typePanel = new JPanel();
         typePanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(typePanel, new GridConstraints(2, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -348,10 +349,10 @@ public class ManualTimeEntryDialog extends JDialog {
             if (componentsCount > mandatoryComponentsCount){
                 for(int i = 1; i <= componentsToDelete; i++){
                     generalPanel.remove(componentsCount - i);
+                    this.setSize(new Dimension(this.getWidth(), Math.max(this.getHeight() - 20, 330)));
                 }
             }
         });
-
         generalPanel.validate();
         generalPanel.repaint();
     }
@@ -360,11 +361,11 @@ public class ManualTimeEntryDialog extends JDialog {
         customWorkItemsPanel = new JPanel();
         customWorkItemsPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         ComboBox customWorkItemComboBox = new ComboBox(attributeValues.toArray());
-        // TODO how to access values
         JLabel customWorkItemLabel = new JLabel(attributeName);
         customWorkItemsPanel.add(customWorkItemComboBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         generalPanel.add(customWorkItemsPanel, new GridConstraints(row, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         generalPanel.add(customWorkItemLabel, new GridConstraints(row, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        this.setSize(new Dimension(this.getWidth(), this.getHeight() + 20));
     }
 
     private void createTypeComboBox() {

@@ -33,12 +33,13 @@ class WorkItemsListCellRenderer(
     private fun getValuePanelPosition() = valuePanel.preferredSize.getWidth()
     private fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
 
-    private var PREFFERED_COMMENT_WIDTH = 0.374
+    private var PREFFERED_COMMENT_WIDTH = 0.484
     private val PREFFERED_ATTRIBUTE_WIDTH = 0.080
 
-    private val PREFFERED_DATE_TYPE_WIDTH = 0.156
+    private val PREFFERED_DATE_TYPE_WIDTH = 0.116
     private val PREFFERED_ISSUE_ID_WIDTH = 0.078
     private val PREFFERED_VALUE_WIDTH = 0.113
+    private val OFFSET_COMMENT = 100
 
     private val OFFSET = 10
     private val LARGE_SCREEN_SIZE = 1000
@@ -88,7 +89,7 @@ class WorkItemsListCellRenderer(
 
         if (issueWorkItem.attributes.size > maxAttributes) {
             maxAttributes = issueWorkItem.attributes.size
-            PREFFERED_COMMENT_WIDTH = 0.374 - maxAttributes * PREFFERED_ATTRIBUTE_WIDTH
+            PREFFERED_COMMENT_WIDTH = 0.484 - maxAttributes * PREFFERED_ATTRIBUTE_WIDTH
             updateUI()
         }
         issueLink = HyperlinkLabel(
@@ -101,8 +102,8 @@ class WorkItemsListCellRenderer(
             maxIssueIdWidth = issueWorkItem.issueId.length
         }
 
-        val viewportWidth = viewportWidthProvider.invoke() / 4
-        trackingComments = renderer.fillCommentComponent(viewportWidth)
+        trackingComments = renderer.fillCommentComponent((PREFFERED_COMMENT_WIDTH *
+                viewportWidthProvider.invoke()).toInt() - OFFSET_COMMENT)
 
         val layout = FlowLayout(FlowLayout.LEFT)
         layout.hgap = 0
