@@ -76,14 +76,15 @@ interface RestClientTrait : ResponseLoggerTrait {
 
     fun HttpUriRequest.execute(): Unit = execute { }
 
-    fun <T> HttpUriRequest.execute(responseParser: (json: JsonElement) -> T): T {
+    fun <T> HttpUriRequest.execute(handleErrorStatusCode: Boolean = true, responseParser: (json: JsonElement) -> T): T {
         val response = httpClient.execute(this)
         try {
             if (response.statusLine.statusCode == 200) {
                 val streamReader = response.responseBodyAsReader
                 return responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
-                RequestErrorsHandler(repository).handleErrorStatusCode(response.statusLine.statusCode)
+                if (handleErrorStatusCode)
+                    RequestErrorsHandler(repository).handleErrorStatusCode(response.statusLine.statusCode)
                 val responseBody = response.responseBodyAsLoggedString()
                 logger.debug("Request execution error: $responseBody")
                 throw RuntimeException(responseBody)

@@ -28,11 +28,14 @@ class CustomAttributesClient (override val repository: YouTrackServer) : RestCli
         val method = HttpGet(builder.build())
 
         return try {
-            method.execute {
+            method.execute(handleErrorStatusCode = false) {
                 CustomAttributesHandler().parseCustomAttributes(it.asJsonArray)
             }
         } catch (e: HttpHostConnectException){
             logger.debug("Error in checkIfTrackingIsEnabled: ${e.message}")
+            mapOf()
+        } catch (e: RuntimeException){
+            logger.debug("No custom work items attributes found: ${e.message}")
             mapOf()
         }
     }

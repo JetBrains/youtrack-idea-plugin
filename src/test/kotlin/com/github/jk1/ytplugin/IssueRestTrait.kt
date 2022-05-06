@@ -47,10 +47,10 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
           "summary": "Updated summary"
         }"""
         method.entity = body.jsonEntity
-        return method.execute()
+        return method.execute { }
     }
 
     fun deleteIssue(id: String) {
-        HttpDelete("$serverUrl/api/issues/$id").execute()
+        HttpDelete("$serverUrl/api/issues/$id").execute { }
     }
 }
