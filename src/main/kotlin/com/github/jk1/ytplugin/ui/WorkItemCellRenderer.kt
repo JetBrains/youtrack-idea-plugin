@@ -47,7 +47,7 @@ class WorkItemCellRenderer(val workItem: IssueWorkItem) {
             val attribute = SimpleColoredComponent()
             attribute.isOpaque = false
             attribute.font = Font(UIUtil.getLabelFont().family, Font.PLAIN, UIUtil.getLabelFont().size + 1)
-            attribute.append (it.value!!, SimpleTextAttributes(idStyle, complimentaryColor))
+            attribute.append ("${it.name}: ${it.value!!}", SimpleTextAttributes(idStyle, complimentaryColor))
             attribute
         }
     }
