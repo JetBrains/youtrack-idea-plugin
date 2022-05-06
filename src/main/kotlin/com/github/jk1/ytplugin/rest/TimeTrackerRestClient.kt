@@ -10,6 +10,7 @@ import org.apache.http.HttpStatus
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
+import org.apache.http.conn.HttpHostConnectException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URL
@@ -92,7 +93,8 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
             e.multicatchException(
                 SocketException::class.java,
                 UnknownHostException::class.java,
-                SocketTimeoutException::class.java
+                SocketTimeoutException::class.java,
+                HttpHostConnectException::class.java
             ) {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify(
