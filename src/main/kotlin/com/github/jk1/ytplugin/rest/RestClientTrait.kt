@@ -49,41 +49,42 @@ interface RestClientTrait : ResponseLoggerTrait {
     val httpClient: HttpClient
         get() {
             val requestConfigBuilder = RequestConfig.custom()
-                    .setConnectTimeout(30000)  // ms
-                    .setSocketTimeout(30000)   // ms
+                .setConnectTimeout(30000)  // ms
+                .setSocketTimeout(30000)   // ms
             if (repository.useProxy) {
                 IdeHttpClientHelpers.ApacheHttpClient4.setProxyForUrlIfEnabled(requestConfigBuilder, repository.url)
             }
             val createCredentialsProvider: CredentialsProvider = BasicCredentialsProvider()
             // Basic authentication
             createCredentialsProvider.setCredentials(AuthScope(ANY_HOST, ANY_PORT, ANY_REALM, AuthSchemes.BASIC),
-                    UsernamePasswordCredentials(repository.username, repository.password))
+                UsernamePasswordCredentials(repository.username, repository.password))
             // Proxy authentication
             if (repository.useProxy) {
                 IdeHttpClientHelpers.ApacheHttpClient4.setProxyCredentialsForUrlIfEnabled(createCredentialsProvider, repository.url)
             }
             val builder: HttpClientBuilder = HttpClients.custom()
-                    .setDefaultRequestConfig(requestConfigBuilder.build())
-                    .setSSLContext(CertificateManager.getInstance().sslContext)
-                    .setDefaultCredentialsProvider(createCredentialsProvider)
-                    .addInterceptorFirst(PreemptiveBasicAuthInterceptor())
-                    .addInterceptorLast { request: HttpRequest, _: HttpContext ->
-                        request.setHeader("Accept", "application/json")
-                        request.setHeader("User-Agent", "YouTrack IDE Plugin")
-                    }
+                .setDefaultRequestConfig(requestConfigBuilder.build())
+                .setSSLContext(CertificateManager.getInstance().sslContext)
+                .setDefaultCredentialsProvider(createCredentialsProvider)
+                .addInterceptorFirst(PreemptiveBasicAuthInterceptor())
+                .addInterceptorLast { request: HttpRequest, _: HttpContext ->
+                    request.setHeader("Accept", "application/json")
+                    request.setHeader("User-Agent", "YouTrack IDE Plugin")
+                }
             return builder.build()
         }
 
     fun HttpUriRequest.execute(): Unit = execute { }
 
-    fun <T> HttpUriRequest.execute(responseParser: (json: JsonElement) -> T): T {
+    fun <T> HttpUriRequest.execute(handleErrorStatusCode: Boolean = true, responseParser: (json: JsonElement) -> T): T {
         val response = httpClient.execute(this)
         try {
             if (response.statusLine.statusCode == 200) {
                 val streamReader = response.responseBodyAsReader
                 return responseParser.invoke(JsonParser.parseReader(streamReader))
             } else {
-                RequestErrorsHandler(repository).handleErrorStatusCode(response.statusLine.statusCode)
+                if (handleErrorStatusCode)
+                    RequestErrorsHandler(repository).handleErrorStatusCode(response.statusLine.statusCode)
                 val responseBody = response.responseBodyAsLoggedString()
                 logger.debug("Request execution error: $responseBody")
                 throw RuntimeException(responseBody)
@@ -121,22 +122,22 @@ interface RestClientTrait : ResponseLoggerTrait {
     }
 
     private class RequestErrorsHandler(val repository: YouTrackServer)  {
-         fun handleErrorStatusCode(code: Int) {
-             // log out from the youtrack instance, if credentials are outdated or not valid any more
-             // SC_UNAUTHORIZED for explicit api requests, SC_FORBIDDEN for implicit, like notifications
-             if (code == HttpStatus.SC_UNAUTHORIZED || code == HttpStatus.SC_FORBIDDEN ){
-                 val manager = TaskManager.getManager(repository.project) as TaskManagerImpl
-                 val filteredRepositories = manager.allRepositories.filter { it.url != repository.url }
-                 manager.setRepositories(filteredRepositories)
+        fun handleErrorStatusCode(code: Int) {
+            // log out from the youtrack instance, if credentials are outdated or not valid any more
+            // SC_UNAUTHORIZED for explicit api requests, SC_FORBIDDEN for implicit, like notifications
+            if (code == HttpStatus.SC_UNAUTHORIZED || code == HttpStatus.SC_FORBIDDEN ){
+                val manager = TaskManager.getManager(repository.project) as TaskManagerImpl
+                val filteredRepositories = manager.allRepositories.filter { it.url != repository.url }
+                manager.setRepositories(filteredRepositories)
 
-                 val trackerNote = TrackerNotification()
-                 trackerNote.notify("Can't connect to YouTrack server. " +
-                         "Please make sure your credentials are valid", NotificationType.WARNING)
-             } else {
-                 val trackerNote = TrackerNotification()
-                 trackerNote.notify("Can't connect to YouTrack server. " +
-                         "Are you offline?", NotificationType.WARNING)
-             }
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Can't connect to YouTrack server. " +
+                        "Please make sure your credentials are valid", NotificationType.WARNING)
+            } else {
+                val trackerNote = TrackerNotification()
+                trackerNote.notify("Can't connect to YouTrack server. " +
+                        "Are you offline?", NotificationType.WARNING)
+            }
         }
     }
 }

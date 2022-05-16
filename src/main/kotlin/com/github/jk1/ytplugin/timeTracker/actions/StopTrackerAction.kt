@@ -85,7 +85,7 @@ class StopTrackerAction : AnAction(
             else {
                 try {
                     TimeTrackerConnector(repo, project).postWorkItemToServer(timer.issueId, recordedTime,
-                        timer.type, timer.comment, (Date().time).toString())
+                        timer.type, timer.comment, (Date().time).toString(), mapOf())
 
                     ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 } catch (e: Exception) {

@@ -12,7 +12,7 @@ class UserRestClient(override val repository: YouTrackServer) : RestClientTrait 
         val builder = URIBuilder("${repository.url}/api/workItems")
         builder.addParameter("author", "me")
                 .addParameter("fields", "text,issue(idReadable),type(name),created," +
-                        "duration(presentation,minutes),author(name),creator(name),date,id")
+                        "duration(presentation,minutes),author(name),creator(name),date,id,attributes(name,id,value(name))")
                 .addParameter("sort", "descending")
 
         val method = HttpGet(builder.build())

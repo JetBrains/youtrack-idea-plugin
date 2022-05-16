@@ -28,13 +28,13 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
         val timeTracker = of(project).timeTrackerComponent
         postWorkItemToServer(
             issueId, TimeTracker.formatTimePeriodToMinutes(time), timeTracker.type,
-            timeTracker.comment, getCurrentDate()
+            timeTracker.comment, getCurrentDate(), mapOf()
         )
     }
 
     fun postWorkItemToServer(
         issueId: String, time: String, type: String,
-        comment: String, date: String
+        comment: String, date: String, attributes: Map<String, String>
     ) {
 
         logger.debug("Try posting work item for $issueId to ${repository.url}")
@@ -42,7 +42,7 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
         val trackerNote = TrackerNotification()
 
         val postStatus = try {
-            TimeTrackerRestClient(repository).postNewWorkItem(issueId, time, type, comment, date)
+            TimeTrackerRestClient(repository).postNewWorkItem(issueId, time, type, comment, date, attributes)
         } catch (e: HttpHostConnectException){
             trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
             logger.warn("Connection to network lost: ${e.message}")
@@ -94,7 +94,7 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 savedItems.forEach { entry ->
                     postWorkItemToServer(
                         entry.key, TimeTracker.formatTimePeriodToMinutes(entry.value), timeTracker.type,
-                        timeTracker.comment, getCurrentDate()
+                        timeTracker.comment, getCurrentDate(), mapOf()
                     )
                 }
                 of(project).issueWorkItemsStoreComponent[repository].update(repository)
@@ -105,7 +105,7 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
 
     fun addWorkItemManually(
         dateNotFormatted: String, selectedType: String, selectedId: String,
-        comment: String, time: String, notifier: JBLabel
+        comment: String, time: String,  attributes: Map<String, String>, notifier: JBLabel
     ): Future<Int> {
         val futureCode = ApplicationManager.getApplication().executeOnPooledThread(
             Callable {
@@ -113,8 +113,8 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 val date = sdf.parse(dateNotFormatted)
                 try {
                     TimeTrackerConnector(repository, repository.project).postWorkItemToServer(
-                        selectedId, time, selectedType,
-                        comment, date.time.toString()
+                        selectedId, time, selectedType, comment,
+                        date.time.toString(), attributes.filter { it.value.isNotEmpty() }
                     )
                     of(repository.project).issueWorkItemsStoreComponent[repository].update(repository)
                     HttpStatus.SC_OK

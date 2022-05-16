@@ -63,7 +63,7 @@ class IssueWorkItemsStoreUpdaterService(override val project: Project) : Disposa
             repo.let { it1 ->
                 val connector = TimeTrackerConnector(it1, project)
                 connector.postWorkItemToServer(timer.issueId, timer.recordedTime, timer.type,
-                    timer.comment, (Date().time).toString())
+                    timer.comment, (Date().time).toString(), mapOf())
                 // post not only last recorded item, but all saved items as well
                 connector.postSavedWorkItemsToServer(spentTimePerTaskStorage.getAllStoredItems())
             }

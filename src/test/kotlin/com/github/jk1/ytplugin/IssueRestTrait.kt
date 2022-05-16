@@ -18,12 +18,12 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
             // todo: migrate towards the common factory
             val socketConfig = SocketConfig.custom().setSoTimeout(30000).build() // ms
             return HttpClientBuilder.create()
-                    .setDefaultSocketConfig(socketConfig)
-                    .addInterceptorFirst { request: HttpRequest, _: HttpContext ->
-                        request.setHeader("Accept", "application/json")
-                        request.setHeader("Authorization", "Basic ${"${repository.username}:${repository.password}".b64Encoded}")
-                    }
-                    .build()
+                .setDefaultSocketConfig(socketConfig)
+                .addInterceptorFirst { request: HttpRequest, _: HttpContext ->
+                    request.setHeader("Accept", "application/json")
+                    request.setHeader("Authorization", "Basic ${"${repository.username}:${repository.password}".b64Encoded}")
+                }
+                .build()
         }
 
     private val String.b64Encoded: String
@@ -47,10 +47,10 @@ interface IssueRestTrait : RestClientTrait, YouTrackConnectionTrait {
           "summary": "Updated summary"
         }"""
         method.entity = body.jsonEntity
-        return method.execute()
+        return method.execute { }
     }
 
     fun deleteIssue(id: String) {
-        HttpDelete("$serverUrl/api/issues/$id").execute()
+        HttpDelete("$serverUrl/api/issues/$id").execute { }
     }
 }

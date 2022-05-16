@@ -102,7 +102,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
         builder.addParameter("\$top", "100")
                 .addParameter("query", query)
                 .addParameter("fields", "text,type(name),created,issue(idReadable)," +
-                        "duration(presentation,minutes),author(name),creator(name),date,id")
+                        "duration(presentation,minutes),author(name),creator(name),date,id,attributes(name,id,value(name))")
                 .addParameter("sort", "descending")
         return HttpGet(builder.build()).execute { element ->
             element.asJsonArray.mapNotNull { IssueJsonParser.parseWorkItem(it) }

@@ -8,14 +8,14 @@ class CustomAttributesHandler {
         return if (json.isJsonNull || json.size() == 0){
             mapOf()
         } else {
-            // TODO add try catch
             val valuesMap = mutableMapOf<String, List<String>>()
+            // allow selecting empty attribute
             json.forEach { it ->
-                val valuesNames = json.first().asJsonObject.get("values").asJsonArray.map { it.asJsonObject.get("name").asString}
+                val valuesNames = listOf("") +
+                        (it.asJsonObject.get("values").asJsonArray.map { it.asJsonObject.get("name").asString})
                 valuesMap[it.asJsonObject.get("name").asString] = valuesNames
             }
             valuesMap
         }
     }
-
 }
