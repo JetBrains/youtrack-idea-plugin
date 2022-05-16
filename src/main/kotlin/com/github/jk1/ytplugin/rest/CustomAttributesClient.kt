@@ -3,12 +3,16 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.commands.model.CommandSuggestion
 import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.CustomAttributesHandler
+import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.conn.HttpHostConnectException
+import java.net.UnknownHostException
 import java.util.concurrent.Callable
 
 class CustomAttributesClient (override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
@@ -31,9 +35,12 @@ class CustomAttributesClient (override val repository: YouTrackServer) : RestCli
             method.execute {
                 CustomAttributesHandler().parseCustomAttributes(it.asJsonArray)
             }
-        } catch (e: HttpHostConnectException){
-            logger.debug("Error in checkIfTrackingIsEnabled: ${e.message}")
-            mapOf()
+        } catch (e: Exception) {
+            e.multicatchException(
+                UnknownHostException::class.java, HttpHostConnectException::class.java) {
+                logger.debug("Error in checkIfTrackingIsEnabled: ${e.message}")
+                mapOf()
+            }
         }
     }
 }

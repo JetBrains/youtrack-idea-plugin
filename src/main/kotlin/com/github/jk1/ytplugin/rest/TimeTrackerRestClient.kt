@@ -10,6 +10,7 @@ import org.apache.http.HttpStatus
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
+import org.apache.http.conn.HttpHostConnectException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URL
@@ -67,7 +68,11 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 }
             }
         } catch (e: Exception) {
-            e.multicatchException(SocketException::class.java, UnknownHostException::class.java, SocketTimeoutException::class.java) {
+            e.multicatchException(
+                SocketException::class.java,
+                HttpHostConnectException::class.java,
+                UnknownHostException::class.java,
+                SocketTimeoutException::class.java) {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify("Connection to YouTrack server is lost, please check your network connection", NotificationType.WARNING)
                 logger.warn("Connection to network lost: ${e.message}")
