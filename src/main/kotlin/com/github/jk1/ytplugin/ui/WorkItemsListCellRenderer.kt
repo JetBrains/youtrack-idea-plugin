@@ -75,6 +75,10 @@ class WorkItemsListCellRenderer(
         return this
     }
 
+    fun setCustomAttributesNum(num: Int) {
+        maxAttributes = num
+    }
+
 
     private fun fillTrackingInfoLine(issueWorkItem: IssueWorkItem) {
 

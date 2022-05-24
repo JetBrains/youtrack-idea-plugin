@@ -75,6 +75,7 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
         searchBar.actionListener = { search ->
             workItemsList.startLoading()
             issueWorkItemsStoreComponent[repo].filter(repo, search)
+            workItemsList.setCustomAttributesNum(0)
         }
     }
 }

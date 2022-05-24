@@ -96,6 +96,10 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
         issueWorkItemsList.addListSelectionListener { listener.invoke() }
     }
 
+    fun setCustomAttributesNum(num: Int){
+        renderer.setCustomAttributesNum(num)
+    }
+
     override fun registerKeyboardAction(action: ActionListener, keyStroke: KeyStroke, condition: Int) {
         issueWorkItemsList.registerKeyboardAction(action, keyStroke, condition)
     }
