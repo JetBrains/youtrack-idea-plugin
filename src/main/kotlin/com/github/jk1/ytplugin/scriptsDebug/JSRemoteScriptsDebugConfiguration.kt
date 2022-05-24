@@ -57,7 +57,7 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
     private val DEFAULT_PORT = HttpScheme.HTTPS.port()
     private val SERIALIZATION_FILTER = SkipEmptySerializationFilter()
     private val ROOT_FOLDER = "youtrack-scripts"
-    private val DEFAULT_INSTANCE_FOLDER = "youtrack"
+    private val DEFAULT_INSTANCE_FOLDER = "scripts"
 
     @Attribute
     var host: String? = null
@@ -175,8 +175,10 @@ class JSRemoteScriptsDebugConfiguration(project: Project, factory: Configuration
                 // clear mappings on each run of the configuration
                 mappings.clear()
 
-                instanceFolder = // old versions support (no uuid in config)
-                    getInstanceUUID() ?: URL(repo?.url).host.split(".").first()
+                // old versions support - folder based on uuid and no uuid in config cases
+                if (version < 2022.3){
+                    instanceFolder = getInstanceUUID() ?: URL(repo?.url).host.split(".").first()
+                }
 
                 loadScripts()
 
