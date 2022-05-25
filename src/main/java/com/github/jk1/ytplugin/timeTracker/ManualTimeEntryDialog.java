@@ -230,7 +230,9 @@ public class ManualTimeEntryDialog extends JDialog {
         generalPanel.add(commentPanel, new GridConstraints(3, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         commentTextArea = new JTextArea();
         commentTextArea.setText("");
-        commentPanel.add(commentTextArea, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 50), null, 0, false));
+        commentTextArea.setLineWrap(true);
+        commentTextArea.setWrapStyleWord(true);
+        commentPanel.add(commentTextArea, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         typePanel = new JPanel();
         typePanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(typePanel, new GridConstraints(2, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -291,7 +293,8 @@ public class ManualTimeEntryDialog extends JDialog {
         // rowCount to 10 as an assumption that there won't be more than 4 custom attributes
         generalPanel.setLayout(new GridLayoutManager(10, 12, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(datePicker, new GridConstraints(4, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-
+        generalPanel.setMinimumSize(new Dimension(500, 290));
+        this.setMinimumSize(new Dimension(550, 390));
     }
 
     private void createSpinners() {
