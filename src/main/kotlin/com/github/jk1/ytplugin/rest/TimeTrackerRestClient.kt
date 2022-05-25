@@ -4,6 +4,7 @@ import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
+import com.google.gson.Gson
 import com.intellij.notification.NotificationType
 import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
@@ -27,18 +28,19 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
 
         val method = HttpPost("${repository.url}/api/issues/${issueId}/timeTracking/workItems")
         val res: URL? = this::class.java.classLoader.getResource("post_work_item_body.json")
+        val g = Gson()
 
         val jsonBody = res?.readText()
             ?.replace("\"{minutes}\"", time, true)
             ?.replace("\"{date}\"", date, true)
             ?.replace("{authorId}", getMyIdAsAuthor(), true)
-            ?.replace("{type}", type, true)
+            ?.replace("{type}", g.toJson(type).trim('\"'), true)
             ?.replace(
                 "{typeId}",
                 types[type] ?: throw IllegalArgumentException("No work item type by name '$type'"),
                 true
             )
-            ?.replace("{comment}", comment, true)
+            ?.replace("{comment}", g.toJson(comment).trim('\"'), true)
             ?.replace("\"{attributes}\"", constructAttributesJson(attributes))
         method.entity = jsonBody?.jsonEntity
 
