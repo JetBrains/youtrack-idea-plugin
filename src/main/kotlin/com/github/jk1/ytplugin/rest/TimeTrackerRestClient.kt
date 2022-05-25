@@ -20,6 +20,8 @@ import java.net.UnknownHostException
 
 class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClientTrait, ResponseLoggerTrait {
 
+    private val gson = Gson()
+
     fun postNewWorkItem(
         issueId: String, time: String, type: String, comment: String,
         date: String, attributes: Map<String, String> = mapOf()
@@ -28,19 +30,18 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
 
         val method = HttpPost("${repository.url}/api/issues/${issueId}/timeTracking/workItems")
         val res: URL? = this::class.java.classLoader.getResource("post_work_item_body.json")
-        val g = Gson()
 
         val jsonBody = res?.readText()
             ?.replace("\"{minutes}\"", time, true)
             ?.replace("\"{date}\"", date, true)
             ?.replace("{authorId}", getMyIdAsAuthor(), true)
-            ?.replace("{type}", g.toJson(type).trim('\"'), true)
+            ?.replace("{type}", gson.toJson(type).trim('\"'), true)
             ?.replace(
                 "{typeId}",
                 types[type] ?: throw IllegalArgumentException("No work item type by name '$type'"),
                 true
             )
-            ?.replace("{comment}", g.toJson(comment).trim('\"'), true)
+            ?.replace("{comment}", gson.toJson(comment).trim('\"'), true)
             ?.replace("\"{attributes}\"", constructAttributesJson(attributes))
         method.entity = jsonBody?.jsonEntity
 
@@ -62,8 +63,8 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
             val res: URL? = this::class.java.classLoader.getResource("work_item_attribute_template.json")
             attributesString += "\n${
                 (res?.readText()
-                    ?.replace("{attributeName}", it.key, true)
-                    ?.replace("{attributeValueName}", it.value, true))
+                    ?.replace("{attributeName}", gson.toJson(it.key).trim('\"'), true)
+                    ?.replace("{attributeValueName}", gson.toJson(it.value).trim('\"'), true))
             },"
         }
         return attributesString.removeSuffix(",")
