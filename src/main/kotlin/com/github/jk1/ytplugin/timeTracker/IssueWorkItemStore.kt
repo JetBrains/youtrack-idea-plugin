@@ -67,6 +67,7 @@ class IssueWorkItemStore(@Volatile private var workItems: List<IssueWorkItem> = 
             }
         }
 
+        @OptIn(ExperimentalStdlibApi::class)
         private fun filterWorkItems(searchQuery: String, list: List<IssueWorkItem>): List<IssueWorkItem> {
             return list.filter {
                 it.value.lowercase().contains(searchQuery.lowercase()) ||

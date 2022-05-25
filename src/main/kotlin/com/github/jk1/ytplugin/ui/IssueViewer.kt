@@ -97,6 +97,7 @@ class IssueViewer : JPanel(BorderLayout()) {
         return panel
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun createLinkPanel(role: String, links: List<IssueLink>): JPanel {
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
         panel.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
