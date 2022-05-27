@@ -14,6 +14,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import org.apache.http.conn.HttpHostConnectException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -95,7 +96,7 @@ class TimeTrackingConfigurator {
                         AdminRestClient(repo).checkIfTrackingIsEnabled(ids[selectedIssueIndex].projectName)
                     else false
                 } catch (e: Exception) {
-                    e.multicatchException(SocketException::class.java,
+                    e.multicatchException(HttpHostConnectException::class.java, SocketException::class.java,
                         UnknownHostException::class.java, SocketTimeoutException::class.java) {
                         logger.warn("Exception in manual time tracker: ${e.message}")
                     }

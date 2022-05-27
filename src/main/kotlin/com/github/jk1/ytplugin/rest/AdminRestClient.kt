@@ -7,7 +7,6 @@ import com.google.gson.JsonObject
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
-import org.apache.http.conn.HttpHostConnectException
 import java.net.URL
 
 class AdminRestClient(override val repository: YouTrackServer) : AdminRestClientBase, RestClientTrait, ResponseLoggerTrait {
@@ -46,21 +45,15 @@ class AdminRestClient(override val repository: YouTrackServer) : AdminRestClient
         val builder = URIBuilder("${repository.url}/api/admin/projects/$projectId/timeTrackingSettings")
         builder.setParameter("fields", "enabled")
         val method = HttpGet(builder.build())
-        try {
-            return method.execute {
-                if (it.asJsonObject.get("enabled").asBoolean) {
-                    logger.debug("Time Tracking is enabled for project $projectId")
-                    true
-                } else {
-                    logger.debug("Time Tracking is disabled for project $projectId")
-                    false
-                }
+        return method.execute {
+            if (it.asJsonObject.get("enabled").asBoolean) {
+                logger.debug("Time Tracking is enabled for project $projectId")
+                true
+            } else {
+                logger.debug("Time Tracking is disabled for project $projectId")
+                false
             }
-        } catch (e: HttpHostConnectException){
-            logger.debug("Error in checkIfTrackingIsEnabled: ${e.message}")
-            return false
         }
-
     }
 
 }
