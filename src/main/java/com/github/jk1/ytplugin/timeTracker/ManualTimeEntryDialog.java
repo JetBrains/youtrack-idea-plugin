@@ -133,6 +133,7 @@ public class ManualTimeEntryDialog extends JDialog {
                 Future<?> future = new TimeTrackingConfigurator().checkIfTrackingIsEnabledForIssue(repo, selectedIssueIndex, ids);
 
                 Object result = future.get();
+
                 if (!(result instanceof Boolean)) {
                     notifier.setForeground(JBColor.RED);
                     notifier.setText("Unable to save time, please check your connection");
@@ -144,7 +145,7 @@ public class ManualTimeEntryDialog extends JDialog {
                         logger.debug("Issue is not selected or there are no issues in the list");
                     } else {
                         notifier.setForeground(JBColor.RED);
-                        notifier.setText("Unable to save time, please check your connection");
+                        notifier.setText("Unable to post time, please check if time tracking is enabled for this project");
                     }
                 } else {
                     String selectedId = ids.get(issueComboBox.getSelectedIndex()).getIssueId();

@@ -1,7 +1,5 @@
 package com.github.jk1.ytplugin.rest
 
-import com.github.jk1.ytplugin.commands.model.CommandSuggestion
-import com.github.jk1.ytplugin.commands.model.YouTrackCommand
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.CustomAttributesHandler
@@ -18,7 +16,7 @@ class CustomAttributesClient (override val repository: YouTrackServer) : RestCli
             Callable {
                 checkIfProjectHasCustomAttributes(projectId)
             })
-        return future.get()
+        return future.get() ?: mapOf()
     }
 
     private fun checkIfProjectHasCustomAttributes(projectId: String): Map<String, List<String>> {
