@@ -294,9 +294,9 @@ public class ManualTimeEntryDialog extends JDialog {
         // rowCount to 10 as an assumption that there won't be more than 4 custom attributes
         generalPanel.setLayout(new GridLayoutManager(10, 12, new Insets(0, 0, 0, 0), -1, -1));
         generalPanel.add(datePicker, new GridConstraints(4, 1, 1, 11, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        generalPanel.setMinimumSize(new Dimension(500, 290));
-        this.setMinimumSize(new Dimension(550, 390));
+        this.setMinimumSize(new Dimension(550, 340));
     }
+
 
     private void createSpinners() {
         SpinnerModel hoursModel = new SpinnerNumberModel(2,  //initial value
