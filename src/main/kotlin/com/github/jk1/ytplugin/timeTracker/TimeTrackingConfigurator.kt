@@ -31,7 +31,7 @@ class TimeTrackingConfigurator {
                 getAvailableWorkItemsTypes(repo)
             })
 
-        return future.get()
+        return future.get() ?: listOf()
     }
 
     fun getAvailableWorkItemsTypes(repo: YouTrackServer): List<String> {
@@ -97,7 +97,7 @@ class TimeTrackingConfigurator {
                     else false
                 } catch (e: Exception) {
                     e.multicatchException(HttpHostConnectException::class.java, SocketException::class.java,
-                        UnknownHostException::class.java, SocketTimeoutException::class.java) {
+                        UnknownHostException::class.java, SocketTimeoutException::class.java, RuntimeException::class.java) {
                         logger.warn("Exception in manual time tracker: ${e.message}")
                     }
                 }

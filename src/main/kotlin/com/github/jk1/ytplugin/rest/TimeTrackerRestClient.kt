@@ -97,7 +97,9 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
                 SocketException::class.java,
                 UnknownHostException::class.java,
                 SocketTimeoutException::class.java,
-                HttpHostConnectException::class.java
+                HttpHostConnectException::class.java,
+                HttpHostConnectException::class.java,
+                RuntimeException::class.java
             ) {
                 val trackerNote = TrackerNotification()
                 trackerNote.notify(
