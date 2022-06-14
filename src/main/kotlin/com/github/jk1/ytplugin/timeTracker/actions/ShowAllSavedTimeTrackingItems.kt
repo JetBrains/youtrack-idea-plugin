@@ -1,6 +1,7 @@
 package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
+import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.timeTracker.AllSavedTimerItemsDialog
 import com.github.jk1.ytplugin.whenActive
 import com.intellij.icons.AllIcons
@@ -22,6 +23,19 @@ class ShowAllSavedTimeTrackingItems : AnAction(
                 project?.let { it1 -> ComponentAware.of(it1).taskManagerComponent.getAllConfiguredYouTrackRepositories() }
             val repo = repos?.first()
             project?.let { pr -> repo?.let { repository -> AllSavedTimerItemsDialog(pr, repository).show() } }
+        }
+    }
+
+    override fun update(event: AnActionEvent) {
+        val project = event.project
+        if (project != null) {
+            try {
+                // display action when YouTrack repo is configured
+                event.presentation.isVisible = ComponentAware.of(project).taskManagerComponent
+                    .getAllConfiguredYouTrackRepositories().isNotEmpty()
+            } catch (e: NoYouTrackRepositoryException) {
+                event.presentation.isVisible = false
+            }
         }
     }
 }
