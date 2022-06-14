@@ -59,7 +59,7 @@ class TimeTrackerToolWindowContent(vertical: Boolean, val repo: YouTrackServer) 
                 if (selectedItem != null) {
                     val issueIdStart = workItemsList.getIssuePosition()[0]
                     val issueIdEnd = issueIdStart + workItemsList.getIssuePosition()[1]
-                    if (mousePosition.x in issueIdStart until issueIdEnd) {
+                    if (mousePosition != null && (mousePosition.x in issueIdStart until issueIdEnd)) {
                         try {
                             Desktop.getDesktop().browse(URI("${repo.url}/issue/${selectedItem.issueId}"))
                         } catch (e: IOException) {
