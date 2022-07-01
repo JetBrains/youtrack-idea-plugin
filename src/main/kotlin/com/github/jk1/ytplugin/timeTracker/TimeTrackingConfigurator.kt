@@ -21,21 +21,31 @@ import java.net.UnknownHostException
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 
 class TimeTrackingConfigurator {
 
-    fun getTypesInCallable(repo: YouTrackServer): List<String> {
-        val future = ApplicationManager.getApplication().executeOnPooledThread(
-            Callable {
-                getAvailableWorkItemsTypes(repo)
-            })
-
-        return future.get() ?: listOf()
-    }
+    private val TIMEOUT = 3000L // ms
 
     fun getAvailableWorkItemsTypes(repo: YouTrackServer): List<String> {
-        return TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys.toList()
+        val future = ApplicationManager.getApplication().executeOnPooledThread (
+            Callable {
+                TimeTrackerRestClient(repo).getAvailableWorkItemTypes().keys.toList()
+            })
+        return try {
+            val availableWorkItemsTypes = future.get(TIMEOUT, TimeUnit.MILLISECONDS)
+            availableWorkItemsTypes ?: listOf()
+        } catch (e: TimeoutException) {
+            val note = "Unable to collect available work items types, please check your network connection."
+            logger.debug(note)
+            notifyFailInWorkItemsTypes(note)
+            listOf()
+        } catch (e: Exception) {
+            logger.warn(e)
+            notifyFailInWorkItemsTypes("Unable to collect available work items types, see IDE log for details.")
+            listOf()
+        }
     }
 
     private fun configureTimerForTracking(timeTrackingDialog: SetupDialog, project: Project) {
@@ -109,6 +119,11 @@ class TimeTrackingConfigurator {
                 " or by pressing Shift + Alt + T"
         val trackerNote = TrackerNotification()
         trackerNote.notifyWithHelper(note, NotificationType.INFORMATION, OpenActiveTaskSelection())
+    }
+
+    private fun notifyFailInWorkItemsTypes(note: String) {
+        val trackerNote = TrackerNotification()
+        trackerNote.notify(note, NotificationType.WARNING)
     }
 
 }

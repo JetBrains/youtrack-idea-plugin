@@ -384,7 +384,7 @@ public class ManualTimeEntryDialog extends JDialog {
 
         TimeTrackingConfigurator timerService = new TimeTrackingConfigurator();
 
-        List<String> types = timerService.getTypesInCallable(repo);
+        List<String> types = timerService.getAvailableWorkItemsTypes(repo);
         TimeTracker timer = ComponentAware.Companion.of(project).getTimeTrackerComponent();
         typeComboBox = new ComboBox(types.toArray());
         var idx = 0;
