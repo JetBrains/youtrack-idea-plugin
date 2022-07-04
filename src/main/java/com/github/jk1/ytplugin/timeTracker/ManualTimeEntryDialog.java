@@ -91,6 +91,10 @@ public class ManualTimeEntryDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
+        if (issueComboBox.getSelectedIndex() != -1){
+            updateCustomAttributes();
+        }
+
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -335,13 +339,17 @@ public class ManualTimeEntryDialog extends JDialog {
         issueComboBox.setSelectedIndex(tasksIds.indexOf(TaskManager.getManager(project).getActiveTask().getId()));
 
         issueComboBox.addActionListener(e -> {
-            // assume that project ID ALWAYS does not have '-'
-            String projectId =  ids.get(issueComboBox.getSelectedIndex()).getIssueId().split("-")[0];
-            Map<String, List<String>> attributes =
-                    new CustomAttributesClient(repo).getCustomAttributesForProjectInCallable(projectId);
-            handleAttributes(attributes);
-            contentPane.updateUI();
+            updateCustomAttributes();
         });
+    }
+
+    private void updateCustomAttributes() {
+        // assume that project ID ALWAYS does not have '-'
+        String projectId =  ids.get(issueComboBox.getSelectedIndex()).getIssueId().split("-")[0];
+        Map<String, List<String>> attributes =
+                new CustomAttributesClient(repo).getCustomAttributesForProjectInCallable(projectId);
+        handleAttributes(attributes);
+        contentPane.updateUI();
     }
 
     private void handleAttributes(Map<String, List<String>> attributes) {
