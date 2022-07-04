@@ -19,14 +19,12 @@ allprojects {
         mavenCentral()
     }
 }
-// todo: for some reason when running on build server not the latest EAP is used, wherefore compatibility issue is
-//  still there. unlock it for tests as soon as new EAP is supported
-//def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3']
-def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT']
+
+def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-EAP-SNAPSHOT'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-TRUNK-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
         plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
