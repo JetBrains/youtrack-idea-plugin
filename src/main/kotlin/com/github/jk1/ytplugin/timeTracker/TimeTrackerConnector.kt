@@ -26,10 +26,13 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
 
     fun postSavedWorkItemToServer(issueId: String, time: Long) {
         val timeTracker = of(project).timeTrackerComponent
-        postWorkItemToServer(
-            issueId, TimeTracker.formatTimePeriodToMinutes(time), timeTracker.type,
-            timeTracker.comment, getCurrentDate(), mapOf()
-        )
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Callable {
+                postWorkItemToServer(
+                    issueId, TimeTracker.formatTimePeriodToMinutes(time), timeTracker.type,
+                    timeTracker.comment, getCurrentDate(), mapOf()
+                )
+            })
     }
 
     fun postWorkItemToServer(
@@ -92,10 +95,13 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 val timeTracker = of(project).timeTrackerComponent
 
                 savedItems.forEach { entry ->
-                    postWorkItemToServer(
-                        entry.key, TimeTracker.formatTimePeriodToMinutes(entry.value), timeTracker.type,
-                        timeTracker.comment, getCurrentDate(), mapOf()
-                    )
+                    ApplicationManager.getApplication().executeOnPooledThread(
+                        Callable {
+                            postWorkItemToServer(
+                                entry.key, TimeTracker.formatTimePeriodToMinutes(entry.value), timeTracker.type,
+                                timeTracker.comment, getCurrentDate(), mapOf()
+                            )
+                        })
                 }
                 of(project).issueWorkItemsStoreComponent[repository].update(repository)
             }
@@ -130,12 +136,6 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 }
 
             })
-        if (futureCode.get() == 200) {
-            of(project).issueWorkItemsStoreComponent[repository].update(repository)
-        } else {
-            notifier.foreground = Color.red
-            notifier.text = "Time could not be posted, see IDE logs for details"
-        }
         return futureCode
     }
 

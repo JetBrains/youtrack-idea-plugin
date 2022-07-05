@@ -33,8 +33,8 @@ class WorkItemsListCellRenderer(
     private fun getValuePanelPosition() = valuePanel.preferredSize.getWidth()
     private fun getDatePanelPosition() = datePanel.preferredSize.getWidth()
 
-    private var PREFFERED_COMMENT_WIDTH = 0.484
-    private val PREFFERED_ATTRIBUTE_WIDTH = 0.080
+    private var PREFFERED_COMMENT_WIDTH = 0.454
+    private val PREFFERED_ATTRIBUTE_WIDTH = 0.110
 
     private val PREFFERED_DATE_TYPE_WIDTH = 0.116
     private val PREFFERED_ISSUE_ID_WIDTH = 0.078
