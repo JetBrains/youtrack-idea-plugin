@@ -214,7 +214,7 @@ public class ManualTimeEntryDialog extends JDialog {
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
         contentPane.setMinimumSize(new Dimension(500, 290));
-        contentPane.setPreferredSize(new Dimension(500, 290));
+//        contentPane.setPreferredSize(new Dimension(500, 290));
         contentPane.setRequestFocusEnabled(true);
         contentPane.putClientProperty("html.disable", Boolean.FALSE);
         rootPanel = new JPanel();
