@@ -199,6 +199,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         item[storedIssues[0].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[0].id)
         TimeTrackerConnector(repository, project).postSavedWorkItemsToServer(item)
 
+        Thread.sleep(6000)
         assertEquals(wiSize + 1, UserRestClient(repository).getWorkItemsForUser().size)
         assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)
     }
@@ -219,6 +220,7 @@ class TimeTrackerTest : IssueRestTrait, IdeaProjectTrait, TaskManagerTrait, Comp
         items[storedIssues[1].id] = spentTimePerTaskStorage.getSavedTimeForLocalTask(storedIssues[1].id)
 
         TimeTrackerConnector(repository, project).postSavedWorkItemsToServer(items)
+        Thread.sleep(6000)
 
         assertEquals(wiSize + 2, UserRestClient(repository).getWorkItemsForUser().size)
         assertEquals(spentTimePerTaskStorage.getAllStoredItems().size, 0)
