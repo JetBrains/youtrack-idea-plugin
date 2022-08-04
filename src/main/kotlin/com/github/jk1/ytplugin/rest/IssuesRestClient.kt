@@ -27,7 +27,7 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun createDraft(summary: String): String? {
-        val method = HttpPost("${repository.url}/api/admin/users/me/drafts")
+        val method = HttpPost("${repository.url}/api/users/me/drafts")
         val res: URL? = this::class.java.classLoader.getResource("create_draft_body.json")
         val summaryFormatted = summary.replace("\n", "\\n").replace("\"", "\\\"")
         method.entity = res?.readText()?.replace("{description}", summaryFormatted)?.jsonEntity

@@ -72,7 +72,7 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
 
     private fun getMyIdAsAuthor(): String {
         return try {
-            HttpGet("${repository.url}/api/admin/users/me")
+            HttpGet("${repository.url}/api/users/me")
                 .execute {
                     it.asJsonObject.get("id").asString
                 }
