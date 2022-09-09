@@ -71,12 +71,19 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 storage.resetSavedTimeForLocalTask(issueId)
                 storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
             }
+            HttpStatus.SC_BAD_REQUEST -> {
+                trackerNote.notify(
+                    "Please check if time tracking type $type belongs to the current project. " +
+                            "A record for $time min of tracked time has been saved locally.", NotificationType.WARNING
+                )
+                storage.resetSavedTimeForLocalTask(issueId)
+                storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
+            }
             else -> {
                 trackerNote.notify(
                     "Unable to post time to YouTrack. See IDE log for details. " +
                             "A record for $time min of tracked time has been saved locally.", NotificationType.WARNING
                 )
-
                 storage.resetSavedTimeForLocalTask(issueId)
                 storage.setSavedTimeForLocalTask(issueId, TimeUnit.MINUTES.toMillis(time.toLong()))
             }
