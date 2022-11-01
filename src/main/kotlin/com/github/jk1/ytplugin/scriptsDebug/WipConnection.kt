@@ -10,8 +10,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.util.io.addChannelListener
-import com.intellij.util.io.handler
 import com.intellij.util.io.socketConnection.ConnectionStatus
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.breakpoints.XBreakpoint
@@ -21,6 +19,7 @@ import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
@@ -31,10 +30,8 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.util.NetUtil
 import org.jetbrains.concurrency.AsyncPromise
-import org.jetbrains.debugger.MessagingLogger
 import org.jetbrains.debugger.Vm
 import org.jetbrains.debugger.connection.RemoteVmConnection
-import org.jetbrains.debugger.createDebugLogger
 import org.jetbrains.ide.BuiltInServerManager
 import org.jetbrains.io.NettyUtil
 import org.jetbrains.io.SimpleChannelInboundHandlerAdapter
@@ -84,16 +81,20 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
     protected open fun createBootstrap() = BuiltInServerManager.getInstance().createClientBootstrap()
 
     override fun createBootstrap(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): Bootstrap {
-        return createBootstrap().handler {
-            val repository = getYouTrackRepo()
-            if (repository != null && URI(repository.url).scheme == HttpScheme.HTTPS.toString()) {
-                val h = SslContextBuilder.forClient()
-                    .trustManager(InsecureTrustManagerFactory.INSTANCE).build()
-                it.pipeline().addLast(h.newHandler(NioSocketChannel().alloc(), address.hostName, address.port))
+        return createBootstrap().handler(object : ChannelInitializer<Channel>() {
+            override fun initChannel(channel: Channel) {
+                val repository = getYouTrackRepo()
+                if (repository != null && URI(repository.url).scheme == HttpScheme.HTTPS.toString()) {
+                    val h = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build()
+                    channel.pipeline().addLast(h.newHandler(NioSocketChannel().alloc(), address.hostName, address.port))
+                }
+                channel.pipeline().addLast(
+                    HttpClientCodec(),
+                    HttpObjectAggregator(1048576 * 10),
+                    createChannelHandler(address, vmResult)
+                )
             }
-            it.pipeline()
-                .addLast(HttpClientCodec(), HttpObjectAggregator(1048576 * 10), createChannelHandler(address, vmResult))
-        }
+        })
     }
 
     protected open fun createChannelHandler(address: InetSocketAddress, vmResult: AsyncPromise<WipVm>): ChannelHandler {
@@ -151,7 +152,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
 
         logger.debug("Request for the acquiring debug address is formed: ${request.uri()}")
 
-        context.channel().writeAndFlush(request).addChannelListener {
+        context.channel().writeAndFlush(request).addListener {
             if (!it.isSuccess) {
                 logger.debug("Request unsuccessful: ${it.cause()}")
                 vmResult.setError(it.cause())
@@ -189,7 +190,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             return true
         } else {
             val errorConnectionMessage = getConnectionErrorMessage(connectionsJson)
-            return if (!errorConnectionMessage.isNullOrBlank()){
+            return if (!errorConnectionMessage.isNullOrBlank()) {
                 logger.debug("Debugger connected with error: $errorConnectionMessage")
                 result.setError(errorConnectionMessage)
                 true
@@ -355,7 +356,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             }
         )
 
-        handshaker.handshake(channel).addChannelListener {
+        handshaker.handshake(channel).addListener {
             if (!it.isSuccess) {
                 context.fireExceptionCaught(it.cause())
             }
