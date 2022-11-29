@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij' version '1.6.0'
+    id 'org.jetbrains.intellij' version '1.10.0'
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
     id 'idea'
 }
@@ -20,14 +20,19 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT']
+//def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2021.3'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-TRUNK-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
-        plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
+        if (version == 'IU-2021.1' || version ==  'IU-2021.2' || version ==  'IU-2021.3') {
+            plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
+        } else {
+            plugins = ['JavaScriptDebugger', 'tasks']
+        }
     } catch (ignored){
         plugins = ['tasks']
     }
@@ -46,6 +51,7 @@ idea {
 compileKotlin {
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
 }
 
