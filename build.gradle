@@ -20,11 +20,12 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-2022.1', 'IU-2022.2',
+                         'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-TRUNK-SNAPSHOT'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2022.1'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
         if (version == 'IU-2021.1' || version ==  'IU-2021.2' || version ==  'IU-2021.3') {

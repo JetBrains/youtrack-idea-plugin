@@ -255,7 +255,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
     }
 
 
-    fun setupValuesNotRequiringTimerStop(type: String, comment: String, isScheduledModeTurnedOn: Boolean,
+    fun setupValuesNotRequiringTimerStop(type: String?, comment: String, isScheduledModeTurnedOn: Boolean,
                                          scheduledTime: String?, postWhenCommitCheckbox: JBCheckBox,
                                          postWhenProjectClosedCheckbox: JBCheckBox) {
         setWorkItemsType(type)
