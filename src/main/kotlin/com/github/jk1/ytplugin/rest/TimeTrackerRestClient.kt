@@ -2,6 +2,7 @@ package com.github.jk1.ytplugin.rest
 
 import com.github.jk1.ytplugin.logger
 import com.github.jk1.ytplugin.rest.MulticatchException.Companion.multicatchException
+import com.github.jk1.ytplugin.setup.getInstanceVersion
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.Gson
@@ -72,7 +73,14 @@ class TimeTrackerRestClient(override val repository: YouTrackServer) : RestClien
 
     private fun getMyIdAsAuthor(): String {
         return try {
-            HttpGet("${repository.url}/api/admin/users/me")
+            val version = getInstanceVersion()
+            //backward compatibility
+            val url = if (version != null && version > 2022.2) {
+                "${repository.url}/api/users/me"
+            } else {
+                "${repository.url}/api/admin/users/me"
+            }
+            HttpGet(url)
                 .execute {
                     it.asJsonObject.get("id").asString
                 }
