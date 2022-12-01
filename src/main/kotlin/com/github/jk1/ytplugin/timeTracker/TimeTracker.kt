@@ -256,7 +256,7 @@ class TimeTracker(override val project: Project) : ComponentAware {
 
 
     fun setupValuesNotRequiringTimerStop(type: String?, comment: String, isScheduledModeTurnedOn: Boolean,
-                                         scheduledTime: String?, postWhenCommitCheckbox: JBCheckBox,
+                                         scheduledTime: String, postWhenCommitCheckbox: JBCheckBox,
                                          postWhenProjectClosedCheckbox: JBCheckBox) {
         setWorkItemsType(type)
         setDefaultComment(comment)
@@ -265,10 +265,9 @@ class TimeTracker(override val project: Project) : ComponentAware {
         configureScheduledPeriod(isScheduledModeTurnedOn, scheduledTime)
     }
 
-     private fun configureScheduledPeriod(isScheduledModeTurnedOn: Boolean, scheduledTime: String?) {
-         isScheduledEnabled = isScheduledModeTurnedOn
-         if (isScheduledEnabled && !scheduledTime.isNullOrEmpty())
-            scheduledPeriod = scheduledTime
+     private fun configureScheduledPeriod(isScheduledModeTurnedOn: Boolean, scheduledTime: String) {
+        isScheduledEnabled = isScheduledModeTurnedOn
+        scheduledPeriod = scheduledTime
     }
 
     private fun setWorkItemsType(type: String?) {

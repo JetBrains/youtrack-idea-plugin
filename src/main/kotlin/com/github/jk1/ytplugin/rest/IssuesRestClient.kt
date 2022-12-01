@@ -3,6 +3,7 @@ package com.github.jk1.ytplugin.rest
 import com.github.jk1.ytplugin.issues.model.Issue
 import com.github.jk1.ytplugin.issues.model.IssueWorkItem
 import com.github.jk1.ytplugin.logger
+import com.github.jk1.ytplugin.setup.getInstanceVersion
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TrackerNotification
 import com.google.gson.*
@@ -27,7 +28,14 @@ class IssuesRestClient(override val repository: YouTrackServer) : IssuesRestClie
     }
 
     override fun createDraft(summary: String): String? {
-        val method = HttpPost("${repository.url}/api/users/me/drafts")
+        val version = getInstanceVersion()
+        // backwards compatibility for the deprecated endpoint
+        val method = if (version != null && version > 2022.2) {
+            HttpPost("${repository.url}/api/users/me/drafts")
+        } else {
+            HttpPost("${repository.url}/api/admin/users/me/drafts")
+        }
+
         val res: URL? = this::class.java.classLoader.getResource("create_draft_body.json")
         val summaryFormatted = summary.replace("\n", "\\n").replace("\"", "\\\"")
         method.entity = res?.readText()?.replace("{description}", summaryFormatted)?.jsonEntity
