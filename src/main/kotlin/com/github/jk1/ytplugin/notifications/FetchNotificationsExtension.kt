@@ -36,6 +36,8 @@ class FetchNotificationsExtension : StartupActivity.Background {
                 try {
                     val notifications = NotificationsRestClient(it).getNotifications().filterGuest()
                     if (notifications.isNotEmpty()) {
+                        logger.trace("Fetched ids: " +
+                                notifications.joinToString(" ") { note -> note.id.takeLast(3) })
                         val unseen = notifications.filterUnseen()
                         logger.debug("Fetched ${notifications.size} notifications, ${unseen.size} new")
                         unseen.forEach { notification -> handleNotification(notification, project) }
@@ -69,6 +71,7 @@ class FetchNotificationsExtension : StartupActivity.Background {
     }
 
     private fun saveAsSeen(notifications: List<YouTrackNotification>) {
+        logger.trace("Set seen ids: " + notifications.joinToString(" ") { it.id.takeLast(3) })
         PropertiesComponent.getInstance().setValue(PERSISTENT_KEY, notifications.joinToString(" ") { it.id })
     }
 
