@@ -403,7 +403,8 @@ public class ManualTimeEntryDialog extends JDialog {
 
                 while (iter.hasNext()) {
                     if (Objects.equals(iter.next(), timer.getType())) {
-                        idx = iter.nextIndex();
+                        idx = iter.previousIndex(); // due to indices starting from 0
+                        break;
                     }
                 }
                 typeComboBox.setSelectedIndex(idx);
