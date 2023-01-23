@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij' version '1.6.0'
+    id 'org.jetbrains.intellij' version '1.12.0'
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
     id 'idea'
 }
@@ -7,8 +7,8 @@ plugins {
 allprojects {
 
     group 'com.github.jk1'
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 17
+    targetCompatibility = 17
 
     if (project.hasProperty('teamcity')) {
         project.version = project.teamcity['build.number']
@@ -20,15 +20,19 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-2022.1', 'IU-2022.2', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-TRUNK-SNAPSHOT'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-EAP-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
-        plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
-    } catch (ignored){
+        def compatibleJS = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-2022.1', 'IU-2022.2']
+        if (compatibleJS.contains(version.toString())) {
+            plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
+        } else {
+            plugins = ['JavaScript', 'JavaScriptDebugger', 'tasks']
+        }    } catch (ignored){
         plugins = ['tasks']
     }
     updateSinceUntilBuild = false
@@ -45,7 +49,7 @@ idea {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
