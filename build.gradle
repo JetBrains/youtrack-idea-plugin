@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij' version '1.6.0'
+    id 'org.jetbrains.intellij' version '1.12.0'
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
     id 'idea'
 }
@@ -21,7 +21,7 @@ allprojects {
 }
 
 // todo unlock EAP and TRUNK
-def supportedVersions = ['IU-2021.1', 'IU-2021.2', 'IU-2021.3', 'IU-2022.1', 'IU-2022.2']
+def supportedVersions = ['IU-2022.1', 'IU-2022.2']
 
 intellij {
     pluginName = 'ytplugin'
@@ -46,7 +46,17 @@ idea {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = '11'
+        apiVersion = '1.7'
+        languageVersion = '1.7'
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = '11'
+        apiVersion = '1.7'
+        languageVersion = '1.7'
     }
 }
 
@@ -58,7 +68,6 @@ publishPlugin {
 dependencies {
     implementation project(':api')
     implementation "org.nanohttpd:nanohttpd:2.3.0"
-//    implementation "org.apache.httpcomponents:httpclient:4.5.13"
 
     testImplementation 'junit:junit:4.12'
 }
