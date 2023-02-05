@@ -19,20 +19,30 @@ import java.util.concurrent.ConcurrentHashMap
 @State(name = "YouTrack Issues", storages = [(Storage(value = "issues.xml"))])
 class PersistentIssueStore : PersistentStateComponent<Memento> {
 
-    private var loadedMemento: Memento = Memento()
     private val stores = ConcurrentHashMap<String, IssueStore>()
 
     override fun getState() = Memento(stores)
 
     override fun loadState(state: Memento) {
-        loadedMemento = state
+        stores.putAll(state.persistentIssues.map { (repoKey, issuesJson) ->
+            try {
+                val issues = JsonParser.parseString(issuesJson).asJsonArray
+                    .mapNotNull { IssueJsonParser.parseIssue(it, repoKey) }
+
+                logger.debug("Issue store file cache loaded for $repoKey with a total of ${issues.size}")
+                Pair(repoKey, IssueStore(issues))
+            } catch (e: Exception) {
+                logger.warn("Failed to load issue store file cache for $repoKey", e)
+                Pair(repoKey, IssueStore())
+            }
+        })
     }
 
     operator fun get(repo: YouTrackServer): IssueStore {
-        return stores.getOrPut(repo.id, {
-            logger.debug("Issue store opened for YouTrack server ${repo.url}")
-            loadedMemento.getStore(repo)
-        })
+        return stores.getOrPut(repo.id) {
+            logger.debug("No persistent issue store found for ${repo.url}, will create an empty one")
+            IssueStore()
+        }
     }
 
     fun remove(repo: YouTrackServer) {
@@ -48,27 +58,6 @@ class PersistentIssueStore : PersistentStateComponent<Memento> {
         // primary constructor is reserved for serializer
         constructor(stores: Map<String, IssueStore>) : this() {
             persistentIssues = stores.mapValues { "[${it.value.joinToString(", ") { it.json }}]" }
-//            for (item in stores.values){
-//                val issues = item.getAllIssues()
-//                for (issue in issues){
-//                    persistentWorkItems.addAll(issue.workItems)
-//                }
-//            }
-        }
-
-        fun getStore(repo: YouTrackServer): IssueStore {
-            try {
-                val issuesJson = persistentIssues[repo.id] ?: return IssueStore()
-
-                val issues = JsonParser.parseString(issuesJson).asJsonArray
-                        .mapNotNull { IssueJsonParser.parseIssue(it, repo.url) }
-
-                logger.debug("Issue store file cache loaded for ${repo.url} with a total of ${issues.size}")
-                return IssueStore(issues)
-            } catch (e: Exception) {
-                logger.warn("Failed to load issue store file cache for ${repo.url}", e)
-                return IssueStore()
-            }
         }
     }
 }
