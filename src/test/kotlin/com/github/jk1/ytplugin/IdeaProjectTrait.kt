@@ -15,7 +15,7 @@ interface IdeaProjectTrait {
      */
     fun getLightCodeInsightFixture(): CodeInsightTestFixture {
         val ideaFactory = IdeaTestFixtureFactory.getFixtureFactory()
-        val fixtureBuilder = ideaFactory.createLightFixtureBuilder(LightProjectDescriptor())
+        val fixtureBuilder = ideaFactory.createLightFixtureBuilder(LightProjectDescriptor(), "Test Project")
         return ideaFactory.createCodeInsightFixture(fixtureBuilder.fixture, LightTempDirTestFixtureImpl(true))
     }
 
