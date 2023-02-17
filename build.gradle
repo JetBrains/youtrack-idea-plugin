@@ -7,8 +7,8 @@ plugins {
 allprojects {
 
     group 'com.github.jk1'
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 17
+    targetCompatibility = 17
 
     if (project.hasProperty('teamcity')) {
         project.version = project.teamcity['build.number']
@@ -49,7 +49,7 @@ idea {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '17'
         apiVersion = '1.7'
         languageVersion = '1.7'
     }
@@ -57,7 +57,7 @@ compileKotlin {
 
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '17'
         apiVersion = '1.7'
         languageVersion = '1.7'
     }
