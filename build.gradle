@@ -20,7 +20,7 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IU-2022.1', 'IU-2022.2', 'IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IU-LATEST-EAP-SNAPSHOT', 'IU-LATEST-TRUNK-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
