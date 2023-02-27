@@ -27,21 +27,14 @@ intellij {
     version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-EAP-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
-        def compatibleJS = ['IU-2022.1', 'IU-2022.2']
-        if (compatibleJS.contains(version.toString())) {
-            plugins = ['JavaScriptLanguage', 'JavaScriptDebugger', 'tasks']
-        } else {
-            plugins = ['JavaScript', 'JavaScriptDebugger', 'tasks']
-        }    } catch (ignored){
+        plugins = ['JavaScript', 'JavaScriptDebugger', 'tasks']
+    } catch (ignored){
         plugins = ['tasks']
     }
     updateSinceUntilBuild = false
     instrumentCode = false
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
 
 idea {
     module {
