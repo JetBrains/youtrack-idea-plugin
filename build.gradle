@@ -39,6 +39,10 @@ intellij {
     instrumentCode = false
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
 idea {
     module {
         downloadSources = true
