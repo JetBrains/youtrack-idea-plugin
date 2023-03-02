@@ -84,7 +84,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
+        assertEquals(NotifierState.UNAUTHORIZED, setupTask.noteState)
     }
 
     @Test
@@ -104,7 +104,7 @@ class InputCredentialsTest : IdeaProjectTrait, SetupConnectionTrait, ComponentAw
         val setupTask = SetupRepositoryConnector()
 
         setupTask.testConnection(repo, project)
-        assertEquals(NotifierState.INVALID_TOKEN, setupTask.noteState)
+        assertEquals(NotifierState.UNAUTHORIZED, setupTask.noteState)
     }
 
     @Test
