@@ -27,7 +27,7 @@
     </change-notes>
 
     <!-- Compatible with Idea platform 2023.0- 2023.2 -->
-    <idea-version since-build="230.*" until-build="232.*"/>
+    <idea-version since-build="223" until-build="232.*"/>
     <!-- Enable plugin in all products except  MPS -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
