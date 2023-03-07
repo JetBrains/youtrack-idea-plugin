@@ -10,11 +10,12 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ex.WindowManagerEx
+import com.jetbrains.rd.util.forEachReversed
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.event.KeyEvent
@@ -58,7 +59,7 @@ class ActivityTracker(
                     callback()
                 }
             }
-            parents.forEach { parent ->
+            parents.forEachReversed {  parent ->
                 // can't use here "Disposer.register(parent, disposable)"
                 // because Disposer only allows one parent to one child registration of Disposable objects
                 Disposer.register(parent, Disposable { Disposer.dispose(disposable) })
@@ -193,6 +194,6 @@ class ActivityTracker(
             }
 
     private fun currentEditorIn(project: Project): Editor? =
-            (FileEditorManagerEx.getInstance(project) as FileEditorManagerEx).selectedTextEditor
+            (FileEditorManager.getInstance(project) as FileEditorManager).selectedTextEditor
 
 }
