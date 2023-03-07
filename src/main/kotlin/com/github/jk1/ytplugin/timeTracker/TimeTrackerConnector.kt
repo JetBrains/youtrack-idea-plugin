@@ -26,13 +26,10 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
 
     fun postSavedWorkItemToServer(issueId: String, time: Long) {
         val timeTracker = of(project).timeTrackerComponent
-        ApplicationManager.getApplication().executeOnPooledThread(
-            Callable {
-                postWorkItemToServer(
-                    issueId, TimeTracker.formatTimePeriodToMinutes(time), timeTracker.type,
-                    timeTracker.comment, getCurrentDate(), mapOf()
-                )
-            })
+        postWorkItemToServer(
+            issueId, TimeTracker.formatTimePeriodToMinutes(time), timeTracker.type,
+            timeTracker.comment, getCurrentDate(), mapOf()
+        )
     }
 
     fun postWorkItemToServer(
@@ -95,13 +92,10 @@ class TimeTrackerConnector(val repository: YouTrackServer, val project: Project)
                 val timeTracker = of(project).timeTrackerComponent
 
                 savedItems.forEach { entry ->
-                    ApplicationManager.getApplication().executeOnPooledThread(
-                        Callable {
-                            postWorkItemToServer(
-                                entry.key, TimeTracker.formatTimePeriodToMinutes(entry.value), timeTracker.type,
-                                timeTracker.comment, getCurrentDate(), mapOf()
-                            )
-                        })
+                    postWorkItemToServer(
+                        entry.key, TimeTracker.formatTimePeriodToMinutes(entry.value), timeTracker.type,
+                        timeTracker.comment, getCurrentDate(), mapOf()
+                    )
                 }
                 of(project).issueWorkItemsStoreComponent[repository].update(repository)
             }

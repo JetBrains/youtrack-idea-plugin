@@ -2,7 +2,6 @@ package com.github.jk1.ytplugin.timeTracker.actions
 
 import com.github.jk1.ytplugin.ComponentAware
 import com.github.jk1.ytplugin.logger
-import com.github.jk1.ytplugin.rest.TimeTrackerRestClient
 import com.github.jk1.ytplugin.tasks.NoYouTrackRepositoryException
 import com.github.jk1.ytplugin.tasks.YouTrackServer
 import com.github.jk1.ytplugin.timeTracker.TimeTrackerConnector
@@ -13,11 +12,9 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.util.*
-import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 
 
@@ -87,13 +84,10 @@ class StopTrackerAction : AnAction(
                 trackerNote.notify("Spent time shorter than 1 minute is excluded from time tracking", NotificationType.WARNING)
             else {
                 try {
-                     ApplicationManager.getApplication().executeOnPooledThread (
-                        Callable {
-                            TimeTrackerConnector(repo, project).postWorkItemToServer(timer.issueId, recordedTime,
-                                timer.type, timer.comment, (Date().time).toString(), mapOf())
+                    TimeTrackerConnector(repo, project).postWorkItemToServer(timer.issueId, recordedTime,
+                        timer.type, timer.comment, (Date().time).toString(), mapOf())
 
-                            ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
-                        })
+                    ComponentAware.of(project).issueWorkItemsStoreComponent[repo].update(repo)
                 } catch (e: Exception) {
                     logger.warn("Time tracking might not be enabled: ${e.message}")
                     logger.debug(e)
