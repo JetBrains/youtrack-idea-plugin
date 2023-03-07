@@ -27,6 +27,7 @@ import java.text.*;
 import java.util.*;
 
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 public class ManualTimeEntryDialog extends JDialog {
     private JPanel contentPane;
@@ -167,9 +168,7 @@ public class ManualTimeEntryDialog extends JDialog {
                                     typeComboBox.getItemAt(typeComboBox.getSelectedIndex()).toString(), selectedId,
                                     commentTextArea.getText(), time.toString(), attributes, notifier);
 
-                    if (futureCode.get() == 200) {
-                        dispose();
-                    }
+                    dispose();
                 }
             } catch (IndexOutOfBoundsException e) {
                 notifier.setForeground(JBColor.RED);
@@ -404,7 +403,8 @@ public class ManualTimeEntryDialog extends JDialog {
 
                 while (iter.hasNext()) {
                     if (Objects.equals(iter.next(), timer.getType())) {
-                        idx = iter.nextIndex();
+                        idx = iter.previousIndex(); // due to indices starting from 0
+                        break;
                     }
                 }
                 typeComboBox.setSelectedIndex(idx);
