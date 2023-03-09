@@ -14,14 +14,15 @@
             <li> Displays issue tracker notifications in IDE </li>
             <li> Creates work log time entries based on user activity </li>
         </ul>
-        <p>Compatibility: YouTrack 2018.1+<p/>
+        <p>Compatibility: YouTrack 2018.1+, IDE 2022.3+<p/>
+        <p>For earlier IDE versions please download one of the previous releases from
+        <a href="https://plugins.jetbrains.com/plugin/8215-youtrack-integration/versions">Marketplace</a></p>
         <p>Four minute plugin demo <a href="https://www.youtube.com/watch?v=gGVEwlZpvj8">on YouTube</a></p>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
             <li> Bugfix updates </li>
-            <li> Custom work items attributes support </li>
         </ul>
           ]]>
     </change-notes>
