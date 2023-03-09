@@ -32,7 +32,7 @@ class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.
         issueList.cellRenderer = renderer
         add(issueListScrollPane, BorderLayout.CENTER)
         initIssueListModel()
-        ListSpeedSearch(issueList)
+        ListSpeedSearch.installOn(issueList)
     }
 
     private fun initIssueListModel() {

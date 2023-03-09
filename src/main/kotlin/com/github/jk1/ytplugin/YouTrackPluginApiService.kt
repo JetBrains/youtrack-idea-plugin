@@ -35,7 +35,7 @@ class YouTrackPluginApiService(override val project: Project): YouTrackPluginApi
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("YouTrack")!!
         val viewer = IssueViewer()
         val contentManager = toolWindow.contentManager
-        val contentFactory = ContentFactory.SERVICE.getInstance()
+        val contentFactory = ContentFactory.getInstance()
         val content = contentFactory.createContent(viewer, issue.id, false)
         content.isCloseable = true
         contentManager.addContent(content)

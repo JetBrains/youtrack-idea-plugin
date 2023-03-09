@@ -85,7 +85,7 @@ class IssuesToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     private fun ContentManager.addContent(title: String, component: JComponent){
-        val contentFactory = ContentFactory.SERVICE.getInstance()
+        val contentFactory = ContentFactory.getInstance()
         val content = contentFactory.createContent(component, title, false)
         content.isCloseable = false
         addContent(content)

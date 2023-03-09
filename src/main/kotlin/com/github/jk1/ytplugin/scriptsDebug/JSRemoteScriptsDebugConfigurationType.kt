@@ -43,7 +43,7 @@ class JSRemoteScriptsDebugConfigurationType : ConfigurationTypeBase(
                 override fun isApplicable(project: Project) = true
             })
         } else {
-            throw ExtensionNotApplicableException.INSTANCE
+            throw ExtensionNotApplicableException.create()
         }
     }
 }

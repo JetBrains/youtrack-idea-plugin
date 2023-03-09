@@ -113,6 +113,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
                 }
             }
 
+            @Deprecated("Deprecated in Java")
             override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                 vmResult.setError(cause)
                 context.close()
@@ -337,6 +338,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
                     vm.ready()
                 }
 
+                @Deprecated("Deprecated in Java")
                 override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                     result.setError(cause)
                     context.fireExceptionCaught(cause)

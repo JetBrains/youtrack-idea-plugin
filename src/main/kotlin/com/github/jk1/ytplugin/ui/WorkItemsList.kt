@@ -31,7 +31,7 @@ class WorkItemsList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), r
         issueWorkItemsList.cellRenderer = renderer
         add(issueWorkItemsListScrollPane, BorderLayout.CENTER)
         initIssueWorkItemsListModel()
-        ListSpeedSearch(issueWorkItemsList)
+        ListSpeedSearch.installOn(issueWorkItemsList)
     }
 
     fun getSelectedItem() = when {
