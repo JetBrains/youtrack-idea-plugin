@@ -20,11 +20,11 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IU-LATEST-TRUNK-SNAPSHOT']
+def supportedVersions = ['IU-LATEST-EAP-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-TRUNK-SNAPSHOT'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-EAP-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
         plugins = ['JavaScript', 'JavaScriptDebugger', 'tasks']
