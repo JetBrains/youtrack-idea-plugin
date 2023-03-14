@@ -20,7 +20,8 @@ allprojects {
     }
 }
 
-def supportedVersions = ['IU-2022.3', 'IU-LATEST-EAP-SNAPSHOT']
+// TODO: restore 2022.3 and TRUNK tests in one run
+def supportedVersions = ['IU-LATEST-EAP-SNAPSHOT']
 
 intellij {
     pluginName = 'ytplugin'
