@@ -27,11 +27,6 @@ def supportedVersions = ['IU-2022.3']
 intellij {
     pluginName = 'ytplugin'
     version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-2022.3'
-    logger.warn('HELLO')
-    if (project.hasProperty('ideaVersion')) {
-        logger.warn(project.hasProperty('ideaVersion'))
-        logger.warn(project.ideaVersion)
-    }
 
 
     println "This build uses IDEA Ultimate ${version.get()}"
