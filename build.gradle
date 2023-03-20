@@ -109,4 +109,5 @@ task testAllSupportedIdes {
 
 // Travis CI
 check.dependsOn testAllSupportedIdes
+verifyPlugin.dependsOn runPluginVerifier
 
