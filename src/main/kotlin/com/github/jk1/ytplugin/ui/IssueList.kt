@@ -19,7 +19,7 @@ import javax.swing.AbstractListModel
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 
-class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project), ComponentAware {
+class IssueList(val repo: YouTrackServer) : JBLoadingPanel(BorderLayout(), repo.project, -1), ComponentAware {
 
     override val project = repo.project
     private val issueList: JBList<Issue> = JBList()
