@@ -20,7 +20,7 @@ allprojects {
     }
 }
 
-// TODO: restore 2022.3 and TRUNK tests in one run
+// TODO: restore EAP and TRUNK tests in one run
 def supportedVersions = ['IU-2022.3']
 
 
