@@ -21,11 +21,12 @@ allprojects {
 }
 
 // TODO: restore 2022.3 and TRUNK tests in one run
-def supportedVersions = ['IU-2022.3']
+def supportedVersions = ['IU-LATEST-EAP-SNAPSHOT']
+
 
 intellij {
     pluginName = 'ytplugin'
-    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-223.8617.56'
+    version = project.hasProperty('ideaVersion') ? project.ideaVersion : 'IU-LATEST-EAP-SNAPSHOT'
     println "This build uses IDEA Ultimate ${version.get()}"
     try {
         plugins = ['JavaScript', 'JavaScriptDebugger', 'tasks']
