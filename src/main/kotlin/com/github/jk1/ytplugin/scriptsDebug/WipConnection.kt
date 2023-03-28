@@ -113,7 +113,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
                 }
             }
 
-            @Deprecated("Deprecated in Java")
+            @Suppress("OverridingDeprecatedMember")
             override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                 vmResult.setError(cause)
                 context.close()
@@ -287,7 +287,7 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
         result: AsyncPromise<WipVm>
     ): Boolean {
         if (webSocketDebuggerUrl != null) {
-            logger.info("Connect debugger for ${URI(getYouTrackRepo()?.url).authority}")
+            logger.info("Connect debugger for ${getYouTrackRepo()?.url?.let { URI(it).authority }}")
             connectDebugger(context, result)
             return true
         } else {
@@ -334,11 +334,13 @@ open class WipConnection(val project: Project) : RemoteVmConnection<WipVm>() {
             object : WebSocketProtocolHandshakeHandler(handshaker) {
                 override fun completed() {
                     vm.initDomains()
-                    result.setResult(vm)
-                    vm.ready()
+                        .then {
+                            result.setResult(vm)
+                            vm.ready()
+                        }
                 }
 
-                @Deprecated("Deprecated in Java")
+                @Suppress("OverridingDeprecatedMember")
                 override fun exceptionCaught(context: ChannelHandlerContext, cause: Throwable) {
                     result.setError(cause)
                     context.fireExceptionCaught(cause)
